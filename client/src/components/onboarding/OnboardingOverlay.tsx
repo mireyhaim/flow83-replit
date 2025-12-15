@@ -35,60 +35,71 @@ export function OnboardingOverlay({
   useEffect(() => {
     if (!isActive || !currentStepData) return;
 
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let foundElement = false;
+
+    const findTargetElement = (): Element | null => {
+      if (!currentStepData.targetSelector) return null;
+      const selectors = currentStepData.targetSelector.split(", ");
+      for (const selector of selectors) {
+        const el = document.querySelector(selector);
+        if (el) return el;
+      }
+      return null;
+    };
+
     const updatePosition = () => {
-      if (currentStepData.targetSelector) {
-        const selectors = currentStepData.targetSelector.split(", ");
-        let targetElement: Element | null = null;
-        
-        for (const selector of selectors) {
-          targetElement = document.querySelector(selector);
-          if (targetElement) break;
+      const targetElement = findTargetElement();
+
+      if (targetElement) {
+        foundElement = true;
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
         }
 
-        if (targetElement) {
-          const rect = targetElement.getBoundingClientRect();
-          setHighlightRect(rect);
+        const rect = targetElement.getBoundingClientRect();
+        setHighlightRect(rect);
 
-          const padding = 16;
-          const tooltipWidth = 320;
-          const tooltipHeight = 200;
+        const padding = 16;
+        const tooltipWidth = 320;
+        const tooltipHeight = 200;
 
-          let top = 0;
-          let left = 0;
+        let top = 0;
+        let left = 0;
 
-          switch (currentStepData.position) {
-            case "top":
-              top = rect.top - tooltipHeight - padding;
-              left = rect.left + rect.width / 2 - tooltipWidth / 2;
-              break;
-            case "bottom":
-              top = rect.bottom + padding;
-              left = rect.left + rect.width / 2 - tooltipWidth / 2;
-              break;
-            case "left":
-              top = rect.top + rect.height / 2 - tooltipHeight / 2;
-              left = rect.left - tooltipWidth - padding;
-              break;
-            case "right":
-              top = rect.top + rect.height / 2 - tooltipHeight / 2;
-              left = rect.right + padding;
-              break;
-            default:
-              top = rect.bottom + padding;
-              left = rect.left;
-          }
-
-          left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
-          top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
-
-          setTooltipPosition({ top, left });
-        } else {
-          setHighlightRect(null);
-          setTooltipPosition({
-            top: window.innerHeight / 2 - 100,
-            left: window.innerWidth / 2 - 160,
-          });
+        switch (currentStepData.position) {
+          case "top":
+            top = rect.top - tooltipHeight - padding;
+            left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            break;
+          case "bottom":
+            top = rect.bottom + padding;
+            left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            break;
+          case "left":
+            top = rect.top + rect.height / 2 - tooltipHeight / 2;
+            left = rect.left - tooltipWidth - padding;
+            break;
+          case "right":
+            top = rect.top + rect.height / 2 - tooltipHeight / 2;
+            left = rect.right + padding;
+            break;
+          default:
+            top = rect.bottom + padding;
+            left = rect.left;
         }
+
+        left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
+        top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
+
+        setTooltipPosition({ top, left });
+      } else if (currentStepData.targetSelector) {
+        setHighlightRect(null);
+        setTooltipPosition({
+          top: window.innerHeight / 2 - 100,
+          left: window.innerWidth / 2 - 160,
+        });
       } else {
         setHighlightRect(null);
         setTooltipPosition({
@@ -99,10 +110,16 @@ export function OnboardingOverlay({
     };
 
     updatePosition();
+
+    if (currentStepData.targetSelector && !foundElement) {
+      pollInterval = setInterval(updatePosition, 200);
+    }
+
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition);
 
     return () => {
+      if (pollInterval) clearInterval(pollInterval);
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition);
     };

@@ -33,7 +33,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "journeys-list",
     title: "Manage Your Journeys",
     description: "View and edit all your journeys here. You can have multiple active journeys.",
-    targetSelector: '[data-testid="card-journey-journey-1"], [data-testid="button-create-first-journey"]',
+    targetSelector: '[data-testid^="card-journey-"], [data-testid="button-create-first-journey"]',
     position: "right",
   },
 ];

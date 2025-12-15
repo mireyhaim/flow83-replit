@@ -1,15 +1,28 @@
+import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { journeyApi, statsApi, type DashboardStats } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Journey } from "@shared/schema";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const onboarding = useOnboarding();
+
+  useEffect(() => {
+    if (isAuthenticated && !onboarding.hasSeenOnboarding && !onboarding.isActive) {
+      const timer = setTimeout(() => {
+        onboarding.startOnboarding();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, onboarding.hasSeenOnboarding, onboarding.isActive]);
 
   const { data: journeys = [], isLoading: journeysLoading } = useQuery<Journey[]>({
     queryKey: ["/api/journeys/my"],
@@ -51,11 +64,38 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
+      <OnboardingOverlay
+        isActive={onboarding.isActive}
+        currentStep={onboarding.currentStep}
+        currentStepData={onboarding.currentStepData}
+        totalSteps={onboarding.totalSteps}
+        isLastStep={onboarding.isLastStep}
+        isFirstStep={onboarding.isFirstStep}
+        onNext={onboarding.nextStep}
+        onPrev={onboarding.prevStep}
+        onSkip={onboarding.skipOnboarding}
+      />
+
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2" data-testid="text-dashboard-title">Dashboard</h1>
-        <p className="text-muted-foreground" data-testid="text-welcome-message">
-          Welcome back{user?.firstName ? `, ${user.firstName}` : ""}. Your OS is active.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2" data-testid="text-dashboard-title">Dashboard</h1>
+            <p className="text-muted-foreground" data-testid="text-welcome-message">
+              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}. Your OS is active.
+            </p>
+          </div>
+          {onboarding.hasSeenOnboarding && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onboarding.startOnboarding}
+              data-testid="button-start-tutorial"
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              Start Tutorial
+            </Button>
+          )}
+        </div>
       </header>
 
       {isLoading ? (
