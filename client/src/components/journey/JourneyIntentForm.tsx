@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -15,7 +14,7 @@ const formSchema = z.object({
   journeyName: z.string().min(1, "Journey name is required"),
   mainGoal: z.string().min(10, "Please provide a detailed goal (minimum 10 characters)"),
   targetAudience: z.string().min(1, "Target audience is required"),
-  duration: z.array(z.number()).length(1),
+  duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
   hasContent: z.string(),
   desiredFeeling: z.string().optional(),
   elements: z.array(z.string()).optional(),
@@ -27,7 +26,6 @@ interface JourneyIntentFormProps {
 }
 
 const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
-  const [duration, setDuration] = useState([7]);
   const [selectedElements, setSelectedElements] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,7 +34,7 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
       journeyName: "",
       mainGoal: "",
       targetAudience: "",
-      duration: [7],
+      duration: "7",
       hasContent: "",
       desiredFeeling: "",
       elements: [],
@@ -54,7 +52,7 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
   };
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    onComplete({ ...data, elements: selectedElements });
+    onComplete({ ...data, duration: [parseInt(data.duration)], elements: selectedElements });
   };
 
   const elements = [
@@ -135,24 +133,16 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
             <FormItem>
               <FormLabel className="text-lg font-semibold">How many days do you envision? *</FormLabel>
               <FormControl>
-                <div className="px-3">
-                  <Slider
-                    min={3}
-                    max={30}
-                    step={1}
-                    value={duration}
-                    onValueChange={(value) => {
-                      setDuration(value);
-                      field.onChange(value);
-                    }}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                    <span>3 days</span>
-                    <span className="font-semibold text-primary">{duration[0]} days</span>
-                    <span>30 days</span>
+                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" />
+                    <Label htmlFor="duration-3">3 days - Quick transformation</Label>
                   </div>
-                </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" />
+                    <Label htmlFor="duration-7">7 days - Deep journey</Label>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
