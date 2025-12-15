@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema } from "@shared/schema";
+import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -246,6 +246,84 @@ export async function registerRoutes(
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete block" });
+    }
+  });
+
+  // Participant routes
+  app.get("/api/participants/journey/:journeyId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const journeyId = req.params.journeyId;
+      
+      let participant = await storage.getParticipant(userId, journeyId);
+      
+      if (!participant) {
+        const parsed = insertParticipantSchema.safeParse({
+          userId,
+          journeyId,
+          currentDay: 1,
+          completedBlocks: [],
+        });
+        if (!parsed.success) {
+          return res.status(400).json({ error: parsed.error.issues });
+        }
+        participant = await storage.createParticipant(parsed.data);
+      }
+      
+      res.json(participant);
+    } catch (error) {
+      console.error("Error fetching participant:", error);
+      res.status(500).json({ error: "Failed to fetch participant" });
+    }
+  });
+
+  app.put("/api/participants/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { journeyId } = req.body;
+      
+      const existingParticipant = await storage.getParticipant(userId, journeyId);
+      if (!existingParticipant || existingParticipant.id !== id) {
+        return res.status(403).json({ error: "Not authorized to update this participant" });
+      }
+      
+      const participant = await storage.updateParticipant(id, req.body);
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      res.json(participant);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update participant" });
+    }
+  });
+
+  app.post("/api/participants/:id/complete-day", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { dayNumber, journeyId } = req.body;
+      
+      const existingParticipant = await storage.getParticipant(userId, journeyId);
+      if (!existingParticipant || existingParticipant.id !== id) {
+        return res.status(403).json({ error: "Not authorized to complete this day" });
+      }
+      
+      const steps = await storage.getJourneySteps(journeyId);
+      const totalDays = steps.length || 7;
+      
+      const nextDay = Math.min(dayNumber + 1, totalDays + 1);
+      
+      const participant = await storage.updateParticipant(id, {
+        currentDay: nextDay,
+      });
+      
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      res.json(participant);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to complete day" });
     }
   });
 
