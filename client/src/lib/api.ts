@@ -74,6 +74,69 @@ export const journeyApi = {
     });
     return handleResponse(res);
   },
+
+  generateContentWithProgress: (
+    id: string, 
+    content: string,
+    onProgress: (progress: number, message: string) => void
+  ): Promise<{ success: boolean; daysGenerated: number }> => {
+    return new Promise((resolve, reject) => {
+      fetch(`${API_BASE}/journeys/${id}/generate-content`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream"
+        },
+        body: JSON.stringify({ content }),
+      }).then(response => {
+        if (!response.ok) {
+          reject(new Error("Failed to generate content"));
+          return;
+        }
+        
+        const reader = response.body?.getReader();
+        if (!reader) {
+          reject(new Error("No response body"));
+          return;
+        }
+        
+        const decoder = new TextDecoder();
+        
+        const processStream = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const text = decoder.decode(value);
+            const lines = text.split("\n");
+            
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.error) {
+                    reject(new Error(data.error));
+                    return;
+                  }
+                  if (data.progress !== undefined) {
+                    onProgress(data.progress, data.message || "");
+                  }
+                  if (data.success) {
+                    resolve({ success: true, daysGenerated: data.daysGenerated });
+                    return;
+                  }
+                } catch (e) {
+                  // Ignore parse errors for incomplete chunks
+                }
+              }
+            }
+          }
+        };
+        
+        processStream().catch(reject);
+      }).catch(reject);
+    });
+  },
 };
 
 export const fileApi = {

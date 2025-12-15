@@ -370,22 +370,46 @@ export async function registerRoutes(
     }
   });
 
-  // AI-powered journey content generation
+  // AI-powered journey content generation with SSE progress
   app.post("/api/journeys/:id/generate-content", isAuthenticated, async (req: any, res) => {
+    const journeyId = req.params.id;
+    const { content } = req.body;
+    const useSSE = req.headers.accept === "text/event-stream";
+    
+    const sendProgress = (stage: string, progress: number, message: string) => {
+      if (useSSE) {
+        res.write(`data: ${JSON.stringify({ stage, progress, message })}\n\n`);
+      }
+    };
+
     try {
-      const journeyId = req.params.id;
-      const { content } = req.body;
+      if (useSSE) {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+      }
       
       if (!content || content.trim().length === 0) {
+        if (useSSE) {
+          res.write(`data: ${JSON.stringify({ error: "Content is required for AI generation" })}\n\n`);
+          return res.end();
+        }
         return res.status(400).json({ error: "Content is required for AI generation" });
       }
 
+      sendProgress("init", 5, "מכין את הנתונים...");
+
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
+        if (useSSE) {
+          res.write(`data: ${JSON.stringify({ error: "Journey not found" })}\n\n`);
+          return res.end();
+        }
         return res.status(404).json({ error: "Journey not found" });
       }
 
-      // Build intent from journey data
+      sendProgress("ai", 10, "יוצר תוכן עם בינה מלאכותית...");
+
       const intent = {
         journeyName: journey.name,
         mainGoal: journey.goal || "",
@@ -395,17 +419,20 @@ export async function registerRoutes(
         additionalNotes: journey.description || "",
       };
 
-      // Generate content with AI
       const generatedDays = await generateJourneyContent(intent, content);
 
-      // Delete existing steps and blocks for this journey
-      const existingSteps = await storage.getJourneySteps(journeyId);
-      for (const step of existingSteps) {
-        await storage.deleteJourneyStep(step.id);
-      }
+      sendProgress("cleanup", 60, "מנקה תוכן ישן...");
 
-      // Create new steps and blocks from AI-generated content
-      for (const day of generatedDays) {
+      await storage.deleteJourneyStepsByJourneyId(journeyId);
+
+      sendProgress("saving", 70, "שומר את הימים שנוצרו...");
+
+      const totalDays = generatedDays.length;
+      for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
+        const day = generatedDays[dayIndex];
+        const dayProgress = 70 + Math.round((dayIndex / totalDays) * 25);
+        sendProgress("saving", dayProgress, `שומר יום ${day.dayNumber} מתוך ${totalDays}...`);
+
         const step = await storage.createJourneyStep({
           journeyId,
           dayNumber: day.dayNumber,
@@ -413,21 +440,32 @@ export async function registerRoutes(
           description: day.description,
         });
 
-        for (let i = 0; i < day.blocks.length; i++) {
-          const block = day.blocks[i];
-          await storage.createJourneyBlock({
-            stepId: step.id,
-            type: block.type,
-            content: block.content,
-            orderIndex: i,
-          });
-        }
+        const blocksToInsert = day.blocks.map((block: any, i: number) => ({
+          stepId: step.id,
+          type: block.type,
+          content: block.content,
+          orderIndex: i,
+        }));
+
+        await storage.createJourneyBlocks(blocksToInsert);
       }
 
-      res.json({ success: true, daysGenerated: generatedDays.length });
+      sendProgress("done", 100, "המסע נוצר בהצלחה!");
+
+      if (useSSE) {
+        res.write(`data: ${JSON.stringify({ success: true, daysGenerated: generatedDays.length })}\n\n`);
+        res.end();
+      } else {
+        res.json({ success: true, daysGenerated: generatedDays.length });
+      }
     } catch (error) {
       console.error("Error generating journey content:", error);
-      res.status(500).json({ error: "Failed to generate journey content" });
+      if (useSSE) {
+        res.write(`data: ${JSON.stringify({ error: "Failed to generate journey content" })}\n\n`);
+        res.end();
+      } else {
+        res.status(500).json({ error: "Failed to generate journey content" });
+      }
     }
   });
 

@@ -30,8 +30,10 @@ export interface IStorage {
   getJourneyBlocks(stepId: string): Promise<JourneyBlock[]>;
   getJourneyBlock(id: string): Promise<JourneyBlock | undefined>;
   createJourneyBlock(block: InsertJourneyBlock): Promise<JourneyBlock>;
+  createJourneyBlocks(blocks: InsertJourneyBlock[]): Promise<JourneyBlock[]>;
   updateJourneyBlock(id: string, block: Partial<InsertJourneyBlock>): Promise<JourneyBlock | undefined>;
   deleteJourneyBlock(id: string): Promise<void>;
+  deleteJourneyStepsByJourneyId(journeyId: string): Promise<void>;
 
   getParticipants(journeyId: string): Promise<Participant[]>;
   getParticipant(userId: string, journeyId: string): Promise<Participant | undefined>;
@@ -128,6 +130,11 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async createJourneyBlocks(blocks: InsertJourneyBlock[]): Promise<JourneyBlock[]> {
+    if (blocks.length === 0) return [];
+    return db.insert(journeyBlocks).values(blocks).returning();
+  }
+
   async updateJourneyBlock(id: string, block: Partial<InsertJourneyBlock>): Promise<JourneyBlock | undefined> {
     const [updated] = await db.update(journeyBlocks).set(block).where(eq(journeyBlocks.id, id)).returning();
     return updated;
@@ -135,6 +142,14 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJourneyBlock(id: string): Promise<void> {
     await db.delete(journeyBlocks).where(eq(journeyBlocks.id, id));
+  }
+
+  async deleteJourneyStepsByJourneyId(journeyId: string): Promise<void> {
+    const steps = await this.getJourneySteps(journeyId);
+    for (const step of steps) {
+      await db.delete(journeyBlocks).where(eq(journeyBlocks.stepId, step.id));
+    }
+    await db.delete(journeySteps).where(eq(journeySteps.journeyId, journeyId));
   }
 
   async getParticipants(journeyId: string): Promise<Participant[]> {

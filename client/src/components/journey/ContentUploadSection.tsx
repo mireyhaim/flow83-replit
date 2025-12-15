@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, fileApi } from "@/lib/api";
@@ -20,6 +21,8 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const [textContent, setTextContent] = useState("");
   const [activeTab, setActiveTab] = useState("upload");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -45,10 +48,14 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     }
 
     setIsGenerating(true);
+    setProgress(0);
+    setProgressMessage("מתחיל...");
+    
     try {
       let content = textContent;
       
       if (uploadedFiles.length > 0) {
+        setProgressMessage("קורא קבצים...");
         const parsed = await fileApi.parseFiles(uploadedFiles);
         content = content + "\n\n" + parsed.text;
       }
@@ -65,6 +72,9 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         return;
       }
 
+      setProgressMessage("יוצר מסע...");
+      setProgress(2);
+
       const journey = await journeyApi.create({
         name: journeyData.journeyName,
         goal: journeyData.mainGoal,
@@ -74,7 +84,10 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         description: journeyData.additionalNotes || "",
       });
 
-      await journeyApi.generateContent(journey.id, content);
+      await journeyApi.generateContentWithProgress(journey.id, content, (prog, msg) => {
+        setProgress(prog);
+        setProgressMessage(msg);
+      });
 
       toast({
         title: "Journey generated!",
@@ -90,6 +103,8 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
       });
     } finally {
       setIsGenerating(false);
+      setProgress(0);
+      setProgressMessage("");
     }
   };
 
@@ -232,8 +247,22 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
 
       </Tabs>
 
+      {isGenerating && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{progressMessage}</span>
+                <span className="font-medium">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" data-testid="progress-bar" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-between">
-        <Button variant="outline" size="lg" onClick={onBack} data-testid="button-back">
+        <Button variant="outline" size="lg" onClick={onBack} disabled={isGenerating} data-testid="button-back">
           Back to Intent
         </Button>
         <Button 
@@ -246,7 +275,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating with AI...
+              יוצר עם בינה מלאכותית...
             </>
           ) : (
             <>
