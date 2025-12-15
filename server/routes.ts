@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
+import { generateJourneyContent } from "./ai";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -324,6 +325,67 @@ export async function registerRoutes(
       res.json(participant);
     } catch (error) {
       res.status(500).json({ error: "Failed to complete day" });
+    }
+  });
+
+  // AI-powered journey content generation
+  app.post("/api/journeys/:id/generate-content", isAuthenticated, async (req: any, res) => {
+    try {
+      const journeyId = req.params.id;
+      const { content } = req.body;
+      
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ error: "Content is required for AI generation" });
+      }
+
+      const journey = await storage.getJourney(journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Journey not found" });
+      }
+
+      // Build intent from journey data
+      const intent = {
+        journeyName: journey.name,
+        mainGoal: journey.goal || "",
+        targetAudience: journey.audience || "",
+        duration: journey.duration || 7,
+        desiredFeeling: "",
+        additionalNotes: journey.description || "",
+      };
+
+      // Generate content with AI
+      const generatedDays = await generateJourneyContent(intent, content);
+
+      // Delete existing steps and blocks for this journey
+      const existingSteps = await storage.getJourneySteps(journeyId);
+      for (const step of existingSteps) {
+        await storage.deleteJourneyStep(step.id);
+      }
+
+      // Create new steps and blocks from AI-generated content
+      for (const day of generatedDays) {
+        const step = await storage.createJourneyStep({
+          journeyId,
+          dayNumber: day.dayNumber,
+          title: day.title,
+          description: day.description,
+        });
+
+        for (let i = 0; i < day.blocks.length; i++) {
+          const block = day.blocks[i];
+          await storage.createJourneyBlock({
+            stepId: step.id,
+            type: block.type,
+            content: block.content,
+            orderIndex: i,
+          });
+        }
+      }
+
+      res.json({ success: true, daysGenerated: generatedDays.length });
+    } catch (error) {
+      console.error("Error generating journey content:", error);
+      res.status(500).json({ error: "Failed to generate journey content" });
     }
   });
 

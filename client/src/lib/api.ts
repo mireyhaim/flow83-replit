@@ -65,6 +65,15 @@ export const journeyApi = {
     const res = await fetch(`${API_BASE}/journeys/${id}`, { method: "DELETE" });
     return handleResponse(res);
   },
+
+  generateContent: async (id: string, content: string): Promise<{ success: boolean; daysGenerated: number }> => {
+    const res = await fetch(`${API_BASE}/journeys/${id}/generate-content`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+    return handleResponse(res);
+  },
 };
 
 export const stepApi = {
