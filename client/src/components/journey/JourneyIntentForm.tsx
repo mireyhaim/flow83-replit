@@ -15,7 +15,6 @@ const formSchema = z.object({
   mainGoal: z.string().min(10, "Please provide a detailed goal (minimum 10 characters)"),
   targetAudience: z.string().min(1, "Target audience is required"),
   duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
-  hasContent: z.string(),
   desiredFeeling: z.string().optional(),
   elements: z.array(z.string()).optional(),
   additionalNotes: z.string().optional(),
@@ -35,7 +34,6 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
       mainGoal: "",
       targetAudience: "",
       duration: "7",
-      hasContent: "",
       desiredFeeling: "",
       elements: [],
       additionalNotes: "",
@@ -149,33 +147,6 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
           )}
         />
 
-        {/* Has Content */}
-        <FormField
-          control={form.control}
-          name="hasContent"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold">Do you already have content prepared? *</FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="yes" />
-                    <Label htmlFor="yes">Yes, I have content ready</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="no" />
-                    <Label htmlFor="no">No, I need help creating it</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="partially" id="partially" />
-                    <Label htmlFor="partially">Partially, I have some content</Label>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         {/* Desired Feeling */}
         <FormField
