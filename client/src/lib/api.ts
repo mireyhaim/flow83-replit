@@ -76,6 +76,18 @@ export const journeyApi = {
   },
 };
 
+export const fileApi = {
+  parseFiles: async (files: File[]): Promise<{ text: string }> => {
+    const formData = new FormData();
+    files.forEach(file => formData.append("files", file));
+    const res = await fetch(`${API_BASE}/parse-files`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse(res);
+  },
+};
+
 export const stepApi = {
   getByJourney: async (journeyId: string): Promise<JourneyStep[]> => {
     const res = await fetch(`${API_BASE}/journeys/${journeyId}/steps`);

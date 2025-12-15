@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, FileText, Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { journeyApi } from "@/lib/api";
+import { journeyApi, fileApi } from "@/lib/api";
 
 interface ContentUploadSectionProps {
   journeyData: any;
@@ -32,48 +32,39 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     });
   };
 
-  const getContentForGeneration = async (): Promise<string> => {
-    let content = textContent;
-    
-    if (uploadedFiles.length > 0) {
-      for (const file of uploadedFiles) {
-        if (file.type === "text/plain" || file.name.endsWith(".txt")) {
-          const text = await file.text();
-          content += "\n\n" + text;
-        }
-      }
-    }
-    
-    return content.trim();
-  };
-
-  const hasTextContent = textContent.trim().length > 0;
-  const hasTextFiles = uploadedFiles.some(f => f.type === "text/plain" || f.name.endsWith(".txt"));
-  const hasReadableContent = hasTextContent || hasTextFiles;
+  const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
 
   const handleGenerateJourney = async () => {
-    const content = await getContentForGeneration();
-    
-    if (!content) {
-      const hasPdfFiles = uploadedFiles.some(f => f.name.endsWith(".pdf"));
-      if (hasPdfFiles) {
-        toast({
-          title: "PDF files cannot be read directly",
-          description: "Please copy the text from your PDF and paste it in the 'Paste Content' tab.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "No content provided",
-          description: "Please paste your content or upload text files (.txt) before generating.",
-          variant: "destructive",
-        });
-      }
+    if (!hasContent) {
+      toast({
+        title: "No content provided",
+        description: "Please paste your content or upload files before generating.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsGenerating(true);
     try {
+      let content = textContent;
+      
+      if (uploadedFiles.length > 0) {
+        const parsed = await fileApi.parseFiles(uploadedFiles);
+        content = content + "\n\n" + parsed.text;
+      }
+      
+      content = content.trim();
+      
+      if (!content) {
+        toast({
+          title: "Could not extract text",
+          description: "The files could not be read. Please try pasting the content instead.",
+          variant: "destructive",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
       const journey = await journeyApi.create({
         name: journeyData.journeyName,
         goal: journeyData.mainGoal,
@@ -142,17 +133,17 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Upload Text Files
+                Upload Your Documents
               </CardTitle>
               <CardDescription>
-                Upload .txt files containing your teachings, methods, or course materials.
+                Upload PDF or text files containing your teachings, methods, or course materials.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Tip:</strong> For PDF or Word documents, copy the text and use the "Paste Content" tab instead.
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Content limits:</strong> Up to 10 files, max 50MB per file
                 </div>
               </div>
               
@@ -163,7 +154,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                   onChange={handleFileUpload}
                   className="hidden"
                   id="file-upload"
-                  accept=".txt"
+                  accept=".pdf,.txt"
                   data-testid="input-file-upload"
                 />
                 <Label htmlFor="file-upload" className="cursor-pointer">
@@ -172,7 +163,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                     <div>
                       <p className="text-lg font-medium">Drop files here or click to browse</p>
                       <p className="text-sm text-muted-foreground">
-                        Supports .txt text files
+                        Supports PDF and text files
                       </p>
                     </div>
                   </div>
@@ -249,7 +240,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           className="bg-primary hover:bg-primary/90 shadow-spiritual" 
           size="lg"
           onClick={handleGenerateJourney}
-          disabled={isGenerating || !hasReadableContent}
+          disabled={isGenerating || !hasContent}
           data-testid="button-generate-journey"
         >
           {isGenerating ? (

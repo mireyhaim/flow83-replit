@@ -4,6 +4,15 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent } from "./ai";
+import multer from "multer";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
+
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 export async function registerRoutes(
   httpServer: Server,
@@ -325,6 +334,32 @@ export async function registerRoutes(
       res.json(participant);
     } catch (error) {
       res.status(500).json({ error: "Failed to complete day" });
+    }
+  });
+
+  // Parse uploaded files (PDF, TXT)
+  app.post("/api/parse-files", isAuthenticated, upload.array("files", 10), async (req: any, res) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      let combinedText = "";
+      
+      for (const file of files) {
+        if (file.mimetype === "application/pdf" || file.originalname.endsWith(".pdf")) {
+          const pdfData = await pdf(file.buffer);
+          combinedText += "\n\n" + pdfData.text;
+        } else if (file.mimetype === "text/plain" || file.originalname.endsWith(".txt")) {
+          combinedText += "\n\n" + file.buffer.toString("utf-8");
+        }
+      }
+
+      res.json({ text: combinedText.trim() });
+    } catch (error) {
+      console.error("Error parsing files:", error);
+      res.status(500).json({ error: "Failed to parse files" });
     }
   });
 
