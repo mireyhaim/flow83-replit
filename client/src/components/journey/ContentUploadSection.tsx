@@ -81,12 +81,18 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     <div className="space-y-8">
       <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
         <CardHeader>
-          <CardTitle className="text-lg">Journey Overview</CardTitle>
+          <CardTitle className="text-xl">Share Your Content & Method</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <p><strong>Name:</strong> {journeyData.journeyName}</p>
-          <p><strong>Duration:</strong> {journeyData.duration?.[0]} days</p>
-          <p><strong>Audience:</strong> {journeyData.targetAudience}</p>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            To create a personalized digital journey for your clients, we need your unique content and methodology. 
+            Share your teachings, exercises, meditations, or any materials you use in your practice.
+          </p>
+          <div className="bg-background/50 rounded-lg p-4 space-y-2">
+            <p><strong>Journey:</strong> {journeyData.journeyName}</p>
+            <p><strong>Duration:</strong> {journeyData.duration?.[0]} days</p>
+            <p><strong>For:</strong> {journeyData.targetAudience}</p>
+          </div>
         </CardContent>
       </Card>
 
