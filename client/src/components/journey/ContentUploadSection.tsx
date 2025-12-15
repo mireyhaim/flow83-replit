@@ -29,10 +29,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setUploadedFiles([...uploadedFiles, ...files]);
-    toast({
-      title: "Files uploaded successfully",
-      description: `${files.length} file(s) added to your journey content.`,
-    });
   };
 
   const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
@@ -87,11 +83,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
       await journeyApi.generateContentWithProgress(journey.id, content, (prog, msg) => {
         setProgress(prog);
         setProgressMessage(msg);
-      });
-
-      toast({
-        title: "Journey generated!",
-        description: "AI has created your journey content based on your materials.",
       });
 
       setLocation(`/journey/${journey.id}/edit`);
