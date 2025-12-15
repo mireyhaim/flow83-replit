@@ -11,6 +11,18 @@ import type { Journey } from "@shared/schema";
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
+  const { data: journeys = [], isLoading: journeysLoading } = useQuery<Journey[]>({
+    queryKey: ["/api/journeys/my"],
+    queryFn: journeyApi.getMy,
+    enabled: isAuthenticated,
+  });
+
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+    queryKey: ["/api/stats/dashboard"],
+    queryFn: statsApi.getDashboard,
+    enabled: isAuthenticated,
+  });
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -34,18 +46,6 @@ export default function Dashboard() {
       </div>
     );
   }
-  
-  const { data: journeys = [], isLoading: journeysLoading } = useQuery<Journey[]>({
-    queryKey: ["/api/journeys/my"],
-    queryFn: journeyApi.getMy,
-    enabled: isAuthenticated,
-  });
-
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
-    queryKey: ["/api/stats/dashboard"],
-    queryFn: statsApi.getDashboard,
-    enabled: isAuthenticated,
-  });
 
   const isLoading = journeysLoading || statsLoading;
 
