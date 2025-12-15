@@ -8,6 +8,7 @@ import { StoreProvider } from "@/lib/store";
 import LandingPage from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import MethodPage from "@/pages/method";
+import JourneysPage from "@/pages/journeys";
 import JourneyCreatePage from "@/pages/journey-create";
 import JourneyEditorPage from "@/pages/journey-editor";
 import ParticipantView from "@/pages/participant-view";
@@ -29,8 +30,9 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/method" component={MethodPage} />
-      <Route path="/journeys" component={() => <Dashboard />} /> {/* Placeholder redir for now */}
+      <Route path="/journeys" component={JourneysPage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
+      <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
       <Route path="/p/:token" component={ParticipantView} />
       
