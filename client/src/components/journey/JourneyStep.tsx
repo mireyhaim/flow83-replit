@@ -112,11 +112,11 @@ const JourneyStep = ({
   };
 
   return (
-    <Card className="shadow-spiritual" data-testid={`step-card-${step.id}`}>
+    <Card className="shadow-spiritual border-r-4 border-r-primary/20 hover:border-r-primary/40 transition-colors" data-testid={`step-card-${step.id}`}>
       <CardHeader className="cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
-            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold shadow-sm">
               {stepNumber}
             </div>
             
@@ -162,7 +162,7 @@ const JourneyStep = ({
         </div>
 
         {isExpanded && (
-          <div className="mt-4">
+          <div className="mt-4 mr-14">
             {isEditingDescription ? (
               <div className="flex items-start gap-2">
                 <Textarea
@@ -183,7 +183,9 @@ const JourneyStep = ({
               </div>
             ) : (
               <div className="flex items-start gap-2">
-                <p className="text-muted-foreground flex-1" data-testid="text-step-description">{step.description}</p>
+                <p className="text-muted-foreground flex-1" data-testid="text-step-description">
+                  {step.description || <span className="italic text-muted-foreground/50">לחץ לעריכה...</span>}
+                </p>
                 <Button 
                   size="sm" 
                   variant="ghost"
@@ -223,7 +225,7 @@ const JourneyStep = ({
                 data-testid="button-add-block"
               >
                 <Plus className="w-4 h-4" />
-                Add Block
+                הוסף בלוק
               </Button>
             </div>
           </div>

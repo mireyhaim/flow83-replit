@@ -35,41 +35,41 @@ const blockTypes = [
   {
     type: "text",
     icon: FileText,
-    label: "Text Content",
-    description: "Add educational content, insights, or guidance",
-    placeholder: "Share your wisdom, insights, or guidance for this step...",
+    label: "תוכן טקסט",
+    description: "הוסף תוכן חינוכי, תובנות או הנחיות",
+    placeholder: "שתף את התובנות או ההנחיות שלך עבור שלב זה...",
     inputType: "textarea"
   },
   {
     type: "question",
     icon: HelpCircle,
-    label: "Reflection Question",
-    description: "Prompt deep self-reflection and awareness",
-    placeholder: "What question will help them reflect deeply on this topic?",
+    label: "שאלת רפלקציה",
+    description: "עודד התבוננות עמוקה ומודעות עצמית",
+    placeholder: "איזו שאלה תעזור להם להתבונן לעומק על הנושא?",
     inputType: "textarea"
   },
   {
     type: "task",
     icon: CheckSquare,
-    label: "Action Task",
-    description: "Give them something concrete to do or practice",
-    placeholder: "What action or practice would support their growth here?",
+    label: "משימה",
+    description: "תן להם משהו קונקרטי לעשות או לתרגל",
+    placeholder: "איזו פעולה או תרגול יתמכו בצמיחה שלהם?",
     inputType: "textarea"
   },
   {
     type: "meditation",
     icon: Heart,
-    label: "Meditation/Practice",
-    description: "Guide them through a mindful or spiritual practice",
-    placeholder: "Describe the meditation, breathing exercise, or spiritual practice...",
+    label: "מדיטציה/תרגול",
+    description: "הנחה אותם דרך תרגול מיינדפולנס או רוחני",
+    placeholder: "תאר את המדיטציה, תרגיל הנשימה או התרגול הרוחני...",
     inputType: "textarea"
   },
   {
     type: "video",
     icon: Video,
-    label: "Video Content",
-    description: "Add a personal video message or teaching",
-    placeholder: "Paste your video URL here (YouTube, Vimeo, or direct link)...",
+    label: "סרטון",
+    description: "הוסף הודעת וידאו אישית או שיעור",
+    placeholder: "הדבק את קישור הסרטון כאן (YouTube, Vimeo, או קישור ישיר)...",
     inputType: "input"
   }
 ];
@@ -103,16 +103,15 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" dir="rtl">
         <DialogHeader>
-          <DialogTitle>Add New Block</DialogTitle>
+          <DialogTitle>הוספת בלוק חדש</DialogTitle>
           <DialogDescription>
-            Choose the type of content you want to add to this step
+            בחר את סוג התוכן שברצונך להוסיף לשלב זה
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Block Type Selection */}
           <div className="grid grid-cols-2 gap-3">
             {blockTypes.map((blockType) => {
               const Icon = blockType.icon;
@@ -120,7 +119,7 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
                 <button
                   key={blockType.type}
                   onClick={() => setSelectedType(blockType.type)}
-                  className={`p-4 text-left border rounded-lg transition-all hover:border-primary/50 ${
+                  className={`p-4 text-right border rounded-lg transition-all hover:border-primary/50 ${
                     selectedType === blockType.type
                       ? "border-primary bg-primary/5"
                       : "border-border"
@@ -138,10 +137,9 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
             })}
           </div>
 
-          {/* Content Input */}
           {selectedType && (
             <div className="space-y-3">
-              <Label htmlFor="content">Content</Label>
+              <Label htmlFor="content">תוכן</Label>
               {selectedBlockType?.inputType === "input" ? (
                 <Input
                   id="content"
@@ -163,22 +161,21 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
               
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Wand2 className="w-4 h-4" />
-                <span>Need help? Click "Rewrite with AI" after adding to get suggestions</span>
+                <span>צריך עזרה? לחץ על "שכתב עם AI" לאחר ההוספה לקבלת הצעות</span>
               </div>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-start gap-3">
             <Button variant="outline" onClick={handleCancel}>
-              Cancel
+              ביטול
             </Button>
             <Button 
               onClick={handleAdd}
               disabled={!selectedType || !content.trim()}
               className="bg-primary hover:bg-primary/90"
             >
-              Add Block
+              הוסף בלוק
             </Button>
           </div>
         </div>
