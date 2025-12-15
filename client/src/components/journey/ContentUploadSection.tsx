@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, Wand2, Edit3, Video, Music, Image, Loader2 } from "lucide-react";
+import { Upload, FileText, Video, Music, Image, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi } from "@/lib/api";
 
@@ -29,20 +29,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     toast({
       title: "Files uploaded successfully",
       description: `${files.length} file(s) added to your journey content.`,
-    });
-  };
-
-  const handleAIGenerate = () => {
-    toast({
-      title: "AI Journey Composer activated",
-      description: "We'll help you create structured content based on your intentions.",
-    });
-  };
-
-  const handleAIAssist = () => {
-    toast({
-      title: "AI Content Assistant activated",
-      description: "We'll help you refine and enhance your existing content.",
     });
   };
 
@@ -101,12 +87,11 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           <p><strong>Name:</strong> {journeyData.journeyName}</p>
           <p><strong>Duration:</strong> {journeyData.duration?.[0]} days</p>
           <p><strong>Audience:</strong> {journeyData.targetAudience}</p>
-          <p><strong>Has Content:</strong> {journeyData.hasContent}</p>
         </CardContent>
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="upload" className="flex items-center gap-2" data-testid="tab-upload">
             <Upload className="w-4 h-4" />
             Upload Files
@@ -114,10 +99,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           <TabsTrigger value="paste" className="flex items-center gap-2" data-testid="tab-paste">
             <FileText className="w-4 h-4" />
             Paste Content
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-2" data-testid="tab-ai">
-            <Wand2 className="w-4 h-4" />
-            AI Assistance
           </TabsTrigger>
         </TabsList>
 
@@ -193,98 +174,15 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                 className="min-h-[300px] resize-none"
                 data-testid="textarea-content"
               />
-              <div className="flex justify-between items-center mt-4">
+              <div className="mt-4">
                 <span className="text-sm text-muted-foreground">
                   {textContent.length} characters
                 </span>
-                <Button 
-                  variant="outline" 
-                  onClick={handleAIAssist}
-                  className="flex items-center gap-2"
-                  data-testid="button-ai-edit"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  AI Help with Editing
-                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="ai" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wand2 className="w-5 h-5 text-primary" />
-                  AI Journey Composer
-                </CardTitle>
-                <CardDescription>
-                  Don't have content yet? Let AI help you create a complete journey structure with guided content based on your intentions.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 shadow-spiritual"
-                  onClick={handleAIGenerate}
-                  data-testid="button-ai-generate"
-                >
-                  Generate Journey Content with AI
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-accent" />
-                  AI Content Enhancer
-                </CardTitle>
-                <CardDescription>
-                  Have some content but need help with editing, structuring, or improving the flow and language?
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  variant="outline" 
-                  onClick={handleAIAssist}
-                  className="w-full border-accent/50 hover:bg-accent/10"
-                  data-testid="button-ai-enhance"
-                >
-                  Enhance My Existing Content
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>AI Recommendations Based on Your Journey</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="p-4 bg-muted/50 rounded-md">
-                  <h4 className="font-medium mb-2">Suggested Day Structure:</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Opening intention/meditation (5-10 min)</li>
-                    <li>• Core content/teaching (15-20 min)</li>
-                    <li>• Reflection questions</li>
-                    <li>• Closing practice or affirmation</li>
-                  </ul>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-md">
-                  <h4 className="font-medium mb-2">Recommended Elements:</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Welcome video introduction</li>
-                    <li>• Daily guided meditations</li>
-                    <li>• Journaling prompts</li>
-                    <li>• Progress check-ins</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       <div className="flex justify-between">
