@@ -4,7 +4,7 @@ import Header from "@/components/landing/Header";
 import JourneyStep from "@/components/journey/JourneyStep";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, Globe, GlobeLock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
 import type { Journey, JourneyStep as JourneyStepType, JourneyBlock } from "@shared/schema";
@@ -19,6 +19,7 @@ const JourneyEditorPage = () => {
   const [journeyData, setJourneyData] = useState<JourneyWithSteps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     const loadJourney = async () => {
@@ -69,6 +70,30 @@ const JourneyEditorPage = () => {
   const handlePreview = () => {
     if (journeyData) {
       window.open(`/p/${journeyData.id}`, '_blank');
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!journeyData) return;
+    setIsPublishing(true);
+    const newStatus = journeyData.status === "published" ? "draft" : "published";
+    try {
+      await journeyApi.update(journeyData.id, { status: newStatus });
+      setJourneyData(prev => prev ? { ...prev, status: newStatus } : null);
+      toast({
+        title: newStatus === "published" ? "Journey Published!" : "Journey Unpublished",
+        description: newStatus === "published" 
+          ? "Your journey is now live and available to participants." 
+          : "Your journey has been reverted to draft mode.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${newStatus === "published" ? "publish" : "unpublish"} journey`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -231,14 +256,21 @@ const JourneyEditorPage = () => {
               </div>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {journeyData.status === "published" && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <Globe className="w-4 h-4" />
+                  Live
+                </span>
+              )}
               <Button variant="outline" onClick={handlePreview} className="gap-2" data-testid="button-preview">
                 <Eye className="w-4 h-4" />
                 Preview
               </Button>
               <Button 
                 onClick={handleSave} 
-                className="gap-2 bg-primary hover:bg-primary/90"
+                className="gap-2"
+                variant="outline"
                 disabled={isSaving}
                 data-testid="button-save"
               >
@@ -247,7 +279,22 @@ const JourneyEditorPage = () => {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                Save Changes
+                Save
+              </Button>
+              <Button 
+                onClick={handlePublish} 
+                className={`gap-2 ${journeyData.status === "published" ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}`}
+                disabled={isPublishing}
+                data-testid="button-publish"
+              >
+                {isPublishing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : journeyData.status === "published" ? (
+                  <GlobeLock className="w-4 h-4" />
+                ) : (
+                  <Globe className="w-4 h-4" />
+                )}
+                {journeyData.status === "published" ? "Unpublish" : "Publish"}
               </Button>
             </div>
           </div>
