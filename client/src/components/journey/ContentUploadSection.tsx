@@ -47,17 +47,28 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     return content.trim();
   };
 
-  const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
+  const hasTextContent = textContent.trim().length > 0;
+  const hasTextFiles = uploadedFiles.some(f => f.type === "text/plain" || f.name.endsWith(".txt"));
+  const hasReadableContent = hasTextContent || hasTextFiles;
 
   const handleGenerateJourney = async () => {
     const content = await getContentForGeneration();
     
-    if (!content && uploadedFiles.length === 0) {
-      toast({
-        title: "No content provided",
-        description: "Please paste your content or upload files before generating.",
-        variant: "destructive",
-      });
+    if (!content) {
+      const hasPdfFiles = uploadedFiles.some(f => f.name.endsWith(".pdf"));
+      if (hasPdfFiles) {
+        toast({
+          title: "PDF files cannot be read directly",
+          description: "Please copy the text from your PDF and paste it in the 'Paste Content' tab.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "No content provided",
+          description: "Please paste your content or upload text files (.txt) before generating.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -131,17 +142,17 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Upload Your Documents
+                Upload Text Files
               </CardTitle>
               <CardDescription>
-                Upload PDF files or text documents containing your teachings, methods, or course materials.
+                Upload .txt files containing your teachings, methods, or course materials.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800 dark:text-amber-200">
-                  <strong>Content limits:</strong> Up to 10 files, max 50MB per file (PDF, DOC, DOCX, TXT)
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Tip:</strong> For PDF or Word documents, copy the text and use the "Paste Content" tab instead.
                 </div>
               </div>
               
@@ -152,7 +163,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                   onChange={handleFileUpload}
                   className="hidden"
                   id="file-upload"
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".txt"
                   data-testid="input-file-upload"
                 />
                 <Label htmlFor="file-upload" className="cursor-pointer">
@@ -161,7 +172,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                     <div>
                       <p className="text-lg font-medium">Drop files here or click to browse</p>
                       <p className="text-sm text-muted-foreground">
-                        Supports PDF, Word documents, and text files
+                        Supports .txt text files
                       </p>
                     </div>
                   </div>
@@ -238,7 +249,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           className="bg-primary hover:bg-primary/90 shadow-spiritual" 
           size="lg"
           onClick={handleGenerateJourney}
-          disabled={isGenerating || !hasContent}
+          disabled={isGenerating || !hasReadableContent}
           data-testid="button-generate-journey"
         >
           {isGenerating ? (
