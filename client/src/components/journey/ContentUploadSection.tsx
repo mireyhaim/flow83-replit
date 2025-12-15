@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, Video, Music, Image, Loader2 } from "lucide-react";
+import { Upload, FileText, Video, Music, Image, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi } from "@/lib/api";
 
@@ -120,6 +120,13 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Content limits:</strong> Up to 10 files, max 50MB per file
+                </div>
+              </div>
+              
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                 <Input
                   type="file"
@@ -172,18 +179,32 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                 Copy and paste text content, meditations, questions, or any written material you've already prepared.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Content limit:</strong> Up to 50,000 characters
+                </div>
+              </div>
+              
               <Textarea
                 placeholder="Paste your content here... This could include meditations, reflection questions, instructions, or any other text-based content for your journey."
                 value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 50000) {
+                    setTextContent(e.target.value);
+                  }
+                }}
                 className="min-h-[300px] resize-none"
                 data-testid="textarea-content"
               />
-              <div className="mt-4">
-                <span className="text-sm text-muted-foreground">
-                  {textContent.length} characters
+              <div className="mt-2 flex justify-between items-center">
+                <span className={`text-sm ${textContent.length > 45000 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                  {textContent.length.toLocaleString()} / 50,000 characters
                 </span>
+                {textContent.length > 45000 && (
+                  <span className="text-sm text-amber-600">Approaching limit</span>
+                )}
               </div>
             </CardContent>
           </Card>
