@@ -55,7 +55,7 @@ const JourneyCreatePage = () => {
             </CardHeader>
             <CardContent>
               {currentStep === 1 ? (
-                <JourneyIntentForm onComplete={handleIntentComplete} />
+                <JourneyIntentForm onComplete={handleIntentComplete} initialData={journeyData} />
               ) : (
                 <ContentUploadSection journeyData={journeyData} onBack={handleBack} />
               )}

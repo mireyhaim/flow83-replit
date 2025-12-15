@@ -19,18 +19,19 @@ const formSchema = z.object({
 
 interface JourneyIntentFormProps {
   onComplete: (data: any) => void;
+  initialData?: any;
 }
 
-const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
+const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      journeyName: "",
-      mainGoal: "",
-      targetAudience: "",
-      duration: "7",
-      desiredFeeling: "",
-      additionalNotes: "",
+      journeyName: initialData?.journeyName || "",
+      mainGoal: initialData?.mainGoal || "",
+      targetAudience: initialData?.targetAudience || "",
+      duration: initialData?.duration?.[0]?.toString() || "7",
+      desiredFeeling: initialData?.desiredFeeling || "",
+      additionalNotes: initialData?.additionalNotes || "",
     },
   });
 
