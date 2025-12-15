@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -16,7 +14,6 @@ const formSchema = z.object({
   targetAudience: z.string().min(1, "Target audience is required"),
   duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
   desiredFeeling: z.string().optional(),
-  elements: z.array(z.string()).optional(),
   additionalNotes: z.string().optional(),
 });
 
@@ -25,8 +22,6 @@ interface JourneyIntentFormProps {
 }
 
 const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
-  const [selectedElements, setSelectedElements] = useState<string[]>([]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,34 +30,13 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
       targetAudience: "",
       duration: "7",
       desiredFeeling: "",
-      elements: [],
       additionalNotes: "",
     },
   });
 
-  const handleElementChange = (element: string, checked: boolean) => {
-    if (checked) {
-      setSelectedElements([...selectedElements, element]);
-    } else {
-      setSelectedElements(selectedElements.filter(e => e !== element));
-    }
-    form.setValue('elements', checked ? [...selectedElements, element] : selectedElements.filter(e => e !== element));
-  };
-
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    onComplete({ ...data, duration: [parseInt(data.duration)], elements: selectedElements });
+    onComplete({ ...data, duration: [parseInt(data.duration)] });
   };
-
-  const elements = [
-    "Guided Meditations",
-    "Video Content", 
-    "Deep Reflection Questions",
-    "Sacred Rituals",
-    "Journaling Prompts",
-    "Breathing Exercises",
-    "Affirmations",
-    "Energy Work"
-  ];
 
   return (
     <Form {...form}>
@@ -167,23 +141,6 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
           )}
         />
 
-        {/* Elements */}
-        <div className="space-y-3">
-          <Label className="text-lg font-semibold">What elements would you like to include?</Label>
-          <p className="text-sm text-muted-foreground">Optional - select all that resonate with your vision</p>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {elements.map((element) => (
-              <div key={element} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={element}
-                  checked={selectedElements.includes(element)}
-                  onCheckedChange={(checked) => handleElementChange(element, checked as boolean)}
-                />
-                <Label htmlFor={element} className="text-sm font-normal">{element}</Label>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Additional Notes */}
         <FormField
