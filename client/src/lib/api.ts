@@ -2,6 +2,16 @@ import type { Journey, InsertJourney, JourneyStep, InsertJourneyStep, JourneyBlo
 
 const API_BASE = "/api";
 
+export interface DashboardStats {
+  totalJourneys: number;
+  publishedJourneys: number;
+  draftJourneys: number;
+  totalParticipants: number;
+  activeParticipants: number;
+  completedParticipants: number;
+  completionRate: number;
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: "Request failed" }));
@@ -15,6 +25,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export const journeyApi = {
   getAll: async (): Promise<Journey[]> => {
     const res = await fetch(`${API_BASE}/journeys`);
+    return handleResponse(res);
+  },
+
+  getMy: async (): Promise<Journey[]> => {
+    const res = await fetch(`${API_BASE}/journeys/my`);
     return handleResponse(res);
   },
 
@@ -108,6 +123,13 @@ export const blockApi = {
 
   delete: async (id: string): Promise<void> => {
     const res = await fetch(`${API_BASE}/blocks/${id}`, { method: "DELETE" });
+    return handleResponse(res);
+  },
+};
+
+export const statsApi = {
+  getDashboard: async (): Promise<DashboardStats> => {
+    const res = await fetch(`${API_BASE}/stats/dashboard`);
     return handleResponse(res);
   },
 };

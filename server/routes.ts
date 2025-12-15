@@ -33,6 +33,64 @@ export async function registerRoutes(
     }
   });
 
+  // Get current user's journeys
+  app.get("/api/journeys/my", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const journeys = await storage.getJourneysByCreator(userId);
+      res.json(journeys);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch your journeys" });
+    }
+  });
+
+  // Get dashboard stats for current user
+  app.get("/api/stats/dashboard", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const journeys = await storage.getJourneysByCreator(userId);
+      
+      // Calculate participant stats across all user's journeys
+      let totalParticipants = 0;
+      let activeParticipants = 0;
+      let completedParticipants = 0;
+      
+      for (const journey of journeys) {
+        const participants = await storage.getParticipants(journey.id);
+        const steps = await storage.getJourneySteps(journey.id);
+        const totalDays = steps.length || 7; // Default to 7 if no steps yet
+        
+        totalParticipants += participants.length;
+        
+        for (const p of participants) {
+          // Consider completed only if they've passed the final day
+          // currentDay is 1-indexed, so day 8 means they finished a 7-day journey
+          if ((p.currentDay ?? 1) > totalDays) {
+            completedParticipants++;
+          } else {
+            activeParticipants++;
+          }
+        }
+      }
+      
+      const completionRate = totalParticipants > 0 
+        ? Math.round((completedParticipants / totalParticipants) * 100) 
+        : 0;
+      
+      res.json({
+        totalJourneys: journeys.length,
+        publishedJourneys: journeys.filter(j => j.status === "published").length,
+        draftJourneys: journeys.filter(j => j.status === "draft").length,
+        totalParticipants,
+        activeParticipants,
+        completedParticipants,
+        completionRate,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
+    }
+  });
+
   app.get("/api/journeys/:id", async (req, res) => {
     try {
       const journey = await storage.getJourney(req.params.id);
