@@ -27,17 +27,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {navItems.map((item) => {
             const isActive = location === item.href || location.startsWith(`${item.href}/`);
             return (
-              <Link key={item.href} href={item.href}>
-                <a className={cn(
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200",
                   isActive 
                     ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" 
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                )}>
-                  <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                  {item.label}
-                  {isActive && <ChevronRight size={14} className="ml-auto opacity-50" />}
-                </a>
+                )}
+              >
+                <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                {item.label}
+                {isActive && <ChevronRight size={14} className="ml-auto opacity-50" />}
               </Link>
             );
           })}

@@ -207,9 +207,9 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
         />
 
         {/* Elements */}
-        <FormItem>
-          <FormLabel className="text-lg font-semibold">What elements would you like to include?</FormLabel>
-          <FormDescription>Optional - select all that resonate with your vision</FormDescription>
+        <div className="space-y-3">
+          <Label className="text-lg font-semibold">What elements would you like to include?</Label>
+          <p className="text-sm text-muted-foreground">Optional - select all that resonate with your vision</p>
           <div className="grid grid-cols-2 gap-4 mt-4">
             {elements.map((element) => (
               <div key={element} className="flex items-center space-x-2">
@@ -222,7 +222,7 @@ const JourneyIntentForm = ({ onComplete }: JourneyIntentFormProps) => {
               </div>
             ))}
           </div>
-        </FormItem>
+        </div>
 
         {/* Additional Notes */}
         <FormField
