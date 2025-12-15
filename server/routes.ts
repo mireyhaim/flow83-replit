@@ -23,7 +23,7 @@ export async function registerRoutes(
     }
   });
   
-  // Journey routes
+  // Journey routes - public read, authenticated write
   app.get("/api/journeys", async (req, res) => {
     try {
       const journeys = await storage.getJourneys();
@@ -45,9 +45,11 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/journeys", async (req, res) => {
+  app.post("/api/journeys", isAuthenticated, async (req: any, res) => {
     try {
-      const parsed = insertJourneySchema.safeParse(req.body);
+      const userId = req.user.claims.sub;
+      const data = { ...req.body, creatorId: userId };
+      const parsed = insertJourneySchema.safeParse(data);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.issues });
       }
@@ -58,7 +60,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/journeys/:id", async (req, res) => {
+  app.put("/api/journeys/:id", isAuthenticated, async (req, res) => {
     try {
       const journey = await storage.updateJourney(req.params.id, req.body);
       if (!journey) {
@@ -70,7 +72,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/journeys/:id", async (req, res) => {
+  app.delete("/api/journeys/:id", isAuthenticated, async (req, res) => {
     try {
       await storage.deleteJourney(req.params.id);
       res.status(204).send();
@@ -109,7 +111,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/journeys/:journeyId/steps", async (req, res) => {
+  app.post("/api/journeys/:journeyId/steps", isAuthenticated, async (req, res) => {
     try {
       const data = { ...req.body, journeyId: req.params.journeyId };
       const parsed = insertJourneyStepSchema.safeParse(data);
@@ -123,7 +125,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/steps/:id", async (req, res) => {
+  app.put("/api/steps/:id", isAuthenticated, async (req, res) => {
     try {
       const step = await storage.updateJourneyStep(req.params.id, req.body);
       if (!step) {
@@ -135,7 +137,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/steps/:id", async (req, res) => {
+  app.delete("/api/steps/:id", isAuthenticated, async (req, res) => {
     try {
       await storage.deleteJourneyStep(req.params.id);
       res.status(204).send();
@@ -154,7 +156,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/steps/:stepId/blocks", async (req, res) => {
+  app.post("/api/steps/:stepId/blocks", isAuthenticated, async (req, res) => {
     try {
       const data = { ...req.body, stepId: req.params.stepId };
       const parsed = insertJourneyBlockSchema.safeParse(data);
@@ -168,7 +170,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/blocks/:id", async (req, res) => {
+  app.put("/api/blocks/:id", isAuthenticated, async (req, res) => {
     try {
       const block = await storage.updateJourneyBlock(req.params.id, req.body);
       if (!block) {
@@ -180,7 +182,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/blocks/:id", async (req, res) => {
+  app.delete("/api/blocks/:id", isAuthenticated, async (req, res) => {
     try {
       await storage.deleteJourneyBlock(req.params.id);
       res.status(204).send();

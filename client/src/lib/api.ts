@@ -5,7 +5,8 @@ const API_BASE = "/api";
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(error.error || "Request failed");
+    const message = error.error || error.message || "Request failed";
+    throw new Error(`${response.status}: ${message}`);
   }
   if (response.status === 204) return undefined as T;
   return response.json();

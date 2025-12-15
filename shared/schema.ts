@@ -30,7 +30,7 @@ export type User = typeof users.$inferSelect;
 
 export const journeys = pgTable("journeys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  creatorId: varchar("creator_id").references(() => users.id),
+  creatorId: varchar("creator_id").references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   goal: text("goal"),
   audience: text("audience"),
@@ -49,7 +49,7 @@ export type Journey = typeof journeys.$inferSelect;
 
 export const journeySteps = pgTable("journey_steps", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  journeyId: varchar("journey_id").references(() => journeys.id).notNull(),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
   dayNumber: integer("day_number").notNull(),
   title: text("title").notNull(),
   description: text("description"),
@@ -64,7 +64,7 @@ export type JourneyStep = typeof journeySteps.$inferSelect;
 
 export const journeyBlocks = pgTable("journey_blocks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  stepId: varchar("step_id").references(() => journeySteps.id).notNull(),
+  stepId: varchar("step_id").references(() => journeySteps.id, { onDelete: "cascade" }).notNull(),
   type: text("type").notNull(),
   content: jsonb("content").notNull(),
   orderIndex: integer("order_index").default(0),
@@ -79,8 +79,8 @@ export type JourneyBlock = typeof journeyBlocks.$inferSelect;
 
 export const participants = pgTable("participants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  journeyId: varchar("journey_id").references(() => journeys.id).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
   currentDay: integer("current_day").default(1),
   completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
   startedAt: timestamp("started_at").defaultNow(),
