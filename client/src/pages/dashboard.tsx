@@ -9,7 +9,31 @@ import { Link } from "wouter";
 import type { Journey } from "@shared/schema";
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-background">
+        <div className="max-w-md text-center p-8">
+          <h1 className="text-3xl font-bold mb-4">Welcome to Flow 83</h1>
+          <p className="text-muted-foreground mb-8">
+            Transform your knowledge into powerful 7-day journeys that help others grow.
+          </p>
+          <Button size="lg" asChild data-testid="button-login">
+            <a href="/api/login">Sign In to Get Started</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
   
   const { data: journeys = [], isLoading: journeysLoading } = useQuery<Journey[]>({
     queryKey: ["/api/journeys/my"],
