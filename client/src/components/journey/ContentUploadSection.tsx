@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, FileText, Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { journeyApi, stepApi } from "@/lib/api";
+import { journeyApi } from "@/lib/api";
 
 interface ContentUploadSectionProps {
   journeyData: any;
@@ -19,7 +19,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [textContent, setTextContent] = useState("");
   const [activeTab, setActiveTab] = useState("upload");
-  const [isCreating, setIsCreating] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -48,13 +47,15 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     return content.trim();
   };
 
+  const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
+
   const handleGenerateJourney = async () => {
     const content = await getContentForGeneration();
     
-    if (!content) {
+    if (!content && uploadedFiles.length === 0) {
       toast({
         title: "No content provided",
-        description: "Please paste your content or upload text files before generating.",
+        description: "Please paste your content or upload files before generating.",
         variant: "destructive",
       });
       return;
@@ -87,44 +88,6 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
       });
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  const handleCreateJourney = async () => {
-    setIsCreating(true);
-    try {
-      const journey = await journeyApi.create({
-        name: journeyData.journeyName,
-        goal: journeyData.mainGoal,
-        audience: journeyData.targetAudience,
-        duration: journeyData.duration?.[0] || 7,
-        status: "draft",
-        description: journeyData.additionalNotes || "",
-      });
-
-      const duration = journeyData.duration?.[0] || 7;
-      for (let i = 1; i <= duration; i++) {
-        await stepApi.create(journey.id, {
-          dayNumber: i,
-          title: `Day ${i}`,
-          description: "",
-        });
-      }
-
-      toast({
-        title: "Journey created!",
-        description: "Your journey has been created successfully.",
-      });
-
-      setLocation(`/journey/${journey.id}/edit`);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create journey. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -271,43 +234,25 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         <Button variant="outline" size="lg" onClick={onBack} data-testid="button-back">
           Back to Intent
         </Button>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline"
-            size="lg"
-            onClick={handleCreateJourney}
-            disabled={isCreating || isGenerating}
-            data-testid="button-create-journey"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Skip & Create Empty Journey"
-            )}
-          </Button>
-          <Button 
-            className="bg-primary hover:bg-primary/90 shadow-spiritual" 
-            size="lg"
-            onClick={handleGenerateJourney}
-            disabled={isCreating || isGenerating}
-            data-testid="button-generate-journey"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating with AI...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Journey with AI
-              </>
-            )}
-          </Button>
-        </div>
+        <Button 
+          className="bg-primary hover:bg-primary/90 shadow-spiritual" 
+          size="lg"
+          onClick={handleGenerateJourney}
+          disabled={isGenerating || !hasContent}
+          data-testid="button-generate-journey"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Generating with AI...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate Journey with AI
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
