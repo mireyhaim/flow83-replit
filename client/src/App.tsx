@@ -13,6 +13,16 @@ import JourneyEditorPage from "@/pages/journey-editor";
 import ParticipantView from "@/pages/participant-view";
 import NotFound from "@/pages/not-found";
 
+// New pages
+import Pricing from "@/pages/pricing";
+import ContactUs from "@/pages/contact";
+import Community from "@/pages/community";
+import Blog from "@/pages/blog";
+import BlogArticle from "@/pages/blog-article";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
+import CookiePolicy from "@/pages/cookie-policy";
+
 function Router() {
   return (
     <Switch>
@@ -23,6 +33,17 @@ function Router() {
       <Route path="/journeys/new" component={JourneyCreatePage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
       <Route path="/p/:token" component={ParticipantView} />
+      
+      {/* New routes */}
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/contact" component={ContactUs} />
+      <Route path="/community" component={Community} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/:id" component={BlogArticle} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/cookie-policy" component={CookiePolicy} />
+      
       <Route component={NotFound} />
     </Switch>
   );
