@@ -1,0 +1,490 @@
+Flow 83
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+MVP ONLY — OS-FIRST, FLEXIBLE, BUILDABLE
+0. Product Overview
+Product Name
+
+Flow 83
+
+Product Type
+
+Business Operating System (OS) – MVP
+
+Product Definition
+
+Flow 83 is a lightweight business operating system for mentors, therapists, and method creators.
+It enables them to transform existing knowledge into a 7-day digital transformational journey, delivered as a personalized, daily, AI-powered mobile experience — without relying on 1:1 work.
+
+The MVP is designed to prove:
+
+End-to-end journey creation and delivery
+
+A human, non-generic participant experience
+
+Automated selling and delivery of transformation
+
+Mentor flexibility, experimentation, and editing
+
+1. MVP Goals
+What the MVP Must Prove
+
+A mentor can easily create a first active journey
+
+Participants experience clear daily value
+
+AI maintains the mentor’s tone, method, and boundaries
+
+Payment → experience → completion works end-to-end with no manual intervention
+
+Explicit Non-Goals
+
+Scale optimization
+
+Community
+
+Marketplace
+
+Mobile app
+
+Advanced analytics
+
+Strict methodological enforcement
+
+2. Target Users
+Mentor (Primary User)
+
+Has existing knowledge, content, or a method
+
+Wants to sell a short guided process
+
+Needs flexibility and the ability to iterate
+
+Comfortable working with a fixed template
+
+Participant (End User)
+
+Purchases a single journey
+
+Uses a mobile device
+
+Progresses day by day
+
+Interacts primarily through chat
+
+3. MVP System Architecture (High Level)
+
+Flow 83 MVP consists of four core components only:
+
+Method Layer (Minimal, Editable)
+
+Mentor Setup & Journey Creation
+
+Journey Engine (7-Day Fixed Flow)
+
+Participant Experience + Chat
+
+4. Method Layer – MVP
+Purpose
+
+To introduce structured, method-based thinking while remaining simple and flexible.
+This layer guides journey generation without enforcing rigid rules.
+
+Method Entity (MVP Schema)
+{
+  "method_name": "string",
+  "purpose": "string",
+  "stages": [
+    { "name": "string", "description": "string" }
+  ],
+  "tone_guidelines": "string",
+  "boundaries": "string",
+  "target_audience": "string"
+}
+
+MVP Rules
+
+Every Journey is associated with one Method
+
+Methods are editable at any time
+
+No versioning
+
+No change history
+
+Editing a Method does not affect already generated journeys
+
+Method updates only apply to future journeys or regeneration
+
+5. Mentor Onboarding & Setup – MVP
+Flow Overview
+
+Authentication (Email magic link)
+
+Define Method
+
+Upload Content
+
+Answer Onboarding Questions
+
+Generate Journey
+
+Preview & Edit
+
+Publish
+
+Content Upload
+
+Supported formats: PDF, TXT
+
+Raw files stored in S3
+
+Text extraction
+
+Text chunking
+
+Embeddings generation
+
+Stored in Supabase Vector
+
+Onboarding Questions (Stored as JSON)
+
+What transformation does this journey create?
+
+Who is this journey for?
+
+What tone should the guide use?
+
+What should the AI avoid saying?
+
+Are there any sensitive topics to avoid?
+
+6. Journey Generation Engine – MVP
+Journey Constraints
+
+Fixed length: 7 days
+
+Linear flow
+
+No branching
+
+No conditional logic
+
+Day Structure (MVP Schema)
+{
+  "day_number": 1,
+  "title": "string",
+  "core_message": "string",
+  "task": "string",
+  "reflection_prompt": "string",
+  "chat_context": "string"
+}
+
+AI Generation Logic
+
+Load Method
+
+Load onboarding answers
+
+Load content embeddings
+
+Build a master context bundle
+
+Generate 7 structured days
+
+Generate a persona (tone + boundaries)
+
+Stored outputs:
+
+Journey
+
+JourneyDays
+
+Persona
+
+7. Mentor Preview & Edit – MVP
+Preview Screen
+
+Display all 7 days
+
+Expand / collapse per day
+
+Inline text editing (simple textarea)
+
+Save changes
+
+Editing Rules
+
+Mentor can edit:
+
+Titles
+
+Core messages
+
+Tasks
+
+Reflection prompts
+
+Chat context
+
+Journey length cannot be changed
+
+No version history
+
+Regenerate
+
+“Regenerate Journey” regenerates all 7 days
+
+The previous version is overwritten
+
+No versions are stored
+
+8. Participant Experience – MVP
+Access Flow
+
+User completes payment
+
+Participant record is created
+
+Access token is generated
+
+User is redirected to the mini site
+
+Mini Site
+
+Mobile-first
+
+Single template
+
+Mentor name
+
+Journey introduction
+
+“Start Journey” CTA
+
+Daily Flow
+
+Only the current day is unlocked
+
+Day content is displayed
+
+Chat is available
+
+Completion button is shown
+
+Progress is saved
+
+Rules
+
+One day at a time
+
+No skipping days
+
+Completing a day unlocks the next one via queue/cron
+
+9. Chat System – MVP
+Chat Principles
+
+Friendly
+
+Supportive
+
+Reflective
+
+Non-clinical
+
+No medical or therapeutic claims
+
+Chat Context Assembly
+
+Current day content
+
+Persona rules
+
+Method tone
+
+Conversation history
+
+Chat Flow
+
+User message received
+
+Context assembled
+
+Prompt composed
+
+GPT response streamed
+
+Messages stored in Postgres
+
+10. Data Persistence & State Management (MVP)
+Core Principle
+
+All user interactions, chat messages, journey data, and progress states must be persisted in the database.
+No critical state may exist only in memory or client-side storage.
+
+Participant Data Stored
+
+Participant profile (ID, journey ID)
+
+Start date
+
+Current active day
+
+Day completion states
+
+Timestamps
+
+Access status
+
+Chat Persistence
+
+Each chat message must be stored:
+
+{
+  "participant_id": "uuid",
+  "journey_id": "uuid",
+  "day_number": 1,
+  "role": "user | assistant",
+  "message": "string",
+  "created_at": "timestamp"
+}
+
+
+Rules:
+
+Full chat history is persisted
+
+Chat history is reused as context
+
+Chat survives refresh, reconnect, or device change
+
+Mentor Data Stored
+
+Method definition
+
+Onboarding answers
+
+Uploaded content metadata
+
+Generated journeys
+
+Edited journey content
+
+Persona definitions
+
+11. Payments – MVP
+Payment Model
+
+Single payment
+
+Single journey
+
+Provider
+
+Stripe Checkout
+
+Payment Flow
+
+Create checkout session
+
+User completes payment
+
+Stripe webhook received
+
+Participant record created
+
+Access granted
+
+12. Mentor Dashboard – MVP
+Metrics (Numbers Only)
+
+Total purchases
+
+Active participants
+
+Completion percentage
+
+No charts required.
+
+13. Technical Stack (Locked)
+
+Frontend
+
+Next.js
+
+Tailwind
+
+Backend
+
+Node.js
+
+Supabase (Postgres + Vector)
+
+AI
+
+GPT 5.x
+
+Infrastructure
+
+S3
+
+Redis
+
+BullMQ
+
+Vercel
+
+14. MVP Build Order
+Phase 1 – Foundation
+
+Authentication
+
+Method entity
+
+Content upload
+
+Embeddings
+
+Phase 2 – Core Engine
+
+Journey generation
+
+Persona creation
+
+Preview & edit UI
+
+Phase 3 – Delivery
+
+Mini site
+
+Daily unlock
+
+Chat
+
+Phase 4 – Payments
+
+Stripe
+
+Access logic
+
+Phase 5 – Dashboard
+
+Basic metrics
+
+15. Explicit Non-Goals (Do Not Build)
+
+Multiple journeys per mentor
+
+White-labeling
+
+Community features
+
+Advanced analytics
+
+AI mentor feedback
+
+Approval workflows
+
+Mobile app
+
+Notifications
