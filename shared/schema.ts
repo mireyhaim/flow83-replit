@@ -93,3 +93,20 @@ export const insertParticipantSchema = createInsertSchema(participants).omit({
 
 export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
 export type Participant = typeof participants.$inferSelect;
+
+export const journeyMessages = pgTable("journey_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "cascade" }).notNull(),
+  stepId: varchar("step_id").references(() => journeySteps.id, { onDelete: "cascade" }).notNull(),
+  role: text("role").notNull(), // 'bot' | 'user'
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertJourneyMessageSchema = createInsertSchema(journeyMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertJourneyMessage = z.infer<typeof insertJourneyMessageSchema>;
+export type JourneyMessage = typeof journeyMessages.$inferSelect;

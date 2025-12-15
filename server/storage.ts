@@ -4,10 +4,11 @@ import {
   type JourneyStep, type InsertJourneyStep,
   type JourneyBlock, type InsertJourneyBlock,
   type Participant, type InsertParticipant,
-  users, journeys, journeySteps, journeyBlocks, participants
+  type JourneyMessage, type InsertJourneyMessage,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -34,8 +35,12 @@ export interface IStorage {
 
   getParticipants(journeyId: string): Promise<Participant[]>;
   getParticipant(userId: string, journeyId: string): Promise<Participant | undefined>;
+  getParticipantById(id: string): Promise<Participant | undefined>;
   createParticipant(participant: InsertParticipant): Promise<Participant>;
   updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined>;
+
+  getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]>;
+  createMessage(message: InsertJourneyMessage): Promise<JourneyMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -151,6 +156,22 @@ export class DatabaseStorage implements IStorage {
   async updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined> {
     const [updated] = await db.update(participants).set(participant).where(eq(participants.id, id)).returning();
     return updated;
+  }
+
+  async getParticipantById(id: string): Promise<Participant | undefined> {
+    const [participant] = await db.select().from(participants).where(eq(participants.id, id));
+    return participant;
+  }
+
+  async getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]> {
+    return db.select().from(journeyMessages)
+      .where(and(eq(journeyMessages.participantId, participantId), eq(journeyMessages.stepId, stepId)))
+      .orderBy(asc(journeyMessages.createdAt));
+  }
+
+  async createMessage(message: InsertJourneyMessage): Promise<JourneyMessage> {
+    const [created] = await db.insert(journeyMessages).values(message).returning();
+    return created;
   }
 }
 
