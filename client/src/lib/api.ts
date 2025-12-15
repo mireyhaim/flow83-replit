@@ -1,4 +1,4 @@
-import type { Journey, InsertJourney, JourneyStep, InsertJourneyStep, JourneyBlock, InsertJourneyBlock } from "@shared/schema";
+import type { Journey, InsertJourney, JourneyStep, InsertJourneyStep, JourneyBlock, InsertJourneyBlock, JourneyMessage } from "@shared/schema";
 
 const API_BASE = "/api";
 
@@ -151,6 +151,29 @@ export const blockApi = {
 export const statsApi = {
   getDashboard: async (): Promise<DashboardStats> => {
     const res = await fetch(`${API_BASE}/stats/dashboard`);
+    return handleResponse(res);
+  },
+};
+
+export const chatApi = {
+  getMessages: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
+    const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`);
+    return handleResponse(res);
+  },
+
+  startDay: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
+    const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/start-day`, {
+      method: "POST",
+    });
+    return handleResponse(res);
+  },
+
+  sendMessage: async (participantId: string, stepId: string, content: string): Promise<{ userMessage: JourneyMessage; botMessage: JourneyMessage }> => {
+    const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
     return handleResponse(res);
   },
 };

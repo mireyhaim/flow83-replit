@@ -442,6 +442,11 @@ export async function registerRoutes(
         return res.status(403).json({ error: "Not authorized" });
       }
 
+      const step = await storage.getJourneyStep(stepId);
+      if (!step || step.journeyId !== participant.journeyId) {
+        return res.status(403).json({ error: "Step does not belong to this journey" });
+      }
+
       const messages = await storage.getMessages(participantId, stepId);
       res.json(messages);
     } catch (error) {
@@ -460,14 +465,14 @@ export async function registerRoutes(
         return res.status(403).json({ error: "Not authorized" });
       }
 
+      const step = await storage.getJourneyStep(stepId);
+      if (!step || step.journeyId !== participant.journeyId) {
+        return res.status(403).json({ error: "Step does not belong to this journey" });
+      }
+
       const existingMessages = await storage.getMessages(participantId, stepId);
       if (existingMessages.length > 0) {
         return res.json(existingMessages);
-      }
-
-      const step = await storage.getJourneyStep(stepId);
-      if (!step) {
-        return res.status(404).json({ error: "Step not found" });
       }
 
       const journey = await storage.getJourney(step.journeyId);
@@ -515,8 +520,8 @@ export async function registerRoutes(
       }
 
       const step = await storage.getJourneyStep(stepId);
-      if (!step) {
-        return res.status(404).json({ error: "Step not found" });
+      if (!step || step.journeyId !== participant.journeyId) {
+        return res.status(403).json({ error: "Step does not belong to this journey" });
       }
 
       const journey = await storage.getJourney(step.journeyId);

@@ -3,11 +3,12 @@ import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
-import type { Journey, JourneyStep, JourneyBlock, Participant } from "@shared/schema";
+import { chatApi } from "@/lib/api";
+import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage } from "@shared/schema";
 
 interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
@@ -18,9 +19,8 @@ export default function ParticipantView() {
   const tokenFromRoute = params?.token;
   const queryClient = useQueryClient();
   
-  const [activeTab, setActiveTab] = useState<"content" | "chat">("content");
   const [inputValue, setInputValue] = useState("");
-  const [chatMessages, setChatMessages] = useState<{ id: string; role: "user" | "assistant"; content: string }[]>([]);
+  const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: allJourneys } = useQuery<Journey[]>({
@@ -47,6 +47,35 @@ export default function ParticipantView() {
     enabled: !!journeyId,
   });
 
+  const currentDay = participant?.currentDay ?? 1;
+  const sortedSteps = [...(journey?.steps || [])].sort((a, b) => a.dayNumber - b.dayNumber);
+  const currentStep = sortedSteps.find(s => s.dayNumber === currentDay);
+  const totalDays = sortedSteps.length || journey?.duration || 7;
+  const isCompleted = currentDay > totalDays;
+
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<JourneyMessage[]>({
+    queryKey: ["messages", participant?.id, currentStep?.id],
+    queryFn: async () => {
+      if (!participant?.id || !currentStep?.id) return [];
+      const msgs = await chatApi.startDay(participant.id, currentStep.id);
+      return msgs;
+    },
+    enabled: !!participant?.id && !!currentStep?.id && !isCompleted,
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async (content: string) => {
+      if (!participant?.id || !currentStep?.id) throw new Error("Missing participant or step");
+      return chatApi.sendMessage(participant.id, currentStep.id, content);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData<JourneyMessage[]>(
+        ["messages", participant?.id, currentStep?.id],
+        (old = []) => [...old, data.userMessage, data.botMessage]
+      );
+    },
+  });
+
   const completeDayMutation = useMutation({
     mutationFn: async () => {
       if (!participant || !journey) return;
@@ -65,7 +94,7 @@ export default function ParticipantView() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [chatMessages, activeTab]);
+  }, [messages]);
 
   if (!journeyId) {
     return (
@@ -106,36 +135,30 @@ export default function ParticipantView() {
     );
   }
 
-  const currentDay = participant.currentDay ?? 1;
-  const sortedSteps = [...(journey.steps || [])].sort((a, b) => a.dayNumber - b.dayNumber);
-  const currentStep = sortedSteps.find(s => s.dayNumber === currentDay);
-  const totalDays = sortedSteps.length || journey.duration || 7;
-  const isCompleted = currentDay > totalDays;
-  const isDayCompleted = currentDay > (currentStep?.dayNumber ?? 0);
-
-  const textBlocks = currentStep?.blocks?.filter(b => b.type === "text") || [];
-  const questionBlocks = currentStep?.blocks?.filter(b => b.type === "question") || [];
-  const taskBlocks = currentStep?.blocks?.filter(b => b.type === "task") || [];
-
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isSending) return;
     
-    const userMessage = {
-      id: Date.now().toString(),
-      role: "user" as const,
-      content: inputValue,
-    };
-    setChatMessages(prev => [...prev, userMessage]);
+    const content = inputValue.trim();
     setInputValue("");
+    setIsSending(true);
 
-    setTimeout(() => {
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant" as const,
-        content: `Thank you for sharing that. How does this reflection connect to "${currentStep?.title}"? Take a moment to explore that connection. (AI coach coming soon)`,
-      };
-      setChatMessages(prev => [...prev, assistantMessage]);
-    }, 1000);
+    queryClient.setQueryData<JourneyMessage[]>(
+      ["messages", participant?.id, currentStep?.id],
+      (old = []) => [...old, {
+        id: "temp-" + Date.now(),
+        participantId: participant!.id,
+        stepId: currentStep!.id,
+        role: "user",
+        content,
+        createdAt: new Date(),
+      }]
+    );
+
+    try {
+      await sendMessageMutation.mutateAsync(content);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleCompleteDay = () => {
@@ -149,12 +172,12 @@ export default function ParticipantView() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-serif font-bold mb-2">Journey Complete!</h1>
+          <h1 className="text-2xl font-serif font-bold mb-2">המסע הושלם!</h1>
           <p className="text-muted-foreground mb-6">
-            Congratulations on completing "{journey.name}". Your transformation journey is complete.
+            ברכות על השלמת "{journey.name}". המסע הטרנספורמטיבי שלך הושלם.
           </p>
           <Link href="/dashboard">
-            <Button className="w-full">Back to Dashboard</Button>
+            <Button className="w-full">חזרה לדף הבית</Button>
           </Link>
         </div>
       </div>
@@ -168,173 +191,131 @@ export default function ParticipantView() {
            <div className="w-1/3 h-5 bg-black rounded-b-xl"></div>
         </div>
 
-        <header className="pt-12 pb-4 px-6 bg-white border-b flex items-center justify-between sticky top-0 z-40">
-           <div className="flex items-center gap-2">
-             <div className="w-8 h-8 bg-neutral-900 rounded-full flex items-center justify-center text-white font-bold text-xs">
-               F83
-             </div>
-             <span className="font-semibold text-sm truncate max-w-[120px]">{journey.name}</span>
-           </div>
-           <div className="text-xs font-medium text-muted-foreground" data-testid="text-day-progress">
-             Day {currentDay} of {totalDays}
-           </div>
+        <header className="pt-12 pb-3 px-4 bg-white border-b sticky top-0 z-40">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                F
+              </div>
+              <span className="font-semibold text-sm truncate max-w-[140px]">{journey.name}</span>
+            </div>
+            <div className="text-xs font-medium text-muted-foreground bg-neutral-100 px-2 py-1 rounded-full" data-testid="text-day-progress">
+              יום {currentDay} מתוך {totalDays}
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-100">
+            <h2 className="font-serif font-bold text-base text-neutral-800" data-testid="text-step-title">
+              {currentStep?.title || `יום ${currentDay}`}
+            </h2>
+            {currentStep?.description && (
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {currentStep.description}
+              </p>
+            )}
+          </div>
         </header>
 
-        <div className="flex-1 overflow-hidden relative">
-           <AnimatePresence mode="wait">
-             {activeTab === "content" ? (
-               <motion.div 
-                 key="content"
-                 initial={{ opacity: 0, x: -20 }}
-                 animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: -20 }}
-                 className="h-full overflow-y-auto p-6 pb-24"
-               >
-                 <h1 className="text-2xl font-serif font-bold mb-2" data-testid="text-step-title">
-                   {currentStep?.title || `Day ${currentDay}`}
-                 </h1>
-                 {currentStep?.description && (
-                   <p className="text-lg text-muted-foreground mb-8 italic font-serif">
-                     "{currentStep.description}"
-                   </p>
-                 )}
-                 
-                 <div className="space-y-6">
-                   {textBlocks.map((block) => (
-                     <div key={block.id} className="prose prose-sm">
-                       <p className="leading-relaxed">
-                         {typeof block.content === 'object' && block.content !== null && 'text' in block.content 
-                           ? String((block.content as { text: string }).text)
-                           : String(block.content)}
-                       </p>
-                     </div>
-                   ))}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-neutral-50" ref={scrollRef}>
+          {messagesLoading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
+            </div>
+          )}
+          
+          <AnimatePresence mode="popLayout">
+            {messages.filter(m => !m.id.startsWith("temp-")).map((msg, index) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2, delay: index === messages.length - 1 ? 0.1 : 0 }}
+                className={cn(
+                  "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
+                  msg.role === "user" 
+                    ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white ml-auto rounded-br-sm shadow-md" 
+                    : "bg-white border border-neutral-200 mr-auto rounded-bl-sm shadow-sm"
+                )}
+                data-testid={`chat-message-${msg.role}-${msg.id}`}
+              >
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
 
-                   {taskBlocks.length > 0 && (
-                     <div className="bg-neutral-50 p-6 rounded-xl border border-neutral-100">
-                       <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-3">Today's Task</h3>
-                       {taskBlocks.map((block) => (
-                         <p key={block.id} className="leading-relaxed">
-                           {typeof block.content === 'object' && block.content !== null && 'text' in block.content 
-                             ? String((block.content as { text: string }).text)
-                             : String(block.content)}
-                         </p>
-                       ))}
-                     </div>
-                   )}
-
-                   {questionBlocks.length > 0 && (
-                     <div className="bg-neutral-50 p-6 rounded-xl border border-neutral-100">
-                       <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-3">Reflection</h3>
-                       {questionBlocks.map((block) => (
-                         <p key={block.id} className="leading-relaxed text-sm mb-4">
-                           {typeof block.content === 'object' && block.content !== null && 'text' in block.content 
-                             ? String((block.content as { text: string }).text)
-                             : String(block.content)}
-                         </p>
-                       ))}
-                       <Button 
-                          variant="outline" 
-                          className="w-full" 
-                          onClick={() => setActiveTab("chat")}
-                          data-testid="button-reflect"
-                        >
-                          Reflect with Guide
-                        </Button>
-                     </div>
-                   )}
-
-                   {textBlocks.length === 0 && taskBlocks.length === 0 && questionBlocks.length === 0 && (
-                     <div className="bg-neutral-50 p-6 rounded-xl border border-neutral-100 text-center text-muted-foreground">
-                       <p>No content for this day yet.</p>
-                       <p className="text-sm mt-2">The mentor is still creating this step.</p>
-                     </div>
-                   )}
-                 </div>
-
-                 <Button 
-                   className="w-full mt-12 mb-8 py-6 text-lg rounded-xl" 
-                   onClick={handleCompleteDay}
-                   disabled={completeDayMutation.isPending}
-                   data-testid="button-complete-day"
-                 >
-                   {completeDayMutation.isPending ? "Completing..." : "Complete Day"} 
-                   <CheckCircle2 className="ml-2" />
-                 </Button>
-               </motion.div>
-             ) : (
-               <motion.div 
-                 key="chat"
-                 initial={{ opacity: 0, x: 20 }}
-                 animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: 20 }}
-                 className="h-full flex flex-col bg-neutral-50"
-               >
-                 <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
-                   {chatMessages.length === 0 && (
-                     <div className="text-center text-muted-foreground text-sm mt-10">
-                       Start reflecting on today's prompt...
-                     </div>
-                   )}
-                   {chatMessages.map((msg) => (
-                     <div 
-                       key={msg.id} 
-                       className={cn(
-                         "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
-                         msg.role === "user" 
-                           ? "bg-neutral-900 text-white ml-auto rounded-tr-none" 
-                           : "bg-white border shadow-sm mr-auto rounded-tl-none"
-                       )}
-                       data-testid={`chat-message-${msg.role}-${msg.id}`}
-                     >
-                       {msg.content}
-                     </div>
-                   ))}
-                 </div>
-                 <div className="p-4 bg-white border-t">
-                   <form 
-                     onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                     className="flex gap-2"
-                   >
-                     <Input 
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Type your reflection..."
-                        className="rounded-full bg-neutral-100 border-none focus-visible:ring-1"
-                        data-testid="input-chat"
-                     />
-                     <Button 
-                       type="submit" 
-                       size="icon" 
-                       className="rounded-full shrink-0"
-                       data-testid="button-send"
-                     >
-                       <Send className="h-4 w-4" />
-                     </Button>
-                   </form>
-                 </div>
-               </motion.div>
-             )}
-           </AnimatePresence>
+          {isSending && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-muted-foreground text-sm mr-auto"
+            >
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+              </div>
+            </motion.div>
+          )}
         </div>
 
-        <div className="h-16 bg-white border-t grid grid-cols-2">
-          <button 
-            onClick={() => setActiveTab("content")}
-            className={cn("flex flex-col items-center justify-center gap-1 transition-colors", activeTab === "content" ? "text-neutral-900" : "text-neutral-400")}
-            data-testid="tab-journey"
+        <div className="p-3 bg-white border-t">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            className="flex gap-2"
           >
-            <BookOpenIcon active={activeTab === "content"} />
-            <span className="text-[10px] font-medium uppercase tracking-wide">Journey</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab("chat")}
-            className={cn("flex flex-col items-center justify-center gap-1 transition-colors", activeTab === "chat" ? "text-neutral-900" : "text-neutral-400")}
-            data-testid="tab-guide"
+            <Input 
+               value={inputValue}
+               onChange={(e) => setInputValue(e.target.value)}
+               placeholder="כתבי את התגובה שלך..."
+               className="rounded-full bg-neutral-100 border-none focus-visible:ring-2 focus-visible:ring-violet-300 text-right"
+               dir="rtl"
+               disabled={isSending}
+               data-testid="input-chat"
+            />
+            <Button 
+              type="submit" 
+              size="icon" 
+              className="rounded-full shrink-0 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-md"
+              disabled={isSending || !inputValue.trim()}
+              data-testid="button-send"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+
+        <div className="p-3 bg-white border-t flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground"
+            disabled={currentDay <= 1}
+            onClick={() => {}}
+            data-testid="button-prev-day"
           >
-            <ChatIcon active={activeTab === "chat"} />
-            <span className="text-[10px] font-medium uppercase tracking-wide">Guide</span>
-          </button>
+            <ChevronRight className="w-4 h-4 ml-1" />
+            יום קודם
+          </Button>
+          
+          <Button 
+            size="sm"
+            onClick={handleCompleteDay}
+            disabled={completeDayMutation.isPending || messages.length < 2}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-4 shadow-md"
+            data-testid="button-complete-day"
+          >
+            {completeDayMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4 ml-1" />
+                סיום היום
+              </>
+            )}
+          </Button>
+          
+          <div className="w-20" />
         </div>
         
         <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-neutral-900/20 rounded-full"></div>
@@ -346,22 +327,5 @@ export default function ParticipantView() {
         <Link href="/dashboard" className="text-neutral-900 underline mt-2 block">Back to Mentor OS</Link>
       </div>
     </div>
-  );
-}
-
-function BookOpenIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </svg>
-  );
-}
-
-function ChatIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
   );
 }
