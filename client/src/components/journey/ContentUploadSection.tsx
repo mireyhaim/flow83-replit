@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, Video, Music, Image, Loader2, AlertCircle } from "lucide-react";
+import { Upload, FileText, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi } from "@/lib/api";
 
@@ -70,10 +70,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     }
   };
 
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith('video/')) return <Video className="w-4 h-4" />;
-    if (file.type.startsWith('audio/')) return <Music className="w-4 h-4" />;
-    if (file.type.startsWith('image/')) return <Image className="w-4 h-4" />;
+  const getFileIcon = () => {
     return <FileText className="w-4 h-4" />;
   };
 
@@ -113,17 +110,17 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Upload Your Content Files
+                Upload Your Documents
               </CardTitle>
               <CardDescription>
-                Upload videos, audio files, PDFs, images, or any content you want to include in your journey.
+                Upload PDF files or text documents containing your teachings, methods, or course materials.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-800 dark:text-amber-200">
-                  <strong>Content limits:</strong> Up to 10 files, max 50MB per file
+                  <strong>Content limits:</strong> Up to 10 files, max 50MB per file (PDF, DOC, DOCX, TXT)
                 </div>
               </div>
               
@@ -134,7 +131,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                   onChange={handleFileUpload}
                   className="hidden"
                   id="file-upload"
-                  accept="video/*,audio/*,image/*,.pdf,.doc,.docx,.txt"
+                  accept=".pdf,.doc,.docx,.txt"
                   data-testid="input-file-upload"
                 />
                 <Label htmlFor="file-upload" className="cursor-pointer">
@@ -143,7 +140,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                     <div>
                       <p className="text-lg font-medium">Drop files here or click to browse</p>
                       <p className="text-sm text-muted-foreground">
-                        Supports videos, audio, images, PDFs, and documents
+                        Supports PDF, Word documents, and text files
                       </p>
                     </div>
                   </div>
@@ -155,7 +152,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                   <h4 className="font-medium">Uploaded Files:</h4>
                   {uploadedFiles.map((file, index) => (
                     <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-md" data-testid={`file-item-${index}`}>
-                      {getFileIcon(file)}
+                      {getFileIcon()}
                       <span className="flex-1 text-sm">{file.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {(file.size / 1024 / 1024).toFixed(1)} MB
