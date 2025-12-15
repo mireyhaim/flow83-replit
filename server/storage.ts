@@ -8,7 +8,7 @@ import {
   users, journeys, journeySteps, journeyBlocks, participants, journeyMessages
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -146,8 +146,9 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJourneyStepsByJourneyId(journeyId: string): Promise<void> {
     const steps = await this.getJourneySteps(journeyId);
-    for (const step of steps) {
-      await db.delete(journeyBlocks).where(eq(journeyBlocks.stepId, step.id));
+    if (steps.length > 0) {
+      const stepIds = steps.map(s => s.id);
+      await db.delete(journeyBlocks).where(inArray(journeyBlocks.stepId, stepIds));
     }
     await db.delete(journeySteps).where(eq(journeySteps.journeyId, journeyId));
   }

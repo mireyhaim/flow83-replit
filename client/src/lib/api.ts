@@ -88,9 +88,24 @@ export const journeyApi = {
           "Accept": "text/event-stream"
         },
         body: JSON.stringify({ content }),
-      }).then(response => {
+      }).then(async response => {
         if (!response.ok) {
           reject(new Error("Failed to generate content"));
+          return;
+        }
+        
+        const contentType = response.headers.get("Content-Type") || "";
+        if (!contentType.includes("text/event-stream")) {
+          try {
+            const data = await response.json();
+            if (data.success) {
+              resolve({ success: true, daysGenerated: data.daysGenerated });
+            } else {
+              reject(new Error(data.error || "Generation failed"));
+            }
+          } catch (e) {
+            reject(new Error("Failed to parse response"));
+          }
           return;
         }
         
