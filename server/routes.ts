@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent } from "./ai";
 import multer from "multer";
+import mammoth from "mammoth";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
@@ -351,6 +352,12 @@ export async function registerRoutes(
         if (file.mimetype === "application/pdf" || file.originalname.endsWith(".pdf")) {
           const pdfData = await pdf(file.buffer);
           combinedText += "\n\n" + pdfData.text;
+        } else if (file.originalname.endsWith(".docx") || file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+          const result = await mammoth.extractRawText({ buffer: file.buffer });
+          combinedText += "\n\n" + result.value;
+        } else if (file.originalname.endsWith(".doc") || file.mimetype === "application/msword") {
+          const result = await mammoth.extractRawText({ buffer: file.buffer });
+          combinedText += "\n\n" + result.value;
         } else if (file.mimetype === "text/plain" || file.originalname.endsWith(".txt")) {
           combinedText += "\n\n" + file.buffer.toString("utf-8");
         }

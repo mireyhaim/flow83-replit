@@ -154,7 +154,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                   onChange={handleFileUpload}
                   className="hidden"
                   id="file-upload"
-                  accept=".pdf,.txt"
+                  accept=".pdf,.doc,.docx,.txt"
                   data-testid="input-file-upload"
                 />
                 <Label htmlFor="file-upload" className="cursor-pointer">
@@ -163,7 +163,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                     <div>
                       <p className="text-lg font-medium">Drop files here or click to browse</p>
                       <p className="text-sm text-muted-foreground">
-                        Supports PDF and text files
+                        Supports PDF, Word (DOC/DOCX), and text files
                       </p>
                     </div>
                   </div>
