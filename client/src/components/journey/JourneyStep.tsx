@@ -25,9 +25,19 @@ interface JourneyStepProps {
   step: Step;
   stepNumber: number;
   onUpdate: (updatedStep: Partial<Step>) => void;
+  onAddBlock?: (type: string, content: string) => void;
+  onUpdateBlock?: (blockId: string, content: string) => void;
+  onDeleteBlock?: (blockId: string) => void;
 }
 
-const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
+const JourneyStep = ({ 
+  step, 
+  stepNumber, 
+  onUpdate, 
+  onAddBlock, 
+  onUpdateBlock, 
+  onDeleteBlock 
+}: JourneyStepProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -56,20 +66,32 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
   };
 
   const addBlock = (newBlock: Block) => {
-    const updatedBlocks = [...step.blocks, newBlock];
-    onUpdate({ blocks: updatedBlocks });
+    if (onAddBlock) {
+      onAddBlock(newBlock.type, newBlock.content);
+    } else {
+      const updatedBlocks = [...step.blocks, newBlock];
+      onUpdate({ blocks: updatedBlocks });
+    }
   };
 
   const updateBlock = (blockId: string, updatedContent: string) => {
-    const updatedBlocks = step.blocks.map(block =>
-      block.id === blockId ? { ...block, content: updatedContent } : block
-    );
-    onUpdate({ blocks: updatedBlocks });
+    if (onUpdateBlock) {
+      onUpdateBlock(blockId, updatedContent);
+    } else {
+      const updatedBlocks = step.blocks.map(block =>
+        block.id === blockId ? { ...block, content: updatedContent } : block
+      );
+      onUpdate({ blocks: updatedBlocks });
+    }
   };
 
   const deleteBlock = (blockId: string) => {
-    const updatedBlocks = step.blocks.filter(block => block.id !== blockId);
-    onUpdate({ blocks: updatedBlocks });
+    if (onDeleteBlock) {
+      onDeleteBlock(blockId);
+    } else {
+      const updatedBlocks = step.blocks.filter(block => block.id !== blockId);
+      onUpdate({ blocks: updatedBlocks });
+    }
   };
 
   const moveBlock = (blockId: string, direction: 'up' | 'down') => {
@@ -90,7 +112,7 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
   };
 
   return (
-    <Card className="shadow-spiritual">
+    <Card className="shadow-spiritual" data-testid={`step-card-${step.id}`}>
       <CardHeader className="cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
@@ -106,17 +128,18 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
                     onChange={(e) => setEditTitle(e.target.value)}
                     className="text-xl font-semibold"
                     onClick={(e) => e.stopPropagation()}
+                    data-testid="input-step-title"
                   />
-                  <Button size="sm" variant="ghost" onClick={handleSaveTitle}>
+                  <Button size="sm" variant="ghost" onClick={handleSaveTitle} data-testid="button-save-title">
                     <Check className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={handleCancelTitle}>
+                  <Button size="sm" variant="ghost" onClick={handleCancelTitle} data-testid="button-cancel-title">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-semibold">{step.title}</h3>
+                  <h3 className="text-xl font-semibold" data-testid="text-step-title">{step.title}</h3>
                   <Button 
                     size="sm" 
                     variant="ghost" 
@@ -124,6 +147,7 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
                       e.stopPropagation();
                       setIsEditingTitle(true);
                     }}
+                    data-testid="button-edit-title"
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
@@ -132,7 +156,7 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
             </div>
           </div>
 
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" data-testid="button-toggle-expand">
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
@@ -146,19 +170,20 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
                   onChange={(e) => setEditDescription(e.target.value)}
                   className="flex-1"
                   onClick={(e) => e.stopPropagation()}
+                  data-testid="textarea-step-description"
                 />
                 <div className="flex flex-col gap-1">
-                  <Button size="sm" variant="ghost" onClick={handleSaveDescription}>
+                  <Button size="sm" variant="ghost" onClick={handleSaveDescription} data-testid="button-save-description">
                     <Check className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={handleCancelDescription}>
+                  <Button size="sm" variant="ghost" onClick={handleCancelDescription} data-testid="button-cancel-description">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="flex items-start gap-2">
-                <p className="text-muted-foreground flex-1">{step.description}</p>
+                <p className="text-muted-foreground flex-1" data-testid="text-step-description">{step.description}</p>
                 <Button 
                   size="sm" 
                   variant="ghost"
@@ -166,6 +191,7 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
                     e.stopPropagation();
                     setIsEditingDescription(true);
                   }}
+                  data-testid="button-edit-description"
                 >
                   <Edit2 className="w-4 h-4" />
                 </Button>
@@ -194,6 +220,7 @@ const JourneyStep = ({ step, stepNumber, onUpdate }: JourneyStepProps) => {
                 variant="outline" 
                 onClick={() => setShowAddBlock(true)}
                 className="gap-2 w-full"
+                data-testid="button-add-block"
               >
                 <Plus className="w-4 h-4" />
                 Add Block

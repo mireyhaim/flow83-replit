@@ -1,145 +1,257 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/landing/Header";
 import JourneyStep from "@/components/journey/JourneyStep";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { journeyApi, stepApi, blockApi } from "@/lib/api";
+import type { Journey, JourneyStep as JourneyStepType, JourneyBlock } from "@shared/schema";
 
-// Mock data structure - in real app this would come from API/database
-const mockJourneyData = {
-  id: "1",
-  name: "Healing the Heart",
-  goal: "To help people release emotional pain from past relationships",
-  audience: "Women post-breakup",
-  duration: 7,
-  steps: [
-    {
-      id: "step-1",
-      day: 1,
-      title: "Acknowledging the Pain",
-      description: "Begin your healing journey by recognizing and honoring your emotional experience",
-      blocks: [
-        {
-          id: "block-1",
-          type: "text",
-          content: "Welcome to your healing journey. Today we begin by creating a safe space to acknowledge what you've been through."
-        },
-        {
-          id: "block-2", 
-          type: "question",
-          content: "What emotions are you feeling right now as you begin this journey?"
-        },
-        {
-          id: "block-3",
-          type: "meditation",
-          content: "5-minute grounding meditation to center yourself in this moment"
-        }
-      ]
-    },
-    {
-      id: "step-2", 
-      day: 2,
-      title: "Understanding Your Patterns",
-      description: "Explore the relationship patterns that no longer serve you",
-      blocks: [
-        {
-          id: "block-4",
-          type: "text",
-          content: "Today we dive deeper into understanding how past experiences shape our current emotional landscape."
-        },
-        {
-          id: "block-5",
-          type: "task", 
-          content: "Write a letter to your past self - what would you want her to know?"
-        }
-      ]
-    }
-  ]
-};
+type StepWithBlocks = JourneyStepType & { blocks: JourneyBlock[] };
+type JourneyWithSteps = Journey & { steps: StepWithBlocks[] };
 
 const JourneyEditorPage = () => {
   const [match, params] = useRoute("/journey/:id/edit");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  // In a real app, we would use params.id to fetch data
-  const [journeyData, setJourneyData] = useState(mockJourneyData);
+  const [journeyData, setJourneyData] = useState<JourneyWithSteps | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    toast({
-      title: "Journey saved",
-      description: "Your changes have been saved successfully.",
-    });
+  useEffect(() => {
+    const loadJourney = async () => {
+      if (!params?.id) return;
+      try {
+        const data = await journeyApi.getFull(params.id);
+        const sortedSteps = data.steps.sort((a, b) => a.dayNumber - b.dayNumber);
+        setJourneyData({ ...data, steps: sortedSteps });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load journey",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadJourney();
+  }, [params?.id]);
+
+  const handleSave = async () => {
+    if (!journeyData) return;
+    setIsSaving(true);
+    try {
+      await journeyApi.update(journeyData.id, {
+        name: journeyData.name,
+        goal: journeyData.goal,
+        audience: journeyData.audience,
+        duration: journeyData.duration,
+        description: journeyData.description,
+      });
+      toast({
+        title: "Journey saved",
+        description: "Your changes have been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save journey",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handlePreview = () => {
-    // Open preview in new tab or navigate to preview page
-    window.open(`/p/${journeyData.id}`, '_blank');
+    if (journeyData) {
+      window.open(`/p/${journeyData.id}`, '_blank');
+    }
   };
 
-  const updateStep = (stepId: string, updatedStep: any) => {
-    setJourneyData(prev => ({
-      ...prev,
-      steps: prev.steps.map(step => 
-        step.id === stepId ? { ...step, ...updatedStep } : step
-      )
-    }));
+  const updateStep = async (stepId: string, updatedStep: Partial<JourneyStepType>) => {
+    if (!journeyData) return;
+    try {
+      await stepApi.update(stepId, updatedStep);
+      setJourneyData(prev => prev ? {
+        ...prev,
+        steps: prev.steps.map(step => 
+          step.id === stepId ? { ...step, ...updatedStep } : step
+        )
+      } : null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update step",
+        variant: "destructive",
+      });
+    }
   };
 
-  const addStep = () => {
-    const newStep = {
-      id: `step-${Date.now()}`,
-      day: journeyData.steps.length + 1,
-      title: `Day ${journeyData.steps.length + 1}`,
-      description: "New step description",
-      blocks: []
-    };
-    setJourneyData(prev => ({
-      ...prev,
-      steps: [...prev.steps, newStep]
-    }));
+  const addStep = async () => {
+    if (!journeyData) return;
+    try {
+      const newStep = await stepApi.create(journeyData.id, {
+        dayNumber: journeyData.steps.length + 1,
+        title: `Day ${journeyData.steps.length + 1}`,
+        description: "",
+      });
+      setJourneyData(prev => prev ? {
+        ...prev,
+        steps: [...prev.steps, { ...newStep, blocks: [] }]
+      } : null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add step",
+        variant: "destructive",
+      });
+    }
   };
+
+  const addBlock = async (stepId: string, type: string, content: any) => {
+    if (!journeyData) return;
+    try {
+      const step = journeyData.steps.find(s => s.id === stepId);
+      const newBlock = await blockApi.create(stepId, {
+        type,
+        content,
+        orderIndex: step?.blocks.length || 0,
+      });
+      setJourneyData(prev => prev ? {
+        ...prev,
+        steps: prev.steps.map(step => 
+          step.id === stepId 
+            ? { ...step, blocks: [...step.blocks, newBlock] }
+            : step
+        )
+      } : null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add block",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateBlock = async (blockId: string, content: any) => {
+    if (!journeyData) return;
+    try {
+      await blockApi.update(blockId, { content });
+      setJourneyData(prev => prev ? {
+        ...prev,
+        steps: prev.steps.map(step => ({
+          ...step,
+          blocks: step.blocks.map(block =>
+            block.id === blockId ? { ...block, content } : block
+          )
+        }))
+      } : null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update block",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteBlock = async (blockId: string) => {
+    if (!journeyData) return;
+    try {
+      await blockApi.delete(blockId);
+      setJourneyData(prev => prev ? {
+        ...prev,
+        steps: prev.steps.map(step => ({
+          ...step,
+          blocks: step.blocks.filter(block => block.id !== blockId)
+        }))
+      } : null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete block",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </main>
+      </div>
+    );
+  }
+
+  if (!journeyData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 pt-24 text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Journey not found</h1>
+          <Button onClick={() => setLocation("/journeys/new")} data-testid="button-create-new">
+            Create a New Journey
+          </Button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8 pt-24">
         <div className="max-w-6xl mx-auto">
-          {/* Header Actions */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
                 onClick={() => setLocation("/journeys/new")}
                 className="gap-2"
+                data-testid="button-back"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Create
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
+                <h1 className="text-3xl font-bold text-foreground" data-testid="text-journey-name">
                   {journeyData.name}
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground" data-testid="text-journey-meta">
                   {journeyData.duration} days • {journeyData.audience}
                 </p>
               </div>
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" onClick={handlePreview} className="gap-2">
+              <Button variant="outline" onClick={handlePreview} className="gap-2" data-testid="button-preview">
                 <Eye className="w-4 h-4" />
                 Preview
               </Button>
-              <Button onClick={handleSave} className="gap-2 bg-primary hover:bg-primary/90">
-                <Save className="w-4 h-4" />
+              <Button 
+                onClick={handleSave} 
+                className="gap-2 bg-primary hover:bg-primary/90"
+                disabled={isSaving}
+                data-testid="button-save"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
                 Save Changes
               </Button>
             </div>
           </div>
 
-          {/* Journey Overview */}
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Journey Overview</CardTitle>
@@ -148,29 +260,44 @@ const JourneyEditorPage = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2">Goal & Intention</h4>
-                  <p className="text-muted-foreground">{journeyData.goal}</p>
+                  <p className="text-muted-foreground" data-testid="text-journey-goal">{journeyData.goal}</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Target Audience</h4>
-                  <p className="text-muted-foreground">{journeyData.audience}</p>
+                  <p className="text-muted-foreground" data-testid="text-journey-audience">{journeyData.audience}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Journey Steps */}
           <div className="space-y-6">
             {journeyData.steps.map((step, index) => (
               <JourneyStep
                 key={step.id}
-                step={step}
+                step={{
+                  id: step.id,
+                  day: step.dayNumber,
+                  title: step.title,
+                  description: step.description || "",
+                  blocks: step.blocks.map(b => ({
+                    id: b.id,
+                    type: b.type,
+                    content: typeof b.content === 'string' ? b.content : (b.content as any)?.text || ""
+                  }))
+                }}
                 stepNumber={index + 1}
-                onUpdate={(updatedStep) => updateStep(step.id, updatedStep)}
+                onUpdate={(updatedStep) => updateStep(step.id, {
+                  title: updatedStep.title,
+                  description: updatedStep.description,
+                })}
+                onAddBlock={(type, content) => addBlock(step.id, type, { text: content })}
+                onUpdateBlock={(blockId, content) => updateBlock(blockId, { text: content })}
+                onDeleteBlock={deleteBlock}
               />
             ))}
             
             <div className="text-center">
-              <Button variant="outline" onClick={addStep} className="gap-2">
+              <Button variant="outline" onClick={addStep} className="gap-2" data-testid="button-add-day">
                 + Add New Day
               </Button>
             </div>

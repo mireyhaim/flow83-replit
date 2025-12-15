@@ -13,6 +13,10 @@ const JourneyCreatePage = () => {
     setCurrentStep(2);
   };
 
+  const handleBack = () => {
+    setCurrentStep(1);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -27,18 +31,17 @@ const JourneyCreatePage = () => {
             </p>
           </div>
 
-          {/* Progress indicator */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center space-x-4">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                 currentStep >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
+              }`} data-testid="step-indicator-1">
                 1
               </div>
               <div className={`w-16 h-1 ${currentStep >= 2 ? 'bg-primary' : 'bg-muted'}`}></div>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                 currentStep >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
+              }`} data-testid="step-indicator-2">
                 2
               </div>
             </div>
@@ -54,7 +57,7 @@ const JourneyCreatePage = () => {
               {currentStep === 1 ? (
                 <JourneyIntentForm onComplete={handleIntentComplete} />
               ) : (
-                <ContentUploadSection journeyData={journeyData} />
+                <ContentUploadSection journeyData={journeyData} onBack={handleBack} />
               )}
             </CardContent>
           </Card>

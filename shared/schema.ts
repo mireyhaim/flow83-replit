@@ -1,18 +1,95 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+export const journeys = pgTable("journeys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  creatorId: varchar("creator_id").references(() => users.id),
+  name: text("name").notNull(),
+  goal: text("goal"),
+  audience: text("audience"),
+  duration: integer("duration").default(7),
+  status: text("status").default("draft"),
+  coverImage: text("cover_image"),
+  description: text("description"),
+});
+
+export const insertJourneySchema = createInsertSchema(journeys).omit({
+  id: true,
+});
+
+export type InsertJourney = z.infer<typeof insertJourneySchema>;
+export type Journey = typeof journeys.$inferSelect;
+
+export const journeySteps = pgTable("journey_steps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  journeyId: varchar("journey_id").references(() => journeys.id).notNull(),
+  dayNumber: integer("day_number").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+});
+
+export const insertJourneyStepSchema = createInsertSchema(journeySteps).omit({
+  id: true,
+});
+
+export type InsertJourneyStep = z.infer<typeof insertJourneyStepSchema>;
+export type JourneyStep = typeof journeySteps.$inferSelect;
+
+export const journeyBlocks = pgTable("journey_blocks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stepId: varchar("step_id").references(() => journeySteps.id).notNull(),
+  type: text("type").notNull(),
+  content: jsonb("content").notNull(),
+  orderIndex: integer("order_index").default(0),
+});
+
+export const insertJourneyBlockSchema = createInsertSchema(journeyBlocks).omit({
+  id: true,
+});
+
+export type InsertJourneyBlock = z.infer<typeof insertJourneyBlockSchema>;
+export type JourneyBlock = typeof journeyBlocks.$inferSelect;
+
+export const participants = pgTable("participants", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  journeyId: varchar("journey_id").references(() => journeys.id).notNull(),
+  currentDay: integer("current_day").default(1),
+  completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
+  startedAt: timestamp("started_at").defaultNow(),
+});
+
+export const insertParticipantSchema = createInsertSchema(participants).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
+export type Participant = typeof participants.$inferSelect;
