@@ -99,3 +99,118 @@ Respond in JSON format:
   const parsed = JSON.parse(content);
   return parsed.days as GeneratedDay[];
 }
+
+interface ChatContext {
+  journeyName: string;
+  dayTitle: string;
+  dayDescription: string;
+  dayNumber: number;
+  mentorBlocks: { type: string; content: any }[];
+  messageHistory: { role: string; content: string }[];
+}
+
+export async function generateChatResponse(
+  context: ChatContext,
+  userMessage: string
+): Promise<string> {
+  const blocksContext = context.mentorBlocks
+    .map((b) => {
+      if (b.type === "text") return `תוכן: ${b.content.text || ""}`;
+      if (b.type === "reflection") return `שאלת רפלקציה: ${b.content.question || ""}`;
+      if (b.type === "task") return `משימה: ${b.content.task || ""}`;
+      if (b.type === "affirmation") return `אפירמציה: ${b.content.affirmation || ""}`;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  const historyText = context.messageHistory
+    .slice(-10)
+    .map((m) => `${m.role === "bot" ? "בוט" : "משתתף"}: ${m.content}`)
+    .join("\n");
+
+  const systemPrompt = `אתה מנטור דיגיטלי חם ואנושי בשם Flow 83.
+אתה מנהל שיחה אישית עם משתתף במסע טרנספורמטיבי.
+
+המסע: ${context.journeyName}
+יום ${context.dayNumber}: ${context.dayTitle}
+${context.dayDescription}
+
+תוכן היום הזה:
+${blocksContext}
+
+הנחיות חשובות:
+- דבר בעברית בשפה חמה, אישית ותומכת
+- השתמש בתוכן של היום כדי להנחות את השיחה
+- שאל שאלות פתוחות שמזמינות רפלקציה
+- הגב לתשובות המשתתף בצורה אמפתית ומעמיקה
+- אם המשתתף שיתף משהו אישי - הכר בזה והתייחס אליו
+- הנח את המשתתף לתרגילים ומשימות כשזה מתאים
+- כתוב תשובות קצרות עד בינוניות (2-4 משפטים בדרך כלל)
+- אל תהיה רובוטי או גנרי - היה אנושי ונוכח`;
+
+  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+    { role: "system", content: systemPrompt },
+  ];
+
+  for (const msg of context.messageHistory.slice(-10)) {
+    messages.push({
+      role: msg.role === "bot" ? "assistant" : "user",
+      content: msg.content,
+    });
+  }
+
+  messages.push({ role: "user", content: userMessage });
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages,
+    temperature: 0.8,
+    max_tokens: 500,
+  });
+
+  return response.choices[0].message.content || "אני כאן איתך. ספרי לי עוד.";
+}
+
+export async function generateDayOpeningMessage(context: Omit<ChatContext, "messageHistory">): Promise<string> {
+  const blocksContext = context.mentorBlocks
+    .map((b) => {
+      if (b.type === "text") return `תוכן: ${b.content.text || ""}`;
+      if (b.type === "reflection") return `שאלת רפלקציה: ${b.content.question || ""}`;
+      if (b.type === "task") return `משימה: ${b.content.task || ""}`;
+      if (b.type === "affirmation") return `אפירמציה: ${b.content.affirmation || ""}`;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  const systemPrompt = `אתה מנטור דיגיטלי חם ואנושי בשם Flow 83.
+אתה פותח יום חדש במסע טרנספורמטיבי עם משתתף.
+
+המסע: ${context.journeyName}
+יום ${context.dayNumber}: ${context.dayTitle}
+${context.dayDescription}
+
+תוכן היום:
+${blocksContext}
+
+כתוב הודעת פתיחה ליום הזה.
+ההודעה צריכה:
+- לברך את המשתתף בחום
+- להסביר בקצרה על מה עובדים היום
+- לשאול שאלה ראשונה שפותחת את השיחה
+- להיות אישית וחמה, לא רובוטית
+- להיות באורך בינוני (3-5 משפטים)`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: "צור הודעת פתיחה ליום הזה במסע" },
+    ],
+    temperature: 0.8,
+    max_tokens: 300,
+  });
+
+  return response.choices[0].message.content || `ברוכה הבאה ליום ${context.dayNumber}!`;
+}

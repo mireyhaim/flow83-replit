@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage } from "./ai";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -428,6 +428,135 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating journey content:", error);
       res.status(500).json({ error: "Failed to generate journey content" });
+    }
+  });
+
+  // Chat messages routes
+  app.get("/api/participants/:participantId/steps/:stepId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const { participantId, stepId } = req.params;
+      const userId = req.user.claims.sub;
+      
+      const participant = await storage.getParticipantById(participantId);
+      if (!participant || participant.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const messages = await storage.getMessages(participantId, stepId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/participants/:participantId/steps/:stepId/start-day", isAuthenticated, async (req: any, res) => {
+    try {
+      const { participantId, stepId } = req.params;
+      const userId = req.user.claims.sub;
+      
+      const participant = await storage.getParticipantById(participantId);
+      if (!participant || participant.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const existingMessages = await storage.getMessages(participantId, stepId);
+      if (existingMessages.length > 0) {
+        return res.json(existingMessages);
+      }
+
+      const step = await storage.getJourneyStep(stepId);
+      if (!step) {
+        return res.status(404).json({ error: "Step not found" });
+      }
+
+      const journey = await storage.getJourney(step.journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Journey not found" });
+      }
+
+      const blocks = await storage.getJourneyBlocks(stepId);
+
+      const openingMessage = await generateDayOpeningMessage({
+        journeyName: journey.name,
+        dayTitle: step.title,
+        dayDescription: step.description || "",
+        dayNumber: step.dayNumber,
+        mentorBlocks: blocks.map(b => ({ type: b.type, content: b.content })),
+      });
+
+      const message = await storage.createMessage({
+        participantId,
+        stepId,
+        role: "bot",
+        content: openingMessage,
+      });
+
+      res.json([message]);
+    } catch (error) {
+      console.error("Error starting day:", error);
+      res.status(500).json({ error: "Failed to start day" });
+    }
+  });
+
+  app.post("/api/participants/:participantId/steps/:stepId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const { participantId, stepId } = req.params;
+      const { content } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+
+      const participant = await storage.getParticipantById(participantId);
+      if (!participant || participant.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const step = await storage.getJourneyStep(stepId);
+      if (!step) {
+        return res.status(404).json({ error: "Step not found" });
+      }
+
+      const journey = await storage.getJourney(step.journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Journey not found" });
+      }
+
+      const userMessage = await storage.createMessage({
+        participantId,
+        stepId,
+        role: "user",
+        content: content.trim(),
+      });
+
+      const blocks = await storage.getJourneyBlocks(stepId);
+      const history = await storage.getMessages(participantId, stepId);
+
+      const botResponse = await generateChatResponse(
+        {
+          journeyName: journey.name,
+          dayTitle: step.title,
+          dayDescription: step.description || "",
+          dayNumber: step.dayNumber,
+          mentorBlocks: blocks.map(b => ({ type: b.type, content: b.content })),
+          messageHistory: history.map(m => ({ role: m.role, content: m.content })),
+        },
+        content.trim()
+      );
+
+      const botMessage = await storage.createMessage({
+        participantId,
+        stepId,
+        role: "bot",
+        content: botResponse,
+      });
+
+      res.json({ userMessage, botMessage });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ error: "Failed to send message" });
     }
   });
 
