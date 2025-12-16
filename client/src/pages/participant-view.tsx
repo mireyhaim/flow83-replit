@@ -172,12 +172,12 @@ export default function ParticipantView() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-serif font-bold mb-2">המסע הושלם!</h1>
+          <h1 className="text-2xl font-serif font-bold mb-2">Journey Complete!</h1>
           <p className="text-muted-foreground mb-6">
-            ברכות על השלמת "{journey.name}". המסע הטרנספורמטיבי שלך הושלם.
+            Congratulations on completing "{journey.name}". Your transformational journey is complete.
           </p>
           <Link href="/dashboard">
-            <Button className="w-full">חזרה לדף הבית</Button>
+            <Button className="w-full">Back to Home</Button>
           </Link>
         </div>
       </div>
@@ -200,13 +200,13 @@ export default function ParticipantView() {
               <span className="font-semibold text-sm truncate max-w-[140px]">{journey.name}</span>
             </div>
             <div className="text-xs font-medium text-muted-foreground bg-neutral-100 px-2 py-1 rounded-full" data-testid="text-day-progress">
-              יום {currentDay} מתוך {totalDays}
+              Day {currentDay} of {totalDays}
             </div>
           </div>
           
           <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-100">
             <h2 className="font-serif font-bold text-base text-neutral-800" data-testid="text-step-title">
-              {currentStep?.title || `יום ${currentDay}`}
+              {currentStep?.title || `Day ${currentDay}`}
             </h2>
             {currentStep?.description && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -267,9 +267,8 @@ export default function ParticipantView() {
             <Input 
                value={inputValue}
                onChange={(e) => setInputValue(e.target.value)}
-               placeholder="כתבי את התגובה שלך..."
-               className="rounded-full bg-neutral-100 border-none focus-visible:ring-2 focus-visible:ring-violet-300 text-right"
-               dir="rtl"
+               placeholder="Type your response..."
+               className="rounded-full bg-neutral-100 border-none focus-visible:ring-2 focus-visible:ring-violet-300"
                disabled={isSending}
                data-testid="input-chat"
             />
@@ -294,8 +293,8 @@ export default function ParticipantView() {
             onClick={() => {}}
             data-testid="button-prev-day"
           >
-            <ChevronRight className="w-4 h-4 ml-1" />
-            יום קודם
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous Day
           </Button>
           
           <Button 
@@ -309,8 +308,8 @@ export default function ParticipantView() {
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                <CheckCircle2 className="w-4 h-4 ml-1" />
-                סיום היום
+                <CheckCircle2 className="w-4 h-4 mr-1" />
+                Complete Day
               </>
             )}
           </Button>

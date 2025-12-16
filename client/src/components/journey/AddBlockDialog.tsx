@@ -35,41 +35,41 @@ const blockTypes = [
   {
     type: "text",
     icon: FileText,
-    label: "תוכן טקסט",
-    description: "הוסף תוכן חינוכי, תובנות או הנחיות",
-    placeholder: "שתף את התובנות או ההנחיות שלך עבור שלב זה...",
+    label: "Text Content",
+    description: "Add educational content, insights, or guidance",
+    placeholder: "Share your insights or guidance for this step...",
     inputType: "textarea"
   },
   {
     type: "question",
     icon: HelpCircle,
-    label: "שאלת רפלקציה",
-    description: "עודד התבוננות עמוקה ומודעות עצמית",
-    placeholder: "איזו שאלה תעזור להם להתבונן לעומק על הנושא?",
+    label: "Reflection Question",
+    description: "Encourage deep reflection and self-awareness",
+    placeholder: "What question will help them reflect deeply on this topic?",
     inputType: "textarea"
   },
   {
     type: "task",
     icon: CheckSquare,
-    label: "משימה",
-    description: "תן להם משהו קונקרטי לעשות או לתרגל",
-    placeholder: "איזו פעולה או תרגול יתמכו בצמיחה שלהם?",
+    label: "Task",
+    description: "Give them something concrete to do or practice",
+    placeholder: "What action or practice will support their growth?",
     inputType: "textarea"
   },
   {
     type: "meditation",
     icon: Heart,
-    label: "מדיטציה/תרגול",
-    description: "הנחה אותם דרך תרגול מיינדפולנס או רוחני",
-    placeholder: "תאר את המדיטציה, תרגיל הנשימה או התרגול הרוחני...",
+    label: "Meditation/Practice",
+    description: "Guide them through a mindfulness or spiritual practice",
+    placeholder: "Describe the meditation, breathing exercise, or spiritual practice...",
     inputType: "textarea"
   },
   {
     type: "video",
     icon: Video,
-    label: "סרטון",
-    description: "הוסף הודעת וידאו אישית או שיעור",
-    placeholder: "הדבק את קישור הסרטון כאן (YouTube, Vimeo, או קישור ישיר)...",
+    label: "Video",
+    description: "Add a personal video message or lesson",
+    placeholder: "Paste the video link here (YouTube, Vimeo, or direct link)...",
     inputType: "input"
   }
 ];
@@ -103,11 +103,11 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl" dir="rtl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>הוספת בלוק חדש</DialogTitle>
+          <DialogTitle>Add New Block</DialogTitle>
           <DialogDescription>
-            בחר את סוג התוכן שברצונך להוסיף לשלב זה
+            Choose the type of content you want to add to this step
           </DialogDescription>
         </DialogHeader>
 
@@ -119,11 +119,12 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
                 <button
                   key={blockType.type}
                   onClick={() => setSelectedType(blockType.type)}
-                  className={`p-4 text-right border rounded-lg transition-all hover:border-primary/50 ${
+                  className={`p-4 text-left border rounded-lg transition-all hover:border-primary/50 ${
                     selectedType === blockType.type
                       ? "border-primary bg-primary/5"
                       : "border-border"
                   }`}
+                  data-testid={`button-block-type-${blockType.type}`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <Icon className="w-5 h-5 text-primary" />
@@ -139,7 +140,7 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
 
           {selectedType && (
             <div className="space-y-3">
-              <Label htmlFor="content">תוכן</Label>
+              <Label htmlFor="content">Content</Label>
               {selectedBlockType?.inputType === "input" ? (
                 <Input
                   id="content"
@@ -147,6 +148,7 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={selectedBlockType?.placeholder}
                   className="w-full"
+                  data-testid="input-block-content"
                 />
               ) : (
                 <Textarea
@@ -156,26 +158,28 @@ const AddBlockDialog = ({ isOpen, onClose, onAdd }: AddBlockDialogProps) => {
                   placeholder={selectedBlockType?.placeholder}
                   rows={6}
                   className="w-full"
+                  data-testid="textarea-block-content"
                 />
               )}
               
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Wand2 className="w-4 h-4" />
-                <span>צריך עזרה? לחץ על "שכתב עם AI" לאחר ההוספה לקבלת הצעות</span>
+                <span>Need help? Click "Rewrite with AI" after adding for suggestions</span>
               </div>
             </div>
           )}
 
-          <div className="flex justify-start gap-3">
-            <Button variant="outline" onClick={handleCancel}>
-              ביטול
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={handleCancel} data-testid="button-cancel-add-block">
+              Cancel
             </Button>
             <Button 
               onClick={handleAdd}
               disabled={!selectedType || !content.trim()}
               className="bg-primary hover:bg-primary/90"
+              data-testid="button-add-block"
             >
-              הוסף בלוק
+              Add Block
             </Button>
           </div>
         </div>

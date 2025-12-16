@@ -115,10 +115,10 @@ export async function generateChatResponse(
 ): Promise<string> {
   const blocksContext = context.mentorBlocks
     .map((b) => {
-      if (b.type === "text") return `תוכן: ${b.content.text || ""}`;
-      if (b.type === "reflection") return `שאלת רפלקציה: ${b.content.question || ""}`;
-      if (b.type === "task") return `משימה: ${b.content.task || ""}`;
-      if (b.type === "affirmation") return `אפירמציה: ${b.content.affirmation || ""}`;
+      if (b.type === "text") return `Content: ${b.content.text || ""}`;
+      if (b.type === "reflection") return `Reflection Question: ${b.content.question || ""}`;
+      if (b.type === "task") return `Task: ${b.content.task || ""}`;
+      if (b.type === "affirmation") return `Affirmation: ${b.content.affirmation || ""}`;
       return "";
     })
     .filter(Boolean)
@@ -126,28 +126,28 @@ export async function generateChatResponse(
 
   const historyText = context.messageHistory
     .slice(-10)
-    .map((m) => `${m.role === "bot" ? "בוט" : "משתתף"}: ${m.content}`)
+    .map((m) => `${m.role === "bot" ? "Bot" : "Participant"}: ${m.content}`)
     .join("\n");
 
-  const systemPrompt = `אתה מנטור דיגיטלי חם ואנושי בשם Flow 83.
-אתה מנהל שיחה אישית עם משתתף במסע טרנספורמטיבי.
+  const systemPrompt = `You are a warm and human digital mentor named Flow 83.
+You are having a personal conversation with a participant in a transformational journey.
 
-המסע: ${context.journeyName}
-יום ${context.dayNumber}: ${context.dayTitle}
+The Journey: ${context.journeyName}
+Day ${context.dayNumber}: ${context.dayTitle}
 ${context.dayDescription}
 
-תוכן היום הזה:
+Today's content:
 ${blocksContext}
 
-הנחיות חשובות:
-- דבר בעברית בשפה חמה, אישית ותומכת
-- השתמש בתוכן של היום כדי להנחות את השיחה
-- שאל שאלות פתוחות שמזמינות רפלקציה
-- הגב לתשובות המשתתף בצורה אמפתית ומעמיקה
-- אם המשתתף שיתף משהו אישי - הכר בזה והתייחס אליו
-- הנח את המשתתף לתרגילים ומשימות כשזה מתאים
-- כתוב תשובות קצרות עד בינוניות (2-4 משפטים בדרך כלל)
-- אל תהיה רובוטי או גנרי - היה אנושי ונוכח`;
+Important guidelines:
+- Speak in a warm, personal, and supportive tone
+- Use today's content to guide the conversation
+- Ask open-ended questions that invite reflection
+- Respond to the participant's answers with empathy and depth
+- If the participant shares something personal - acknowledge it and respond to it
+- Guide the participant to exercises and tasks when appropriate
+- Write short to medium responses (2-4 sentences usually)
+- Don't be robotic or generic - be human and present`;
 
   const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
     { role: "system", content: systemPrompt },
@@ -169,48 +169,48 @@ ${blocksContext}
     max_tokens: 500,
   });
 
-  return response.choices[0].message.content || "אני כאן איתך. ספרי לי עוד.";
+  return response.choices[0].message.content || "I'm here with you. Tell me more.";
 }
 
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "messageHistory">): Promise<string> {
   const blocksContext = context.mentorBlocks
     .map((b) => {
-      if (b.type === "text") return `תוכן: ${b.content.text || ""}`;
-      if (b.type === "reflection") return `שאלת רפלקציה: ${b.content.question || ""}`;
-      if (b.type === "task") return `משימה: ${b.content.task || ""}`;
-      if (b.type === "affirmation") return `אפירמציה: ${b.content.affirmation || ""}`;
+      if (b.type === "text") return `Content: ${b.content.text || ""}`;
+      if (b.type === "reflection") return `Reflection Question: ${b.content.question || ""}`;
+      if (b.type === "task") return `Task: ${b.content.task || ""}`;
+      if (b.type === "affirmation") return `Affirmation: ${b.content.affirmation || ""}`;
       return "";
     })
     .filter(Boolean)
     .join("\n");
 
-  const systemPrompt = `אתה מנטור דיגיטלי חם ואנושי בשם Flow 83.
-אתה פותח יום חדש במסע טרנספורמטיבי עם משתתף.
+  const systemPrompt = `You are a warm and human digital mentor named Flow 83.
+You are opening a new day in a transformational journey with a participant.
 
-המסע: ${context.journeyName}
-יום ${context.dayNumber}: ${context.dayTitle}
+The Journey: ${context.journeyName}
+Day ${context.dayNumber}: ${context.dayTitle}
 ${context.dayDescription}
 
-תוכן היום:
+Today's content:
 ${blocksContext}
 
-כתוב הודעת פתיחה ליום הזה.
-ההודעה צריכה:
-- לברך את המשתתף בחום
-- להסביר בקצרה על מה עובדים היום
-- לשאול שאלה ראשונה שפותחת את השיחה
-- להיות אישית וחמה, לא רובוטית
-- להיות באורך בינוני (3-5 משפטים)`;
+Write an opening message for this day.
+The message should:
+- Warmly greet the participant
+- Briefly explain what we're working on today
+- Ask an opening question that starts the conversation
+- Be personal and warm, not robotic
+- Be medium length (3-5 sentences)`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: "צור הודעת פתיחה ליום הזה במסע" },
+      { role: "user", content: "Create an opening message for this day in the journey" },
     ],
     temperature: 0.8,
     max_tokens: 300,
   });
 
-  return response.choices[0].message.content || `ברוכה הבאה ליום ${context.dayNumber}!`;
+  return response.choices[0].message.content || `Welcome to Day ${context.dayNumber}!`;
 }

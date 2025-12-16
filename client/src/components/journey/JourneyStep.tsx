@@ -124,30 +124,30 @@ const JourneyStep = ({
             onChange={(e) => setEditValue(e.target.value)}
             rows={3}
             className="w-full"
-            placeholder={`הכנס ${label}...`}
+            placeholder={`Enter ${label.toLowerCase()}...`}
             data-testid={`textarea-${field}`}
           />
           <div className="flex justify-start gap-2">
             <Button size="sm" variant="outline" onClick={() => handleCancelField(field)}>
-              <X className="w-4 h-4 ml-1" />
-              ביטול
+              <X className="w-4 h-4 mr-1" />
+              Cancel
             </Button>
             <Button size="sm" onClick={() => handleSaveField(field)}>
-              <Check className="w-4 h-4 ml-1" />
-              שמור
+              <Check className="w-4 h-4 mr-1" />
+              Save
             </Button>
           </div>
         </div>
       ) : (
         <p className="text-sm text-foreground leading-relaxed" data-testid={`text-${field}`}>
-          {value || <span className="italic text-muted-foreground">לחץ לעריכה...</span>}
+          {value || <span className="italic text-muted-foreground">Click to edit...</span>}
         </p>
       )}
     </div>
   );
 
   return (
-    <Card className="shadow-spiritual border-r-4 border-r-primary/20 hover:border-r-primary/40 transition-colors" data-testid={`step-card-${step.id}`}>
+    <Card className="shadow-spiritual border-l-4 border-l-primary/20 hover:border-l-primary/40 transition-colors" data-testid={`step-card-${step.id}`}>
       <CardHeader className="cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
@@ -202,7 +202,7 @@ const JourneyStep = ({
           {renderEditableSection(
             'goal',
             <Target className="w-4 h-4 text-purple-600" />,
-            'מטרת היום',
+            "Day's Goal",
             goalBlock.content,
             editGoal,
             setEditGoal,
@@ -212,7 +212,7 @@ const JourneyStep = ({
           {renderEditableSection(
             'explanation',
             <BookOpen className="w-4 h-4 text-blue-600" />,
-            'הסבר',
+            'Explanation',
             explanationBlock.content,
             editExplanation,
             setEditExplanation,
@@ -222,7 +222,7 @@ const JourneyStep = ({
           {renderEditableSection(
             'task',
             <CheckSquare className="w-4 h-4 text-green-600" />,
-            'משימה למשתמש',
+            'Task for User',
             taskBlock.content,
             editTask,
             setEditTask,

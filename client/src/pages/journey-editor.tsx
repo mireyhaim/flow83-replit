@@ -5,7 +5,7 @@ import JourneyStep from "@/components/journey/JourneyStep";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Save, Eye, Loader2, Globe, GlobeLock, Calendar, Target, Users, ChevronRight } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, Globe, GlobeLock, Calendar, Target, Users, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
 import type { Journey, JourneyStep as JourneyStepType, JourneyBlock } from "@shared/schema";
@@ -52,8 +52,8 @@ const JourneyEditorPage = () => {
         setJourneyData({ ...data, steps: sortedSteps });
       } catch (error) {
         toast({
-          title: "שגיאה",
-          description: "לא הצלחנו לטעון את המסע",
+          title: "Error",
+          description: "Failed to load journey",
           variant: "destructive",
         });
       } finally {
@@ -76,8 +76,8 @@ const JourneyEditorPage = () => {
       });
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לשמור את המסע",
+        title: "Error",
+        description: "Failed to save journey",
         variant: "destructive",
       });
     } finally {
@@ -100,8 +100,8 @@ const JourneyEditorPage = () => {
       setJourneyData(prev => prev ? { ...prev, status: newStatus } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: newStatus === "published" ? "לא הצלחנו לפרסם את המסע" : "לא הצלחנו להסתיר את המסע",
+        title: "Error",
+        description: newStatus === "published" ? "Failed to publish journey" : "Failed to unpublish journey",
         variant: "destructive",
       });
     } finally {
@@ -121,8 +121,8 @@ const JourneyEditorPage = () => {
       } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את היום",
+        title: "Error",
+        description: "Failed to update day",
         variant: "destructive",
       });
     }
@@ -133,7 +133,7 @@ const JourneyEditorPage = () => {
     try {
       const newStep = await stepApi.create(journeyData.id, {
         dayNumber: journeyData.steps.length + 1,
-        title: `יום ${journeyData.steps.length + 1}`,
+        title: `Day ${journeyData.steps.length + 1}`,
         description: "",
       });
       setJourneyData(prev => prev ? {
@@ -142,8 +142,8 @@ const JourneyEditorPage = () => {
       } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו להוסיף יום",
+        title: "Error",
+        description: "Failed to add day",
         variant: "destructive",
       });
     }
@@ -168,8 +168,8 @@ const JourneyEditorPage = () => {
       } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו להוסיף בלוק",
+        title: "Error",
+        description: "Failed to add block",
         variant: "destructive",
       });
     }
@@ -190,8 +190,8 @@ const JourneyEditorPage = () => {
       } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את הבלוק",
+        title: "Error",
+        description: "Failed to update block",
         variant: "destructive",
       });
     }
@@ -210,8 +210,8 @@ const JourneyEditorPage = () => {
       } : null);
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו למחוק את הבלוק",
+        title: "Error",
+        description: "Failed to delete block",
         variant: "destructive",
       });
     }
@@ -221,7 +221,7 @@ const JourneyEditorPage = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center" dir="rtl">
+        <main className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </main>
       </div>
@@ -232,10 +232,10 @@ const JourneyEditorPage = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 text-center" dir="rtl">
-          <h1 className="text-2xl font-bold text-foreground mb-4">המסע לא נמצא</h1>
+        <main className="container mx-auto px-4 py-8 pt-24 text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Journey not found</h1>
           <Button onClick={() => setLocation("/journeys/new")} data-testid="button-create-new">
-            יצירת מסע חדש
+            Create New Journey
           </Button>
         </main>
       </div>
@@ -251,7 +251,7 @@ const JourneyEditorPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <Header />
       <main className="pt-20">
         <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-16 z-40">
@@ -261,12 +261,12 @@ const JourneyEditorPage = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => setLocation("/journeys/new")}
+                  onClick={() => setLocation("/journeys")}
                   className="gap-2"
                   data-testid="button-back"
                 >
-                  <ChevronRight className="w-4 h-4" />
-                  חזרה
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
                 </Button>
                 <div className="h-6 w-px bg-border" />
                 <div>
@@ -276,7 +276,7 @@ const JourneyEditorPage = () => {
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      {journeyData.duration} ימים
+                      {journeyData.duration} days
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
@@ -285,7 +285,7 @@ const JourneyEditorPage = () => {
                     {journeyData.status === "published" && (
                       <span className="flex items-center gap-1 text-green-600">
                         <Globe className="w-3.5 h-3.5" />
-                        פעיל
+                        Active
                       </span>
                     )}
                   </div>
@@ -295,7 +295,7 @@ const JourneyEditorPage = () => {
               <div className="flex gap-2 items-center">
                 <Button variant="ghost" size="sm" onClick={handlePreview} className="gap-2" data-testid="button-preview">
                   <Eye className="w-4 h-4" />
-                  תצוגה מקדימה
+                  Preview
                 </Button>
                 <Button 
                   onClick={handleSave} 
@@ -307,9 +307,9 @@ const JourneyEditorPage = () => {
                   {isSaving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Save className="w-4 h-4 ml-2" />
+                    <Save className="w-4 h-4 mr-2" />
                   )}
-                  שמירה
+                  Save
                 </Button>
                 <Button 
                   onClick={handlePublish} 
@@ -321,11 +321,11 @@ const JourneyEditorPage = () => {
                   {isPublishing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : journeyData.status === "published" ? (
-                    <GlobeLock className="w-4 h-4 ml-2" />
+                    <GlobeLock className="w-4 h-4 mr-2" />
                   ) : (
-                    <Globe className="w-4 h-4 ml-2" />
+                    <Globe className="w-4 h-4 mr-2" />
                   )}
-                  {journeyData.status === "published" ? "הסתר" : "פרסם"}
+                  {journeyData.status === "published" ? "Unpublish" : "Publish"}
                 </Button>
               </div>
             </div>
@@ -338,7 +338,7 @@ const JourneyEditorPage = () => {
               <div className="sticky top-36">
                 <Card className="overflow-hidden">
                   <CardHeader className="py-3 px-4 bg-muted/50">
-                    <CardTitle className="text-sm font-medium">ימי המסע</CardTitle>
+                    <CardTitle className="text-sm font-medium">Journey Days</CardTitle>
                   </CardHeader>
                   <ScrollArea className="h-[calc(100vh-16rem)]">
                     <div className="p-2">
@@ -346,8 +346,8 @@ const JourneyEditorPage = () => {
                         <button
                           key={step.id}
                           onClick={() => scrollToStep(step.id)}
-                          className={`w-full text-right p-3 rounded-lg mb-1 transition-all hover:bg-muted/80 ${
-                            activeStepId === step.id ? 'bg-primary/10 border-r-2 border-primary' : ''
+                          className={`w-full text-left p-3 rounded-lg mb-1 transition-all hover:bg-muted/80 ${
+                            activeStepId === step.id ? 'bg-primary/10 border-l-2 border-primary' : ''
                           }`}
                           data-testid={`nav-step-${step.id}`}
                         >
@@ -361,7 +361,7 @@ const JourneyEditorPage = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium leading-tight" style={{ wordBreak: 'break-word' }}>{step.title}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{step.blocks.length} בלוקים</p>
+                              <p className="text-xs text-muted-foreground mt-1">{step.blocks.length} blocks</p>
                             </div>
                           </div>
                         </button>
@@ -373,7 +373,7 @@ const JourneyEditorPage = () => {
                         className="w-full mt-2 text-muted-foreground hover:text-foreground"
                         data-testid="button-add-day-sidebar"
                       >
-                        + הוסף יום
+                        + Add Day
                       </Button>
                     </div>
                   </ScrollArea>
@@ -383,7 +383,7 @@ const JourneyEditorPage = () => {
                   <CardHeader className="py-3 px-4">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Target className="w-4 h-4" />
-                      מטרת המסע
+                      Journey Goal
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="py-2 px-4">
@@ -434,7 +434,7 @@ const JourneyEditorPage = () => {
                 
                 <div className="text-center py-8 lg:hidden">
                   <Button variant="outline" onClick={addStep} className="gap-2" data-testid="button-add-day">
-                    + הוסף יום חדש
+                    + Add New Day
                   </Button>
                 </div>
               </div>

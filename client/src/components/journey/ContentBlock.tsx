@@ -34,11 +34,11 @@ interface ContentBlockProps {
 }
 
 const blockTypeConfig = {
-  text: { icon: FileText, label: "טקסט", color: "bg-blue-100 text-blue-800" },
-  question: { icon: HelpCircle, label: "שאלה", color: "bg-purple-100 text-purple-800" },
-  task: { icon: CheckSquare, label: "משימה", color: "bg-green-100 text-green-800" },
-  meditation: { icon: Heart, label: "מדיטציה", color: "bg-pink-100 text-pink-800" },
-  video: { icon: Video, label: "סרטון", color: "bg-orange-100 text-orange-800" }
+  text: { icon: FileText, label: "Text", color: "bg-blue-100 text-blue-800" },
+  question: { icon: HelpCircle, label: "Question", color: "bg-purple-100 text-purple-800" },
+  task: { icon: CheckSquare, label: "Task", color: "bg-green-100 text-green-800" },
+  meditation: { icon: Heart, label: "Meditation", color: "bg-pink-100 text-pink-800" },
+  video: { icon: Video, label: "Video", color: "bg-orange-100 text-orange-800" }
 };
 
 const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: ContentBlockProps) => {
@@ -61,13 +61,13 @@ const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: Conte
 
   const handleRewriteWithAI = () => {
     toast({
-      title: "שכתוב עם AI",
-      description: "מייצר הצעות AI לבלוק זה.",
+      title: "Rewrite with AI",
+      description: "Generating AI suggestions for this block.",
     });
   };
 
   return (
-    <Card className="border-r-4 border-r-primary/30">
+    <Card className="border-l-4 border-l-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -110,12 +110,12 @@ const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: Conte
             />
             <div className="flex justify-start gap-2">
               <Button size="sm" variant="outline" onClick={handleCancel}>
-                <X className="w-4 h-4 ml-1" />
-                ביטול
+                <X className="w-4 h-4 mr-1" />
+                Cancel
               </Button>
               <Button size="sm" onClick={handleSave}>
-                <Check className="w-4 h-4 ml-1" />
-                שמור
+                <Check className="w-4 h-4 mr-1" />
+                Save
               </Button>
             </div>
           </div>
@@ -129,9 +129,9 @@ const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: Conte
                   style={{ maxHeight: '400px' }}
                 >
                   <source src={block.content} />
-                  הדפדפן שלך לא תומך בתג וידאו.
+                  Your browser does not support the video tag.
                 </video>
-                <p className="text-xs text-muted-foreground">סרטון: {block.content}</p>
+                <p className="text-xs text-muted-foreground">Video: {block.content}</p>
               </div>
             ) : (
               <p className="text-foreground leading-relaxed">{block.content}</p>
