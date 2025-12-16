@@ -1,42 +1,35 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const professionOptions = [
-  { value: "therapist", label: "Therapist" },
-  { value: "coach", label: "Coach" },
-  { value: "healer", label: "Healer" },
-  { value: "mentor", label: "Mentor" },
-  { value: "counselor", label: "Counselor" },
-  { value: "other", label: "Other" },
+  { value: "therapist", label: "Therapist", icon: "🧠" },
+  { value: "coach", label: "Coach", icon: "🎯" },
+  { value: "healer", label: "Healer", icon: "✨" },
+  { value: "mentor", label: "Mentor", icon: "🌟" },
+  { value: "counselor", label: "Counselor", icon: "💬" },
+  { value: "other", label: "Other", icon: "🔮" },
 ];
 
 const toneOptions = [
-  { value: "warm", label: "Warm & Personal" },
-  { value: "professional", label: "Professional" },
-  { value: "direct", label: "Direct & Clear" },
-  { value: "gentle", label: "Gentle & Soft" },
-  { value: "motivating", label: "Motivating & Energetic" },
-  { value: "spiritual", label: "Spiritual & Deep" },
+  { value: "warm", label: "Warm & Personal", icon: "💛" },
+  { value: "professional", label: "Professional", icon: "💼" },
+  { value: "direct", label: "Direct & Clear", icon: "🎯" },
+  { value: "gentle", label: "Gentle & Soft", icon: "🌸" },
+  { value: "motivating", label: "Motivating & Energetic", icon: "🔥" },
+  { value: "spiritual", label: "Spiritual & Deep", icon: "🔮" },
 ];
 
-const formSchema = z.object({
-  profession: z.string().min(1, "Please select your profession"),
-  journeyName: z.string().min(1, "Flow name is required"),
-  targetAudience: z.string().min(1, "Target audience is required"),
-  clientChallenges: z.string().optional(),
-  mainGoal: z.string().min(10, "Please provide a detailed goal (minimum 10 characters)"),
-  duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
-  tone: z.string().min(1, "Please select a tone"),
-  desiredFeeling: z.string().optional(),
-  additionalNotes: z.string().optional(),
-});
+const durationOptions = [
+  { value: "3", label: "3 Days", description: "Quick transformation", icon: "⚡" },
+  { value: "7", label: "7 Days", description: "Deep journey", icon: "🌊" },
+];
 
 interface JourneyIntentFormProps {
   onComplete: (data: any) => void;
@@ -44,238 +37,316 @@ interface JourneyIntentFormProps {
 }
 
 const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      profession: initialData?.profession || "",
-      journeyName: initialData?.journeyName || "",
-      targetAudience: initialData?.targetAudience || "",
-      clientChallenges: initialData?.clientChallenges || "",
-      mainGoal: initialData?.mainGoal || "",
-      duration: initialData?.duration?.[0]?.toString() || "7",
-      tone: initialData?.tone || "",
-      desiredFeeling: initialData?.desiredFeeling || "",
-      additionalNotes: initialData?.additionalNotes || "",
-    },
+  const [currentStep, setCurrentStep] = useState(0);
+  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    profession: initialData?.profession || "",
+    journeyName: initialData?.journeyName || "",
+    targetAudience: initialData?.targetAudience || "",
+    clientChallenges: initialData?.clientChallenges || "",
+    mainGoal: initialData?.mainGoal || "",
+    duration: initialData?.duration?.[0]?.toString() || "7",
+    tone: initialData?.tone || "",
+    desiredFeeling: initialData?.desiredFeeling || "",
+    additionalNotes: initialData?.additionalNotes || "",
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    onComplete({ ...data, duration: [parseInt(data.duration)] });
+  const steps = [
+    {
+      id: "profession",
+      title: "What is your profession?",
+      subtitle: "Help us understand your background",
+      type: "select",
+      field: "profession",
+      options: professionOptions,
+      required: true,
+    },
+    {
+      id: "journeyName",
+      title: "What's the name of your flow?",
+      subtitle: "Give your transformation a memorable name",
+      type: "text",
+      field: "journeyName",
+      placeholder: 'e.g., "Healing the Heart"',
+      required: true,
+    },
+    {
+      id: "targetAudience",
+      title: "Who is this flow for?",
+      subtitle: "Describe your ideal participant",
+      type: "text",
+      field: "targetAudience",
+      placeholder: 'e.g., "Women post-breakup", "Teens dealing with anxiety"',
+      required: true,
+    },
+    {
+      id: "clientChallenges",
+      title: "What challenges do your clients face?",
+      subtitle: "Describe their main pain points and struggles",
+      type: "textarea",
+      field: "clientChallenges",
+      placeholder: 'e.g., "Anxiety after breakups, difficulty letting go, fear of being alone"',
+      required: false,
+    },
+    {
+      id: "mainGoal",
+      title: "What is the main goal of this flow?",
+      subtitle: "What transformation do you want to create?",
+      type: "textarea",
+      field: "mainGoal",
+      placeholder: 'e.g., "To help people release emotional pain and find inner peace"',
+      required: true,
+      minLength: 10,
+      errorMessage: "Please provide a detailed goal (minimum 10 characters)",
+    },
+    {
+      id: "duration",
+      title: "How many days?",
+      subtitle: "Choose the length of the journey",
+      type: "cards",
+      field: "duration",
+      options: durationOptions,
+      required: true,
+    },
+    {
+      id: "tone",
+      title: "What tone fits your clients?",
+      subtitle: "How should the content feel?",
+      type: "select",
+      field: "tone",
+      options: toneOptions,
+      required: true,
+    },
+    {
+      id: "desiredFeeling",
+      title: "How should users feel at the end?",
+      subtitle: "Describe the emotional transformation",
+      type: "textarea",
+      field: "desiredFeeling",
+      placeholder: 'e.g., "Clear, safe, grounded, empowered"',
+      required: false,
+    },
+    {
+      id: "additionalNotes",
+      title: "Anything else to share?",
+      subtitle: "Share your vision, energy, or special intentions",
+      type: "textarea",
+      field: "additionalNotes",
+      placeholder: 'e.g., "I want it to feel like entering a sacred temple"',
+      required: false,
+    },
+  ];
+
+  const totalSteps = steps.length;
+  const progress = ((currentStep + 1) / totalSteps) * 100;
+  const currentStepData = steps[currentStep];
+
+  const updateField = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setError("");
+  };
+
+  const validateStep = () => {
+    const step = currentStepData as any;
+    const value = formData[step.field as keyof typeof formData];
+    
+    if (step.required && (!value || value.length === 0)) {
+      return "This field is required";
+    }
+    
+    if (step.minLength && value.length < step.minLength) {
+      return step.errorMessage || `Minimum ${step.minLength} characters required`;
+    }
+    
+    return null;
+  };
+
+  const canProceed = () => {
+    return validateStep() === null;
+  };
+
+  const handleNext = () => {
+    const validationError = validateStep();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    
+    setError("");
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      onComplete({ ...formData, duration: [parseInt(formData.duration)] });
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const renderStepContent = () => {
+    const step = currentStepData;
+    const value = formData[step.field as keyof typeof formData];
+
+    switch (step.type) {
+      case "select":
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            {step.options?.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => updateField(step.field, option.value)}
+                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                  value === option.value
+                    ? "border-violet-500 bg-violet-500/20"
+                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                }`}
+                data-testid={`option-${step.field}-${option.value}`}
+              >
+                <span className="text-2xl mb-2 block">{option.icon}</span>
+                <span className="text-white font-medium">{option.label}</span>
+              </button>
+            ))}
+          </div>
+        );
+
+      case "cards":
+        return (
+          <div className="grid grid-cols-2 gap-4">
+            {step.options?.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => updateField(step.field, option.value)}
+                className={`p-6 rounded-xl border-2 transition-all text-center ${
+                  value === option.value
+                    ? "border-violet-500 bg-violet-500/20"
+                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                }`}
+                data-testid={`option-${step.field}-${option.value}`}
+              >
+                <span className="text-4xl mb-3 block">{option.icon}</span>
+                <span className="text-white font-bold text-xl block">{option.label}</span>
+                {"description" in option && (
+                  <span className="text-white/50 text-sm">{(option as any).description}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        );
+
+      case "text":
+        return (
+          <Input
+            value={value}
+            onChange={(e) => updateField(step.field, e.target.value)}
+            placeholder={step.placeholder}
+            className="text-lg bg-white/5 border-white/10 text-white placeholder:text-white/40 h-14 rounded-xl"
+            data-testid={`input-${step.field}`}
+          />
+        );
+
+      case "textarea":
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => updateField(step.field, e.target.value)}
+            placeholder={step.placeholder}
+            className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-xl text-lg"
+            data-testid={`textarea-${step.field}`}
+          />
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Profession */}
-        <FormField
-          control={form.control}
-          name="profession"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What is your profession? *</FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="grid grid-cols-2 gap-3">
-                  {professionOptions.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem 
-                        value={option.value} 
-                        id={`profession-${option.value}`} 
-                        data-testid={`radio-profession-${option.value}`}
-                        className="border-white/30 text-violet-500" 
-                      />
-                      <Label htmlFor={`profession-${option.value}`} className="text-white/80 cursor-pointer">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="max-w-xl mx-auto">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-white/50 text-sm">Step {currentStep + 1} of {totalSteps}</span>
+          <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} className="h-2 bg-white/10" />
+      </div>
 
-        {/* Flow Name */}
-        <FormField
-          control={form.control}
-          name="journeyName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What's the name of your flow? *</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder='e.g., "Healing the Heart"' 
-                  className="text-lg bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="input-journey-name"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              {currentStepData.title}
+            </h2>
+            <p className="text-white/60">{currentStepData.subtitle}</p>
+          </div>
 
-        {/* Target Audience */}
-        <FormField
-          control={form.control}
-          name="targetAudience"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">Who is this flow for? *</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="input-target-audience"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {renderStepContent()}
+          
+          {(() => {
+            if (error) {
+              return (
+                <div className="text-red-400 text-sm text-center mt-4" data-testid="error-message">
+                  {error}
+                </div>
+              );
+            }
+            const validationError = validateStep();
+            if (validationError && formData[currentStepData.field as keyof typeof formData].length > 0) {
+              return (
+                <div className="text-amber-400 text-sm text-center mt-4" data-testid="validation-hint">
+                  {validationError}
+                </div>
+              );
+            }
+            return null;
+          })()}
+        </motion.div>
+      </AnimatePresence>
 
-        {/* Client Challenges */}
-        <FormField
-          control={form.control}
-          name="clientChallenges"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What challenges do your clients face?</FormLabel>
-              <FormDescription className="text-white/50">Describe the main pain points and struggles</FormDescription>
-              <FormControl>
-                <Textarea 
-                  placeholder='e.g., "Anxiety after breakups, difficulty letting go of past relationships, fear of being alone"'
-                  className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="textarea-client-challenges"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Main Goal */}
-        <FormField
-          control={form.control}
-          name="mainGoal"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What is the main goal of this flow? *</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
-                  className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="textarea-main-goal"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Duration */}
-        <FormField
-          control={form.control}
-          name="duration"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">How many days? *</FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" className="border-white/30 text-violet-500" />
-                    <Label htmlFor="duration-3" className="text-white/80">3 days - Quick transformation</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" className="border-white/30 text-violet-500" />
-                    <Label htmlFor="duration-7" className="text-white/80">7 days - Deep flow</Label>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Tone */}
-        <FormField
-          control={form.control}
-          name="tone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What tone fits your clients? *</FormLabel>
-              <FormControl>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="grid grid-cols-2 gap-3">
-                  {toneOptions.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem 
-                        value={option.value} 
-                        id={`tone-${option.value}`} 
-                        data-testid={`radio-tone-${option.value}`}
-                        className="border-white/30 text-violet-500" 
-                      />
-                      <Label htmlFor={`tone-${option.value}`} className="text-white/80 cursor-pointer">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Desired Feeling */}
-        <FormField
-          control={form.control}
-          name="desiredFeeling"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">How should users feel at the end?</FormLabel>
-              <FormDescription className="text-white/50">Optional - helps us understand the emotional transformation</FormDescription>
-              <FormControl>
-                <Textarea 
-                  placeholder='e.g., "Clear, safe, grounded, empowered"'
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="textarea-desired-feeling"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Additional Notes */}
-        <FormField
-          control={form.control}
-          name="additionalNotes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">Anything else to share?</FormLabel>
-              <FormDescription className="text-white/50">Optional - share your vision, energy, or special intentions</FormDescription>
-              <FormControl>
-                <Textarea 
-                  placeholder='e.g., "I want it to feel like entering a sacred temple"'
-                  className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="textarea-additional-notes"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90" size="lg" data-testid="button-continue">
-          Continue to Content Upload
+      <div className="flex justify-between mt-10">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleBack}
+          disabled={currentStep === 0}
+          className="text-white/60 hover:text-white hover:bg-white/10"
+          data-testid="button-back"
+        >
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          Back
         </Button>
-      </form>
-    </Form>
+
+        <Button
+          type="button"
+          onClick={handleNext}
+          className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 px-8 disabled:opacity-50"
+          data-testid="button-next"
+        >
+          {currentStep === totalSteps - 1 ? (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Continue
+            </>
+          ) : (
+            <>
+              Next
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 };
 
