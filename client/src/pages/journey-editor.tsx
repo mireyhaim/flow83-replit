@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRoute, useLocation } from "wouter";
-import Header from "@/components/landing/Header";
+import { useRoute, useLocation, Link } from "wouter";
 import JourneyStep from "@/components/journey/JourneyStep";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Save, Eye, Loader2, Globe, GlobeLock, Calendar, Target, Users, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, Globe, GlobeLock, Calendar, Target, Users, ChevronLeft, LayoutGrid } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
 import type { Journey, JourneyStep as JourneyStepType, JourneyBlock } from "@shared/schema";
@@ -219,25 +218,21 @@ const JourneyEditorPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </main>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
   if (!journeyData) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Flow not found</h1>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Flow not found</h1>
           <Button onClick={() => setLocation("/journeys/new")} data-testid="button-create-new">
             Create New Flow
           </Button>
-        </main>
+        </div>
       </div>
     );
   }
@@ -251,138 +246,140 @@ const JourneyEditorPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <Header />
-      <main className="pt-20">
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-16 z-40">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setLocation(`/journey/${journeyData.id}/settings`)}
-                  className="gap-2"
-                  data-testid="button-back"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Settings
-                </Button>
-                <div className="h-6 w-px bg-border" />
-                <div>
-                  <h1 className="text-xl font-bold text-foreground" data-testid="text-journey-name">
-                    {journeyData.name}
-                  </h1>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {journeyData.duration} days
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" />
-                      {journeyData.audience}
-                    </span>
-                    {journeyData.status === "published" && (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <Globe className="w-3.5 h-3.5" />
-                        Active
-                      </span>
-                    )}
-                  </div>
-                </div>
+    <div className="min-h-screen bg-[#0f0f23]">
+      <header className="bg-[#1a1a2e]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
+                <LayoutGrid className="w-4 h-4" />
+                <span className="text-sm font-medium">My Flows</span>
+              </Link>
+              <div className="h-5 w-px bg-white/10" />
+              <div>
+                <h1 className="text-lg font-semibold text-white" data-testid="text-journey-name">
+                  {journeyData.name}
+                </h1>
               </div>
-              
-              <div className="flex gap-2 items-center">
-                <Button variant="ghost" size="sm" onClick={handlePreview} className="gap-2" data-testid="button-preview">
-                  <Eye className="w-4 h-4" />
-                  Preview
-                </Button>
-                <Button 
-                  onClick={handleSave} 
-                  size="sm"
-                  variant="outline"
-                  disabled={isSaving}
-                  data-testid="button-save"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
-                  Save
-                </Button>
-                <Button 
-                  onClick={handlePublish} 
-                  size="sm"
-                  className={journeyData.status === "published" ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}
-                  disabled={isPublishing}
-                  data-testid="button-publish"
-                >
-                  {isPublishing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : journeyData.status === "published" ? (
-                    <GlobeLock className="w-4 h-4 mr-2" />
-                  ) : (
-                    <Globe className="w-4 h-4 mr-2" />
-                  )}
-                  {journeyData.status === "published" ? "Unpublish" : "Publish"}
-                </Button>
-              </div>
+              {journeyData.status === "published" && (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+                  <Globe className="w-3 h-3" />
+                  Live
+                </span>
+              )}
+            </div>
+            
+            <div className="flex gap-3 items-center">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setLocation(`/journey/${journeyData.id}/settings`)}
+                className="text-white/60 hover:text-white hover:bg-white/10"
+                data-testid="button-settings"
+              >
+                Settings
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handlePreview} 
+                className="text-white/60 hover:text-white hover:bg-white/10"
+                data-testid="button-preview"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+              <Button 
+                onClick={handleSave} 
+                size="sm"
+                variant="outline"
+                disabled={isSaving}
+                className="border-white/20 text-white hover:bg-white/10"
+                data-testid="button-save"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                Save
+              </Button>
+              <Button 
+                onClick={handlePublish} 
+                size="sm"
+                className={journeyData.status === "published" 
+                  ? "bg-amber-600 hover:bg-amber-700" 
+                  : "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"}
+                disabled={isPublishing}
+                data-testid="button-publish"
+              >
+                {isPublishing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : journeyData.status === "published" ? (
+                  <GlobeLock className="w-4 h-4 mr-2" />
+                ) : (
+                  <Globe className="w-4 h-4 mr-2" />
+                )}
+                {journeyData.status === "published" ? "Unpublish" : "Publish"}
+              </Button>
             </div>
           </div>
         </div>
+      </header>
 
-        <div className="container mx-auto px-4 py-6">
+      <main>
+
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex gap-6">
-            <aside className="w-72 flex-shrink-0 hidden lg:block">
-              <div className="sticky top-36">
-                <Card className="overflow-hidden">
-                  <CardHeader className="py-3 px-4 bg-muted/50">
-                    <CardTitle className="text-sm font-medium">Flow Days</CardTitle>
-                  </CardHeader>
-                  <ScrollArea className="h-[calc(100vh-16rem)]">
+            <aside className="w-64 flex-shrink-0 hidden lg:block">
+              <div className="sticky top-24">
+                <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
+                  <div className="py-3 px-4 border-b border-white/10">
+                    <h3 className="text-sm font-medium text-white">Flow Days</h3>
+                  </div>
+                  <ScrollArea className="h-[calc(100vh-14rem)]">
                     <div className="p-2">
                       {journeyData.steps.map((step, index) => (
                         <button
                           key={step.id}
                           onClick={() => scrollToStep(step.id)}
-                          className={`w-full text-left p-3 rounded-lg mb-1 transition-all hover:bg-muted/80 ${
-                            activeStepId === step.id ? 'bg-primary/10 border-l-2 border-primary' : ''
+                          className={`w-full text-left p-3 rounded-lg mb-1 transition-all hover:bg-white/5 ${
+                            activeStepId === step.id ? 'bg-violet-500/20 border-l-2 border-violet-500' : ''
                           }`}
                           data-testid={`nav-step-${step.id}`}
                         >
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                               activeStepId === step.id 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted text-muted-foreground'
+                                ? 'bg-violet-600 text-white' 
+                                : 'bg-white/10 text-white/60'
                             }`}>
                               {index + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium leading-tight" style={{ wordBreak: 'break-word' }}>{step.title}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{step.blocks.length} blocks</p>
+                              <p className="text-sm font-medium text-white leading-tight" style={{ wordBreak: 'break-word' }}>{step.title}</p>
+                              <p className="text-xs text-white/40 mt-1">{step.blocks.length} blocks</p>
                             </div>
                           </div>
                         </button>
                       ))}
                     </div>
                   </ScrollArea>
-                </Card>
+                </div>
 
-                <Card className="mt-4">
-                  <CardHeader className="py-3 px-4">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Target className="w-4 h-4" />
+                <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-xl mt-4 overflow-hidden">
+                  <div className="py-3 px-4 border-b border-white/10">
+                    <h3 className="text-sm font-medium text-white flex items-center gap-2">
+                      <Target className="w-4 h-4 text-violet-400" />
                       Flow Goal
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="py-2 px-4">
-                    <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-journey-goal">
+                    </h3>
+                  </div>
+                  <div className="py-3 px-4">
+                    <p className="text-sm text-white/60 leading-relaxed" data-testid="text-journey-goal">
                       {journeyData.goal}
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             </aside>
 

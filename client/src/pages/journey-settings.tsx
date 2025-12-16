@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { useRoute, useLocation } from "wouter";
-import Header from "@/components/landing/Header";
+import { useRoute, useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronLeft, Loader2, Save, Pencil } from "lucide-react";
+import { ChevronLeft, Loader2, Save, Pencil, LayoutGrid } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi } from "@/lib/api";
 import type { Journey } from "@shared/schema";
@@ -79,137 +77,141 @@ const JourneySettingsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </main>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
   if (!journey) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pt-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Flow not found</h1>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Flow not found</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-go-journeys">
             Go to Flows
           </Button>
-        </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-12 pt-24">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-[#0f0f23]">
+      <header className="bg-[#1a1a2e]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
+                <LayoutGrid className="w-4 h-4" />
+                <span className="text-sm font-medium">My Flows</span>
+              </Link>
+              <div className="h-5 w-px bg-white/10" />
+              <h1 className="text-lg font-semibold text-white">Flow Settings</h1>
+            </div>
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => setLocation(`/journey/${journey.id}/edit`)}
-              className="gap-2"
+              className="text-white/60 hover:text-white hover:bg-white/10"
               data-testid="button-back-to-editor"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 mr-1" />
               Back to Editor
             </Button>
           </div>
+        </div>
+      </header>
 
-          <Card className="shadow-spiritual">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Pencil className="w-5 h-5" />
-                Flow Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+      <main className="max-w-2xl mx-auto px-6 py-8">
+        <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Pencil className="w-5 h-5 text-violet-400" />
+            <h2 className="text-xl font-semibold text-white">Edit Flow Details</h2>
+          </div>
+          <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-lg font-semibold">Flow Name *</Label>
-                <Input 
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder='e.g., "Healing the Heart"'
-                  className="text-lg"
-                  data-testid="input-journey-name"
-                />
-              </div>
+              <Label htmlFor="name" className="text-sm font-medium text-white">Flow Name *</Label>
+              <Input 
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder='e.g., "Healing the Heart"'
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                data-testid="input-journey-name"
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="goal" className="text-lg font-semibold">Main Goal *</Label>
-                <Textarea 
-                  id="goal"
-                  value={formData.goal}
-                  onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                  placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
-                  className="min-h-[100px]"
-                  data-testid="textarea-journey-goal"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="goal" className="text-sm font-medium text-white">Main Goal *</Label>
+              <Textarea 
+                id="goal"
+                value={formData.goal}
+                onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
+                className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                data-testid="textarea-journey-goal"
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="audience" className="text-lg font-semibold">Target Audience *</Label>
-                <Input 
-                  id="audience"
-                  value={formData.audience}
-                  onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
-                  placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
-                  data-testid="input-journey-audience"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="audience" className="text-sm font-medium text-white">Target Audience *</Label>
+              <Input 
+                id="audience"
+                value={formData.audience}
+                onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
+                placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                data-testid="input-journey-audience"
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-lg font-semibold">Duration *</Label>
-                <RadioGroup 
-                  value={formData.duration} 
-                  onValueChange={(value) => setFormData({ ...formData, duration: value })}
-                  className="flex flex-col space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" />
-                    <Label htmlFor="duration-3">3 days - Quick transformation</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" />
-                    <Label htmlFor="duration-7">7 days - Deep journey</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-lg font-semibold">Description</Label>
-                <p className="text-sm text-muted-foreground">Optional - Additional notes or vision for this journey</p>
-                <Textarea 
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder='e.g., "I want it to feel like entering a sacred temple"'
-                  className="min-h-[80px]"
-                  data-testid="textarea-journey-description"
-                />
-              </div>
-
-              <Button 
-                onClick={handleSave} 
-                className="w-full bg-primary hover:bg-primary/90" 
-                size="lg"
-                disabled={isSaving || !formData.name || !formData.goal || !formData.audience}
-                data-testid="button-save-settings"
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-white">Duration *</Label>
+              <RadioGroup 
+                value={formData.duration} 
+                onValueChange={(value) => setFormData({ ...formData, duration: value })}
+                className="flex flex-col space-y-2"
               >
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                Save & Return to Editor
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" className="border-white/30 text-violet-500" />
+                  <Label htmlFor="duration-3" className="text-white/80">3 days - Quick transformation</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" className="border-white/30 text-violet-500" />
+                  <Label htmlFor="duration-7" className="text-white/80">7 days - Deep flow</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium text-white">Description</Label>
+              <p className="text-xs text-white/40">Optional - Additional notes or vision for this flow</p>
+              <Textarea 
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder='e.g., "I want it to feel like entering a sacred temple"'
+                className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                data-testid="textarea-journey-description"
+              />
+            </div>
+
+            <Button 
+              onClick={handleSave} 
+              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90" 
+              size="lg"
+              disabled={isSaving || !formData.name || !formData.goal || !formData.audience}
+              data-testid="button-save-settings"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              Save & Return to Editor
+            </Button>
+          </div>
         </div>
       </main>
     </div>
