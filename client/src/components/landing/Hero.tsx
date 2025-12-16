@@ -35,7 +35,7 @@ const Hero = () => {
             powered by AI and your unique expertise.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="flex justify-center">
             <Link href="/dashboard">
               <Button 
                 size="lg" 
@@ -45,9 +45,6 @@ const Hero = () => {
                 Start Creating
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-            </Link>
-            <Link href="/pricing" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-1" data-testid="link-hero-pricing">
-              View Pricing <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
