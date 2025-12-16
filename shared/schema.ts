@@ -56,6 +56,9 @@ export const journeySteps = pgTable("journey_steps", {
   dayNumber: integer("day_number").notNull(),
   title: text("title").notNull(),
   description: text("description"),
+  goal: text("goal"),
+  explanation: text("explanation"),
+  task: text("task"),
 });
 
 export const insertJourneyStepSchema = createInsertSchema(journeySteps).omit({

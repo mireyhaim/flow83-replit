@@ -18,6 +18,9 @@ interface GeneratedDay {
   dayNumber: number;
   title: string;
   description: string;
+  goal: string;
+  explanation: string;
+  task: string;
   blocks: {
     type: string;
     content: {
@@ -27,6 +30,14 @@ interface GeneratedDay {
       affirmation?: string;
     };
   }[];
+}
+
+interface GeneratedDaySimple {
+  dayNumber: number;
+  title: string;
+  goal: string;
+  explanation: string;
+  task: string;
 }
 
 export async function generateJourneyContent(
@@ -76,7 +87,7 @@ Respond in JSON format:
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       {
         role: "system",
@@ -88,7 +99,7 @@ Respond in JSON format:
       }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.7,
+    max_completion_tokens: 8192,
   });
 
   const content = response.choices[0].message.content;
@@ -163,13 +174,69 @@ Important guidelines:
   messages.push({ role: "user", content: userMessage });
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages,
-    temperature: 0.8,
-    max_tokens: 500,
+    max_completion_tokens: 500,
   });
 
   return response.choices[0].message.content || "I'm here with you. Tell me more.";
+}
+
+export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
+  const prompt = `You are an expert in creating transformational journeys and personal development programs. Create a ${intent.duration}-day flow for the following:
+
+FLOW DETAILS:
+- Name: ${intent.journeyName}
+- Main Goal: ${intent.mainGoal}
+- Target Audience: ${intent.targetAudience}
+- Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
+- Additional Context: ${intent.additionalNotes || "none"}
+
+For each day, create:
+1. A title (short, inspiring name for the day)
+2. A goal (what the participant will achieve today - 1-2 sentences)
+3. An explanation (teaching content, insights, or guidance - 2-3 paragraphs)
+4. A task (practical exercise or action to take - be specific)
+
+Make each day build on the previous one, creating a clear progression toward the main goal.
+Keep the tone warm, personal, and supportive.
+
+Respond in JSON format:
+{
+  "days": [
+    {
+      "dayNumber": 1,
+      "title": "Day title",
+      "goal": "What the participant will achieve today",
+      "explanation": "Teaching content and guidance for this day...",
+      "task": "Specific exercise or action to take"
+    }
+  ]
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-5",
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert course designer who creates transformational journeys. Always respond with valid JSON only."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    max_completion_tokens: 8192,
+  });
+
+  const content = response.choices[0].message.content;
+  if (!content) {
+    throw new Error("No content generated");
+  }
+
+  const parsed = JSON.parse(content);
+  return parsed.days as GeneratedDaySimple[];
 }
 
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "messageHistory">): Promise<string> {
@@ -203,13 +270,12 @@ The message should:
 - Be medium length (3-5 sentences)`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: "Create an opening message for this day in the journey" },
     ],
-    temperature: 0.8,
-    max_tokens: 300,
+    max_completion_tokens: 300,
   });
 
   return response.choices[0].message.content || `Welcome to Day ${context.dayNumber}!`;

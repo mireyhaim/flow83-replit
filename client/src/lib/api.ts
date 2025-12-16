@@ -80,6 +80,14 @@ export const journeyApi = {
     return handleResponse(res);
   },
 
+  autoGenerate: async (id: string): Promise<{ success: boolean; stepsExist: boolean; steps: JourneyStep[] }> => {
+    const res = await fetch(`${API_BASE}/journeys/${id}/auto-generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    return handleResponse(res);
+  },
+
   generateContentWithProgress: (
     id: string, 
     content: string,

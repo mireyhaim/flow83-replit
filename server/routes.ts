@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays } from "./ai";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -566,6 +566,65 @@ export async function registerRoutes(
       } else {
         res.status(500).json({ error: "Failed to generate flow content" });
       }
+    }
+  });
+
+  // Auto-generate flow days when entering editor (if no steps exist)
+  app.post("/api/journeys/:id/auto-generate", isAuthenticated, async (req: any, res) => {
+    const journeyId = req.params.id;
+    
+    try {
+      const journey = await storage.getJourney(journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      // Check if steps already exist
+      const existingSteps = await storage.getJourneySteps(journeyId);
+      if (existingSteps.length > 0) {
+        return res.json({ success: true, stepsExist: true, steps: existingSteps });
+      }
+
+      // Generate new days using AI
+      const intent = {
+        journeyName: journey.name,
+        mainGoal: journey.goal || "",
+        targetAudience: journey.audience || "",
+        duration: journey.duration || 7,
+        desiredFeeling: "",
+        additionalNotes: journey.description || "",
+      };
+
+      const generatedDays = await generateFlowDays(intent);
+
+      // Save generated days to database with blocks for chat compatibility
+      const createdSteps = [];
+      for (const day of generatedDays) {
+        const step = await storage.createJourneyStep({
+          journeyId,
+          dayNumber: day.dayNumber,
+          title: day.title,
+          description: day.goal,
+          goal: day.goal,
+          explanation: day.explanation,
+          task: day.task,
+        });
+        
+        // Create blocks for chat compatibility
+        const blocksToInsert = [
+          { stepId: step.id, type: "text", content: { text: day.explanation }, orderIndex: 0 },
+          { stepId: step.id, type: "reflection", content: { question: `Reflecting on today's goal: ${day.goal}. What resonates with you about this?` }, orderIndex: 1 },
+          { stepId: step.id, type: "task", content: { task: day.task }, orderIndex: 2 },
+        ];
+        await storage.createJourneyBlocks(blocksToInsert);
+        
+        createdSteps.push(step);
+      }
+
+      res.json({ success: true, stepsExist: false, steps: createdSteps });
+    } catch (error) {
+      console.error("Error auto-generating flow:", error);
+      res.status(500).json({ error: "Failed to generate flow content" });
     }
   });
 
