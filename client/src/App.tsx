@@ -47,6 +47,7 @@ function Router() {
       <Route path="/journeys" component={JourneysPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
+      <Route path="/journey/create" component={JourneyCreatePage} />
       <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/settings" component={JourneySettingsPage} />
