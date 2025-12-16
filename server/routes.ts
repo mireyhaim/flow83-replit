@@ -33,6 +33,29 @@ export async function registerRoutes(
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  // Update user profile
+  app.put('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { firstName, lastName, email, bio, website, specialty } = req.body;
+      
+      const user = await storage.upsertUser({
+        id: userId,
+        firstName,
+        lastName,
+        email,
+        bio,
+        website,
+        specialty,
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
   
   // Journey routes - public read, authenticated write
   app.get("/api/journeys", async (req, res) => {

@@ -35,6 +35,7 @@ import BlogArticle from "@/pages/blog-article";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
+import ProfilePage from "@/pages/profile";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/method" component={MethodPage} />
       <Route path="/journeys" component={JourneysPage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
       <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
