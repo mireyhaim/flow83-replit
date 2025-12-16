@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, PenTool, LogOut, Plus, User, Search } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus, User, Search, Bell } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -10,6 +10,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
     { icon: PenTool, label: "Flows", href: "/journeys" },
     { icon: User, label: "My Profile", href: "/profile" },
+    { icon: Bell, label: "Notifications", href: "/settings/notifications" },
   ];
 
   return (

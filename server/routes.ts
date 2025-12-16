@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
@@ -175,9 +176,28 @@ export async function registerRoutes(
   app.put("/api/notification-settings", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const body = req.body;
+      
+      // Validate required fields are present
+      const notifyOptionSchema = z.enum(["email", "none"]);
+      const validationSchema = z.object({
+        notifyOnJoin: notifyOptionSchema,
+        notifyOnDayComplete: notifyOptionSchema,
+        notifyOnFlowComplete: notifyOptionSchema,
+        notifyOnInactivity: notifyOptionSchema,
+        inactivityThresholdDays: z.number().min(1).max(7),
+        dailySummary: notifyOptionSchema,
+        weeklySummary: notifyOptionSchema,
+      });
+      
+      const parsed = validationSchema.safeParse(body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid notification settings", details: parsed.error.issues });
+      }
+      
       const settings = await storage.upsertNotificationSettings({
         userId,
-        ...req.body,
+        ...parsed.data,
       });
       res.json(settings);
     } catch (error) {

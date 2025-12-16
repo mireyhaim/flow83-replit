@@ -37,6 +37,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
 import ProfilePage from "@/pages/profile";
+import NotificationSettingsPage from "@/pages/notification-settings";
 
 function Router() {
   return (
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/method" component={MethodPage} />
       <Route path="/journeys" component={JourneysPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/settings/notifications" component={NotificationSettingsPage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
       <Route path="/journey/create" component={JourneyCreatePage} />
       <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
