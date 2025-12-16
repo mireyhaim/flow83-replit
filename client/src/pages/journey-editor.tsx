@@ -315,117 +315,143 @@ const JourneyEditorPage = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {journeyData.steps.map((step, index) => {
-            const isExpanded = expandedDays.has(step.id);
-            
-            return (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleDay(step.id)}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-white/5 transition-colors"
-                  data-testid={`toggle-day-${step.dayNumber}`}
+        <div className="relative">
+          {/* Timeline spine */}
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-600/50 via-fuchsia-600/50 to-violet-600/30" />
+          
+          <div className="space-y-8">
+            {journeyData.steps.map((step, index) => {
+              const isExpanded = expandedDays.has(step.id);
+              const isComplete = step.goal && step.explanation && step.task;
+              
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="relative pl-16"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 flex items-center justify-center border border-violet-500/20">
-                      <span className="text-lg font-bold text-white">{step.dayNumber}</span>
+                  {/* Timeline node */}
+                  <button
+                    onClick={() => toggleDay(step.id)}
+                    className="absolute left-0 top-0 z-10 group"
+                    data-testid={`toggle-day-${step.dayNumber}`}
+                  >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isExpanded 
+                        ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-600/30" 
+                        : "bg-[#1a1a2e] border-2 border-violet-600/40 group-hover:border-violet-500"
+                    }`}>
+                      <span className={`text-lg font-bold ${isExpanded ? "text-white" : "text-white/70"}`}>
+                        {step.dayNumber}
+                      </span>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{step.title}</h3>
-                      <p className="text-sm text-white/50 line-clamp-1">{step.goal || "No goal set"}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {step.goal && step.explanation && step.task && (
-                      <CheckCircle className="w-5 h-5 text-emerald-400" />
-                    )}
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-white/40" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-white/40" />
-                    )}
-                  </div>
-                </button>
-                
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 pb-5 space-y-5 border-t border-white/5 pt-5">
-                        <div>
-                          <label className="block text-sm font-medium text-white/80 mb-2">
-                            Day Title
-                          </label>
-                          <Input
-                            value={step.title}
-                            onChange={(e) => updateStepField(step.id, "title", e.target.value)}
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                            data-testid={`input-title-${step.dayNumber}`}
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-violet-400 mb-2 flex items-center gap-2">
-                            <Target className="w-4 h-4" />
-                            Goal
-                          </label>
-                          <p className="text-xs text-white/40 mb-2">What will the participant achieve today?</p>
-                          <Textarea
-                            value={step.goal || ""}
-                            onChange={(e) => updateStepField(step.id, "goal", e.target.value)}
-                            placeholder="Describe the goal for this day..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 min-h-[80px]"
-                            data-testid={`textarea-goal-${step.dayNumber}`}
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-fuchsia-400 mb-2 flex items-center gap-2">
-                            <Edit3 className="w-4 h-4" />
-                            Explanation
-                          </label>
-                          <p className="text-xs text-white/40 mb-2">Teaching content, insights, or guidance for the participant</p>
-                          <Textarea
-                            value={step.explanation || ""}
-                            onChange={(e) => updateStepField(step.id, "explanation", e.target.value)}
-                            placeholder="Write the teaching content for this day..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 min-h-[150px]"
-                            data-testid={`textarea-explanation-${step.dayNumber}`}
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-emerald-400 mb-2 flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            Task
-                          </label>
-                          <p className="text-xs text-white/40 mb-2">Practical exercise or action for the participant to take</p>
-                          <Textarea
-                            value={step.task || ""}
-                            onChange={(e) => updateStepField(step.id, "task", e.target.value)}
-                            placeholder="Describe the task or exercise..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 min-h-[100px]"
-                            data-testid={`textarea-task-${step.dayNumber}`}
-                          />
-                        </div>
+                    {isComplete && (
+                      <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 text-white" />
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+                    )}
+                  </button>
+                  
+                  {/* Day content */}
+                  <div className="min-h-[48px]">
+                    <button
+                      onClick={() => toggleDay(step.id)}
+                      className="flex items-center gap-3 text-left group w-full"
+                    >
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white group-hover:text-violet-300 transition-colors">
+                          {step.title}
+                        </h3>
+                        {!isExpanded && (
+                          <p className="text-sm text-white/40 line-clamp-1 mt-1">
+                            {step.goal || "Click to edit this day"}
+                          </p>
+                        )}
+                      </div>
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-5 h-5 text-white/30" />
+                      </motion.div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-6 pb-4 space-y-6">
+                            <div>
+                              <Input
+                                value={step.title}
+                                onChange={(e) => updateStepField(step.id, "title", e.target.value)}
+                                className="bg-transparent border-0 border-b border-white/10 rounded-none text-white text-lg font-medium placeholder:text-white/30 focus-visible:ring-0 focus-visible:border-violet-500 px-0"
+                                placeholder="Day title..."
+                                data-testid={`input-title-${step.dayNumber}`}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                                <span className="text-sm font-medium text-violet-400">Goal</span>
+                              </div>
+                              <Textarea
+                                value={step.goal || ""}
+                                onChange={(e) => updateStepField(step.id, "goal", e.target.value)}
+                                placeholder="What will the participant achieve today?"
+                                className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[60px]"
+                                data-testid={`textarea-goal-${step.dayNumber}`}
+                              />
+                            </div>
+                            
+                            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400" />
+                                <span className="text-sm font-medium text-fuchsia-400">Explanation</span>
+                              </div>
+                              <Textarea
+                                value={step.explanation || ""}
+                                onChange={(e) => updateStepField(step.id, "explanation", e.target.value)}
+                                placeholder="Teaching content, insights, or guidance..."
+                                className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[120px]"
+                                data-testid={`textarea-explanation-${step.dayNumber}`}
+                              />
+                            </div>
+                            
+                            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                <span className="text-sm font-medium text-emerald-400">Task</span>
+                              </div>
+                              <Textarea
+                                value={step.task || ""}
+                                onChange={(e) => updateStepField(step.id, "task", e.target.value)}
+                                placeholder="Practical exercise or action for the participant..."
+                                className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[80px]"
+                                data-testid={`textarea-task-${step.dayNumber}`}
+                              />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {journeyData.steps.length === 0 && !isGenerating && (
