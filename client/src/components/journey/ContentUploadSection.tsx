@@ -105,55 +105,51 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
 
   return (
     <div className="space-y-8">
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-xl">Share Your Content & Method</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            To create a personalized digital flow for your clients, we need your unique content and methodology. 
-            Share your teachings, exercises, meditations, or any materials you use in your practice.
-          </p>
-          <div className="bg-background/50 rounded-lg p-4 space-y-2">
-            <p><strong>Flow:</strong> {journeyData.journeyName}</p>
-            <p><strong>Duration:</strong> {journeyData.duration?.[0]} days</p>
-            <p><strong>For:</strong> {journeyData.targetAudience}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 rounded-xl p-6">
+        <h3 className="text-xl font-semibold text-white mb-4">Share Your Content & Method</h3>
+        <p className="text-white/60 mb-4">
+          To create a personalized digital flow for your clients, we need your unique content and methodology. 
+          Share your teachings, exercises, meditations, or any materials you use in your practice.
+        </p>
+        <div className="bg-white/5 rounded-lg p-4 space-y-2">
+          <p className="text-white"><strong className="text-white/80">Flow:</strong> {journeyData.journeyName}</p>
+          <p className="text-white"><strong className="text-white/80">Duration:</strong> {journeyData.duration?.[0]} days</p>
+          <p className="text-white"><strong className="text-white/80">For:</strong> {journeyData.targetAudience}</p>
+        </div>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upload" className="flex items-center gap-2" data-testid="tab-upload">
+        <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10">
+          <TabsTrigger value="upload" className="flex items-center gap-2 text-white/60 data-[state=active]:bg-violet-600 data-[state=active]:text-white" data-testid="tab-upload">
             <Upload className="w-4 h-4" />
             Upload Files
           </TabsTrigger>
-          <TabsTrigger value="paste" className="flex items-center gap-2" data-testid="tab-paste">
+          <TabsTrigger value="paste" className="flex items-center gap-2 text-white/60 data-[state=active]:bg-violet-600 data-[state=active]:text-white" data-testid="tab-paste">
             <FileText className="w-4 h-4" />
             Paste Content
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="upload" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
+          <div className="bg-[#1a1a2e]/60 border border-white/10 rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-white/10">
+              <h4 className="flex items-center gap-2 text-lg font-semibold text-white">
+                <Upload className="w-5 h-5 text-violet-400" />
                 Upload Your Documents
-              </CardTitle>
-              <CardDescription>
+              </h4>
+              <p className="text-white/50 mt-1">
                 Upload PDF or text files containing your teachings, methods, or course materials.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800 dark:text-amber-200">
+              </p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-2 p-3 bg-amber-950/30 border border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-200">
                   <strong>Content limits:</strong> Up to 10 files, max 50MB per file
                 </div>
               </div>
               
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-violet-500/50 transition-colors">
                 <Input
                   type="file"
                   multiple
@@ -165,10 +161,10 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                 />
                 <Label htmlFor="file-upload" className="cursor-pointer">
                   <div className="space-y-4">
-                    <Upload className="w-12 h-12 mx-auto text-muted-foreground" />
+                    <Upload className="w-12 h-12 mx-auto text-white/40" />
                     <div>
-                      <p className="text-lg font-medium">Drop files here or click to browse</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-lg font-medium text-white">Drop files here or click to browse</p>
+                      <p className="text-sm text-white/50">
                         Supports PDF, Word (DOC/DOCX), and text files
                       </p>
                     </div>
@@ -178,37 +174,37 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
 
               {uploadedFiles.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="font-medium">Uploaded Files:</h4>
+                  <h4 className="font-medium text-white">Uploaded Files:</h4>
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-md" data-testid={`file-item-${index}`}>
+                    <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-md" data-testid={`file-item-${index}`}>
                       {getFileIcon()}
-                      <span className="flex-1 text-sm">{file.name}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="flex-1 text-sm text-white">{file.name}</span>
+                      <span className="text-xs text-white/50">
                         {(file.size / 1024 / 1024).toFixed(1)} MB
                       </span>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="paste" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
+          <div className="bg-[#1a1a2e]/60 border border-white/10 rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-white/10">
+              <h4 className="flex items-center gap-2 text-lg font-semibold text-white">
+                <FileText className="w-5 h-5 text-violet-400" />
                 Paste Your Existing Content
-              </CardTitle>
-              <CardDescription>
+              </h4>
+              <p className="text-white/50 mt-1">
                 Copy and paste text content, meditations, questions, or any written material you've already prepared.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800 dark:text-amber-200">
+              </p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-2 p-3 bg-amber-950/30 border border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-200">
                   <strong>Content limit:</strong> Up to 50,000 characters
                 </div>
               </div>
@@ -221,43 +217,41 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                     setTextContent(e.target.value);
                   }
                 }}
-                className="min-h-[300px] resize-none"
+                className="min-h-[300px] resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40"
                 data-testid="textarea-content"
               />
               <div className="mt-2 flex justify-between items-center">
-                <span className={`text-sm ${textContent.length > 45000 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                <span className={`text-sm ${textContent.length > 45000 ? 'text-amber-400 font-medium' : 'text-white/50'}`}>
                   {textContent.length.toLocaleString()} / 50,000 characters
                 </span>
                 {textContent.length > 45000 && (
-                  <span className="text-sm text-amber-600">Approaching limit</span>
+                  <span className="text-sm text-amber-400">Approaching limit</span>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
       </Tabs>
 
       {isGenerating && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{progressMessage}</span>
-                <span className="font-medium">{progress}%</span>
-              </div>
-              <Progress value={progress} className="h-2" data-testid="progress-bar" />
+        <div className="border border-violet-500/30 bg-violet-600/10 rounded-xl p-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">{progressMessage}</span>
+              <span className="font-medium text-white">{progress}%</span>
             </div>
-          </CardContent>
-        </Card>
+            <Progress value={progress} className="h-2" data-testid="progress-bar" />
+          </div>
+        </div>
       )}
 
       <div className="flex justify-between">
-        <Button variant="outline" size="lg" onClick={onBack} disabled={isGenerating} data-testid="button-back">
+        <Button variant="outline" size="lg" onClick={onBack} disabled={isGenerating} className="border-white/20 text-white hover:bg-white/10" data-testid="button-back">
           Back to Intent
         </Button>
         <Button 
-          className="bg-primary hover:bg-primary/90 shadow-spiritual" 
+          className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90" 
           size="lg"
           onClick={handleGenerateJourney}
           disabled={isGenerating || !hasContent}

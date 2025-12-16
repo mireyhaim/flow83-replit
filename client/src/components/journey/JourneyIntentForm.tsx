@@ -48,11 +48,11 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="journeyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">What's the name of your flow? *</FormLabel>
+              <FormLabel className="text-lg font-semibold text-white">What's the name of your flow? *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder='e.g., "Healing the Heart"' 
-                  className="text-lg"
+                  className="text-lg bg-white/5 border-white/10 text-white placeholder:text-white/40"
                   {...field} 
                 />
               </FormControl>
@@ -67,11 +67,11 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="mainGoal"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">What is the main goal or intention of this flow? *</FormLabel>
+              <FormLabel className="text-lg font-semibold text-white">What is the main goal or intention of this flow? *</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
-                  className="min-h-[100px]"
+                  className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
                   {...field} 
                 />
               </FormControl>
@@ -86,10 +86,11 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="targetAudience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">Who is this flow for? *</FormLabel>
+              <FormLabel className="text-lg font-semibold text-white">Who is this flow for? *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
                   {...field} 
                 />
               </FormControl>
@@ -104,16 +105,16 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="duration"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">How many days do you envision? *</FormLabel>
+              <FormLabel className="text-lg font-semibold text-white">How many days do you envision? *</FormLabel>
               <FormControl>
                 <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-2">
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" />
-                    <Label htmlFor="duration-3">3 days - Quick transformation</Label>
+                    <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" className="border-white/30 text-violet-500" />
+                    <Label htmlFor="duration-3" className="text-white/80">3 days - Quick transformation</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" />
-                    <Label htmlFor="duration-7">7 days - Deep flow</Label>
+                    <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" className="border-white/30 text-violet-500" />
+                    <Label htmlFor="duration-7" className="text-white/80">7 days - Deep flow</Label>
                   </div>
                 </RadioGroup>
               </FormControl>
@@ -129,11 +130,12 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="desiredFeeling"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">How would you like your users to feel by the end of the flow?</FormLabel>
-              <FormDescription>Optional - helps us understand the emotional transformation</FormDescription>
+              <FormLabel className="text-lg font-semibold text-white">How would you like your users to feel by the end of the flow?</FormLabel>
+              <FormDescription className="text-white/50">Optional - helps us understand the emotional transformation</FormDescription>
               <FormControl>
                 <Textarea 
                   placeholder='e.g., "Clear, safe, grounded, empowered"'
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
                   {...field} 
                 />
               </FormControl>
@@ -149,12 +151,12 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="additionalNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">Anything else you'd like to share or channel into this flow?</FormLabel>
-              <FormDescription>Optional - share your vision, energy, or special intentions</FormDescription>
+              <FormLabel className="text-lg font-semibold text-white">Anything else you'd like to share or channel into this flow?</FormLabel>
+              <FormDescription className="text-white/50">Optional - share your vision, energy, or special intentions</FormDescription>
               <FormControl>
                 <Textarea 
                   placeholder='e.g., "I want it to feel like entering a sacred temple"'
-                  className="min-h-[80px]"
+                  className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
                   {...field} 
                 />
               </FormControl>
@@ -163,7 +165,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           )}
         />
 
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 shadow-spiritual" size="lg">
+        <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90" size="lg">
           Continue to Content Upload
         </Button>
       </form>
