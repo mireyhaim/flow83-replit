@@ -21,7 +21,7 @@ const pricingPlans = [
   },
   {
     name: "Starter",
-    price: "$29",
+    price: "$18",
     period: "/month",
     description: "Great for launching your first journey",
     features: [
@@ -32,7 +32,7 @@ const pricingPlans = [
       "Content hosting (text/audio/video)",
       "Personal progress tracking per user"
     ],
-    popular: false
+    popular: true
   },
   {
     name: "Creator",
@@ -47,7 +47,7 @@ const pricingPlans = [
       "Content hosting (text/audio/video)",
       "Personal progress tracking per user"
     ],
-    popular: true
+    popular: false
   }
 ];
 
