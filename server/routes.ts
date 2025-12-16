@@ -63,7 +63,7 @@ export async function registerRoutes(
       const journeys = await storage.getJourneys();
       res.json(journeys);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch journeys" });
+      res.status(500).json({ error: "Failed to fetch flows" });
     }
   });
 
@@ -74,7 +74,7 @@ export async function registerRoutes(
       const journeys = await storage.getJourneysByCreator(userId);
       res.json(journeys);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch your journeys" });
+      res.status(500).json({ error: "Failed to fetch your flows" });
     }
   });
 
@@ -152,11 +152,11 @@ export async function registerRoutes(
     try {
       const journey = await storage.getJourney(req.params.id);
       if (!journey) {
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
       res.json(journey);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch journey" });
+      res.status(500).json({ error: "Failed to fetch flow" });
     }
   });
 
@@ -171,7 +171,7 @@ export async function registerRoutes(
       const journey = await storage.createJourney(parsed.data);
       res.status(201).json(journey);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create journey" });
+      res.status(500).json({ error: "Failed to create flow" });
     }
   });
 
@@ -179,11 +179,11 @@ export async function registerRoutes(
     try {
       const journey = await storage.updateJourney(req.params.id, req.body);
       if (!journey) {
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
       res.json(journey);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update journey" });
+      res.status(500).json({ error: "Failed to update flow" });
     }
   });
 
@@ -192,7 +192,7 @@ export async function registerRoutes(
       await storage.deleteJourney(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: "Failed to delete journey" });
+      res.status(500).json({ error: "Failed to delete flow" });
     }
   });
 
@@ -201,7 +201,7 @@ export async function registerRoutes(
     try {
       const journey = await storage.getJourney(req.params.id);
       if (!journey) {
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
       const steps = await storage.getJourneySteps(req.params.id);
       const stepsWithBlocks = await Promise.all(
@@ -212,7 +212,7 @@ export async function registerRoutes(
       );
       res.json({ ...journey, steps: stepsWithBlocks });
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch journey details" });
+      res.status(500).json({ error: "Failed to fetch flow details" });
     }
   });
 
@@ -502,10 +502,10 @@ export async function registerRoutes(
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
         if (useSSE) {
-          res.write(`data: ${JSON.stringify({ error: "Journey not found" })}\n\n`);
+          res.write(`data: ${JSON.stringify({ error: "Flow not found" })}\n\n`);
           return res.end();
         }
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
 
       sendProgress("ai", 10, "Creating content with AI...");
@@ -550,7 +550,7 @@ export async function registerRoutes(
         await storage.createJourneyBlocks(blocksToInsert);
       }
 
-      sendProgress("done", 100, "Journey created successfully!");
+      sendProgress("done", 100, "Flow created successfully!");
 
       if (useSSE) {
         res.write(`data: ${JSON.stringify({ success: true, daysGenerated: generatedDays.length })}\n\n`);
@@ -559,12 +559,12 @@ export async function registerRoutes(
         res.json({ success: true, daysGenerated: generatedDays.length });
       }
     } catch (error) {
-      console.error("Error generating journey content:", error);
+      console.error("Error generating flow content:", error);
       if (useSSE) {
-        res.write(`data: ${JSON.stringify({ error: "Failed to generate journey content" })}\n\n`);
+        res.write(`data: ${JSON.stringify({ error: "Failed to generate flow content" })}\n\n`);
         res.end();
       } else {
-        res.status(500).json({ error: "Failed to generate journey content" });
+        res.status(500).json({ error: "Failed to generate flow content" });
       }
     }
   });
@@ -582,7 +582,7 @@ export async function registerRoutes(
 
       const step = await storage.getJourneyStep(stepId);
       if (!step || step.journeyId !== participant.journeyId) {
-        return res.status(403).json({ error: "Step does not belong to this journey" });
+        return res.status(403).json({ error: "Step does not belong to this flow" });
       }
 
       const messages = await storage.getMessages(participantId, stepId);
@@ -605,7 +605,7 @@ export async function registerRoutes(
 
       const step = await storage.getJourneyStep(stepId);
       if (!step || step.journeyId !== participant.journeyId) {
-        return res.status(403).json({ error: "Step does not belong to this journey" });
+        return res.status(403).json({ error: "Step does not belong to this flow" });
       }
 
       const existingMessages = await storage.getMessages(participantId, stepId);
@@ -615,7 +615,7 @@ export async function registerRoutes(
 
       const journey = await storage.getJourney(step.journeyId);
       if (!journey) {
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
 
       const blocks = await storage.getJourneyBlocks(stepId);
@@ -659,12 +659,12 @@ export async function registerRoutes(
 
       const step = await storage.getJourneyStep(stepId);
       if (!step || step.journeyId !== participant.journeyId) {
-        return res.status(403).json({ error: "Step does not belong to this journey" });
+        return res.status(403).json({ error: "Step does not belong to this flow" });
       }
 
       const journey = await storage.getJourney(step.journeyId);
       if (!journey) {
-        return res.status(404).json({ error: "Journey not found" });
+        return res.status(404).json({ error: "Flow not found" });
       }
 
       const userMessage = await storage.createMessage({

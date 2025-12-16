@@ -233,9 +233,9 @@ const JourneyEditorPage = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8 pt-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Journey not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Flow not found</h1>
           <Button onClick={() => setLocation("/journeys/new")} data-testid="button-create-new">
-            Create New Journey
+            Create New Flow
           </Button>
         </main>
       </div>
@@ -338,7 +338,7 @@ const JourneyEditorPage = () => {
               <div className="sticky top-36">
                 <Card className="overflow-hidden">
                   <CardHeader className="py-3 px-4 bg-muted/50">
-                    <CardTitle className="text-sm font-medium">Journey Days</CardTitle>
+                    <CardTitle className="text-sm font-medium">Flow Days</CardTitle>
                   </CardHeader>
                   <ScrollArea className="h-[calc(100vh-16rem)]">
                     <div className="p-2">
@@ -374,7 +374,7 @@ const JourneyEditorPage = () => {
                   <CardHeader className="py-3 px-4">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Target className="w-4 h-4" />
-                      Journey Goal
+                      Flow Goal
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="py-2 px-4">

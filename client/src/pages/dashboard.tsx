@@ -55,10 +55,10 @@ export default function Dashboard() {
   const getActivityText = (event: ActivityEvent) => {
     const data = event.eventData as { userName?: string; journeyName?: string; dayNumber?: number } | null;
     switch (event.eventType) {
-      case 'joined': return `${data?.userName || 'Someone'} joined "${data?.journeyName || 'a journey'}"`;
+      case 'joined': return `${data?.userName || 'Someone'} joined "${data?.journeyName || 'a flow'}"`;
       case 'completed_day': return `${data?.userName || 'Someone'} completed day ${data?.dayNumber || '?'}`;
-      case 'completed_journey': return `${data?.userName || 'Someone'} finished "${data?.journeyName || 'a journey'}"`;
-      case 'feedback': return `New feedback on "${data?.journeyName || 'a journey'}"`;
+      case 'completed_journey': return `${data?.userName || 'Someone'} finished "${data?.journeyName || 'a flow'}"`;
+      case 'feedback': return `New feedback on "${data?.journeyName || 'a flow'}"`;
       default: return 'Activity recorded';
     }
   };
@@ -77,7 +77,7 @@ export default function Dashboard() {
         <div className="max-w-md text-center p-8">
           <h1 className="text-3xl font-bold mb-4 text-white">Welcome to Flow 83</h1>
           <p className="text-white/60 mb-8">
-            Transform your knowledge into powerful 7-day journeys that help others grow.
+            Transform your knowledge into powerful 7-day flows that help others grow.
           </p>
           <Button size="lg" asChild data-testid="button-login" className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90">
             <a href="/api/login">Sign In to Get Started</a>
@@ -110,7 +110,7 @@ export default function Dashboard() {
               Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
             </h1>
             <p className="text-white/50 text-sm mt-1" data-testid="text-welcome-message">
-              Here's what's happening with your journeys
+              Here's what's happening with your flows
             </p>
           </div>
           {onboarding.hasSeenOnboarding && (
@@ -145,7 +145,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="text-3xl font-bold text-white mb-1" data-testid="text-total-journeys">{stats?.totalJourneys ?? 0}</div>
-              <p className="text-sm text-white/50">Journeys</p>
+              <p className="text-sm text-white/50">Flows</p>
             </div>
 
             <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:border-cyan-500/30 transition-all" data-testid="card-total-participants">
@@ -205,10 +205,10 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="text-4xl font-bold text-white mb-2" data-testid="text-earnings">$0</div>
-              <p className="text-sm text-white/40 mb-6">Total earnings from all journeys</p>
+              <p className="text-sm text-white/40 mb-6">Total earnings from all flows</p>
               <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                 <p className="text-sm text-white/60">
-                  Payment integration coming soon. You'll be able to set prices for your journeys and collect payments automatically.
+                  Payment integration coming soon. You'll be able to set prices for your flows and collect payments automatically.
                 </p>
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">{p.user?.firstName || p.user?.email || 'Participant'}</p>
                         <p className="text-xs text-white/40 truncate">
-                          Day {p.currentDay} of {p.journey?.name || 'journey'}
+                          Day {p.currentDay} of {p.journey?.name || 'flow'}
                         </p>
                         <p className="text-xs text-orange-400">
                           Inactive {p.lastActiveAt && formatDistanceToNow(new Date(p.lastActiveAt))}

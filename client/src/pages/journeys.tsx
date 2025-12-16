@@ -45,7 +45,7 @@ export default function JourneysPage() {
       setDeleteJourneyId(null);
     },
     onError: () => {
-      toast({ title: "Failed to delete journey", variant: "destructive" });
+      toast({ title: "Failed to delete flow", variant: "destructive" });
     },
   });
 
@@ -60,13 +60,13 @@ export default function JourneysPage() {
     <DashboardLayout>
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-white" data-testid="text-journeys-title">My Journeys</h1>
-          <p className="text-white/50 text-sm mt-1">Manage your transformational journeys</p>
+          <h1 className="text-2xl font-semibold text-white" data-testid="text-journeys-title">My Flows</h1>
+          <p className="text-white/50 text-sm mt-1">Manage your transformational flows</p>
         </div>
         <Link href="/journeys/new">
           <Button data-testid="button-create-journey" className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90">
             <Plus className="mr-2 h-4 w-4" />
-            New Journey
+            New Flow
           </Button>
         </Link>
       </header>
@@ -80,11 +80,11 @@ export default function JourneysPage() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center mx-auto mb-4">
             <BookOpen className="h-8 w-8 text-violet-400" />
           </div>
-          <p className="text-white/60 mb-6">You haven't created any journeys yet.</p>
+          <p className="text-white/60 mb-6">You haven't created any flows yet.</p>
           <Link href="/journeys/new">
             <Button data-testid="button-create-first-journey" className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90">
               <Plus className="mr-2 h-4 w-4" />
-              Create Your First Journey
+              Create Your First Flow
             </Button>
           </Link>
         </div>
@@ -158,7 +158,7 @@ export default function JourneysPage() {
                   className="w-full mt-4 border-white/10 text-white/70 hover:bg-white/10 hover:text-white hover:border-violet-500/30"
                 >
                   <Pencil className="mr-2 h-3 w-3" />
-                  Edit Journey
+                  Edit Flow
                 </Button>
               </Link>
             </div>
@@ -169,9 +169,9 @@ export default function JourneysPage() {
       <AlertDialog open={!!deleteJourneyId} onOpenChange={(open) => !open && setDeleteJourneyId(null)}>
         <AlertDialogContent className="bg-[#1a1a2e] border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Journey?</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">Delete Flow?</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              This will permanently delete this journey and all its content. This action cannot be undone.
+              This will permanently delete this flow and all its content. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

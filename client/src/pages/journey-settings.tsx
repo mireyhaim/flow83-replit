@@ -69,7 +69,7 @@ const JourneySettingsPage = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save journey settings",
+        description: "Failed to save flow settings",
         variant: "destructive",
       });
     } finally {
@@ -93,9 +93,9 @@ const JourneySettingsPage = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8 pt-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Journey not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Flow not found</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-go-journeys">
-            Go to Journeys
+            Go to Flows
           </Button>
         </main>
       </div>
@@ -124,12 +124,12 @@ const JourneySettingsPage = () => {
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Pencil className="w-5 h-5" />
-                Journey Settings
+                Flow Settings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-lg font-semibold">Journey Name *</Label>
+                <Label htmlFor="name" className="text-lg font-semibold">Flow Name *</Label>
                 <Input 
                   id="name"
                   value={formData.name}

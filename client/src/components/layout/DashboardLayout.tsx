@@ -8,7 +8,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
-    { icon: PenTool, label: "Journeys", href: "/journeys" },
+    { icon: PenTool, label: "Flows", href: "/journeys" },
     { icon: User, label: "My Profile", href: "/profile" },
   ];
 
@@ -27,7 +27,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <input 
               type="text" 
               placeholder="Search..." 
-              aria-label="Search journeys and content"
+              aria-label="Search flows and content"
               className="bg-transparent border-none outline-none text-sm text-white/70 placeholder:text-white/30 w-full"
               data-testid="input-dashboard-search"
             />
@@ -61,7 +61,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90 transition-all w-full justify-center shadow-lg shadow-violet-500/20"
           >
             <Plus size={18} />
-            New Journey
+            New Flow
           </Link>
           <a 
             href="/api/logout"

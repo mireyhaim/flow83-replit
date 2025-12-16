@@ -9,7 +9,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
-  journeyName: z.string().min(1, "Journey name is required"),
+  journeyName: z.string().min(1, "Flow name is required"),
   mainGoal: z.string().min(10, "Please provide a detailed goal (minimum 10 characters)"),
   targetAudience: z.string().min(1, "Target audience is required"),
   duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
@@ -48,7 +48,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="journeyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">What's the name of your journey? *</FormLabel>
+              <FormLabel className="text-lg font-semibold">What's the name of your flow? *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder='e.g., "Healing the Heart"' 
@@ -67,7 +67,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="mainGoal"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">What is the main goal or intention of this journey? *</FormLabel>
+              <FormLabel className="text-lg font-semibold">What is the main goal or intention of this flow? *</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
@@ -86,7 +86,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="targetAudience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">Who is this journey for? *</FormLabel>
+              <FormLabel className="text-lg font-semibold">Who is this flow for? *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
@@ -113,7 +113,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" />
-                    <Label htmlFor="duration-7">7 days - Deep journey</Label>
+                    <Label htmlFor="duration-7">7 days - Deep flow</Label>
                   </div>
                 </RadioGroup>
               </FormControl>
@@ -129,7 +129,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="desiredFeeling"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">How would you like your users to feel by the end of the journey?</FormLabel>
+              <FormLabel className="text-lg font-semibold">How would you like your users to feel by the end of the flow?</FormLabel>
               <FormDescription>Optional - helps us understand the emotional transformation</FormDescription>
               <FormControl>
                 <Textarea 
@@ -149,7 +149,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           name="additionalNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-semibold">Anything else you'd like to share or channel into this journey?</FormLabel>
+              <FormLabel className="text-lg font-semibold">Anything else you'd like to share or channel into this flow?</FormLabel>
               <FormDescription>Optional - share your vision, energy, or special intentions</FormDescription>
               <FormControl>
                 <Textarea 

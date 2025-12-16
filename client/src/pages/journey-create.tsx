@@ -24,7 +24,7 @@ const JourneyCreatePage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
-              Let's create your personal journey
+              Let's create your personal flow
             </h1>
             <p className="text-xl text-muted-foreground">
               Guide your clients through a transformative process with Flow 83

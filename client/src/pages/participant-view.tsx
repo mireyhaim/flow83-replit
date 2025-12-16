@@ -100,11 +100,11 @@ export default function ParticipantView() {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold mb-2">No Journey Available</h2>
+          <h2 className="text-xl font-semibold mb-2">No Flow Available</h2>
           <p className="text-muted-foreground mb-4">
             {!tokenFromRoute 
-              ? "No published journeys are available yet. Check back soon!" 
-              : "This journey could not be found."}
+              ? "No published flows are available yet. Check back soon!" 
+              : "This flow could not be found."}
           </p>
           <Link href="/dashboard">
             <Button>Go to Dashboard</Button>
@@ -126,7 +126,7 @@ export default function ParticipantView() {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Journey not found</p>
+          <p className="text-muted-foreground mb-4">Flow not found</p>
           <Link href="/dashboard">
             <Button>Go to Dashboard</Button>
           </Link>
@@ -172,9 +172,9 @@ export default function ParticipantView() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-serif font-bold mb-2">Journey Complete!</h1>
+          <h1 className="text-2xl font-serif font-bold mb-2">Flow Complete!</h1>
           <p className="text-muted-foreground mb-6">
-            Congratulations on completing "{journey.name}". Your transformational journey is complete.
+            Congratulations on completing "{journey.name}". Your transformational flow is complete.
           </p>
           <Link href="/dashboard">
             <Button className="w-full">Back to Home</Button>

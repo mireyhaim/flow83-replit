@@ -68,7 +68,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         return;
       }
 
-      setProgressMessage("Creating journey...");
+      setProgressMessage("Creating flow...");
       setProgress(2);
 
       const journey = await journeyApi.create({
@@ -89,7 +89,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate journey. Please try again.",
+        description: "Failed to generate flow. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -111,11 +111,11 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            To create a personalized digital journey for your clients, we need your unique content and methodology. 
+            To create a personalized digital flow for your clients, we need your unique content and methodology. 
             Share your teachings, exercises, meditations, or any materials you use in your practice.
           </p>
           <div className="bg-background/50 rounded-lg p-4 space-y-2">
-            <p><strong>Journey:</strong> {journeyData.journeyName}</p>
+            <p><strong>Flow:</strong> {journeyData.journeyName}</p>
             <p><strong>Duration:</strong> {journeyData.duration?.[0]} days</p>
             <p><strong>For:</strong> {journeyData.targetAudience}</p>
           </div>
@@ -214,7 +214,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
               </div>
               
               <Textarea
-                placeholder="Paste your content here... This could include meditations, reflection questions, instructions, or any other text-based content for your journey."
+                placeholder="Paste your content here... This could include meditations, reflection questions, instructions, or any other text-based content for your flow."
                 value={textContent}
                 onChange={(e) => {
                   if (e.target.value.length <= 50000) {
@@ -271,7 +271,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2" />
-              Generate Journey with AI
+              Generate Flow with AI
             </>
           )}
         </Button>
