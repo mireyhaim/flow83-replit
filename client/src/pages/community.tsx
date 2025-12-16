@@ -1,6 +1,7 @@
 import Header from "@/components/landing/Header";
 import { Button } from "@/components/ui/button";
 import { Users, Star, Award, TrendingUp } from "lucide-react";
+import { Link } from "wouter";
 import CommunityFlowsShowcase from "@/components/landing/CommunityFlowsShowcase";
 import communityHero from "@/assets/community-hero.jpg";
 
@@ -26,9 +27,11 @@ const Community = () => {
               <p className="text-xl text-muted-foreground mb-8">
                 Connect with expert therapists, coaches, and healers who are transforming lives through personalized digital flows
               </p>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
-                Join Our Community
-              </Button>
+              <Link href="/journeys/new">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
+                  Join Our Community
+                </Button>
+              </Link>
             </div>
             <div className="relative">
               <img 
@@ -69,9 +72,11 @@ const Community = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Start creating transformative flows and connect with like-minded professionals
           </p>
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
-            Become a Creator
-          </Button>
+          <Link href="/journeys/new">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
+              Become a Creator
+            </Button>
+          </Link>
         </section>
       </main>
     </div>
