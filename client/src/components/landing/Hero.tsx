@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 
 const Hero = () => {
@@ -35,35 +35,23 @@ const Hero = () => {
             powered by AI and your unique expertise.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link href="/dashboard">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-7 h-auto rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 shadow-lg shadow-violet-500/25 transition-all duration-300 hover:shadow-violet-500/40 hover:scale-105"
+                className="text-lg px-8 py-6 h-auto rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 shadow-lg shadow-violet-500/25 transition-all duration-300 hover:shadow-violet-500/40 hover:scale-105"
                 data-testid="button-hero-get-started"
               >
-                Start Creating Free
+                Start Creating
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Link href="/pricing">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="text-lg px-8 py-7 h-auto rounded-full border-white/20 text-white hover:bg-white/10 transition-all duration-300"
-                data-testid="button-hero-pricing"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                View Pricing
-              </Button>
+            <Link href="/pricing" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-1" data-testid="link-hero-pricing">
+              View Pricing <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
           <div className="mt-16 flex flex-wrap justify-center gap-8 text-white/40">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-sm">No credit card required</span>
-            </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-violet-400" />
               <span className="text-sm">AI-powered content creation</span>
