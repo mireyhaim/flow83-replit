@@ -1,45 +1,43 @@
-import { Sparkles, Target, Users, Zap, Share2, DollarSign } from "lucide-react";
+import { Sparkles, Users, DollarSign, Palette, BarChart3, Settings2 } from "lucide-react";
 
-const features = [
+const benefits = [
   {
-    icon: Upload,
-    title: "Upload Your Content",
-    description: "Easily upload texts, meditations, videos, and any content that represents your unique approach.",
+    icon: Sparkles,
+    title: "AI-Powered Creation",
+    description: "Save hours of work with automatic journey generation from your existing content.",
     gradient: "from-violet-500 to-violet-600"
   },
   {
-    icon: Target,
-    title: "Build Structured Journeys",
-    description: "Create personalized multi-day processes with themes, exercises, and progressions.",
-    gradient: "from-fuchsia-500 to-fuchsia-600"
-  },
-  {
     icon: Users,
-    title: "Define Your Audience",
-    description: "Specify target audiences to ensure your journeys reach the right people.",
+    title: "Reach More People",
+    description: "Scale from 1:1 sessions to dozens or hundreds of clients simultaneously.",
     gradient: "from-cyan-500 to-cyan-600"
   },
   {
-    icon: Zap,
-    title: "AI-Enhanced Creation",
-    description: "Get intelligent assistance to optimize content and enhance transformational impact.",
-    gradient: "from-amber-500 to-orange-500"
-  },
-  {
-    icon: Share2,
-    title: "Share Seamlessly",
-    description: "Distribute through personalized pages and links, making your wisdom accessible.",
+    icon: DollarSign,
+    title: "Passive Income",
+    description: "Create sustainable income from what you already know and teach.",
     gradient: "from-emerald-500 to-emerald-600"
   },
   {
-    icon: DollarSign,
-    title: "Monetize Your Wisdom",
-    description: "Create sustainable income streams by sharing your transformational content.",
+    icon: Palette,
+    title: "Professional Look",
+    description: "Beautiful, designed pages without needing a designer or developer.",
+    gradient: "from-fuchsia-500 to-fuchsia-600"
+  },
+  {
+    icon: BarChart3,
+    title: "Track Progress",
+    description: "Monitor every participant's journey and engagement in real-time.",
+    gradient: "from-amber-500 to-orange-500"
+  },
+  {
+    icon: Settings2,
+    title: "Full Control",
+    description: "Edit and adjust at any moment, with no tech dependencies.",
     gradient: "from-rose-500 to-pink-600"
   }
 ];
-
-import { Upload } from "lucide-react";
 
 const Features = () => {
   return (
@@ -52,31 +50,31 @@ const Features = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-20">
           <span className="text-fuchsia-400 text-sm font-medium tracking-wider uppercase mb-4 block">
-            Everything You Need
+            Why Choose Us
           </span>
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Why Join as a Guide?
+            Why Flow 83?
           </h2>
           <p className="text-xl text-white/50 max-w-3xl mx-auto">
-            Transform your wisdom into powerful digital experiences that guide others on their journey.
+            Everything you need to transform your expertise into a scalable digital business.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {features.map((feature, index) => (
+          {benefits.map((benefit, index) => (
             <div 
               key={index}
               className="group bg-[#1a1a2e]/40 backdrop-blur-sm border border-white/5 rounded-2xl p-8 hover:border-white/10 transition-all duration-300 hover:bg-[#1a1a2e]/60"
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="w-6 h-6 text-white" />
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${benefit.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <benefit.icon className="w-6 h-6 text-white" />
               </div>
               
               <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
+                {benefit.title}
               </h3>
               <p className="text-white/50 leading-relaxed">
-                {feature.description}
+                {benefit.description}
               </p>
             </div>
           ))}
