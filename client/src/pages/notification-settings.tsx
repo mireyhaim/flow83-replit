@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { 
-  Bell, Loader2, Save, Mail, 
+  Bell, Loader2, Save, 
   Users, Trophy, AlertTriangle, Calendar, Clock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -232,54 +232,6 @@ const NotificationSettingsPage = () => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-fuchsia-600/20 flex items-center justify-center">
-                <Mail className="w-5 h-5 text-fuchsia-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white">Summary Emails</h2>
-                <p className="text-sm text-white/50">Receive periodic summaries of activity</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="flex items-center justify-between py-3 border-b border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-violet-600/20 flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-violet-400" />
-                  </div>
-                  <div>
-                    <Label className="text-white font-medium">Daily Summary</Label>
-                    <p className="text-xs text-white/40">Get a daily digest of all activity</p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={settings.dailySummary === "email"}
-                  onCheckedChange={(checked) => updateSetting("dailySummary", checked ? "email" : "none")}
-                  data-testid="switch-daily-summary"
-                />
-              </div>
-
-              <div className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-fuchsia-600/20 flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-fuchsia-400" />
-                  </div>
-                  <div>
-                    <Label className="text-white font-medium">Weekly Summary</Label>
-                    <p className="text-xs text-white/40">Get a weekly overview of your flows</p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={settings.weeklySummary === "email"}
-                  onCheckedChange={(checked) => updateSetting("weeklySummary", checked ? "email" : "none")}
-                  data-testid="switch-weekly-summary"
-                />
-              </div>
             </div>
           </div>
 
