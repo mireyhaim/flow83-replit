@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import ContentBlock from "./ContentBlock";
-import AddBlockDialog from "./AddBlockDialog";
-import { ChevronDown, ChevronUp, Plus, Edit2, Check, X } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { ChevronDown, ChevronUp, Edit2, Check, X, Target, BookOpen, CheckSquare } from "lucide-react";
 
 interface Block {
   id: string;
@@ -40,19 +39,20 @@ const JourneyStep = ({
 }: JourneyStepProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editTitle, setEditTitle] = useState(step.title);
-  const [editDescription, setEditDescription] = useState(step.description);
-  const [showAddBlock, setShowAddBlock] = useState(false);
+  const [editingField, setEditingField] = useState<string | null>(null);
+
+  const goalBlock = step.blocks.find(b => b.type === 'goal') || { id: '', type: 'goal', content: '' };
+  const explanationBlock = step.blocks.find(b => b.type === 'text' || b.type === 'explanation') || { id: '', type: 'explanation', content: '' };
+  const taskBlock = step.blocks.find(b => b.type === 'task') || { id: '', type: 'task', content: '' };
+
+  const [editGoal, setEditGoal] = useState(goalBlock.content);
+  const [editExplanation, setEditExplanation] = useState(explanationBlock.content);
+  const [editTask, setEditTask] = useState(taskBlock.content);
 
   const handleSaveTitle = () => {
     onUpdate({ title: editTitle });
     setIsEditingTitle(false);
-  };
-
-  const handleSaveDescription = () => {
-    onUpdate({ description: editDescription });
-    setIsEditingDescription(false);
   };
 
   const handleCancelTitle = () => {
@@ -60,56 +60,91 @@ const JourneyStep = ({
     setIsEditingTitle(false);
   };
 
-  const handleCancelDescription = () => {
-    setEditDescription(step.description);
-    setIsEditingDescription(false);
-  };
-
-  const addBlock = (newBlock: Block) => {
-    if (onAddBlock) {
-      onAddBlock(newBlock.type, newBlock.content);
-    } else {
-      const updatedBlocks = [...step.blocks, newBlock];
-      onUpdate({ blocks: updatedBlocks });
+  const handleSaveField = (field: string) => {
+    if (field === 'goal') {
+      if (goalBlock.id && onUpdateBlock) {
+        onUpdateBlock(goalBlock.id, editGoal);
+      } else if (onAddBlock && editGoal.trim()) {
+        onAddBlock('goal', editGoal);
+      }
+    } else if (field === 'explanation') {
+      if (explanationBlock.id && onUpdateBlock) {
+        onUpdateBlock(explanationBlock.id, editExplanation);
+      } else if (onAddBlock && editExplanation.trim()) {
+        onAddBlock('text', editExplanation);
+      }
+    } else if (field === 'task') {
+      if (taskBlock.id && onUpdateBlock) {
+        onUpdateBlock(taskBlock.id, editTask);
+      } else if (onAddBlock && editTask.trim()) {
+        onAddBlock('task', editTask);
+      }
     }
+    setEditingField(null);
   };
 
-  const updateBlock = (blockId: string, updatedContent: string) => {
-    if (onUpdateBlock) {
-      onUpdateBlock(blockId, updatedContent);
-    } else {
-      const updatedBlocks = step.blocks.map(block =>
-        block.id === blockId ? { ...block, content: updatedContent } : block
-      );
-      onUpdate({ blocks: updatedBlocks });
-    }
+  const handleCancelField = (field: string) => {
+    if (field === 'goal') setEditGoal(goalBlock.content);
+    if (field === 'explanation') setEditExplanation(explanationBlock.content);
+    if (field === 'task') setEditTask(taskBlock.content);
+    setEditingField(null);
   };
 
-  const deleteBlock = (blockId: string) => {
-    if (onDeleteBlock) {
-      onDeleteBlock(blockId);
-    } else {
-      const updatedBlocks = step.blocks.filter(block => block.id !== blockId);
-      onUpdate({ blocks: updatedBlocks });
-    }
-  };
-
-  const moveBlock = (blockId: string, direction: 'up' | 'down') => {
-    const currentIndex = step.blocks.findIndex(block => block.id === blockId);
-    if (
-      (direction === 'up' && currentIndex === 0) ||
-      (direction === 'down' && currentIndex === step.blocks.length - 1)
-    ) {
-      return;
-    }
-
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    const updatedBlocks = [...step.blocks];
-    [updatedBlocks[currentIndex], updatedBlocks[newIndex]] = 
-    [updatedBlocks[newIndex], updatedBlocks[currentIndex]];
-    
-    onUpdate({ blocks: updatedBlocks });
-  };
+  const renderEditableSection = (
+    field: string,
+    icon: React.ReactNode,
+    label: string,
+    value: string,
+    editValue: string,
+    setEditValue: (val: string) => void,
+    color: string
+  ) => (
+    <div className={`p-4 rounded-lg border ${color}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          {icon}
+          <Label className="font-semibold text-sm">{label}</Label>
+        </div>
+        {editingField !== field && (
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onClick={() => setEditingField(field)}
+            data-testid={`button-edit-${field}`}
+          >
+            <Edit2 className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+      
+      {editingField === field ? (
+        <div className="space-y-2">
+          <Textarea
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            rows={3}
+            className="w-full"
+            placeholder={`הכנס ${label}...`}
+            data-testid={`textarea-${field}`}
+          />
+          <div className="flex justify-start gap-2">
+            <Button size="sm" variant="outline" onClick={() => handleCancelField(field)}>
+              <X className="w-4 h-4 ml-1" />
+              ביטול
+            </Button>
+            <Button size="sm" onClick={() => handleSaveField(field)}>
+              <Check className="w-4 h-4 ml-1" />
+              שמור
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-foreground leading-relaxed" data-testid={`text-${field}`}>
+          {value || <span className="italic text-muted-foreground">לחץ לעריכה...</span>}
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <Card className="shadow-spiritual border-r-4 border-r-primary/20 hover:border-r-primary/40 transition-colors" data-testid={`step-card-${step.id}`}>
@@ -160,81 +195,39 @@ const JourneyStep = ({
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
-
-        {isExpanded && (
-          <div className="mt-4 mr-14">
-            {isEditingDescription ? (
-              <div className="flex items-start gap-2">
-                <Textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  className="flex-1"
-                  onClick={(e) => e.stopPropagation()}
-                  data-testid="textarea-step-description"
-                />
-                <div className="flex flex-col gap-1">
-                  <Button size="sm" variant="ghost" onClick={handleSaveDescription} data-testid="button-save-description">
-                    <Check className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={handleCancelDescription} data-testid="button-cancel-description">
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-start gap-2">
-                <p className="text-muted-foreground flex-1" data-testid="text-step-description">
-                  {step.description || <span className="italic text-muted-foreground/50">לחץ לעריכה...</span>}
-                </p>
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditingDescription(true);
-                  }}
-                  data-testid="button-edit-description"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
       </CardHeader>
 
       {isExpanded && (
-        <CardContent>
-          <div className="space-y-4">
-            {step.blocks.map((block, index) => (
-              <ContentBlock
-                key={block.id}
-                block={block}
-                onUpdate={(content) => updateBlock(block.id, content)}
-                onDelete={() => deleteBlock(block.id)}
-                onMoveUp={index > 0 ? () => moveBlock(block.id, 'up') : undefined}
-                onMoveDown={index < step.blocks.length - 1 ? () => moveBlock(block.id, 'down') : undefined}
-              />
-            ))}
-
-            <div className="pt-4 border-t border-border">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowAddBlock(true)}
-                className="gap-2 w-full"
-                data-testid="button-add-block"
-              >
-                <Plus className="w-4 h-4" />
-                הוסף בלוק
-              </Button>
-            </div>
-          </div>
-
-          <AddBlockDialog
-            isOpen={showAddBlock}
-            onClose={() => setShowAddBlock(false)}
-            onAdd={addBlock}
-          />
+        <CardContent className="space-y-4">
+          {renderEditableSection(
+            'goal',
+            <Target className="w-4 h-4 text-purple-600" />,
+            'מטרת היום',
+            goalBlock.content,
+            editGoal,
+            setEditGoal,
+            'bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-800'
+          )}
+          
+          {renderEditableSection(
+            'explanation',
+            <BookOpen className="w-4 h-4 text-blue-600" />,
+            'הסבר',
+            explanationBlock.content,
+            editExplanation,
+            setEditExplanation,
+            'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800'
+          )}
+          
+          {renderEditableSection(
+            'task',
+            <CheckSquare className="w-4 h-4 text-green-600" />,
+            'משימה למשתמש',
+            taskBlock.content,
+            editTask,
+            setEditTask,
+            'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800'
+          )}
         </CardContent>
       )}
     </Card>
