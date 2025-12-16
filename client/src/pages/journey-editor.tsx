@@ -334,7 +334,7 @@ const JourneyEditorPage = () => {
 
         <div className="container mx-auto px-4 py-6">
           <div className="flex gap-6">
-            <aside className="w-64 flex-shrink-0 hidden lg:block">
+            <aside className="w-72 flex-shrink-0 hidden lg:block">
               <div className="sticky top-36">
                 <Card className="overflow-hidden">
                   <CardHeader className="py-3 px-4 bg-muted/50">
@@ -360,8 +360,8 @@ const JourneyEditorPage = () => {
                               {index + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{step.title}</p>
-                              <p className="text-xs text-muted-foreground">{step.blocks.length} בלוקים</p>
+                              <p className="text-sm font-medium leading-tight" style={{ wordBreak: 'break-word' }}>{step.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{step.blocks.length} בלוקים</p>
                             </div>
                           </div>
                         </button>
