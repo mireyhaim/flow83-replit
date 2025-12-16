@@ -1,46 +1,60 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Heart } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 
 const CallToAction = () => {
   return (
-    <section className="py-24 gradient-hero">
-      <div className="container mx-auto px-6">
-        <Card className="max-w-5xl mx-auto gradient-card shadow-spiritual border-0 overflow-hidden relative">
-           <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm z-0"></div>
-          <CardContent className="p-12 md:p-20 text-center relative z-10">
-            <div className="flex justify-center mb-8">
-              <div className="p-6 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 animate-pulse">
-                <Heart className="w-16 h-16 text-primary" strokeWidth={1.5} />
-              </div>
+    <section className="py-32 bg-[#0f0f23] relative overflow-hidden">
+      <div className="absolute inset-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-violet-600/10 blur-[150px]" />
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+            <Sparkles className="w-4 h-4 text-fuchsia-400" />
+            <span className="text-sm text-white/70">Join thousands of guides</span>
+          </div>
+          
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 tracking-tight">
+            <span className="text-white">Ready to Share </span>
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+              Your Gift?
+            </span>
+          </h2>
+          
+          <p className="text-xl md:text-2xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Start creating transformational digital journeys that will touch lives and create lasting impact.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/dashboard">
+              <Button 
+                size="lg"
+                className="text-lg px-10 py-8 h-auto rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 shadow-lg shadow-violet-500/25 transition-all duration-300 hover:shadow-violet-500/40 hover:scale-105"
+                data-testid="button-cta-get-started"
+              >
+                Start Your Journey as a Guide
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="mt-12 flex flex-wrap justify-center gap-8 text-white/40">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-sm">Free to start</span>
             </div>
-            
-            <h2 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tracking-tight">
-              Ready to Share Your Gift?
-            </h2>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Join Flow 83 today and start creating transformational digital journeys that will touch lives and create lasting impact. Your wisdom deserves to flow freely.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Link href="/dashboard">
-                <Button 
-                  size="lg"
-                  className="text-lg px-12 py-8 h-auto rounded-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  Start Your Journey as a Guide
-                  <ArrowRight className="w-6 h-6 ml-2" />
-                </Button>
-              </Link>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-violet-400" />
+              <span className="text-sm">No technical skills needed</span>
             </div>
-            
-            <p className="text-sm text-muted-foreground mt-8 opacity-80">
-              Join thousands of guides already creating impact through Flow 83
-            </p>
-          </CardContent>
-        </Card>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-fuchsia-400" />
+              <span className="text-sm">Built-in monetization</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

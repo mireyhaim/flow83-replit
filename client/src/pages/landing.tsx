@@ -1,25 +1,24 @@
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
+import HowItWorks from "@/components/landing/HowItWorks";
 import CallToAction from "@/components/landing/CallToAction";
 import Footer from "@/components/landing/Footer";
 import { useEffect } from "react";
 
 const LandingPage = () => {
-  // Add some simple entry animations on mount
   useEffect(() => {
     document.body.classList.add("overflow-x-hidden");
     return () => document.body.classList.remove("overflow-x-hidden");
   }, []);
 
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-primary/20 selection:text-primary">
+    <div className="min-h-screen bg-[#0f0f23] font-sans selection:bg-violet-500/20 selection:text-violet-300">
       <Header />
       <main>
         <Hero />
+        <HowItWorks />
         <Features />
-        {/* Testimonials and BusinessSuccessStories skipped for MVP speed, can add later */}
-        {/* ExampleJourneys skipped for MVP */}
         <CallToAction />
       </main>
       <Footer />

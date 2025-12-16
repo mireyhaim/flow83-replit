@@ -1,96 +1,83 @@
 import { Link } from "wouter";
-import { Mail, Phone, MapPin, Twitter, Linkedin, Github } from "lucide-react";
+import { Mail, Twitter, Linkedin, Github } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-background to-muted/50 border-t border-border">
+    <footer className="bg-[#0a0a1a] border-t border-white/5">
       <div className="container mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {/* Brand Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1 space-y-6">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Flow 83
-              </span>
-            </div>
-            <p className="text-muted-foreground leading-relaxed max-w-sm text-lg">
+            <span className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+              Flow 83
+            </span>
+            <p className="text-white/40 leading-relaxed max-w-sm">
               Create personalized digital journeys that transform lives through wisdom and AI.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" className="p-3 bg-muted rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Twitter className="w-5 h-5" />
+            <div className="flex items-center gap-3">
+              <a href="#" className="p-2.5 bg-white/5 rounded-lg hover:bg-violet-500/20 hover:text-violet-400 transition-colors text-white/40">
+                <Twitter className="w-4 h-4" />
               </a>
-              <a href="#" className="p-3 bg-muted rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Linkedin className="w-5 h-5" />
+              <a href="#" className="p-2.5 bg-white/5 rounded-lg hover:bg-violet-500/20 hover:text-violet-400 transition-colors text-white/40">
+                <Linkedin className="w-4 h-4" />
               </a>
-              <a href="#" className="p-3 bg-muted rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Github className="w-5 h-5" />
+              <a href="#" className="p-2.5 bg-white/5 rounded-lg hover:bg-violet-500/20 hover:text-violet-400 transition-colors text-white/40">
+                <Github className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Platform Links */}
           <div className="space-y-6">
-            <h3 className="font-semibold text-foreground text-xl">Platform</h3>
-            <nav className="flex flex-col space-y-4">
-              <Link href="/dashboard" className="text-muted-foreground hover:text-primary transition-colors flex items-center group cursor-pointer">
-                <span className="group-hover:translate-x-1 transition-transform">Create Journey</span>
+            <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Platform</h3>
+            <nav className="flex flex-col space-y-3">
+              <Link href="/dashboard" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Create Journey
               </Link>
-              <Link href="/community" className="text-muted-foreground hover:text-primary transition-colors flex items-center group cursor-pointer">
-                <span className="group-hover:translate-x-1 transition-transform">Community</span>
+              <Link href="/pricing" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Pricing
               </Link>
-              <Link href="/pricing" className="text-muted-foreground hover:text-primary transition-colors flex items-center group cursor-pointer">
-                <span className="group-hover:translate-x-1 transition-transform">Pricing</span>
+              <Link href="/community" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Community
               </Link>
-              <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors flex items-center group cursor-pointer">
-                <span className="group-hover:translate-x-1 transition-transform">Blog</span>
-              </Link>
-              <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors flex items-center group cursor-pointer">
-                <span className="group-hover:translate-x-1 transition-transform">Contact</span>
+              <Link href="/blog" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Blog
               </Link>
             </nav>
           </div>
 
-          {/* Contact Info */}
           <div className="space-y-6">
-            <h3 className="font-semibold text-foreground text-xl">Get in Touch</h3>
-            <div className="space-y-4">
-              <a href="mailto:hello@flow83.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group">
-                <div className="p-3 bg-muted rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <span>hello@flow83.com</span>
-              </a>
-              <a href="tel:+15551234567" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group">
-                <div className="p-3 bg-muted rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <Phone className="w-5 h-5" />
-                </div>
-                <span>+1 (555) 123-4567</span>
-              </a>
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <div className="p-3 bg-muted rounded-lg">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <span>San Francisco, CA</span>
-              </div>
-            </div>
+            <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Resources</h3>
+            <nav className="flex flex-col space-y-3">
+              <Link href="/contact" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Contact
+              </Link>
+              <Link href="/privacy-policy" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Privacy Policy
+              </Link>
+              <Link href="/terms-of-service" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
+                Terms of Service
+              </Link>
+            </nav>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Contact</h3>
+            <a href="mailto:hello@flow83.com" className="flex items-center gap-3 text-white/40 hover:text-white transition-colors group text-sm">
+              <Mail className="w-4 h-4" />
+              <span>hello@flow83.com</span>
+            </a>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-border mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-sm text-muted-foreground">
-            © 2024 Flow 83. All rights reserved. Built with ❤️ for transformative journeys.
+        <div className="border-t border-white/5 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-sm text-white/30">
+            © 2024 Flow 83. All rights reserved.
           </div>
-          <div className="flex items-center gap-8 text-sm">
-            <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              Privacy Policy
+          <div className="flex items-center gap-6 text-sm text-white/30">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors cursor-pointer">
+              Privacy
             </Link>
-            <Link href="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              Terms of Service
-            </Link>
-            <Link href="/cookie-policy" className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              Cookie Policy
+            <Link href="/terms-of-service" className="hover:text-white transition-colors cursor-pointer">
+              Terms
             </Link>
           </div>
         </div>
