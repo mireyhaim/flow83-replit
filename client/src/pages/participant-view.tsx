@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { 
-  Send, CheckCircle2, ChevronLeft, ChevronRight, Loader2, 
+  Send, CheckCircle2, Loader2, 
   Flame, Star, Trophy, Target, Zap, Calendar, MessageCircle,
-  Sparkles, Award, TrendingUp, Clock
+  Sparkles, Award, TrendingUp, Clock, Menu, X, ChevronRight,
+  Home, Settings, LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,8 +20,6 @@ interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
 }
 
-type ViewMode = "chat" | "dashboard" | "summary";
-
 export default function ParticipantView() {
   const [, params] = useRoute("/p/:token");
   const tokenFromRoute = params?.token;
@@ -28,7 +27,7 @@ export default function ParticipantView() {
   
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("chat");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -113,51 +112,6 @@ export default function ParticipantView() {
     }
   }, [messages]);
 
-  if (!journeyId) {
-    return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-violet-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-violet-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-white mb-2">No Flow Available</h2>
-          <p className="text-white/60 mb-4">
-            {!tokenFromRoute 
-              ? "No published flows are available yet. Check back soon!" 
-              : "This flow could not be found."}
-          </p>
-          <Link href="/dashboard">
-            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (journeyLoading || participantLoading) {
-    return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
-          <p className="text-white/60">Loading your journey...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!journey || !participant) {
-    return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-white/60 mb-4">Flow not found</p>
-          <Link href="/dashboard">
-            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
     
@@ -187,6 +141,51 @@ export default function ParticipantView() {
   const handleCompleteDay = () => {
     completeDayMutation.mutate();
   };
+
+  if (!journeyId) {
+    return (
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-violet-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-violet-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">No Flow Available</h2>
+          <p className="text-white/60 mb-4">
+            {!tokenFromRoute 
+              ? "No published flows are available yet. Check back soon!" 
+              : "This flow could not be found."}
+          </p>
+          <Link href="/dashboard">
+            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (journeyLoading || participantLoading) {
+    return (
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
+          <p className="text-white/60">Loading your journey...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!journey || !participant) {
+    return (
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-white/60 mb-4">Flow not found</p>
+          <Link href="/dashboard">
+            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (isCompleted) {
     return (
@@ -240,7 +239,7 @@ export default function ParticipantView() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0f0f23] flex">
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (
@@ -266,382 +265,344 @@ export default function ParticipantView() {
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-md bg-[#1a1a2e] h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 relative flex flex-col">
-        {/* Top status bar */}
-        <div className="bg-[#0f0f23] px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
-              F
-            </div>
-            <span className="font-semibold text-white text-sm truncate max-w-[120px]">{journey.name}</span>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-orange-500/20 px-2 py-1 rounded-full">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              <span className="text-xs font-bold text-orange-400">{streak}</span>
-            </div>
-            <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded-full">
-              <Star className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="text-xs font-bold text-yellow-400">{xpPoints}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Progress section */}
-        <div className="px-4 py-3 bg-[#1a1a2e] border-b border-white/5">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-white/60">Your Progress</span>
-            <span className="text-xs font-bold text-violet-400" data-testid="text-day-progress">
-              Day {currentDay} of {totalDays}
-            </span>
-          </div>
-          <div className="relative">
-            <Progress value={progressPercent} className="h-2 bg-white/10" />
-            <div className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" 
-                 style={{ width: `${progressPercent}%` }} />
-          </div>
-          <div className="flex justify-between mt-1">
-            {sortedSteps.map((step, i) => (
-              <div 
-                key={step.id}
-                className={cn(
-                  "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all",
-                  step.dayNumber < currentDay 
-                    ? "bg-gradient-to-br from-emerald-400 to-green-600 text-white" 
-                    : step.dayNumber === currentDay 
-                    ? "bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white ring-2 ring-violet-400/50 ring-offset-2 ring-offset-[#1a1a2e]" 
-                    : "bg-white/10 text-white/40"
-                )}
-              >
-                {step.dayNumber < currentDay ? (
-                  <CheckCircle2 className="w-3 h-3" />
-                ) : (
-                  step.dayNumber
-                )}
+      {/* Sidebar */}
+      <aside 
+        className={cn(
+          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-[#0a0a1a] border-r border-white/5 flex flex-col transition-transform duration-300 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Sidebar header */}
+        <div className="p-4 border-b border-white/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                F
               </div>
-            ))}
+              <div>
+                <h1 className="font-bold text-white text-sm truncate max-w-[150px]">{journey.name}</h1>
+                <p className="text-xs text-white/40">Day {currentDay} of {totalDays}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-white/60" />
+            </button>
           </div>
         </div>
 
-        {/* Navigation tabs */}
-        <div className="flex px-4 py-2 gap-2 bg-[#1a1a2e] border-b border-white/5">
-          <button
-            onClick={() => setViewMode("chat")}
-            className={cn(
-              "flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5",
-              viewMode === "chat" 
-                ? "bg-violet-600 text-white" 
-                : "bg-white/5 text-white/60 hover:bg-white/10"
-            )}
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Chat
-          </button>
-          <button
-            onClick={() => setViewMode("summary")}
-            className={cn(
-              "flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5",
-              viewMode === "summary" 
-                ? "bg-violet-600 text-white" 
-                : "bg-white/5 text-white/60 hover:bg-white/10"
-            )}
-          >
-            <Target className="w-3.5 h-3.5" />
-            Today
-          </button>
-          <button
-            onClick={() => setViewMode("dashboard")}
-            className={cn(
-              "flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5",
-              viewMode === "dashboard" 
-                ? "bg-violet-600 text-white" 
-                : "bg-white/5 text-white/60 hover:bg-white/10"
-            )}
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            Stats
-          </button>
+        {/* Stats summary */}
+        <div className="p-4 border-b border-white/5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-orange-500/10 rounded-xl p-3 border border-orange-500/20">
+              <div className="flex items-center gap-2 mb-1">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span className="text-xs text-white/60">Streak</span>
+              </div>
+              <span className="text-lg font-bold text-white">{streak}</span>
+            </div>
+            <div className="bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20">
+              <div className="flex items-center gap-2 mb-1">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span className="text-xs text-white/60">XP</span>
+              </div>
+              <span className="text-lg font-bold text-white">{xpPoints}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Main content area */}
-        <div className="flex-1 overflow-hidden">
-          <AnimatePresence mode="wait">
-            {viewMode === "chat" && (
-              <motion.div
-                key="chat"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="h-full flex flex-col"
-              >
-                {/* Chat messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3" ref={scrollRef}>
-                  {messagesLoading && (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
-                    </div>
+        {/* Progress */}
+        <div className="p-4 border-b border-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-white/60">Progress</span>
+            <span className="text-xs font-bold text-violet-400">{progressPercent}%</span>
+          </div>
+          <Progress value={progressPercent} className="h-2 bg-white/10" />
+        </div>
+
+        {/* Days navigation */}
+        <div className="flex-1 overflow-y-auto p-3">
+          <div className="text-xs text-white/40 uppercase tracking-wider mb-3 px-2">Your Journey</div>
+          <div className="space-y-1">
+            {sortedSteps.map((step) => {
+              const isPast = step.dayNumber < currentDay;
+              const isCurrent = step.dayNumber === currentDay;
+              const isFuture = step.dayNumber > currentDay;
+              
+              return (
+                <div
+                  key={step.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer",
+                    isCurrent && "bg-violet-600/20 border border-violet-500/30",
+                    isPast && "opacity-60 hover:opacity-80",
+                    isFuture && "opacity-40 cursor-not-allowed"
                   )}
-                  
-                  <AnimatePresence mode="popLayout">
-                    {messages.filter(m => !m.id.startsWith("temp-")).map((msg, index) => (
-                      <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.2, delay: index === messages.length - 1 ? 0.1 : 0 }}
-                        className={cn(
-                          "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
-                          msg.role === "user" 
-                            ? "bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white ml-auto rounded-br-sm shadow-lg" 
-                            : "bg-white/10 text-white mr-auto rounded-bl-sm border border-white/5"
-                        )}
-                        data-testid={`chat-message-${msg.role}-${msg.id}`}
-                      >
-                        <div className="whitespace-pre-wrap">{msg.content}</div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {isSending && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 text-white/40 text-sm mr-auto"
-                    >
-                      <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                        <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                        <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Chat input */}
-                <div className="p-3 bg-[#0f0f23]/50 border-t border-white/5">
-                  <form 
-                    onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                    className="flex gap-2"
-                  >
-                    <Input 
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="Type your response..."
-                      className="rounded-full bg-white/10 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-violet-500"
-                      disabled={isSending}
-                      data-testid="input-chat"
-                    />
-                    <Button 
-                      type="submit" 
-                      size="icon" 
-                      className="rounded-full shrink-0 bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:opacity-90 shadow-lg"
-                      disabled={isSending || !inputValue.trim()}
-                      data-testid="button-send"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </form>
-                </div>
-              </motion.div>
-            )}
-
-            {viewMode === "summary" && (
-              <motion.div
-                key="summary"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="h-full overflow-y-auto p-4 space-y-4"
-              >
-                {/* Day header */}
-                <div className="text-center py-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xl shadow-violet-600/30">
-                    <span className="text-2xl font-bold text-white">{currentDay}</span>
+                  data-testid={`sidebar-day-${step.dayNumber}`}
+                >
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+                    isPast && "bg-emerald-500/20 text-emerald-400",
+                    isCurrent && "bg-violet-600 text-white",
+                    isFuture && "bg-white/10 text-white/40"
+                  )}>
+                    {isPast ? <CheckCircle2 className="w-4 h-4" /> : step.dayNumber}
                   </div>
-                  <h2 className="text-xl font-bold text-white" data-testid="text-step-title">
+                  <div className="min-w-0 flex-1">
+                    <div className={cn(
+                      "text-sm font-medium truncate",
+                      isCurrent ? "text-white" : "text-white/60"
+                    )}>
+                      {step.title || `Day ${step.dayNumber}`}
+                    </div>
+                    {isCurrent && (
+                      <div className="text-xs text-violet-400">In progress</div>
+                    )}
+                    {isPast && (
+                      <div className="text-xs text-emerald-400">Completed</div>
+                    )}
+                  </div>
+                  {isCurrent && (
+                    <ChevronRight className="w-4 h-4 text-violet-400 shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar footer */}
+        <div className="p-4 border-t border-white/5">
+          <Link href="/dashboard">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-white/60 hover:text-white hover:bg-white/5"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-h-screen">
+        {/* Header */}
+        <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 bg-[#0f0f23]/80 backdrop-blur-sm sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors"
+            >
+              <Menu className="w-5 h-5 text-white/60" />
+            </button>
+            <div className="hidden sm:block">
+              <h2 className="text-lg font-semibold text-white" data-testid="text-step-title">
+                {currentStep?.title || `Day ${currentDay}`}
+              </h2>
+              <p className="text-xs text-white/40" data-testid="text-day-progress">
+                Day {currentDay} of {totalDays}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
+              <Flame className="w-4 h-4 text-orange-400" />
+              <span className="text-sm font-bold text-orange-400">{streak}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20">
+              <Star className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-bold text-yellow-400">{xpPoints}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Chat area */}
+        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+            {/* Day context card */}
+            <div className="bg-gradient-to-r from-violet-600/10 to-fuchsia-600/10 rounded-2xl p-5 border border-violet-500/20 mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0">
+                  {currentDay}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-white mb-1">
                     {currentStep?.title || `Day ${currentDay}`}
-                  </h2>
-                  <p className="text-sm text-white/40 mt-1">Today's Focus</p>
-                </div>
-
-                {/* Goal card */}
-                <div className="bg-gradient-to-br from-violet-600/20 to-violet-600/5 rounded-2xl p-4 border border-violet-500/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-violet-400" />
-                    <span className="text-sm font-semibold text-violet-400">Today's Goal</span>
-                  </div>
-                  <p className="text-white/80 text-sm leading-relaxed">
-                    {currentStep?.goal || currentStep?.description || "Complete today's activities and reflect on your progress."}
-                  </p>
-                </div>
-
-                {/* Explanation card */}
-                {currentStep?.explanation && (
-                  <div className="bg-gradient-to-br from-fuchsia-600/20 to-fuchsia-600/5 rounded-2xl p-4 border border-fuchsia-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-4 h-4 text-fuchsia-400" />
-                      <span className="text-sm font-semibold text-fuchsia-400">Key Insight</span>
+                  </h3>
+                  {currentStep?.goal && (
+                    <div className="flex items-center gap-2 text-sm text-white/60 mb-2">
+                      <Target className="w-4 h-4 text-violet-400 shrink-0" />
+                      <span>{currentStep.goal}</span>
                     </div>
-                    <p className="text-white/80 text-sm leading-relaxed line-clamp-4">
+                  )}
+                  {currentStep?.task && (
+                    <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2">
+                      <Zap className="w-4 h-4 shrink-0" />
+                      <span>{currentStep.task}</span>
+                    </div>
+                  )}
+                  {currentStep?.explanation && (
+                    <p className="text-sm text-white/50 mt-3 pt-3 border-t border-white/10">
                       {currentStep.explanation}
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+            </div>
 
-                {/* Task card */}
-                {currentStep?.task && (
-                  <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-600/5 rounded-2xl p-4 border border-emerald-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-4 h-4 text-emerald-400" />
-                      <span className="text-sm font-semibold text-emerald-400">Action Step</span>
-                    </div>
-                    <p className="text-white/80 text-sm leading-relaxed">
-                      {currentStep.task}
-                    </p>
-                  </div>
-                )}
+            {/* Achievements section */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {completedDays >= 1 && (
+                <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                  <Award className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-medium text-emerald-400">First Step</span>
+                </div>
+              )}
+              {streak >= 3 && (
+                <div className="flex items-center gap-2 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
+                  <Flame className="w-4 h-4 text-orange-400" />
+                  <span className="text-xs font-medium text-orange-400">3-Day Streak</span>
+                </div>
+              )}
+              {xpPoints >= 300 && (
+                <div className="flex items-center gap-2 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20">
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  <span className="text-xs font-medium text-yellow-400">XP Master</span>
+                </div>
+              )}
+              {completedDays >= Math.floor(totalDays / 2) && (
+                <div className="flex items-center gap-2 bg-violet-500/10 px-3 py-1.5 rounded-full border border-violet-500/20">
+                  <TrendingUp className="w-4 h-4 text-violet-400" />
+                  <span className="text-xs font-medium text-violet-400">Halfway There</span>
+                </div>
+              )}
+            </div>
 
-                {/* Quick chat button */}
-                <Button 
-                  onClick={() => setViewMode("chat")}
-                  className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+            {messagesLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
+              </div>
+            )}
+            
+            <AnimatePresence mode="popLayout">
+              {messages.filter(m => !m.id.startsWith("temp-")).map((msg, index) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={cn(
+                    "flex gap-3",
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                  data-testid={`chat-message-${msg.role}-${msg.id}`}
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Start Today's Session
-                </Button>
-              </motion.div>
-            )}
+                  {msg.role === "assistant" && (
+                    <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div 
+                    className={cn(
+                      "max-w-[70%] p-4 rounded-2xl text-sm leading-relaxed",
+                      msg.role === "user" 
+                        ? "bg-violet-600 text-white rounded-br-sm" 
+                        : "bg-[#1a1a2e] text-white/90 border border-white/5 rounded-bl-sm"
+                    )}
+                  >
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
+                  {msg.role === "user" && (
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-white">You</span>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-            {viewMode === "dashboard" && (
+            {isSending && (
               <motion.div
-                key="dashboard"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="h-full overflow-y-auto p-4 space-y-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3"
               >
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gradient-to-br from-violet-600/20 to-violet-600/5 rounded-2xl p-4 border border-violet-500/20">
-                    <Calendar className="w-5 h-5 text-violet-400 mb-2" />
-                    <div className="text-2xl font-bold text-white">{completedDays}</div>
-                    <div className="text-xs text-white/40">Days Completed</div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-orange-600/20 to-orange-600/5 rounded-2xl p-4 border border-orange-500/20">
-                    <Flame className="w-5 h-5 text-orange-400 mb-2" />
-                    <div className="text-2xl font-bold text-white">{streak}</div>
-                    <div className="text-xs text-white/40">Day Streak</div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-yellow-600/20 to-yellow-600/5 rounded-2xl p-4 border border-yellow-500/20">
-                    <Star className="w-5 h-5 text-yellow-400 mb-2" />
-                    <div className="text-2xl font-bold text-white">{xpPoints}</div>
-                    <div className="text-xs text-white/40">XP Points</div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-600/5 rounded-2xl p-4 border border-emerald-500/20">
-                    <MessageCircle className="w-5 h-5 text-emerald-400 mb-2" />
-                    <div className="text-2xl font-bold text-white">{messages.length}</div>
-                    <div className="text-xs text-white/40">Messages</div>
-                  </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4 text-white" />
                 </div>
-
-                {/* Progress overview */}
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <h3 className="text-sm font-semibold text-white mb-3">Journey Progress</h3>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-bold text-white">{progressPercent}%</span>
-                  </div>
-                  <p className="text-xs text-white/40">
-                    {totalDays - completedDays} days remaining
-                  </p>
-                </div>
-
-                {/* Achievements */}
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <h3 className="text-sm font-semibold text-white mb-3">Achievements</h3>
-                  <div className="flex gap-3">
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      completedDays >= 1 
-                        ? "bg-gradient-to-br from-emerald-500 to-green-600" 
-                        : "bg-white/10"
-                    )}>
-                      <Zap className={cn("w-6 h-6", completedDays >= 1 ? "text-white" : "text-white/30")} />
-                    </div>
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      completedDays >= 3 
-                        ? "bg-gradient-to-br from-violet-500 to-fuchsia-600" 
-                        : "bg-white/10"
-                    )}>
-                      <Award className={cn("w-6 h-6", completedDays >= 3 ? "text-white" : "text-white/30")} />
-                    </div>
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      completedDays >= 5 
-                        ? "bg-gradient-to-br from-orange-500 to-yellow-500" 
-                        : "bg-white/10"
-                    )}>
-                      <Flame className={cn("w-6 h-6", completedDays >= 5 ? "text-white" : "text-white/30")} />
-                    </div>
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      isCompleted 
-                        ? "bg-gradient-to-br from-yellow-400 to-orange-500" 
-                        : "bg-white/10"
-                    )}>
-                      <Trophy className={cn("w-6 h-6", isCompleted ? "text-white" : "text-white/30")} />
-                    </div>
-                  </div>
-                  <div className="flex gap-3 mt-2">
-                    <span className="text-[10px] text-white/40 w-12 text-center">First Step</span>
-                    <span className="text-[10px] text-white/40 w-12 text-center">Halfway</span>
-                    <span className="text-[10px] text-white/40 w-12 text-center">On Fire</span>
-                    <span className="text-[10px] text-white/40 w-12 text-center">Champion</span>
+                <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl rounded-bl-sm p-4">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
                   </div>
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
+          </div>
 
-        {/* Bottom action bar */}
-        <div className="p-3 bg-[#0f0f23] border-t border-white/5 flex items-center justify-center">
-          <Button 
-            size="sm"
-            onClick={handleCompleteDay}
-            disabled={completeDayMutation.isPending || messages.length < 2}
-            className="bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-90 text-white rounded-full px-6 shadow-lg shadow-emerald-500/30"
-            data-testid="button-complete-day"
-          >
-            {completeDayMutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Complete Day {currentDay}
-              </>
+          {/* Input area */}
+          <div className="border-t border-white/5 p-4 bg-[#0f0f23]/80 backdrop-blur-sm">
+            <form 
+              onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+              className="flex gap-3 max-w-3xl mx-auto"
+            >
+              <div className="flex-1 relative">
+                <Input 
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Type your message..."
+                  className="w-full rounded-xl bg-[#1a1a2e] border-white/10 text-white placeholder:text-white/30 focus-visible:ring-violet-500 pr-12 py-6"
+                  disabled={isSending}
+                  data-testid="input-chat"
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 hover:bg-violet-700 shadow-lg"
+                  disabled={isSending || !inputValue.trim()}
+                  data-testid="button-send"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+            
+            {/* Complete day button */}
+            {messages.length > 2 && (
+              <div className="mt-4 text-center">
+                <Button
+                  onClick={handleCompleteDay}
+                  disabled={completeDayMutation.isPending}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-lg"
+                  data-testid="button-complete-day"
+                >
+                  {completeDayMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                  )}
+                  Complete Day {currentDay}
+                </Button>
+              </div>
             )}
-          </Button>
+          </div>
         </div>
-      </div>
-      
-      {/* Mentor info sidebar - desktop only */}
-      <div className="fixed bottom-8 right-8 text-white/40 text-sm hidden lg:block max-w-xs text-right">
-        <p>You are viewing the <strong className="text-white/60">Participant Experience</strong>.</p>
-        <p className="mt-2">This is how your clients will see their flow.</p>
-        <Link href="/journeys" className="text-violet-400 hover:text-violet-300 underline mt-2 block">Back to My Flows</Link>
-      </div>
+      </main>
     </div>
   );
 }
