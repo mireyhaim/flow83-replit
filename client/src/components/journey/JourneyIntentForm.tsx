@@ -14,8 +14,6 @@ const professionOptions = [
   { value: "healer", label: "Healer" },
   { value: "mentor", label: "Mentor" },
   { value: "counselor", label: "Counselor" },
-  { value: "yoga_teacher", label: "Yoga Teacher" },
-  { value: "meditation_guide", label: "Meditation Guide" },
   { value: "other", label: "Other" },
 ];
 
