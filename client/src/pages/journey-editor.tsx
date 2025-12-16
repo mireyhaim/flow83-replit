@@ -366,15 +366,6 @@ const JourneyEditorPage = () => {
                           </div>
                         </button>
                       ))}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={addStep} 
-                        className="w-full mt-2 text-muted-foreground hover:text-foreground"
-                        data-testid="button-add-day-sidebar"
-                      >
-                        + Add Day
-                      </Button>
                     </div>
                   </ScrollArea>
                 </Card>
@@ -432,11 +423,6 @@ const JourneyEditorPage = () => {
                   </div>
                 ))}
                 
-                <div className="text-center py-8 lg:hidden">
-                  <Button variant="outline" onClick={addStep} className="gap-2" data-testid="button-add-day">
-                    + Add New Day
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
