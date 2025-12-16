@@ -2,7 +2,6 @@ import Header from "@/components/landing/Header";
 import { Button } from "@/components/ui/button";
 import { Users, Star, Award, TrendingUp } from "lucide-react";
 import CommunityFlowsShowcase from "@/components/landing/CommunityFlowsShowcase";
-import CommunityActivityFeed from "@/components/landing/CommunityActivityFeed";
 import communityHero from "@/assets/community-hero.jpg";
 
 const stats = [
@@ -61,9 +60,6 @@ const Community = () => {
 
         {/* Community Flows Showcase */}
         <CommunityFlowsShowcase />
-
-        {/* Community Activity Feed */}
-        <CommunityActivityFeed />
 
         {/* Join Community CTA */}
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
