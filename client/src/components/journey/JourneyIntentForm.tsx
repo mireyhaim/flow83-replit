@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const professionOptions = [
   { value: "therapist", label: "Therapist" },
@@ -29,25 +28,11 @@ const toneOptions = [
   { value: "spiritual", label: "Spiritual & Deep" },
 ];
 
-const painPointOptions = [
-  { value: "anxiety", label: "Anxiety & Stress" },
-  { value: "relationships", label: "Relationship Issues" },
-  { value: "self_esteem", label: "Low Self-Esteem" },
-  { value: "grief", label: "Grief & Loss" },
-  { value: "burnout", label: "Burnout & Exhaustion" },
-  { value: "life_transitions", label: "Life Transitions" },
-  { value: "trauma", label: "Past Trauma" },
-  { value: "purpose", label: "Lack of Purpose / Direction" },
-  { value: "health", label: "Health Challenges" },
-  { value: "creativity", label: "Creative Blocks" },
-];
-
 const formSchema = z.object({
   profession: z.string().min(1, "Please select your profession"),
   journeyName: z.string().min(1, "Flow name is required"),
   targetAudience: z.string().min(1, "Target audience is required"),
-  painPoints: z.array(z.string()).optional(),
-  painPointsOther: z.string().optional(),
+  clientChallenges: z.string().optional(),
   mainGoal: z.string().min(10, "Please provide a detailed goal (minimum 10 characters)"),
   duration: z.enum(["3", "7"], { required_error: "Please select a duration" }),
   tone: z.string().min(1, "Please select a tone"),
@@ -67,8 +52,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
       profession: initialData?.profession || "",
       journeyName: initialData?.journeyName || "",
       targetAudience: initialData?.targetAudience || "",
-      painPoints: initialData?.painPoints || [],
-      painPointsOther: initialData?.painPointsOther || "",
+      clientChallenges: initialData?.clientChallenges || "",
       mainGoal: initialData?.mainGoal || "",
       duration: initialData?.duration?.[0]?.toString() || "7",
       tone: initialData?.tone || "",
@@ -153,62 +137,19 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           )}
         />
 
-        {/* Pain Points */}
+        {/* Client Challenges */}
         <FormField
           control={form.control}
-          name="painPoints"
-          render={() => (
-            <FormItem>
-              <FormLabel className="text-lg font-semibold text-white">What challenges do your clients face?</FormLabel>
-              <FormDescription className="text-white/50">Select all that apply</FormDescription>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                {painPointOptions.map((option) => (
-                  <FormField
-                    key={option.value}
-                    control={form.control}
-                    name="painPoints"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              const currentValue = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentValue, option.value]);
-                              } else {
-                                field.onChange(currentValue.filter((v: string) => v !== option.value));
-                              }
-                            }}
-                            className="border-white/30 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
-                            data-testid={`checkbox-pain-${option.value}`}
-                          />
-                        </FormControl>
-                        <Label className="text-white/80 cursor-pointer text-sm font-normal">
-                          {option.label}
-                        </Label>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Pain Points Other */}
-        <FormField
-          control={form.control}
-          name="painPointsOther"
+          name="clientChallenges"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-white/70">Other challenges (optional)</FormLabel>
+              <FormLabel className="text-lg font-semibold text-white">What challenges do your clients face?</FormLabel>
+              <FormDescription className="text-white/50">Describe the main pain points and struggles</FormDescription>
               <FormControl>
-                <Input 
-                  placeholder='e.g., "Postpartum challenges", "Career change"'
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  data-testid="input-pain-other"
+                <Textarea 
+                  placeholder='e.g., "Anxiety after breakups, difficulty letting go of past relationships, fear of being alone"'
+                  className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                  data-testid="textarea-client-challenges"
                   {...field} 
                 />
               </FormControl>
