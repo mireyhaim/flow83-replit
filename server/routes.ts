@@ -148,6 +148,43 @@ export async function registerRoutes(
     }
   });
 
+  // Notification settings routes
+  app.get("/api/notification-settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settings = await storage.getNotificationSettings(userId);
+      if (!settings) {
+        // Return defaults if no settings exist
+        return res.json({
+          userId,
+          notifyOnJoin: "email",
+          notifyOnDayComplete: "none",
+          notifyOnFlowComplete: "email",
+          notifyOnInactivity: "email",
+          inactivityThresholdDays: 2,
+          dailySummary: "none",
+          weeklySummary: "email",
+        });
+      }
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch notification settings" });
+    }
+  });
+
+  app.put("/api/notification-settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settings = await storage.upsertNotificationSettings({
+        userId,
+        ...req.body,
+      });
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update notification settings" });
+    }
+  });
+
   app.get("/api/journeys/:id", async (req, res) => {
     try {
       const journey = await storage.getJourney(req.params.id);

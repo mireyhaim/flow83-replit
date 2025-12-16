@@ -6,7 +6,8 @@ import {
   type Participant, type InsertParticipant,
   type JourneyMessage, type InsertJourneyMessage,
   type ActivityEvent, type InsertActivityEvent,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents
+  type NotificationSettings, type InsertNotificationSettings,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or } from "drizzle-orm";
@@ -49,6 +50,9 @@ export interface IStorage {
   createActivityEvent(event: InsertActivityEvent): Promise<ActivityEvent>;
   getInactiveParticipants(creatorId: string, daysSinceActive: number): Promise<(Participant & { journey: Journey; user: User })[]>;
   getParticipantsByCreator(creatorId: string): Promise<Participant[]>;
+
+  getNotificationSettings(userId: string): Promise<NotificationSettings | undefined>;
+  upsertNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -251,6 +255,31 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(journeys, eq(participants.journeyId, journeys.id))
       .where(eq(journeys.creatorId, creatorId))
       .then(results => results.map(r => r.participant));
+  }
+
+  async getNotificationSettings(userId: string): Promise<NotificationSettings | undefined> {
+    const [settings] = await db.select().from(notificationSettings).where(eq(notificationSettings.userId, userId));
+    return settings;
+  }
+
+  async upsertNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings> {
+    const [result] = await db
+      .insert(notificationSettings)
+      .values(settings)
+      .onConflictDoUpdate({
+        target: notificationSettings.userId,
+        set: {
+          notifyOnJoin: settings.notifyOnJoin,
+          notifyOnDayComplete: settings.notifyOnDayComplete,
+          notifyOnFlowComplete: settings.notifyOnFlowComplete,
+          notifyOnInactivity: settings.notifyOnInactivity,
+          inactivityThresholdDays: settings.inactivityThresholdDays,
+          dailySummary: settings.dailySummary,
+          weeklySummary: settings.weeklySummary,
+        },
+      })
+      .returning();
+    return result;
   }
 }
 

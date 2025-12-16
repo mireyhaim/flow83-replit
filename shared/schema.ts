@@ -136,3 +136,26 @@ export const insertJourneyMessageSchema = createInsertSchema(journeyMessages).om
 
 export type InsertJourneyMessage = z.infer<typeof insertJourneyMessageSchema>;
 export type JourneyMessage = typeof journeyMessages.$inferSelect;
+
+// Notification settings for mentors
+export const notificationSettings = pgTable("notification_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  // Milestone notifications
+  notifyOnJoin: text("notify_on_join").default("email"), // 'email' | 'push' | 'both' | 'none'
+  notifyOnDayComplete: text("notify_on_day_complete").default("none"),
+  notifyOnFlowComplete: text("notify_on_flow_complete").default("email"),
+  // Inactivity notifications
+  notifyOnInactivity: text("notify_on_inactivity").default("email"),
+  inactivityThresholdDays: integer("inactivity_threshold_days").default(2),
+  // Summary notifications
+  dailySummary: text("daily_summary").default("none"), // 'email' | 'none'
+  weeklySummary: text("weekly_summary").default("email"),
+});
+
+export const insertNotificationSettingsSchema = createInsertSchema(notificationSettings).omit({
+  id: true,
+});
+
+export type InsertNotificationSettings = z.infer<typeof insertNotificationSettingsSchema>;
+export type NotificationSettings = typeof notificationSettings.$inferSelect;
