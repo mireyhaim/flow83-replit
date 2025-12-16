@@ -261,12 +261,12 @@ const JourneyEditorPage = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => setLocation("/journeys")}
+                  onClick={() => setLocation(`/journey/${journeyData.id}/settings`)}
                   className="gap-2"
                   data-testid="button-back"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Back
+                  Settings
                 </Button>
                 <div className="h-6 w-px bg-border" />
                 <div>

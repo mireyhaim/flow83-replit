@@ -22,6 +22,7 @@ import MethodPage from "@/pages/method";
 import JourneysPage from "@/pages/journeys";
 import JourneyCreatePage from "@/pages/journey-create";
 import JourneyEditorPage from "@/pages/journey-editor";
+import JourneySettingsPage from "@/pages/journey-settings";
 import ParticipantView from "@/pages/participant-view";
 import JourneyLandingPage from "@/pages/journey-landing";
 import NotFound from "@/pages/not-found";
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/journeys/new" component={JourneyCreatePage} />
       <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
+      <Route path="/journey/:id/settings" component={JourneySettingsPage} />
       <Route path="/j/:id" component={JourneyLandingPage} />
       <Route path="/p/:token" component={ParticipantView} />
       
