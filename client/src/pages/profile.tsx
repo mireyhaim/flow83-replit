@@ -1,11 +1,10 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User, Mail, Globe, FileText, Save, CreditCard, Receipt, XCircle, AlertTriangle } from "lucide-react";
+import { Loader2, Mail, Globe, Save, CreditCard, Receipt, XCircle, AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,147 +93,155 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight" data-testid="text-profile-title">My Profile</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your account and connection details</p>
-      </header>
+      <div className="max-w-3xl">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-2xl font-semibold text-primary">
+              {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight" data-testid="text-profile-title">
+                {formData.firstName ? `${formData.firstName} ${formData.lastName}` : "My Profile"}
+              </h1>
+              <p className="text-muted-foreground text-sm">{formData.email}</p>
+            </div>
+          </div>
+          <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-profile">
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Save
+          </Button>
+        </div>
 
-      <div className="grid gap-6 max-w-2xl">
-        <Card className="bg-background border" data-testid="card-profile-info">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-lg font-medium">Personal Information</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="Your first name"
-                  data-testid="input-first-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Your last name"
-                  data-testid="input-last-name"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="your@email.com"
-                  className="pl-10"
-                  data-testid="input-email"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-background border" data-testid="card-professional-info">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-blue-500" />
-              </div>
-              <CardTitle className="text-lg font-medium">Professional Details</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="specialty">Specialty / Expertise</Label>
-              <Input
-                id="specialty"
-                value={formData.specialty}
-                onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-                placeholder="e.g. Life Coach, Therapist, Meditation Teacher"
-                data-testid="input-specialty"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="bio">About You</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Tell participants about yourself and your expertise..."
-                rows={4}
-                data-testid="input-bio"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="website">Website</Label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="website"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  placeholder="https://yourwebsite.com"
-                  className="pl-10"
-                  data-testid="input-website"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-background border" data-testid="card-subscription">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <CreditCard className="h-5 w-5 text-emerald-500" />
-              </div>
-              <CardTitle className="text-lg font-medium">Subscription</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">Free Plan</p>
-                  <p className="text-sm text-muted-foreground">Currently using the free tier</p>
+        <div className="space-y-10">
+          <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Personal Information</h2>
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstName" className="text-xs text-muted-foreground">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    placeholder="Your first name"
+                    className="border-0 border-b rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    data-testid="input-first-name"
+                  />
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  Active
-                </span>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName" className="text-xs text-muted-foreground">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    placeholder="Your last name"
+                    className="border-0 border-b rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    data-testid="input-last-name"
+                  />
+                </div>
               </div>
               
-              <div className="p-4 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground text-center">
-                  Premium subscription plans coming soon. You'll be able to upgrade for additional features and higher limits.
-                </p>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="your@email.com"
+                    className="border-0 border-b rounded-none bg-transparent pl-6 focus-visible:ring-0 focus-visible:border-primary"
+                    data-testid="input-email"
+                  />
+                </div>
               </div>
+            </div>
+          </section>
 
-              <div className="pt-2">
+          <div className="h-px bg-border/50" />
+
+          <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Professional Details</h2>
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="specialty" className="text-xs text-muted-foreground">Specialty / Expertise</Label>
+                <Input
+                  id="specialty"
+                  value={formData.specialty}
+                  onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                  placeholder="e.g. Life Coach, Therapist, Meditation Teacher"
+                  className="border-0 border-b rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  data-testid="input-specialty"
+                />
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="bio" className="text-xs text-muted-foreground">About You</Label>
+                <Textarea
+                  id="bio"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Tell participants about yourself and your expertise..."
+                  rows={3}
+                  className="border-0 border-b rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:border-primary resize-none"
+                  data-testid="input-bio"
+                />
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="website" className="text-xs text-muted-foreground">Website</Label>
+                <div className="relative">
+                  <Globe className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    placeholder="https://yourwebsite.com"
+                    className="border-0 border-b rounded-none bg-transparent pl-6 focus-visible:ring-0 focus-visible:border-primary"
+                    data-testid="input-website"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="h-px bg-border/50" />
+
+          <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Subscription & Billing</h2>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Free Plan</p>
+                    <p className="text-xs text-muted-foreground">Currently active</p>
+                  </div>
+                  <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+                    Active
+                  </span>
+                </div>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Premium plans coming soon with additional features and higher limits.
+                </p>
+
                 <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="text-destructive hover:text-destructive" data-testid="button-cancel-subscription">
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Cancel Account
-                    </Button>
+                    <button 
+                      className="text-sm text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2"
+                      data-testid="button-cancel-subscription"
+                    >
+                      Cancel account
+                    </button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -243,7 +250,7 @@ export default function ProfilePage() {
                         Cancel Your Account?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action will permanently delete your account and all associated data including:
+                        This will permanently delete your account and all data including:
                         <ul className="list-disc list-inside mt-2 space-y-1">
                           <li>All your journeys</li>
                           <li>Participant data and progress</li>
@@ -260,45 +267,33 @@ export default function ProfilePage() {
                           window.location.href = "mailto:support@flow83.com?subject=Account%20Cancellation%20Request";
                         }}
                       >
-                        Contact Support to Cancel
+                        Contact Support
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-background border" data-testid="card-invoices">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                <Receipt className="h-5 w-5 text-violet-500" />
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 flex items-center justify-center">
+                    <Receipt className="h-5 w-5 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Invoices</p>
+                    <p className="text-xs text-muted-foreground">Billing history</p>
+                  </div>
+                </div>
+                
+                <div className="py-6 text-center">
+                  <p className="text-sm text-muted-foreground">No invoices yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your billing history will appear here
+                  </p>
+                </div>
               </div>
-              <CardTitle className="text-lg font-medium">Invoices & Billing History</CardTitle>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <Receipt className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No invoices yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your billing history will appear here once payment integration is available
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-profile">
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Save Changes
-          </Button>
+          </section>
         </div>
       </div>
     </DashboardLayout>
