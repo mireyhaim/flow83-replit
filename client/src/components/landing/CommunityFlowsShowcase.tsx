@@ -116,12 +116,6 @@ const CommunityFlowsShowcase = () => {
           </Card>
         ))}
       </div>
-      
-      <div className="text-center mt-12">
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual" size="lg">
-          Explore All Community Flows
-        </Button>
-      </div>
     </section>
   );
 };
