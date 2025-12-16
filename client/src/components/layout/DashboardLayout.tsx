@@ -1,14 +1,13 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, BookOpen, PenTool, LogOut, Plus } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
   const navItems = [
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
-    { icon: BookOpen, label: "Method", href: "/method" },
     { icon: PenTool, label: "Journeys", href: "/journeys" },
   ];
 

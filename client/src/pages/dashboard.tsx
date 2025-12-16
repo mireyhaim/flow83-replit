@@ -6,7 +6,7 @@ import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { journeyApi, statsApi, type DashboardStats } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Journey } from "@shared/schema";
@@ -209,6 +209,62 @@ export default function Dashboard() {
               </div>
             )}
           </section>
+
+          <div className="grid gap-6 md:grid-cols-2 mb-8">
+            {/* Earnings Card */}
+            <Card className="bg-background border" data-testid="card-earnings">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <DollarSign className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <CardTitle className="text-base font-medium">Earnings</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-semibold mb-2" data-testid="text-earnings">$0</div>
+                <p className="text-sm text-muted-foreground mb-4">Total earnings from all journeys</p>
+                <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                  Payment integration coming soon. You'll be able to set prices for your journeys and collect payments automatically.
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tips & Guides */}
+            <Card className="bg-background border" data-testid="card-tips">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                    <Lightbulb className="h-4 w-4 text-violet-500" />
+                  </div>
+                  <CardTitle className="text-base font-medium">Tips for Success</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Start with your expertise</p>
+                    <p className="text-xs text-muted-foreground">Upload documents you already have - the AI will transform them</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <Target className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Focus on one transformation</p>
+                    <p className="text-xs text-muted-foreground">Each journey should solve one specific problem</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <MessageCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Make it personal</p>
+                    <p className="text-xs text-muted-foreground">Use tasks and reflections to engage participants</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </DashboardLayout>
