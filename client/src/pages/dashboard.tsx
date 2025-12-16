@@ -4,12 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { journeyApi, statsApi, type DashboardStats } from "@/lib/api";
+import { journeyApi, statsApi, activityApi, participantsApi, type DashboardStats, type InactiveParticipant } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle, Clock, AlertCircle, UserPlus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import type { Journey } from "@shared/schema";
+import type { Journey, ActivityEvent } from "@shared/schema";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -35,6 +36,39 @@ export default function Dashboard() {
     queryFn: statsApi.getDashboard,
     enabled: isAuthenticated,
   });
+
+  const { data: recentActivity = [] } = useQuery<ActivityEvent[]>({
+    queryKey: ["/api/activity/recent"],
+    queryFn: activityApi.getRecent,
+    enabled: isAuthenticated,
+  });
+
+  const { data: inactiveParticipants = [] } = useQuery<InactiveParticipant[]>({
+    queryKey: ["/api/participants/inactive"],
+    queryFn: () => participantsApi.getInactive(3),
+    enabled: isAuthenticated,
+  });
+
+  const getActivityIcon = (eventType: string) => {
+    switch (eventType) {
+      case 'joined': return <UserPlus className="h-4 w-4 text-blue-500" />;
+      case 'completed_day': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'completed_journey': return <Trophy className="h-4 w-4 text-amber-500" />;
+      case 'feedback': return <MessageCircle className="h-4 w-4 text-purple-500" />;
+      default: return <Clock className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getActivityText = (event: ActivityEvent) => {
+    const data = event.eventData as { userName?: string; journeyName?: string; dayNumber?: number } | null;
+    switch (event.eventType) {
+      case 'joined': return `${data?.userName || 'Someone'} joined "${data?.journeyName || 'a journey'}"`;
+      case 'completed_day': return `${data?.userName || 'Someone'} completed day ${data?.dayNumber || '?'}`;
+      case 'completed_journey': return `${data?.userName || 'Someone'} finished "${data?.journeyName || 'a journey'}"`;
+      case 'feedback': return `New feedback on "${data?.journeyName || 'a journey'}"`;
+      default: return 'Activity recorded';
+    }
+  };
 
   if (authLoading) {
     return (
@@ -261,6 +295,99 @@ export default function Dashboard() {
                     <p className="text-sm font-medium">Make it personal</p>
                     <p className="text-xs text-muted-foreground">Use tasks and reflections to engage participants</p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            {/* Recent Activity */}
+            <Card className="bg-background border" data-testid="card-recent-activity">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <CardTitle className="text-base font-medium">Recent Activity</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {recentActivity.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground">No activity yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Activity will appear here when participants join your journeys</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentActivity.slice(0, 5).map((event) => (
+                      <div key={event.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="mt-0.5">{getActivityIcon(event.eventType)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{getActivityText(event)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {event.createdAt && formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Needs Attention */}
+            <Card className="bg-background border" data-testid="card-needs-attention">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                    <AlertCircle className="h-4 w-4 text-orange-500" />
+                  </div>
+                  <CardTitle className="text-base font-medium">Needs Attention</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {inactiveParticipants.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground">All participants are active</p>
+                    <p className="text-xs text-muted-foreground mt-1">Inactive participants will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {inactiveParticipants.slice(0, 5).map((p) => (
+                      <div key={p.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+                          {p.user?.firstName?.[0] || p.user?.email?.[0] || '?'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{p.user?.firstName || p.user?.email || 'Participant'}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            Day {p.currentDay} of {p.journey?.name || 'journey'}
+                          </p>
+                          <p className="text-xs text-orange-500">
+                            Inactive {p.lastActiveAt && formatDistanceToNow(new Date(p.lastActiveAt))}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Feedback */}
+            <Card className="bg-background border" data-testid="card-feedback">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <CardTitle className="text-base font-medium">Feedback</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">No feedback yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">Participant feedback will appear here</p>
                 </div>
               </CardContent>
             </Card>

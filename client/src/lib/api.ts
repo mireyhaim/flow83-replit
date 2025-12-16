@@ -1,4 +1,4 @@
-import type { Journey, InsertJourney, JourneyStep, InsertJourneyStep, JourneyBlock, InsertJourneyBlock, JourneyMessage } from "@shared/schema";
+import type { Journey, InsertJourney, JourneyStep, InsertJourneyStep, JourneyBlock, InsertJourneyBlock, JourneyMessage, ActivityEvent, Participant, User } from "@shared/schema";
 
 const API_BASE = "/api";
 
@@ -10,6 +10,11 @@ export interface DashboardStats {
   activeParticipants: number;
   completedParticipants: number;
   completionRate: number;
+}
+
+export interface InactiveParticipant extends Participant {
+  journey: Journey;
+  user: User;
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -229,6 +234,20 @@ export const blockApi = {
 export const statsApi = {
   getDashboard: async (): Promise<DashboardStats> => {
     const res = await fetch(`${API_BASE}/stats/dashboard`);
+    return handleResponse(res);
+  },
+};
+
+export const activityApi = {
+  getRecent: async (): Promise<ActivityEvent[]> => {
+    const res = await fetch(`${API_BASE}/activity/recent`);
+    return handleResponse(res);
+  },
+};
+
+export const participantsApi = {
+  getInactive: async (days: number = 3): Promise<InactiveParticipant[]> => {
+    const res = await fetch(`${API_BASE}/participants/inactive?days=${days}`);
     return handleResponse(res);
   },
 };

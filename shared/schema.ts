@@ -84,7 +84,27 @@ export const participants = pgTable("participants", {
   currentDay: integer("current_day").default(1),
   completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
   startedAt: timestamp("started_at").defaultNow(),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
 });
+
+export const activityEvents = pgTable("activity_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  creatorId: varchar("creator_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "cascade" }),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }),
+  eventType: text("event_type").notNull(), // 'joined' | 'completed_day' | 'completed_journey' | 'feedback'
+  eventData: jsonb("event_data"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertActivityEventSchema = createInsertSchema(activityEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertActivityEvent = z.infer<typeof insertActivityEventSchema>;
+export type ActivityEvent = typeof activityEvents.$inferSelect;
 
 export const insertParticipantSchema = createInsertSchema(participants).omit({
   id: true,

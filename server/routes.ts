@@ -102,6 +102,29 @@ export async function registerRoutes(
     }
   });
 
+  // Get recent activity for creator's dashboard
+  app.get("/api/activity/recent", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const events = await storage.getActivityEvents(userId, 10);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch activity" });
+    }
+  });
+
+  // Get inactive participants needing attention
+  app.get("/api/participants/inactive", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const daysSinceActive = parseInt(req.query.days as string) || 3;
+      const inactive = await storage.getInactiveParticipants(userId, daysSinceActive);
+      res.json(inactive);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch inactive participants" });
+    }
+  });
+
   app.get("/api/journeys/:id", async (req, res) => {
     try {
       const journey = await storage.getJourney(req.params.id);
@@ -279,6 +302,22 @@ export async function registerRoutes(
           return res.status(400).json({ error: parsed.error.issues });
         }
         participant = await storage.createParticipant(parsed.data);
+        
+        // Create activity event for joining
+        const journey = await storage.getJourney(journeyId);
+        const user = await storage.getUser(userId);
+        if (journey?.creatorId) {
+          await storage.createActivityEvent({
+            creatorId: journey.creatorId,
+            participantId: participant.id,
+            journeyId,
+            eventType: 'joined',
+            eventData: {
+              userName: user?.firstName || user?.email || 'Someone',
+              journeyName: journey.name,
+            },
+          });
+        }
       }
       
       res.json(participant);
@@ -324,14 +363,52 @@ export async function registerRoutes(
       const totalDays = steps.length || 7;
       
       const nextDay = Math.min(dayNumber + 1, totalDays + 1);
+      const isJourneyComplete = nextDay > totalDays;
       
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
+        lastActiveAt: new Date(),
+        ...(isJourneyComplete ? { completedAt: new Date() } : {}),
       });
       
       if (!participant) {
         return res.status(404).json({ error: "Participant not found" });
       }
+      
+      // Create activity events (use participant.id from the updated record)
+      const journey = await storage.getJourney(journeyId);
+      const user = await storage.getUser(userId);
+      if (journey?.creatorId && participant) {
+        try {
+          if (isJourneyComplete) {
+            await storage.createActivityEvent({
+              creatorId: journey.creatorId,
+              participantId: participant.id,
+              journeyId,
+              eventType: 'completed_journey',
+              eventData: {
+                userName: user?.firstName || user?.email || 'Someone',
+                journeyName: journey.name,
+              },
+            });
+          } else {
+            await storage.createActivityEvent({
+              creatorId: journey.creatorId,
+              participantId: participant.id,
+              journeyId,
+              eventType: 'completed_day',
+              eventData: {
+                userName: user?.firstName || user?.email || 'Someone',
+                journeyName: journey.name,
+                dayNumber,
+              },
+            });
+          }
+        } catch (activityError) {
+          console.error("Failed to create activity event:", activityError);
+        }
+      }
+      
       res.json(participant);
     } catch (error) {
       res.status(500).json({ error: "Failed to complete day" });

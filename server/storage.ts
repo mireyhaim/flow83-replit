@@ -5,10 +5,11 @@ import {
   type JourneyBlock, type InsertJourneyBlock,
   type Participant, type InsertParticipant,
   type JourneyMessage, type InsertJourneyMessage,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages
+  type ActivityEvent, type InsertActivityEvent,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, asc, inArray } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, lt, isNull, or } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -43,6 +44,11 @@ export interface IStorage {
 
   getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]>;
   createMessage(message: InsertJourneyMessage): Promise<JourneyMessage>;
+
+  getActivityEvents(creatorId: string, limit?: number): Promise<ActivityEvent[]>;
+  createActivityEvent(event: InsertActivityEvent): Promise<ActivityEvent>;
+  getInactiveParticipants(creatorId: string, daysSinceActive: number): Promise<(Participant & { journey: Journey; user: User })[]>;
+  getParticipantsByCreator(creatorId: string): Promise<Participant[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -188,6 +194,63 @@ export class DatabaseStorage implements IStorage {
   async createMessage(message: InsertJourneyMessage): Promise<JourneyMessage> {
     const [created] = await db.insert(journeyMessages).values(message).returning();
     return created;
+  }
+
+  async getActivityEvents(creatorId: string, limit: number = 10): Promise<ActivityEvent[]> {
+    return db.select().from(activityEvents)
+      .where(eq(activityEvents.creatorId, creatorId))
+      .orderBy(desc(activityEvents.createdAt))
+      .limit(limit);
+  }
+
+  async createActivityEvent(event: InsertActivityEvent): Promise<ActivityEvent> {
+    const [created] = await db.insert(activityEvents).values(event).returning();
+    return created;
+  }
+
+  async getInactiveParticipants(creatorId: string, daysSinceActive: number): Promise<(Participant & { journey: Journey; user: User })[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysSinceActive);
+    
+    const results = await db
+      .select()
+      .from(participants)
+      .innerJoin(journeys, eq(participants.journeyId, journeys.id))
+      .innerJoin(users, eq(participants.userId, users.id))
+      .where(
+        and(
+          eq(journeys.creatorId, creatorId),
+          or(
+            isNull(participants.lastActiveAt),
+            lt(participants.lastActiveAt, cutoffDate)
+          ),
+          isNull(participants.completedAt)
+        )
+      )
+      .orderBy(asc(participants.lastActiveAt))
+      .limit(10);
+    
+    return results.map(r => ({
+      id: r.participants.id,
+      userId: r.participants.userId,
+      journeyId: r.participants.journeyId,
+      currentDay: r.participants.currentDay,
+      completedBlocks: r.participants.completedBlocks,
+      startedAt: r.participants.startedAt,
+      lastActiveAt: r.participants.lastActiveAt,
+      completedAt: r.participants.completedAt,
+      journey: r.journeys,
+      user: r.users,
+    }));
+  }
+
+  async getParticipantsByCreator(creatorId: string): Promise<Participant[]> {
+    return db
+      .select({ participant: participants })
+      .from(participants)
+      .innerJoin(journeys, eq(participants.journeyId, journeys.id))
+      .where(eq(journeys.creatorId, creatorId))
+      .then(results => results.map(r => r.participant));
   }
 }
 
