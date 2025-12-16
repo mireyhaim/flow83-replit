@@ -45,13 +45,13 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
 
     setIsGenerating(true);
     setProgress(0);
-    setProgressMessage("מתחיל...");
+    setProgressMessage("Starting...");
     
     try {
       let content = textContent;
       
       if (uploadedFiles.length > 0) {
-        setProgressMessage("קורא קבצים...");
+        setProgressMessage("Reading files...");
         const parsed = await fileApi.parseFiles(uploadedFiles);
         content = content + "\n\n" + parsed.text;
       }
@@ -68,7 +68,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         return;
       }
 
-      setProgressMessage("יוצר מסע...");
+      setProgressMessage("Creating journey...");
       setProgress(2);
 
       const journey = await journeyApi.create({
@@ -266,7 +266,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              יוצר עם בינה מלאכותית...
+              Generating with AI...
             </>
           ) : (
             <>
