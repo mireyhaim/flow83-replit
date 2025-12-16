@@ -4,12 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { journeyApi, statsApi, activityApi, participantsApi, type DashboardStats, type InactiveParticipant } from "@/lib/api";
+import { statsApi, activityApi, participantsApi, type DashboardStats, type InactiveParticipant } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight, Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle, Clock, AlertCircle, UserPlus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import type { Journey, ActivityEvent } from "@shared/schema";
+import type { ActivityEvent } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
@@ -24,12 +24,6 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, onboarding.hasSeenOnboarding, onboarding.isActive]);
-
-  const { data: journeys = [], isLoading: journeysLoading } = useQuery<Journey[]>({
-    queryKey: ["/api/journeys/my"],
-    queryFn: journeyApi.getMy,
-    enabled: isAuthenticated,
-  });
 
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/stats/dashboard"],
@@ -94,7 +88,7 @@ export default function Dashboard() {
     );
   }
 
-  const isLoading = journeysLoading || statsLoading;
+  const isLoading = statsLoading;
 
   return (
     <DashboardLayout>
@@ -185,64 +179,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">My Journeys</h2>
-              {journeys.length > 0 && (
-                <Link href="/journeys">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground" data-testid="button-view-all-journeys">
-                    View All <ArrowUpRight className="ml-1 h-3 w-3" />
-                  </Button>
-                </Link>
-              )}
-            </div>
-            
-            {journeys.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="py-12 text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <BookOpen className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium mb-2">No journeys yet</h3>
-                  <p className="text-muted-foreground text-sm mb-4">Create your first 7-day transformational journey</p>
-                  <Link href="/journeys/new">
-                    <Button data-testid="button-create-first-journey">
-                      Create Journey <ArrowUpRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {journeys.slice(0, 6).map((journey) => (
-                  <Card 
-                    key={journey.id} 
-                    className="group hover:shadow-md transition-all duration-200 hover:border-primary/30"
-                    data-testid={`card-journey-${journey.id}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <h4 className="font-medium line-clamp-2">{journey.name}</h4>
-                        <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                          journey.status === "published" 
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                            : "bg-muted text-muted-foreground"
-                        }`}>
-                          {journey.status === "published" ? "Published" : "Draft"}
-                        </span>
-                      </div>
-                      <Link href={`/journeys/${journey.id}/edit`}>
-                        <Button variant="outline" size="sm" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors" data-testid={`button-edit-journey-${journey.id}`}>
-                          Edit Journey
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </section>
 
           <div className="grid gap-6 md:grid-cols-2 mb-8">
             {/* Earnings Card */}
