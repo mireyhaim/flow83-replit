@@ -290,33 +290,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-background border" data-testid="card-account-info">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <User className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-lg font-medium">Account</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Account ID</span>
-                <span className="font-mono text-xs">{user?.id}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Connected via</span>
-                <span>Replit</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-muted-foreground">Member since</span>
-                <span>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-profile">
             {isSaving ? (
