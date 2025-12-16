@@ -9,26 +9,26 @@ import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const professionOptions = [
-  { value: "therapist", label: "Therapist", icon: "🧠" },
-  { value: "coach", label: "Coach", icon: "🎯" },
-  { value: "healer", label: "Healer", icon: "✨" },
-  { value: "mentor", label: "Mentor", icon: "🌟" },
-  { value: "counselor", label: "Counselor", icon: "💬" },
-  { value: "other", label: "Other", icon: "🔮" },
+  { value: "therapist", label: "Therapist" },
+  { value: "coach", label: "Coach" },
+  { value: "healer", label: "Healer" },
+  { value: "mentor", label: "Mentor" },
+  { value: "counselor", label: "Counselor" },
+  { value: "other", label: "Other" },
 ];
 
 const toneOptions = [
-  { value: "warm", label: "Warm & Personal", icon: "💛" },
-  { value: "professional", label: "Professional", icon: "💼" },
-  { value: "direct", label: "Direct & Clear", icon: "🎯" },
-  { value: "gentle", label: "Gentle & Soft", icon: "🌸" },
-  { value: "motivating", label: "Motivating & Energetic", icon: "🔥" },
-  { value: "spiritual", label: "Spiritual & Deep", icon: "🔮" },
+  { value: "warm", label: "Warm & Personal" },
+  { value: "professional", label: "Professional" },
+  { value: "direct", label: "Direct & Clear" },
+  { value: "gentle", label: "Gentle & Soft" },
+  { value: "motivating", label: "Motivating & Energetic" },
+  { value: "spiritual", label: "Spiritual & Deep" },
 ];
 
 const durationOptions = [
-  { value: "3", label: "3 Days", description: "Quick transformation", icon: "⚡" },
-  { value: "7", label: "7 Days", description: "Deep journey", icon: "🌊" },
+  { value: "3", label: "3 Days", description: "Quick transformation" },
+  { value: "7", label: "7 Days", description: "Deep journey" },
 ];
 
 interface JourneyIntentFormProps {
@@ -199,14 +199,13 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
                 key={option.value}
                 type="button"
                 onClick={() => updateField(step.field, option.value)}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                className={`p-4 rounded-xl border-2 transition-all text-center ${
                   value === option.value
                     ? "border-violet-500 bg-violet-500/20"
                     : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
                 }`}
                 data-testid={`option-${step.field}-${option.value}`}
               >
-                <span className="text-2xl mb-2 block">{option.icon}</span>
                 <span className="text-white font-medium">{option.label}</span>
               </button>
             ))}
@@ -228,7 +227,6 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
                 }`}
                 data-testid={`option-${step.field}-${option.value}`}
               >
-                <span className="text-4xl mb-3 block">{option.icon}</span>
                 <span className="text-white font-bold text-xl block">{option.label}</span>
                 {"description" in option && (
                   <span className="text-white/50 text-sm">{(option as any).description}</span>
