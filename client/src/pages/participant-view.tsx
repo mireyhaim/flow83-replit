@@ -450,9 +450,9 @@ export default function ParticipantView() {
         </header>
 
         {/* Chat area */}
-        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full overflow-hidden">
+          {/* Messages - scrollable */}
+          <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-4" ref={scrollRef}>
             {/* Welcome message */}
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 mb-6">
               <div className="flex items-start gap-4">
@@ -581,8 +581,8 @@ export default function ParticipantView() {
             )}
           </div>
 
-          {/* Input area */}
-          <div className="border-t border-stone-200 p-4 bg-stone-50/80 backdrop-blur-sm">
+          {/* Input area - fixed at bottom */}
+          <div className="fixed bottom-0 left-0 right-0 lg:left-72 border-t border-stone-200 p-4 bg-stone-50/95 backdrop-blur-sm z-20">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
               className="flex gap-3 max-w-3xl mx-auto"
