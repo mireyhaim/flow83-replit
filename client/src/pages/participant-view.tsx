@@ -411,18 +411,6 @@ export default function ParticipantView() {
           </div>
         </div>
 
-        {/* Sidebar footer */}
-        <div className="p-4 border-t border-white/10">
-          <Link href="/dashboard">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
       </aside>
 
       {/* Mobile sidebar overlay */}
