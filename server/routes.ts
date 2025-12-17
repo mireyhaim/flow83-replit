@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateLandingPageContent } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
@@ -252,10 +252,79 @@ export async function registerRoutes(
         updateData.shortCode = generateShortCode();
       }
 
+      // Generate landing page content when publishing for the first time
+      if (req.body.status === "published" && !existingJourney.landingPageContent) {
+        try {
+          const steps = await storage.getJourneySteps(req.params.id);
+          let mentorName = "";
+          if (existingJourney.creatorId) {
+            const mentor = await storage.getUser(existingJourney.creatorId);
+            mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() : "";
+          }
+          
+          const landingContent = await generateLandingPageContent({
+            name: existingJourney.name,
+            goal: existingJourney.goal || "",
+            audience: existingJourney.audience || "",
+            duration: existingJourney.duration || 7,
+            description: existingJourney.description || "",
+            mentorName,
+            steps: steps.map(s => ({
+              title: s.title,
+              goal: s.goal || "",
+              explanation: s.explanation || "",
+            })),
+          });
+          updateData.landingPageContent = landingContent;
+        } catch (landingError) {
+          console.error("Failed to generate landing page content:", landingError);
+        }
+      }
+
       const journey = await storage.updateJourney(req.params.id, updateData);
       res.json(journey);
     } catch (error) {
       res.status(500).json({ error: "Failed to update flow" });
+    }
+  });
+
+  // Regenerate landing page content on demand
+  app.post("/api/journeys/:id/regenerate-landing", isAuthenticated, async (req, res) => {
+    try {
+      const journey = await storage.getJourney(req.params.id);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      const steps = await storage.getJourneySteps(req.params.id);
+      let mentorName = "";
+      if (journey.creatorId) {
+        const mentor = await storage.getUser(journey.creatorId);
+        mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() : "";
+      }
+
+      const landingContent = await generateLandingPageContent({
+        name: journey.name,
+        goal: journey.goal || "",
+        audience: journey.audience || "",
+        duration: journey.duration || 7,
+        description: journey.description || "",
+        mentorName,
+        steps: steps.map(s => ({
+          title: s.title,
+          goal: s.goal || "",
+          explanation: s.explanation || "",
+        })),
+      });
+
+      const updatedJourney = await storage.updateJourney(req.params.id, {
+        landingPageContent: landingContent,
+      });
+
+      res.json(updatedJourney);
+    } catch (error) {
+      console.error("Failed to regenerate landing page:", error);
+      res.status(500).json({ error: "Failed to regenerate landing page" });
     }
   });
 
