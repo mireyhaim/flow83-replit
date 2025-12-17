@@ -148,7 +148,7 @@ YOUR ROLE:
 - You initiate topics and guide the participant through today's process
 
 CRITICAL RULES:
-- ALWAYS respond in the same language as the journey content (if content is in Hebrew, respond in Hebrew)
+- ALWAYS respond in the SAME LANGUAGE the participant is using. If they write in Hebrew, respond in Hebrew. If they write in English, respond in English.
 - Speak as yourself (the mentor), not as "the mentor" in third person
 - Keep responses warm, personal, and conversational - like texting with a caring guide
 - Maximum 120 words per response
@@ -322,7 +322,7 @@ Write a personal opening message for this day. The message should:
 - Ask ONE opening question that invites the participant into today's theme
 - Maximum 80 words total
 - Be warm, personal, and conversational - like a caring guide texting
-- CRITICAL: Respond in the same language as the journey content above (if content is in Hebrew, write in Hebrew)`;
+- CRITICAL: Respond in the same language as the journey content above (match the language of the goal and task)`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
