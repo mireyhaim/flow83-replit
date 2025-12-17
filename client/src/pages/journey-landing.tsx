@@ -148,7 +148,22 @@ export default function JourneyLandingPage() {
     );
   }
 
-  const rawContent = journey.landingPageContent as LandingPageContent | undefined;
+  // Normalize AI-generated content keys to expected format
+  const rawApiContent = journey.landingPageContent as any;
+  let rawContent: LandingPageContent | undefined;
+  
+  if (rawApiContent) {
+    // Map API response keys (heroSection, audienceSection, etc.) to expected keys (hero, audience, etc.)
+    rawContent = {
+      hero: rawApiContent.hero || rawApiContent.heroSection,
+      audience: rawApiContent.audience || rawApiContent.audienceSection,
+      painPoints: rawApiContent.painPoints || rawApiContent.painPointsSection,
+      transformation: rawApiContent.transformation || rawApiContent.transformationSection,
+      testimonials: rawApiContent.testimonials,
+      cta: rawApiContent.cta || rawApiContent.ctaSection,
+    };
+  }
+  
   const totalDays = journey.steps?.length || journey.duration || 7;
   const mentorName = journey.mentor 
     ? `${journey.mentor.firstName || ""} ${journey.mentor.lastName || ""}`.trim() 
