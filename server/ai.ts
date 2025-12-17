@@ -603,7 +603,7 @@ Each with:
 - note: Reassuring note
 
 Make all content feel warm, authentic, human. Avoid corporate language.
-Write in the same language as the journey name and goal (if Hebrew, write in Hebrew; if English, write in English).
+IMPORTANT: Always write ALL content in English, regardless of the input language.
 
 Return valid JSON matching this structure exactly.`;
 
@@ -612,7 +612,7 @@ Return valid JSON matching this structure exactly.`;
     messages: [
       { 
         role: "system", 
-        content: "You are an expert copywriter who creates warm, authentic landing page content for transformational journeys. Write in the language of the provided content. Respond with valid JSON only." 
+        content: "You are an expert copywriter who creates warm, authentic landing page content for transformational journeys. ALWAYS write in English regardless of the input language. Respond with valid JSON only." 
       },
       { role: "user", content: prompt }
     ],
