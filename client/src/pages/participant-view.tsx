@@ -138,9 +138,16 @@ export default function ParticipantView() {
   }, [currentDay]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Use setTimeout to ensure DOM has rendered before scrolling
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleSendMessage = async () => {
