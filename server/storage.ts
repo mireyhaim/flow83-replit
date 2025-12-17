@@ -20,6 +20,7 @@ export interface IStorage {
   getJourneys(): Promise<Journey[]>;
   getJourneysByCreator(creatorId: string): Promise<Journey[]>;
   getJourney(id: string): Promise<Journey | undefined>;
+  getJourneyByShortCode(shortCode: string): Promise<Journey | undefined>;
   createJourney(journey: InsertJourney): Promise<Journey>;
   updateJourney(id: string, journey: Partial<InsertJourney>): Promise<Journey | undefined>;
   deleteJourney(id: string): Promise<void>;
@@ -96,6 +97,11 @@ export class DatabaseStorage implements IStorage {
 
   async getJourney(id: string): Promise<Journey | undefined> {
     const [journey] = await db.select().from(journeys).where(eq(journeys.id, id));
+    return journey;
+  }
+
+  async getJourneyByShortCode(shortCode: string): Promise<Journey | undefined> {
+    const [journey] = await db.select().from(journeys).where(eq(journeys.shortCode, shortCode));
     return journey;
   }
 

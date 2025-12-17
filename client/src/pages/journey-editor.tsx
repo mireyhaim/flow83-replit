@@ -174,12 +174,12 @@ const JourneyEditorPage = () => {
     const priceValue = parseFloat(publishPrice) || 0;
     
     try {
-      await journeyApi.update(journeyData.id, { 
+      const updatedJourney = await journeyApi.update(journeyData.id, { 
         status: "published",
         price: priceValue,
         currency: "ILS"
       });
-      setJourneyData(prev => prev ? { ...prev, status: "published", price: priceValue } : null);
+      setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
       setShowSuccessModal(true);
     } catch (error) {
       toast({
@@ -194,6 +194,9 @@ const JourneyEditorPage = () => {
 
   const getShareableLink = () => {
     if (!journeyData) return "";
+    if (journeyData.shortCode) {
+      return `${window.location.origin}/f/${journeyData.shortCode}`;
+    }
     return `${window.location.origin}/j/${journeyData.id}`;
   };
 

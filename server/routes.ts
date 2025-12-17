@@ -13,6 +13,11 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 
+// Generate a unique 6-character short code for flow URLs
+function generateShortCode(): string {
+  return Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2, 5);
+}
+
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }
@@ -236,13 +241,34 @@ export async function registerRoutes(
 
   app.put("/api/journeys/:id", isAuthenticated, async (req, res) => {
     try {
-      const journey = await storage.updateJourney(req.params.id, req.body);
+      const existingJourney = await storage.getJourney(req.params.id);
+      if (!existingJourney) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      // Generate short code when publishing for the first time
+      let updateData = { ...req.body };
+      if (req.body.status === "published" && !existingJourney.shortCode) {
+        updateData.shortCode = generateShortCode();
+      }
+
+      const journey = await storage.updateJourney(req.params.id, updateData);
+      res.json(journey);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update flow" });
+    }
+  });
+
+  // Get journey by short code (for short links)
+  app.get("/api/journeys/code/:shortCode", async (req, res) => {
+    try {
+      const journey = await storage.getJourneyByShortCode(req.params.shortCode);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
       res.json(journey);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update flow" });
+      res.status(500).json({ error: "Failed to fetch flow" });
     }
   });
 
