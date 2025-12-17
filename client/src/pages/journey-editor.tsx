@@ -609,28 +609,6 @@ const JourneyEditorPage = () => {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            {journeyData?.shortCode && (
-              <div className="text-center py-4">
-                <p className="text-xs text-white/50 mb-2">Your unique short code</p>
-                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 rounded-xl px-6 py-4">
-                  <span className="text-3xl font-bold text-white tracking-wider">{journeyData.shortCode}</span>
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(journeyData.shortCode || "");
-                      toast({ title: "Code copied!" });
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white/60 hover:text-white hover:bg-white/10"
-                    data-testid="button-copy-code"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-white/40 mt-3">yoursite.com/f/{journeyData.shortCode}</p>
-              </div>
-            )}
-
             <div className="space-y-3">
               <Label className="text-white/80 text-sm">Full Link (tap to copy)</Label>
               <Button
