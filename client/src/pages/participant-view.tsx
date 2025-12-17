@@ -477,21 +477,6 @@ export default function ParticipantView() {
         <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full overflow-hidden">
           {/* Messages - scrollable */}
           <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-4" ref={scrollRef}>
-            {/* Welcome message */}
-            <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full">Day {currentDay}</span>
-              </div>
-              <h3 className="text-base font-semibold text-gray-800">
-                {currentStep?.title || `Welcome to Day ${currentDay}`}
-              </h3>
-              {currentStep?.goal && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {currentStep.goal}
-                </p>
-              )}
-            </div>
-
             {messagesLoading && (
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
