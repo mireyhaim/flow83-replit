@@ -871,6 +871,10 @@ export async function registerRoutes(
       const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
       const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() || "Your Guide" : "Your Guide";
       const totalDays = journey.duration || 7;
+      
+      // Get participant's name for personalized conversation
+      const participantUser = await storage.getUser(userId);
+      const participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
 
       // PRD 7.2 - Get user summary from previous days (long-term memory)
       const previousDaySummary = await storage.getLatestDaySummary(participantId, step.dayNumber - 1);
@@ -889,6 +893,7 @@ export async function registerRoutes(
           mentorToneOfVoice: mentor?.toneOfVoice || undefined,
           mentorMethodDescription: mentor?.methodDescription || undefined,
           mentorBehavioralRules: mentor?.behavioralRules || undefined,
+          participantName,
           recentMessages,
           userSummary: previousDaySummary ? {
             challenge: previousDaySummary.summaryChallenge || undefined,
