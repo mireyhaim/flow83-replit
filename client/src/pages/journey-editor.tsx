@@ -597,7 +597,7 @@ const JourneyEditorPage = () => {
 
       {/* Success Modal - Share Link */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md overflow-hidden">
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[90vw] max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-emerald-400" />
@@ -608,27 +608,34 @@ const JourneyEditorPage = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6 py-4">
+          <div className="space-y-5 py-4">
             <div className="space-y-3">
-              <Label className="text-white/80 text-sm">Full Link (tap to copy)</Label>
-              <Button
+              <Label className="text-white/80 text-sm">Your shareable link</Label>
+              <div 
                 onClick={handleCopyLink}
-                variant="outline"
-                className="w-full border-white/20 text-white/70 hover:bg-white/10 justify-between h-auto py-3 px-4 overflow-hidden"
+                className="w-full bg-white/5 border border-white/20 rounded-lg p-3 cursor-pointer hover:bg-white/10 transition-colors"
                 data-testid="button-copy-link"
               >
-                <span className="text-xs truncate flex-1 text-left overflow-hidden">
+                <p className="text-xs text-white/80 break-all leading-relaxed">
                   {getShareableLink()}
-                </span>
+                </p>
+              </div>
+              <Button
+                onClick={handleCopyLink}
+                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+              >
                 {copiedLink ? (
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                  <>
+                    <Check className="w-4 h-4 mr-2 text-emerald-400" />
+                    Copied!
+                  </>
                 ) : (
-                  <Copy className="w-4 h-4 shrink-0 ml-2" />
+                  <>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </>
                 )}
               </Button>
-              {copiedLink && (
-                <p className="text-sm text-emerald-400 text-center">Link copied!</p>
-              )}
             </div>
 
             <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
@@ -648,7 +655,8 @@ const JourneyEditorPage = () => {
               </Button>
               <Button
                 onClick={() => window.open(getShareableLink(), '_blank')}
-                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                variant="outline"
+                className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10"
                 data-testid="button-view-landing"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
