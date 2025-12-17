@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { Upload, FileText, Loader2, AlertCircle, Sparkles, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, fileApi } from "@/lib/api";
 
@@ -29,6 +29,10 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setUploadedFiles([...uploadedFiles, ...files]);
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setUploadedFiles(uploadedFiles.filter((_, index) => index !== indexToRemove));
   };
 
   const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
@@ -182,6 +186,13 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
                       <span className="text-xs text-white/50">
                         {(file.size / 1024 / 1024).toFixed(1)} MB
                       </span>
+                      <button
+                        onClick={() => handleRemoveFile(index)}
+                        className="p-1 hover:bg-white/10 rounded transition-colors text-white/50 hover:text-red-400"
+                        data-testid={`button-remove-file-${index}`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   ))}
                 </div>
