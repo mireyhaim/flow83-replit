@@ -45,6 +45,9 @@ export const journeys = pgTable("journeys", {
   status: text("status").default("draft"),
   coverImage: text("cover_image"),
   description: text("description"),
+  price: integer("price").default(0),
+  currency: text("currency").default("ILS"),
+  mentorMessage: text("mentor_message"),
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({
