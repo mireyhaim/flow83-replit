@@ -597,7 +597,7 @@ const JourneyEditorPage = () => {
 
       {/* Success Modal - Share Link */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md">
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-emerald-400" />
@@ -614,10 +614,10 @@ const JourneyEditorPage = () => {
               <Button
                 onClick={handleCopyLink}
                 variant="outline"
-                className="w-full border-white/20 text-white/70 hover:bg-white/10 justify-between h-auto py-3 px-4"
+                className="w-full border-white/20 text-white/70 hover:bg-white/10 justify-between h-auto py-3 px-4 overflow-hidden"
                 data-testid="button-copy-link"
               >
-                <span className="text-xs truncate flex-1 text-left">
+                <span className="text-xs truncate flex-1 text-left overflow-hidden">
                   {getShareableLink()}
                 </span>
                 {copiedLink ? (
