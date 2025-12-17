@@ -213,7 +213,6 @@ USER CONTEXT (from previous sessions):`;
     messages,
     max_completion_tokens: 200, // PRD 9.1 - max tokens 150-200
     temperature: 0.65, // PRD 10 - temperature 0.6-0.7
-    frequency_penalty: 0.5, // PRD 10
   });
 
   return response.choices[0].message.content || "I'm here with you. How are you feeling about today's task?";
