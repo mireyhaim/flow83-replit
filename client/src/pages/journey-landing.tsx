@@ -97,8 +97,8 @@ export default function JourneyLandingPage() {
     : "המנטור/ית";
   const price = journey.price || 0;
   const isFree = price <= 0;
-  const currency = journey.currency || "ILS";
-  const currencySymbol = currency === "ILS" ? "₪" : currency === "USD" ? "$" : currency;
+  const currency = journey.currency || "USD";
+  const currencySymbol = "$";
 
   const handleStartJourney = () => {
     setShowForm(true);

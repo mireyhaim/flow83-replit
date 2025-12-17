@@ -177,7 +177,7 @@ const JourneyEditorPage = () => {
       const updatedJourney = await journeyApi.update(journeyData.id, { 
         status: "published",
         price: priceValue,
-        currency: "ILS"
+        currency: "USD"
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
       setShowSuccessModal(true);
@@ -549,7 +549,7 @@ const JourneyEditorPage = () => {
           
           <div className="space-y-6 py-4">
             <div className="space-y-3">
-              <Label className="text-white/80">Price (in ILS)</Label>
+              <Label className="text-white/80">Price (in USD)</Label>
               <div className="relative">
                 <Input
                   type="number"
@@ -560,10 +560,10 @@ const JourneyEditorPage = () => {
                   className="bg-white/5 border-white/20 text-white text-2xl text-center h-16"
                   data-testid="input-publish-price"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">₪</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">$</span>
               </div>
               <p className="text-sm text-white/40 text-center">
-                {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay ₪${publishPrice} to join`}
+                {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to join`}
               </p>
             </div>
 

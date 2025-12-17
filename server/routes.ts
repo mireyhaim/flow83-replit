@@ -994,7 +994,7 @@ export async function registerRoutes(
         const session = await stripeService.createOneTimePaymentSession({
           customerEmail: email,
           amount: price * 100,
-          currency: (journey.currency || "ILS").toLowerCase(),
+          currency: (journey.currency || "USD").toLowerCase(),
           productName: journey.name,
           successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${baseUrl}/j/${journeyId}`,
