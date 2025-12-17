@@ -871,7 +871,7 @@ export async function registerRoutes(
       const previousDaySummary = await storage.getLatestDaySummary(participantId, step.dayNumber - 1);
 
       // PRD-compliant chat context
-      const botResponse = await generateChatResponse(
+      let botResponse = await generateChatResponse(
         {
           journeyName: journey.name,
           dayNumber: step.dayNumber,
@@ -895,14 +895,24 @@ export async function registerRoutes(
         content.trim()
       );
 
+      // Check if AI marked the day as complete - just signal to frontend, don't auto-advance
+      let dayCompleted = false;
+      if (botResponse.startsWith("[DAY_COMPLETE]")) {
+        dayCompleted = true;
+        // Remove the marker from the visible message
+        botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
+        // Note: Don't call completeDayState here - let the user click "Continue" to advance
+      }
+
       const botMessage = await storage.createMessage({
         participantId,
         stepId,
         role: "assistant",
         content: botResponse,
+        isSummary: dayCompleted,
       });
 
-      res.json({ userMessage, botMessage });
+      res.json({ userMessage, botMessage, dayCompleted });
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ error: "Failed to send message" });

@@ -30,6 +30,7 @@ export default function ParticipantView() {
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [dayReadyForCompletion, setDayReadyForCompletion] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: allJourneys } = useQuery<Journey[]>({
@@ -105,6 +106,10 @@ export default function ParticipantView() {
         ["messages", participant?.id, currentStep?.id],
         (old = []) => [...old, data.userMessage, data.botMessage]
       );
+      // If AI marked the day as complete, show the complete day button
+      if (data.dayCompleted) {
+        setDayReadyForCompletion(true);
+      }
     },
   });
 
@@ -119,12 +124,18 @@ export default function ParticipantView() {
     },
     onSuccess: () => {
       setShowCelebration(true);
+      setDayReadyForCompletion(false); // Reset the completion state
       setTimeout(() => {
         setShowCelebration(false);
         queryClient.invalidateQueries({ queryKey: ["/api/participants/journey", journeyId] });
       }, 2000);
     },
   });
+
+  // Reset dayReadyForCompletion when day changes
+  useEffect(() => {
+    setDayReadyForCompletion(false);
+  }, [currentDay]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -148,6 +159,7 @@ export default function ParticipantView() {
         role: "user",
         content,
         createdAt: new Date(),
+        isSummary: false,
       }]
     );
 
@@ -596,13 +608,20 @@ export default function ParticipantView() {
               </div>
             </form>
             
-            {/* Complete day button */}
-            {messages.length > 2 && (
-              <div className="mt-4 text-center">
+            {/* Complete day button - prominent when AI indicates day is done */}
+            {dayReadyForCompletion && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 text-center"
+              >
+                <div className="text-sm text-emerald-600 font-medium mb-2">
+                  You've completed today's work!
+                </div>
                 <Button
                   onClick={handleCompleteDay}
                   disabled={completeDayMutation.isPending}
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 shadow-lg text-white"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 shadow-lg text-white animate-pulse"
                   data-testid="button-complete-day"
                 >
                   {completeDayMutation.isPending ? (
@@ -610,9 +629,9 @@ export default function ParticipantView() {
                   ) : (
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                   )}
-                  Complete Day {currentDay}
+                  Continue to Day {currentDay + 1}
                 </Button>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>

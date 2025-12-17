@@ -273,7 +273,7 @@ export const chatApi = {
     return handleResponse(res);
   },
 
-  sendMessage: async (participantId: string, stepId: string, content: string): Promise<{ userMessage: JourneyMessage; botMessage: JourneyMessage }> => {
+  sendMessage: async (participantId: string, stepId: string, content: string): Promise<{ userMessage: JourneyMessage; botMessage: JourneyMessage; dayCompleted?: boolean }> => {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
