@@ -8,16 +8,17 @@ import {
   Send, CheckCircle2, Loader2, 
   Flame, Star, Trophy, Target, Zap, Calendar, MessageCircle,
   Sparkles, Award, TrendingUp, Clock, Menu, X, ChevronRight,
-  Home, Settings, LogOut
+  Home, Settings, LogOut, User as UserIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { chatApi } from "@/lib/api";
-import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage } from "@shared/schema";
+import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage, User } from "@shared/schema";
 
 interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
+  mentor?: User | null;
 }
 
 export default function ParticipantView() {
@@ -37,6 +38,15 @@ export default function ParticipantView() {
     enabled: !tokenFromRoute,
   });
 
+  // Get current user info
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/auth/user");
+      return res.json();
+    },
+  });
+
   const publishedJourneys = allJourneys?.filter(j => j.status === "published") || [];
   const journeyId = tokenFromRoute || publishedJourneys[0]?.id;
 
@@ -54,6 +64,16 @@ export default function ParticipantView() {
     },
     enabled: !!journeyId,
   });
+
+  // Helper to get mentor display name
+  const mentorName = journey?.mentor?.firstName 
+    ? `${journey.mentor.firstName}${journey.mentor.lastName ? ' ' + journey.mentor.lastName : ''}`
+    : "Your Mentor";
+  
+  const mentorImage = journey?.mentor?.profileImageUrl;
+  
+  // Helper to get user display name
+  const userName = currentUser?.firstName || "You";
 
   const currentDay = participant?.currentDay ?? 1;
   const sortedSteps = [...(journey?.steps || [])].sort((a, b) => a.dayNumber - b.dayNumber);
@@ -239,7 +259,7 @@ export default function ParticipantView() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-stone-100 flex">
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (
@@ -268,63 +288,57 @@ export default function ParticipantView() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 lg:translate-x-0 shadow-lg lg:shadow-none",
+          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-stone-50 border-r border-stone-200 flex flex-col transition-transform duration-300 lg:translate-x-0 shadow-lg lg:shadow-none",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Sidebar header */}
-        <div className="p-4 border-b border-gray-100">
+        {/* Sidebar header - Mentor info */}
+        <div className="p-4 border-b border-stone-200 bg-gradient-to-br from-amber-50 to-orange-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-                F
-              </div>
+              {mentorImage ? (
+                <img 
+                  src={mentorImage} 
+                  alt={mentorName}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-amber-300 shadow-md"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  {mentorName.charAt(0)}
+                </div>
+              )}
               <div>
-                <h1 className="font-bold text-gray-900 text-sm truncate max-w-[150px]">{journey.name}</h1>
-                <p className="text-xs text-gray-500">Day {currentDay} of {totalDays}</p>
+                <p className="text-xs text-amber-600 font-medium">Your Guide</p>
+                <h1 className="font-bold text-stone-800 text-sm">{mentorName}</h1>
               </div>
             </div>
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-stone-200 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-stone-500" />
             </button>
           </div>
         </div>
 
-        {/* Stats summary */}
-        <div className="p-4 border-b border-gray-100">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-orange-50 rounded-xl p-3 border border-orange-200">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-gray-500">Streak</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900">{streak}</span>
-            </div>
-            <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
-              <div className="flex items-center gap-2 mb-1">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <span className="text-xs text-gray-500">XP</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900">{xpPoints}</span>
-            </div>
-          </div>
+        {/* Journey name */}
+        <div className="p-4 border-b border-stone-200">
+          <h2 className="font-semibold text-stone-800 text-sm">{journey.name}</h2>
+          <p className="text-xs text-stone-500 mt-1">Day {currentDay} of {totalDays}</p>
         </div>
 
         {/* Progress */}
-        <div className="p-4 border-b border-gray-100">
+        <div className="p-4 border-b border-stone-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500">Progress</span>
-            <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
+            <span className="text-xs text-stone-500">Your Progress</span>
+            <span className="text-xs font-bold text-amber-600">{progressPercent}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2 bg-gray-200" />
+          <Progress value={progressPercent} className="h-2 bg-stone-200" />
         </div>
 
         {/* Days navigation */}
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Your Journey</div>
+          <div className="text-xs text-stone-400 uppercase tracking-wider mb-3 px-2">Your Journey</div>
           <div className="space-y-1">
             {sortedSteps.map((step) => {
               const isPast = step.dayNumber < currentDay;
@@ -336,36 +350,36 @@ export default function ParticipantView() {
                   key={step.id}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer",
-                    isCurrent && "bg-violet-50 border border-violet-200",
-                    isPast && "opacity-70 hover:opacity-100 hover:bg-gray-50",
+                    isCurrent && "bg-amber-50 border border-amber-200",
+                    isPast && "opacity-70 hover:opacity-100 hover:bg-stone-100",
                     isFuture && "opacity-40 cursor-not-allowed"
                   )}
                   data-testid={`sidebar-day-${step.dayNumber}`}
                 >
                   <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                     isPast && "bg-emerald-100 text-emerald-600",
-                    isCurrent && "bg-violet-600 text-white",
-                    isFuture && "bg-gray-100 text-gray-400"
+                    isCurrent && "bg-amber-500 text-white",
+                    isFuture && "bg-stone-200 text-stone-400"
                   )}>
                     {isPast ? <CheckCircle2 className="w-4 h-4" /> : step.dayNumber}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className={cn(
                       "text-sm font-medium truncate",
-                      isCurrent ? "text-gray-900" : "text-gray-600"
+                      isCurrent ? "text-stone-800" : "text-stone-600"
                     )}>
                       {step.title || `Day ${step.dayNumber}`}
                     </div>
                     {isCurrent && (
-                      <div className="text-xs text-violet-600">In progress</div>
+                      <div className="text-xs text-amber-600">In progress</div>
                     )}
                     {isPast && (
                       <div className="text-xs text-emerald-600">Completed</div>
                     )}
                   </div>
                   {isCurrent && (
-                    <ChevronRight className="w-4 h-4 text-violet-600 shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-amber-500 shrink-0" />
                   )}
                 </div>
               );
@@ -374,11 +388,11 @@ export default function ParticipantView() {
         </div>
 
         {/* Sidebar footer */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-stone-200">
           <Link href="/dashboard">
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="w-full justify-start text-stone-600 hover:text-stone-900 hover:bg-stone-200"
             >
               <Home className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -398,32 +412,27 @@ export default function ParticipantView() {
       {/* Main content */}
       <main className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="h-16 border-b border-gray-200 flex items-center justify-between px-4 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
+        <header className="h-16 border-b border-stone-200 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-stone-100 rounded-lg transition-colors"
             >
-              <Menu className="w-5 h-5 text-gray-500" />
+              <Menu className="w-5 h-5 text-stone-500" />
             </button>
             <div className="hidden sm:block">
-              <h2 className="text-lg font-semibold text-gray-900" data-testid="text-step-title">
+              <h2 className="text-lg font-semibold text-stone-800" data-testid="text-step-title">
                 {currentStep?.title || `Day ${currentDay}`}
               </h2>
-              <p className="text-xs text-gray-500" data-testid="text-day-progress">
+              <p className="text-xs text-stone-500" data-testid="text-day-progress">
                 Day {currentDay} of {totalDays}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-bold text-orange-600">{streak}</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-bold text-yellow-600">{xpPoints}</span>
+          <div className="flex items-center gap-2">
+            <div className="text-xs text-stone-500">
+              Chatting with <span className="font-medium text-amber-600">{mentorName}</span>
             </div>
           </div>
         </header>
@@ -432,63 +441,34 @@ export default function ParticipantView() {
         <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
-            {/* Day context card */}
-            <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-2xl p-5 border border-violet-200 mb-6">
+            {/* Welcome message */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 mb-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0">
-                  {currentDay}
-                </div>
+                {mentorImage ? (
+                  <img 
+                    src={mentorImage} 
+                    alt={mentorName}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-amber-300 shadow-md shrink-0"
+                  />
+                ) : (
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0">
+                    {mentorName.charAt(0)}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {currentStep?.title || `Day ${currentDay}`}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">Day {currentDay}</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-stone-800 mb-1">
+                    {currentStep?.title || `Welcome to Day ${currentDay}`}
                   </h3>
                   {currentStep?.goal && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                      <Target className="w-4 h-4 text-violet-600 shrink-0" />
-                      <span>{currentStep.goal}</span>
-                    </div>
-                  )}
-                  {currentStep?.task && (
-                    <div className="flex items-center gap-2 text-sm text-emerald-600 mb-2">
-                      <Zap className="w-4 h-4 shrink-0" />
-                      <span>{currentStep.task}</span>
-                    </div>
-                  )}
-                  {currentStep?.explanation && (
-                    <p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-200">
-                      {currentStep.explanation}
+                    <p className="text-sm text-stone-600">
+                      {currentStep.goal}
                     </p>
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Achievements section */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {completedDays >= 1 && (
-                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
-                  <Award className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs font-medium text-emerald-600">First Step</span>
-                </div>
-              )}
-              {streak >= 3 && (
-                <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span className="text-xs font-medium text-orange-600">3-Day Streak</span>
-                </div>
-              )}
-              {xpPoints >= 300 && (
-                <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="text-xs font-medium text-yellow-600">XP Master</span>
-                </div>
-              )}
-              {completedDays >= Math.floor(totalDays / 2) && (
-                <div className="flex items-center gap-2 bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200">
-                  <TrendingUp className="w-4 h-4 text-violet-500" />
-                  <span className="text-xs font-medium text-violet-600">Halfway There</span>
-                </div>
-              )}
             </div>
 
             {messagesLoading && (
@@ -512,23 +492,44 @@ export default function ParticipantView() {
                   data-testid={`chat-message-${msg.role}-${msg.id}`}
                 >
                   {msg.role === "assistant" && (
-                    <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center shrink-0">
-                      <Sparkles className="w-4 h-4 text-white" />
+                    <div className="shrink-0">
+                      {mentorImage ? (
+                        <img 
+                          src={mentorImage} 
+                          alt={mentorName}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-amber-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          {mentorName.charAt(0)}
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div 
-                    className={cn(
-                      "max-w-[70%] p-4 rounded-2xl text-sm leading-relaxed",
-                      msg.role === "user" 
-                        ? "bg-violet-600 text-white rounded-br-sm" 
-                        : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm"
-                    )}
-                  >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <div className={cn(
+                    "max-w-[70%]",
+                    msg.role === "user" ? "text-right" : "text-left"
+                  )}>
+                    <div className={cn(
+                      "text-xs font-medium mb-1",
+                      msg.role === "user" ? "text-amber-700" : "text-amber-600"
+                    )}>
+                      {msg.role === "user" ? userName : mentorName}
+                    </div>
+                    <div 
+                      className={cn(
+                        "p-4 rounded-2xl text-sm leading-relaxed",
+                        msg.role === "user" 
+                          ? "bg-amber-100 text-amber-900 rounded-br-sm border border-amber-200" 
+                          : "bg-white text-stone-700 border border-stone-200 rounded-bl-sm shadow-sm"
+                      )}
+                    >
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    </div>
                   </div>
                   {msg.role === "user" && (
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-white">You</span>
+                    <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm">
+                      {userName.charAt(0)}
                     </div>
                   )}
                 </motion.div>
@@ -541,14 +542,27 @@ export default function ParticipantView() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-3"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center shrink-0">
-                  <Sparkles className="w-4 h-4 text-white" />
+                <div className="shrink-0">
+                  {mentorImage ? (
+                    <img 
+                      src={mentorImage} 
+                      alt={mentorName}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-200"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {mentorName.charAt(0)}
+                    </div>
+                  )}
                 </div>
-                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm p-4 shadow-sm">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                <div>
+                  <div className="text-xs font-medium mb-1 text-amber-600">{mentorName}</div>
+                  <div className="bg-white border border-stone-200 rounded-2xl rounded-bl-sm p-4 shadow-sm">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -556,7 +570,7 @@ export default function ParticipantView() {
           </div>
 
           {/* Input area */}
-          <div className="border-t border-gray-200 p-4 bg-white/80 backdrop-blur-sm">
+          <div className="border-t border-stone-200 p-4 bg-stone-50/80 backdrop-blur-sm">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
               className="flex gap-3 max-w-3xl mx-auto"
@@ -565,15 +579,15 @@ export default function ParticipantView() {
                 <Input 
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your message..."
-                  className="w-full rounded-xl bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
+                  placeholder="Write your message..."
+                  className="w-full rounded-xl bg-white border-stone-300 text-stone-900 placeholder:text-stone-400 focus-visible:ring-amber-500 pr-12 py-6"
                   disabled={isSending}
                   data-testid="input-chat"
                 />
                 <Button 
                   type="submit" 
                   size="icon" 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 hover:bg-violet-700 shadow-lg"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-amber-500 hover:bg-amber-600 shadow-lg"
                   disabled={isSending || !inputValue.trim()}
                   data-testid="button-send"
                 >
@@ -588,7 +602,7 @@ export default function ParticipantView() {
                 <Button
                   onClick={handleCompleteDay}
                   disabled={completeDayMutation.isPending}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-lg"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 shadow-lg text-white"
                   data-testid="button-complete-day"
                 >
                   {completeDayMutation.isPending ? (

@@ -267,7 +267,14 @@ export async function registerRoutes(
           blocks: await storage.getJourneyBlocks(step.id),
         }))
       );
-      res.json({ ...journey, steps: stepsWithBlocks });
+      
+      // Get creator (mentor) info
+      let mentor = null;
+      if (journey.creatorId) {
+        mentor = await storage.getUser(journey.creatorId);
+      }
+      
+      res.json({ ...journey, steps: stepsWithBlocks, mentor });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flow details" });
     }
