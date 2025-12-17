@@ -479,3 +479,152 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
     };
   }
 }
+
+// Landing Page Content Generation
+export interface LandingPageContent {
+  hero: {
+    tagline: string;
+    headline: string;
+    description: string;
+    ctaText: string;
+  };
+  audience: {
+    sectionTitle: string;
+    description: string;
+    profiles: Array<{
+      icon: string;
+      title: string;
+      description: string;
+    }>;
+    disclaimer: string;
+  };
+  painPoints: {
+    sectionTitle: string;
+    points: Array<{
+      label: string;
+      description: string;
+    }>;
+    closingMessage: string;
+  };
+  transformation: {
+    sectionTitle: string;
+    description: string;
+    outcomes: string[];
+    quote: string;
+  };
+  testimonials: Array<{
+    name: string;
+    text: string;
+    feeling: string;
+  }>;
+  cta: {
+    tagline: string;
+    headline: string;
+    description: string;
+    buttonText: string;
+    note: string;
+  };
+}
+
+interface JourneyDataForLanding {
+  name: string;
+  goal: string;
+  audience: string;
+  duration: number;
+  description?: string;
+  mentorName?: string;
+  steps: Array<{
+    title: string;
+    goal: string;
+    explanation: string;
+  }>;
+}
+
+export async function generateLandingPageContent(
+  journey: JourneyDataForLanding
+): Promise<LandingPageContent> {
+  const stepsContent = journey.steps
+    .map(s => `Day: ${s.title}\nGoal: ${s.goal}\n${s.explanation}`)
+    .join("\n\n");
+
+  const prompt = `Generate landing page content for a ${journey.duration}-day transformational journey.
+
+JOURNEY DETAILS:
+- Name: ${journey.name}
+- Goal: ${journey.goal}
+- Target Audience: ${journey.audience}
+- Description: ${journey.description || ""}
+- Mentor: ${journey.mentorName || "Expert mentor"}
+
+JOURNEY CONTENT SUMMARY:
+${stepsContent.substring(0, 8000)}
+
+Generate compelling, conversion-focused landing page content with these sections:
+
+1. HERO SECTION:
+- tagline: Short uppercase tagline (3-5 words)
+- headline: Main headline with emotional hook
+- description: 2-3 sentences describing the journey
+- ctaText: Button text (e.g., "Begin Your Journey")
+
+2. AUDIENCE SECTION (who this is for):
+- sectionTitle: "Is This For You?"
+- description: Who would benefit most
+- profiles: 4 audience profiles, each with:
+  - icon: one of "Heart", "Compass", "Sparkles", "Moon", "Sun", "Star"
+  - title: Profile name
+  - description: Why this person would benefit
+- disclaimer: One sentence about who this is NOT for
+
+3. PAIN POINTS SECTION (what they're feeling):
+- sectionTitle: "You might be feeling..."
+- points: 4 pain points, each with:
+  - label: One word (e.g., "Stuck", "Overwhelmed", "Disconnected", "Longing")
+  - description: 2-3 sentences describing this feeling
+- closingMessage: Encouraging message that validates their feelings
+
+4. TRANSFORMATION SECTION (what they'll achieve):
+- sectionTitle: "What awaits you"
+- description: What transformation looks like
+- outcomes: 6 specific outcomes they'll achieve
+- quote: Inspiring quote from the mentor perspective
+
+5. TESTIMONIALS (generate 6 realistic fake testimonials):
+Each with:
+- name: First name only
+- text: 2-3 sentence testimonial about their transformation
+- feeling: Short phrase describing their experience
+
+6. CTA SECTION:
+- tagline: "Your Next Step"
+- headline: Final call to action headline
+- description: Encouraging final message
+- buttonText: Primary button text
+- note: Reassuring note
+
+Make all content feel warm, authentic, human. Avoid corporate language.
+Write in the same language as the journey name and goal (if Hebrew, write in Hebrew; if English, write in English).
+
+Return valid JSON matching this structure exactly.`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: "You are an expert copywriter who creates warm, authentic landing page content for transformational journeys. Write in the language of the provided content. Respond with valid JSON only." 
+      },
+      { role: "user", content: prompt }
+    ],
+    response_format: { type: "json_object" },
+    max_completion_tokens: 3000,
+    temperature: 0.7,
+  });
+
+  const content = response.choices[0].message.content;
+  if (!content) {
+    throw new Error("Failed to generate landing page content");
+  }
+
+  return JSON.parse(content) as LandingPageContent;
+}
