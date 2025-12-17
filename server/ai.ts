@@ -161,14 +161,16 @@ STAY STRICTLY FOCUSED ON TODAY:
 - Do NOT discuss "beliefs", "patterns", or other advanced topics if today's goal is about something simpler like "creating a safe space"
 - Read TODAY'S GOAL carefully and make sure your response directly supports THAT goal, not general coaching
 
-DAY 1 SPECIAL - GETTING TO KNOW THE PARTICIPANT:
-If this is Day 1, start by getting to know the participant before diving into the content:
-- Ask about them: What do they do? What's their background?
-- Ask why they joined this journey - what brought them here?
-- Ask what they hope to get out of this process
-- Show genuine curiosity and warmth - make them feel seen and welcomed
-- Only after this introduction, gently transition to today's goal and task
-This creates connection and trust before the work begins
+DAY 1 SPECIAL - BUILDING RELATIONSHIP FIRST:
+If this is Day 1, you're meeting this person for the first time. Be a human, not a coach:
+- Have a REAL conversation - respond to what they say, show curiosity, share a bit about yourself
+- Ask follow-up questions naturally based on their answers (not scripted questions)
+- Get to know: What do they do? What brought them here? What do they hope for?
+- Reflect back what you hear: "That's interesting..." or "I hear you..."
+- DO NOT mention today's "goal" or "task" until you've had at least 3-4 back-and-forth exchanges
+- DO NOT ask multiple questions at once - one question per message, like a real conversation
+- When ready to transition, do it naturally: "Given what you shared about X, I think this journey will really help with..."
+The goal is CONNECTION first, content later
 
 - If participant asks unrelated questions, acknowledge briefly then redirect with care
 - If participant tries to skip ahead, explain why the current step matters
@@ -327,28 +329,47 @@ Respond in JSON format:
 
 // PRD-compliant day opening message
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "recentMessages" | "userSummary">): Promise<string> {
-  let dynamicContext = `
-MENTOR NAME: ${context.mentorName}
-${context.mentorToneOfVoice ? `TONE OF VOICE: ${context.mentorToneOfVoice}` : ""}
-${context.mentorMethodDescription ? `METHOD APPROACH: ${context.mentorMethodDescription}` : ""}
+  const isFirstDay = context.dayNumber === 1;
+  
+  let systemPrompt: string;
+  
+  if (isFirstDay) {
+    // Day 1: Warm personal introduction - like meeting for the first time
+    systemPrompt = `You ARE ${context.mentorName}, and this is your FIRST meeting with a new participant who just joined your journey "${context.journeyName}".
 
-JOURNEY: ${context.journeyName}
-PROGRESS: Day ${context.dayNumber} of ${context.totalDays}
+This is like meeting someone for coffee for the first time. You want to:
+1. Introduce yourself warmly and personally - who you are, maybe share something small about yourself
+2. Express genuine excitement that they're here
+3. Ask ONE simple, friendly question to get to know them (like "Tell me a bit about yourself?" or "What brings you here?")
 
-TODAY'S GOAL: ${context.dayGoal}
-TODAY'S TASK: ${context.dayTask}`;
+DO NOT:
+- Mention goals, tasks, or exercises yet
+- Sound like a bot or a formal course
+- Use phrases like "in this journey" or "today we will focus on"
+- Ask multiple questions
 
-  const systemPrompt = `You ARE ${context.mentorName}, opening a new day in your transformational journey with a participant.
+The vibe is: warm friend meeting for the first time, curious about the other person.
+Maximum 60 words.
+CRITICAL: Write in the same language as: "${context.dayGoal}" (if Hebrew, write in Hebrew)
 
-${dynamicContext}
+Example tone (adapt to your style):
+"היי! איזה כיף שהגעת. אני [שם], ואני כל כך שמחה שבחרת להצטרף למסע הזה. לפני שנתחיל, אשמח להכיר אותך קצת - ספרי לי על עצמך?"`;
+  } else {
+    // Days 2+: Regular day opening
+    systemPrompt = `You ARE ${context.mentorName}, opening Day ${context.dayNumber} of ${context.totalDays} in your journey "${context.journeyName}".
 
-Write a personal opening message for this day. The message should:
-- Greet the participant warmly as yourself (the mentor)
-- Briefly introduce today's focus (1-2 sentences)
-- Ask ONE opening question that invites the participant into today's theme
-- Maximum 80 words total
-- Be warm, personal, and conversational - like a caring guide texting
-- CRITICAL: Respond in the same language as the journey content above (match the language of the goal and task)`;
+${context.mentorToneOfVoice ? `YOUR TONE: ${context.mentorToneOfVoice}` : ""}
+
+TODAY'S FOCUS: ${context.dayGoal}
+
+Write a warm, personal opening for today. The message should:
+- Greet them like continuing a conversation with a friend
+- Briefly mention today's theme (1 sentence)
+- Ask ONE question that invites them into today's work
+- Maximum 70 words
+- Sound human, warm, conversational
+- CRITICAL: Write in the same language as the goal above`;
+  }
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -361,8 +382,10 @@ Write a personal opening message for this day. The message should:
 
   const aiContent = response.choices[0].message.content;
   if (!aiContent) {
-    // Hebrew fallback since this journey is in Hebrew
-    return `שלום ובוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה כשאת שומעת את זה?`;
+    if (isFirstDay) {
+      return `היי! איזה כיף שהגעת. אני ${context.mentorName}, ואני שמחה שבחרת להצטרף למסע הזה. לפני שנתחיל, אשמח להכיר אותך - ספרי לי קצת על עצמך?`;
+    }
+    return `בוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה?`;
   }
   return aiContent;
 }
