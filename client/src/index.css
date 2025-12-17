@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -145,8 +146,6 @@
 }
 
 /* Landing Page Theme - Sage & Terracotta */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
-
 :root {
   /* Landing page tokens */
   --lp-cream: 40 30% 97%;
