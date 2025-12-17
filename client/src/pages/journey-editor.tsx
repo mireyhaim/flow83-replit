@@ -220,46 +220,47 @@ const JourneyEditorPage = () => {
   return (
     <div className="min-h-screen bg-[#0f0f23]">
       <header className="bg-[#1a1a2e]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors shrink-0" data-testid="link-my-flows">
                 <LayoutGrid className="w-4 h-4" />
-                <span className="text-sm font-medium">My Flows</span>
+                <span className="text-sm font-medium hidden sm:inline">My Flows</span>
               </Link>
-              <div className="h-5 w-px bg-white/10" />
-              <div>
-                <h1 className="text-lg font-semibold text-white" data-testid="text-journey-name">
+              <div className="h-5 w-px bg-white/10 hidden sm:block" />
+              <div className="min-w-0">
+                <h1 className="text-base md:text-lg font-semibold text-white truncate" data-testid="text-journey-name">
                   {journeyData.name}
                 </h1>
               </div>
               {journeyData.status === "published" && (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium shrink-0">
                   <Globe className="w-3 h-3" />
-                  Live
+                  <span className="hidden sm:inline">Live</span>
                 </span>
               )}
             </div>
             
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-1 md:gap-3 items-center shrink-0">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation(`/journey/${journeyData.id}/settings`)}
-                className="text-white/60 hover:text-white hover:bg-white/10"
+                className="text-white/60 hover:text-white hover:bg-white/10 px-2 md:px-3"
                 data-testid="button-settings"
               >
-                Settings
+                <span className="hidden sm:inline">Settings</span>
+                <Target className="w-4 h-4 sm:hidden" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handlePreview} 
-                className="text-white/60 hover:text-white hover:bg-white/10"
+                className="text-white/60 hover:text-white hover:bg-white/10 px-2 md:px-3"
                 data-testid="button-preview"
               >
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
+                <Eye className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Preview</span>
               </Button>
               <Button 
                 onClick={handleSave} 
@@ -299,7 +300,7 @@ const JourneyEditorPage = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Target className="w-5 h-5 text-violet-400" />

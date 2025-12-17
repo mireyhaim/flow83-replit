@@ -526,7 +526,7 @@ export default function ParticipantView() {
                     </div>
                   )}
                   <div className={cn(
-                    "max-w-[70%]",
+                    "max-w-[85%] sm:max-w-[70%]",
                     msg.role === "user" ? "text-right" : "text-left"
                   )}>
                     <div className={cn(
