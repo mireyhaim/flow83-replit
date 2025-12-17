@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle
+  Edit3, CheckCircle, Copy, Check, ExternalLink
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -26,6 +28,10 @@ const JourneyEditorPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [publishPrice, setPublishPrice] = useState("");
+  const [copiedLink, setCopiedLink] = useState(false);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
 
@@ -126,27 +132,83 @@ const JourneyEditorPage = () => {
     }
   };
 
-  const handlePublish = async () => {
+  const handlePublishClick = () => {
+    if (!journeyData) return;
+    
+    if (journeyData.status === "published") {
+      // If already published, just unpublish
+      handleUnpublish();
+    } else {
+      // Show the publish modal with pricing
+      setPublishPrice(journeyData.price?.toString() || "0");
+      setShowPublishModal(true);
+    }
+  };
+
+  const handleUnpublish = async () => {
     if (!journeyData) return;
     setIsPublishing(true);
-    const newStatus = journeyData.status === "published" ? "draft" : "published";
     try {
-      await journeyApi.update(journeyData.id, { status: newStatus });
-      setJourneyData(prev => prev ? { ...prev, status: newStatus } : null);
+      await journeyApi.update(journeyData.id, { status: "draft" });
+      setJourneyData(prev => prev ? { ...prev, status: "draft" } : null);
       toast({
-        title: newStatus === "published" ? "Published!" : "Unpublished",
-        description: newStatus === "published" 
-          ? "Your flow is now live and accessible to participants." 
-          : "Your flow is now in draft mode.",
+        title: "Unpublished",
+        description: "Your flow is now in draft mode.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: newStatus === "published" ? "Failed to publish flow" : "Failed to unpublish flow",
+        description: "Failed to unpublish flow",
         variant: "destructive",
       });
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!journeyData) return;
+    setIsPublishing(true);
+    setShowPublishModal(false);
+    
+    const priceValue = parseFloat(publishPrice) || 0;
+    
+    try {
+      await journeyApi.update(journeyData.id, { 
+        status: "published",
+        price: priceValue,
+        currency: "ILS"
+      });
+      setJourneyData(prev => prev ? { ...prev, status: "published", price: priceValue } : null);
+      setShowSuccessModal(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to publish flow",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const getShareableLink = () => {
+    if (!journeyData) return "";
+    return `${window.location.origin}/j/${journeyData.id}`;
+  };
+
+  const handleCopyLink = async () => {
+    const link = getShareableLink();
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to copy link",
+        variant: "destructive",
+      });
     }
   };
 
@@ -278,7 +340,7 @@ const JourneyEditorPage = () => {
                 Save
               </Button>
               <Button 
-                onClick={handlePublish} 
+                onClick={handlePublishClick} 
                 size="sm"
                 className={journeyData.status === "published" 
                   ? "bg-amber-600 hover:bg-amber-700" 
@@ -471,6 +533,130 @@ const JourneyEditorPage = () => {
           </div>
         )}
       </main>
+
+      {/* Publish Modal - Pricing */}
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">פרסום התהליך</DialogTitle>
+            <DialogDescription className="text-white/60">
+              הגדר מחיר לתהליך שלך. לקוחות יוכלו לרכוש אותו דרך הלינק שיווצר.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-white/80">מחיר התהליך (בשקלים)</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  min="0"
+                  value={publishPrice}
+                  onChange={(e) => setPublishPrice(e.target.value)}
+                  placeholder="0"
+                  className="bg-white/5 border-white/20 text-white text-2xl text-center h-16 pr-12"
+                  data-testid="input-publish-price"
+                />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">₪</span>
+              </div>
+              <p className="text-sm text-white/40 text-center">
+                {publishPrice === "0" || publishPrice === "" ? "חינם - הלקוחות יוכלו להצטרף ללא תשלום" : `לקוחות ישלמו ${publishPrice}₪ כדי להצטרף`}
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPublishModal(false)}
+                className="flex-1 border-white/20 text-white hover:bg-white/10"
+              >
+                ביטול
+              </Button>
+              <Button
+                onClick={handleConfirmPublish}
+                disabled={isPublishing}
+                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                data-testid="button-confirm-publish"
+              >
+                {isPublishing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Globe className="w-4 h-4 ml-2" />
+                    פרסם עכשיו
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal - Share Link */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-emerald-400" />
+              התהליך פורסם בהצלחה!
+            </DialogTitle>
+            <DialogDescription className="text-white/60">
+              הלינק מוכן לשיתוף עם הלקוחות שלך
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-white/80">קישור לדף התהליך</Label>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-sm text-white/80 truncate" dir="ltr">
+                  {getShareableLink()}
+                </div>
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 shrink-0"
+                  data-testid="button-copy-link"
+                >
+                  {copiedLink ? (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              {copiedLink && (
+                <p className="text-sm text-emerald-400 text-center">הקישור הועתק!</p>
+              )}
+            </div>
+
+            <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
+              <p className="text-sm text-white/70">
+                <strong className="text-white">מה הלאה?</strong><br />
+                שתף את הקישור עם הלקוחות שלך. הם יראו את דף התהליך, יוכלו לרכוש (אם יש מחיר) ולהתחיל את המסע.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowSuccessModal(false)}
+                className="flex-1 border-white/20 text-white hover:bg-white/10"
+              >
+                סגור
+              </Button>
+              <Button
+                onClick={() => window.open(getShareableLink(), '_blank')}
+                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                data-testid="button-view-landing"
+              >
+                <ExternalLink className="w-4 h-4 ml-2" />
+                צפה בדף
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
