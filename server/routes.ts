@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary } from "./ai";
+import { stripeService } from "./stripeService";
+import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -926,6 +928,80 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  // Payment routes
+  app.get("/api/stripe/publishable-key", async (req, res) => {
+    try {
+      const key = await getStripePublishableKey();
+      res.json({ publishableKey: key });
+    } catch (error) {
+      console.error("Error getting Stripe publishable key:", error);
+      res.status(500).json({ error: "Stripe not configured" });
+    }
+  });
+
+  app.post("/api/checkout/journey/:journeyId", async (req, res) => {
+    try {
+      const { journeyId } = req.params;
+      const { email, name } = req.body;
+
+      const journey = await storage.getJourney(journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      if (journey.status !== "published") {
+        return res.status(400).json({ error: "Flow is not available for purchase" });
+      }
+
+      const price = journey.price || 0;
+      if (price <= 0) {
+        return res.status(400).json({ error: "Free flow - no payment needed", free: true });
+      }
+
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      
+      const session = await stripeService.createOneTimePaymentSession({
+        customerEmail: email,
+        amount: price * 100,
+        currency: (journey.currency || "ILS").toLowerCase(),
+        productName: journey.name,
+        successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&journey_id=${journeyId}`,
+        cancelUrl: `${baseUrl}/j/${journeyId}`,
+        metadata: {
+          journeyId,
+          customerEmail: email || "",
+          customerName: name || "",
+        },
+      });
+
+      res.json({ url: session.url, sessionId: session.id });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  app.get("/api/payment/verify/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const session = await stripeService.getCheckoutSession(sessionId);
+      
+      if (session.payment_status === "paid") {
+        const journeyId = session.metadata?.journeyId;
+        res.json({ 
+          success: true, 
+          journeyId,
+          customerEmail: session.customer_email || session.metadata?.customerEmail,
+        });
+      } else {
+        res.json({ success: false, status: session.payment_status });
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      res.status(500).json({ error: "Failed to verify payment" });
     }
   });
 
