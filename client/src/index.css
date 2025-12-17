@@ -144,6 +144,31 @@
   --spiritual-secondary: 230 89% 75%;
 }
 
+/* Landing Page Theme - Sage & Terracotta */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+
+:root {
+  /* Landing page tokens */
+  --lp-cream: 40 30% 97%;
+  --lp-sage: 145 25% 45%;
+  --lp-sage-light: 145 30% 92%;
+  --lp-terracotta: 18 50% 65%;
+  --lp-terracotta-light: 18 45% 90%;
+  --lp-earth: 25 20% 20%;
+  --lp-beige: 35 25% 90%;
+  --lp-muted: 25 15% 45%;
+  
+  --lp-gradient-warm: linear-gradient(135deg, hsl(40 30% 97%) 0%, hsl(35 25% 92%) 100%);
+  --lp-gradient-sage: linear-gradient(135deg, hsl(145 30% 95%) 0%, hsl(145 25% 88%) 100%);
+  --lp-gradient-sunset: linear-gradient(180deg, hsl(40 30% 97%) 0%, hsl(25 35% 92%) 100%);
+  
+  --lp-shadow-soft: 0 4px 20px -4px hsl(25 20% 20% / 0.08);
+  --lp-shadow-card: 0 8px 30px -8px hsl(25 20% 20% / 0.1);
+  
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -171,4 +196,71 @@
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
+  
+  /* Landing page styles */
+  .lp-bg-cream { background-color: hsl(var(--lp-cream)); }
+  .lp-bg-sage { background-color: hsl(var(--lp-sage)); }
+  .lp-bg-sage-light { background-color: hsl(var(--lp-sage-light)); }
+  .lp-bg-terracotta { background-color: hsl(var(--lp-terracotta)); }
+  .lp-bg-terracotta-light { background-color: hsl(var(--lp-terracotta-light)); }
+  
+  .lp-text-sage { color: hsl(var(--lp-sage)); }
+  .lp-text-terracotta { color: hsl(var(--lp-terracotta)); }
+  .lp-text-earth { color: hsl(var(--lp-earth)); }
+  .lp-text-muted { color: hsl(var(--lp-muted)); }
+  
+  .lp-border-sage { border-color: hsl(var(--lp-sage) / 0.2); }
+  
+  .lp-gradient-sunset { background: var(--lp-gradient-sunset); }
+  .lp-gradient-sage { background: var(--lp-gradient-sage); }
+  .lp-gradient-warm { background: var(--lp-gradient-warm); }
+  
+  .lp-shadow-soft { box-shadow: var(--lp-shadow-soft); }
+  .lp-shadow-card { box-shadow: var(--lp-shadow-card); }
+  
+  .lp-font-heading { font-family: var(--font-heading); }
+  .lp-font-body { font-family: var(--font-body); }
+}
+
+@layer utilities {
+  @keyframes lp-fade-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes lp-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes lp-gentle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes lp-soft-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  
+  .lp-animate-fade-up {
+    animation: lp-fade-up 0.8s ease-out forwards;
+  }
+  
+  .lp-animate-fade-in {
+    animation: lp-fade-in 0.6s ease-out forwards;
+  }
+  
+  .lp-animate-gentle-float {
+    animation: lp-gentle-float 6s ease-in-out infinite;
+  }
+  
+  .lp-animate-soft-pulse {
+    animation: lp-soft-pulse 3s ease-in-out infinite;
+  }
+  
+  .lp-animation-delay-200 { animation-delay: 200ms; }
+  .lp-animation-delay-400 { animation-delay: 400ms; }
+  .lp-animation-delay-600 { animation-delay: 600ms; }
+  .lp-animation-delay-800 { animation-delay: 800ms; }
 }

@@ -114,20 +114,20 @@ export default function JourneyLandingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50/30 to-stone-100 flex items-center justify-center">
-        <div className="animate-pulse text-emerald-700">Loading...</div>
+      <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
+        <div className="animate-pulse lp-text-sage lp-font-body">Loading...</div>
       </div>
     );
   }
 
   if (fetchError || !journey) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50/30 to-stone-100 flex items-center justify-center">
+      <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Flow Not Found</h1>
-          <p className="text-gray-600 mb-6">This flow doesn't exist or has been removed.</p>
+          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">Flow Not Found</h1>
+          <p className="lp-text-muted lp-font-body mb-6">This flow doesn't exist or has been removed.</p>
           <Link href="/">
-            <Button>Return Home</Button>
+            <Button className="lp-bg-sage text-white hover:opacity-90">Return Home</Button>
           </Link>
         </div>
       </div>
@@ -136,12 +136,12 @@ export default function JourneyLandingPage() {
 
   if (journey.status !== "published") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50/30 to-stone-100 flex items-center justify-center">
+      <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Flow Not Available</h1>
-          <p className="text-gray-600 mb-6">This flow hasn't been published yet.</p>
+          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">Flow Not Available</h1>
+          <p className="lp-text-muted lp-font-body mb-6">This flow hasn't been published yet.</p>
           <Link href="/">
-            <Button>Return Home</Button>
+            <Button className="lp-bg-sage text-white hover:opacity-90">Return Home</Button>
           </Link>
         </div>
       </div>
@@ -174,12 +174,12 @@ export default function JourneyLandingPage() {
     hero: {
       tagline: "A Journey Towards You",
       headline: "A Gentle Path to Inner Clarity",
-      description: "This is a process of gentle discovery—a space where you can pause, breathe, and reconnect with what truly matters to you.",
+      description: "This is a process of gentle discovery—a space where you can pause, breathe, and reconnect with what truly matters to you. Through guided reflection and compassionate inquiry, we'll walk together toward a clearer understanding of who you are and where you want to go.",
       ctaText: isFree ? "Begin Your Journey" : `Join Now - ${currencySymbol}${price}`,
     },
     audience: {
       sectionTitle: "This journey is designed for you",
-      description: "You don't need to have everything figured out. This process is most meaningful for those who are still searching, still questioning, still open to discovering something new.",
+      description: "You don't need to have everything figured out. In fact, this process is most meaningful for those who are still searching, still questioning, still open to discovering something new about themselves.",
       profiles: [
         { icon: "Heart", title: "Seekers of Self-Understanding", description: "You sense there's more beneath the surface, and you're ready to explore it gently." },
         { icon: "Compass", title: "Those at a Crossroads", description: "You're facing a decision or transition and need clarity to move forward with confidence." },
@@ -192,8 +192,8 @@ export default function JourneyLandingPage() {
       sectionTitle: "You might be feeling...",
       points: [
         { label: "Stuck", description: "Like you're going through the motions but not really moving forward. Every day feels the same, and deep down, you know there's something more waiting for you." },
-        { label: "Overwhelmed", description: "By the noise—both external and internal. There are so many voices telling you who you should be, what you should want, how you should feel." },
-        { label: "Disconnected", description: "From yourself, from your purpose, maybe even from the things that used to bring you joy. You catch yourself wondering: 'Is this really it?'" },
+        { label: "Overwhelmed", description: "By the noise—both external and internal. There are so many voices telling you who you should be, what you should want, how you should feel. And somewhere in all that noise, your own voice got lost." },
+        { label: "Disconnected", description: "From yourself, from your purpose, maybe even from the things that used to bring you joy. You catch yourself wondering: \"Is this really it?\"" },
         { label: "Longing", description: "For something you can't quite name. A sense of meaning. A feeling of being truly seen. Permission to be exactly who you are." },
       ],
       closingMessage: "If any of this resonates, you're in the right place. You're not broken. You're awakening.",
@@ -252,25 +252,26 @@ export default function JourneyLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50/30 to-stone-100">
+    <div className="min-h-screen lp-font-body" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-emerald-200/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl" />
+      <section className="min-h-screen flex items-center justify-center lp-gradient-sunset relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 w-64 h-64 lp-bg-sage-light rounded-full blur-3xl opacity-40 lp-animate-gentle-float" />
+        <div className="absolute bottom-20 right-10 w-80 h-80 lp-bg-terracotta-light rounded-full blur-3xl opacity-30 lp-animate-gentle-float lp-animation-delay-400" />
         
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {journey.mentor && (
-              <div className="mb-8 flex justify-center">
+              <div className="mb-8 flex justify-center opacity-0 lp-animate-fade-up">
                 <div className="relative">
                   {journey.mentor.profileImageUrl ? (
                     <img 
                       src={journey.mentor.profileImageUrl} 
                       alt={mentorName}
-                      className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-xl object-cover"
+                      className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white lp-shadow-card object-cover"
                     />
                   ) : (
-                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white lp-shadow-card lp-bg-sage flex items-center justify-center">
                       <User className="w-12 h-12 text-white" />
                     </div>
                   )}
@@ -278,54 +279,73 @@ export default function JourneyLandingPage() {
               </div>
             )}
 
-            <span className="inline-block text-emerald-700 text-sm tracking-widest uppercase mb-6 opacity-80">
+            <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-6 opacity-0 lp-animate-fade-up">
               {content.hero.tagline}
             </span>
             
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-stone-800 leading-tight mb-8" data-testid="text-journey-title">
-              {content.hero.headline}
+            <h1 className="lp-font-heading text-4xl md:text-5xl lg:text-6xl lp-text-earth leading-tight mb-8 opacity-0 lp-animate-fade-up lp-animation-delay-200" data-testid="text-journey-title">
+              {content.hero.headline.includes("Inner Clarity") ? (
+                <>
+                  A Gentle Path to{" "}
+                  <span className="lp-text-sage italic">Inner Clarity</span>
+                </>
+              ) : content.hero.headline}
             </h1>
             
-            <p className="text-lg md:text-xl text-stone-600 leading-relaxed mb-10" data-testid="text-journey-description">
+            <p className="lp-font-body text-lg md:text-xl lp-text-muted leading-relaxed mb-10 opacity-0 lp-animate-fade-up lp-animation-delay-400" data-testid="text-journey-description">
               {content.hero.description}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 lp-animate-fade-up lp-animation-delay-600">
               <Button 
                 size="lg"
-                className="text-lg px-10 py-6 bg-emerald-700 hover:bg-emerald-800 rounded-full shadow-lg"
+                className="text-lg px-10 py-6 lp-bg-sage text-white hover:opacity-90 rounded-full lp-shadow-card"
                 onClick={handleStartJourney}
                 data-testid="button-start-journey"
               >
                 {content.hero.ctaText}
               </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="text-lg px-10 py-6 lp-border-sage lp-text-sage hover:lp-bg-sage-light rounded-full"
+                onClick={() => document.getElementById("audience")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Learn More
+              </Button>
             </div>
 
-            <div className="mt-8 flex items-center justify-center gap-2 text-stone-500">
+            <div className="mt-8 flex items-center justify-center gap-2 lp-text-muted opacity-0 lp-animate-fade-up lp-animation-delay-800">
               <Calendar className="w-5 h-5" />
-              <span>{totalDays} days</span>
+              <span className="lp-font-body">{totalDays} days with {mentorName}</span>
             </div>
           </div>
         </div>
         
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
-          <div className="w-6 h-10 border-2 border-emerald-400/40 rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-3 bg-emerald-400/60 rounded-full animate-bounce" />
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0 lp-animate-fade-in lp-animation-delay-800">
+          <div className="w-6 h-10 border-2 lp-border-sage rounded-full flex justify-center pt-2" style={{ borderColor: 'hsl(145 25% 45% / 0.4)' }}>
+            <div className="w-1.5 h-3 lp-bg-sage rounded-full opacity-60 lp-animate-soft-pulse" />
           </div>
         </div>
       </section>
 
       {/* Audience Section */}
-      <section className="py-24 bg-stone-50">
+      <section id="audience" className="py-24 lp-bg-cream">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block text-orange-600 text-sm tracking-widest uppercase mb-4">
+            <span className="inline-block lp-text-terracotta lp-font-body text-sm tracking-widest uppercase mb-4">
               Is This For You?
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-stone-800 leading-tight mb-6">
-              {content.audience.sectionTitle}
+            <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-6">
+              {content.audience.sectionTitle.includes("you") ? (
+                <>
+                  This journey is designed for{" "}
+                  <span className="lp-text-sage italic">you</span>
+                </>
+              ) : content.audience.sectionTitle}
             </h2>
-            <p className="text-lg text-stone-600 leading-relaxed">
+            <p className="lp-font-body text-lg lp-text-muted leading-relaxed">
               {content.audience.description}
             </p>
           </div>
@@ -336,15 +356,15 @@ export default function JourneyLandingPage() {
               return (
                 <div
                   key={index}
-                  className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group"
+                  className="bg-white p-8 rounded-2xl lp-shadow-soft hover:lp-shadow-card transition-all duration-300 group"
                 >
-                  <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-200 transition-colors duration-300">
-                    <IconComponent className="w-7 h-7 text-emerald-700" />
+                  <div className="w-14 h-14 lp-bg-sage-light rounded-xl flex items-center justify-center mb-6 group-hover:lp-bg-sage transition-colors duration-300">
+                    <IconComponent className="w-7 h-7 lp-text-sage group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h3 className="font-serif text-xl text-stone-800 mb-3">
+                  <h3 className="lp-font-heading text-xl lp-text-earth mb-3">
                     {item.title}
                   </h3>
-                  <p className="text-stone-600 leading-relaxed">
+                  <p className="lp-font-body lp-text-muted leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -354,7 +374,7 @@ export default function JourneyLandingPage() {
           
           {content.audience.disclaimer && (
             <div className="mt-16 max-w-2xl mx-auto text-center">
-              <p className="text-stone-500 italic">
+              <p className="lp-font-body lp-text-muted italic">
                 "{content.audience.disclaimer}"
               </p>
             </div>
@@ -363,26 +383,27 @@ export default function JourneyLandingPage() {
       </section>
 
       {/* Pain Points Section */}
-      <section className="py-24 bg-gradient-to-br from-emerald-50 to-stone-100 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-96 h-96 border border-emerald-200/30 rounded-full" />
-        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] border border-emerald-200/20 rounded-full" />
+      <section className="py-24 lp-gradient-sage relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-20 -right-20 w-96 h-96 border rounded-full" style={{ borderColor: 'hsl(145 25% 45% / 0.2)' }} />
+        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] border rounded-full" style={{ borderColor: 'hsl(145 25% 45% / 0.1)' }} />
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
-              <span className="inline-block text-emerald-700 text-sm tracking-widest uppercase mb-4">
+              <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-4">
                 We Understand
               </span>
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-stone-800 leading-tight">
+              <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight">
                 {content.painPoints.sectionTitle}
               </h2>
             </div>
             
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-lg">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 lp-shadow-card">
               <div className="space-y-8">
                 {content.painPoints.points.map((point, index) => (
-                  <p key={index} className="text-lg md:text-xl text-stone-700 leading-relaxed">
-                    <span className={`font-medium ${index % 2 === 0 ? 'text-emerald-700' : 'text-orange-600'}`}>
+                  <p key={index} className="lp-font-body text-lg md:text-xl lp-text-earth leading-relaxed">
+                    <span className={`font-medium ${index % 2 === 0 ? 'lp-text-sage' : 'lp-text-terracotta'}`}>
                       {point.label}.
                     </span>{" "}
                     {point.description}
@@ -391,9 +412,14 @@ export default function JourneyLandingPage() {
               </div>
               
               {content.painPoints.closingMessage && (
-                <div className="mt-12 pt-8 border-t border-stone-200">
-                  <p className="font-serif text-xl md:text-2xl text-stone-800 text-center italic">
-                    {content.painPoints.closingMessage}
+                <div className="mt-12 pt-8 border-t" style={{ borderColor: 'hsl(35 20% 88%)' }}>
+                  <p className="lp-font-heading text-xl md:text-2xl lp-text-earth text-center italic">
+                    {content.painPoints.closingMessage.includes("awakening") ? (
+                      <>
+                        If any of this resonates, you're in the right place.<br className="hidden md:block" />
+                        <span className="lp-text-sage">You're not broken. You're awakening.</span>
+                      </>
+                    ) : content.painPoints.closingMessage}
                   </p>
                 </div>
               )}
@@ -403,17 +429,22 @@ export default function JourneyLandingPage() {
       </section>
 
       {/* Transformation Section */}
-      <section className="py-24 bg-stone-50">
+      <section className="py-24 lp-bg-cream">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
-              <span className="inline-block text-orange-600 text-sm tracking-widest uppercase mb-4">
+              <span className="inline-block lp-text-terracotta lp-font-body text-sm tracking-widest uppercase mb-4">
                 The Transformation
               </span>
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-stone-800 leading-tight mb-6">
-                {content.transformation.sectionTitle}
+              <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-6">
+                {content.transformation.sectionTitle.includes("other side") ? (
+                  <>
+                    What awaits you on the{" "}
+                    <span className="lp-text-sage italic">other side</span>
+                  </>
+                ) : content.transformation.sectionTitle}
               </h2>
-              <p className="text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto">
+              <p className="lp-font-body text-lg lp-text-muted leading-relaxed max-w-2xl mx-auto">
                 {content.transformation.description}
               </p>
             </div>
@@ -422,12 +453,12 @@ export default function JourneyLandingPage() {
               {content.transformation.outcomes.map((outcome, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300"
+                  className="flex items-start gap-4 p-6 bg-white rounded-2xl lp-shadow-soft hover:lp-shadow-card transition-all duration-300"
                 >
-                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-emerald-700" />
+                  <div className="w-8 h-8 lp-bg-sage-light rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 lp-text-sage" />
                   </div>
-                  <p className="text-stone-700 leading-relaxed">
+                  <p className="lp-font-body lp-text-earth leading-relaxed">
                     {outcome}
                   </p>
                 </div>
@@ -435,17 +466,17 @@ export default function JourneyLandingPage() {
             </div>
             
             {content.transformation.quote && (
-              <div className="bg-gradient-to-br from-emerald-50 to-stone-100 rounded-3xl p-8 md:p-12 text-center">
-                <p className="font-serif text-2xl md:text-3xl text-stone-800 mb-6 italic">
+              <div className="lp-gradient-sage rounded-3xl p-8 md:p-12 text-center">
+                <p className="lp-font-heading text-2xl md:text-3xl lp-text-earth mb-6 italic">
                   "{content.transformation.quote}"
                 </p>
                 <Button 
                   size="lg"
-                  className="bg-orange-600 hover:bg-orange-700 rounded-full"
+                  className="lp-bg-terracotta text-white hover:opacity-90 rounded-full group"
                   onClick={handleStartJourney}
                 >
                   Start Your Transformation
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             )}
@@ -455,16 +486,17 @@ export default function JourneyLandingPage() {
 
       {/* Testimonials Section */}
       <section className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-stone-50 to-orange-50/30 opacity-50" />
+        {/* Decorative background */}
+        <div className="absolute inset-0 lp-gradient-warm opacity-50" />
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <span className="inline-block text-emerald-700 text-sm tracking-widest uppercase mb-4">
+            <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-4">
               Voices of Transformation
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-stone-800 leading-tight">
+            <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight">
               What others have{" "}
-              <span className="text-orange-600 italic">experienced</span>
+              <span className="lp-text-terracotta italic">experienced</span>
             </h2>
           </div>
           
@@ -472,17 +504,17 @@ export default function JourneyLandingPage() {
             {content.testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative group"
+                className="lp-bg-cream p-8 rounded-2xl lp-shadow-soft hover:lp-shadow-card transition-all duration-300 relative group"
               >
-                <Quote className="w-8 h-8 text-emerald-200 absolute top-6 right-6 group-hover:text-emerald-300 transition-colors" />
-                <p className="text-stone-700 leading-relaxed mb-6 relative z-10">
+                <Quote className="w-8 h-8 absolute top-6 right-6 group-hover:opacity-50 transition-colors" style={{ color: 'hsl(145 25% 45% / 0.3)' }} />
+                <p className="lp-font-body lp-text-earth leading-relaxed mb-6 relative z-10">
                   "{testimonial.text}"
                 </p>
-                <div className="border-t border-stone-100 pt-4">
-                  <p className="font-serif text-lg text-stone-800">
+                <div className="border-t pt-4" style={{ borderColor: 'hsl(35 20% 88%)' }}>
+                  <p className="lp-font-heading text-lg lp-text-earth">
                     {testimonial.name}
                   </p>
-                  <p className="text-sm text-stone-500">
+                  <p className="lp-font-body text-sm lp-text-muted">
                     {testimonial.feeling}
                   </p>
                 </div>
@@ -493,25 +525,31 @@ export default function JourneyLandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-emerald-50 to-stone-100 relative overflow-hidden" id="signup-form">
+      <section className="py-24 lp-gradient-sage relative overflow-hidden" id="signup-form">
+        {/* Decorative elements */}
         <div className="absolute top-10 left-10 opacity-20">
-          <Leaf className="w-20 h-20 text-emerald-700" />
+          <Leaf className="w-20 h-20 lp-text-sage" />
         </div>
         <div className="absolute bottom-10 right-10 opacity-20 rotate-180">
-          <Leaf className="w-24 h-24 text-emerald-700" />
+          <Leaf className="w-24 h-24 lp-text-sage" />
         </div>
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <span className="inline-block text-emerald-700 text-sm tracking-widest uppercase mb-6">
+            <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-6">
               {content.cta.tagline}
             </span>
             
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-stone-800 leading-tight mb-6">
-              {content.cta.headline}
+            <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-6">
+              {content.cta.headline.includes("gentle journey") ? (
+                <>
+                  Ready to begin your{" "}
+                  <span className="lp-text-sage italic">gentle journey</span>?
+                </>
+              ) : content.cta.headline}
             </h2>
             
-            <p className="text-lg md:text-xl text-stone-600 leading-relaxed mb-10">
+            <p className="lp-font-body text-lg md:text-xl lp-text-muted leading-relaxed mb-10">
               {content.cta.description}
             </p>
             
@@ -520,54 +558,62 @@ export default function JourneyLandingPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                   <Button 
                     size="lg"
-                    className="text-lg px-10 py-6 bg-orange-600 hover:bg-orange-700 rounded-full shadow-lg"
+                    className="text-lg px-10 py-6 lp-bg-terracotta text-white hover:opacity-90 rounded-full lp-shadow-card group"
                     onClick={handleStartJourney}
                     data-testid="button-start-journey-bottom"
                   >
                     {content.cta.buttonText}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-10 py-6 lp-border-sage lp-text-sage hover:lp-bg-sage-light rounded-full"
+                    onClick={() => window.location.href = `mailto:?subject=Question about ${journey.name}`}
+                  >
+                    Ask a Question
                   </Button>
                 </div>
                 
-                <p className="text-sm text-stone-500">
+                <p className="lp-font-body text-sm lp-text-muted">
                   {content.cta.note}
                 </p>
               </>
             ) : (
-              <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm shadow-xl border-0">
+              <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm lp-shadow-card border-0">
                 <CardContent className="p-8">
-                  <h3 className="text-xl font-semibold mb-6 text-center text-stone-800">Join This Journey</h3>
+                  <h3 className="text-xl lp-font-heading font-semibold mb-6 text-center lp-text-earth">Join This Journey</h3>
                   <div className="space-y-4">
                     <div className="text-left">
-                      <Label htmlFor="name" className="text-stone-700">Your Name</Label>
+                      <Label htmlFor="name" className="lp-text-earth lp-font-body">Your Name</Label>
                       <Input
                         id="name"
                         type="text"
                         placeholder="Enter your name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="mt-1"
+                        className="mt-1 lp-font-body"
                         data-testid="input-name"
                       />
                     </div>
                     <div className="text-left">
-                      <Label htmlFor="email" className="text-stone-700">Email *</Label>
+                      <Label htmlFor="email" className="lp-text-earth lp-font-body">Email *</Label>
                       <Input
                         id="email"
                         type="email"
                         placeholder="your@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="mt-1"
+                        className="mt-1 lp-font-body"
                         required
                         data-testid="input-email"
                       />
                     </div>
                     {error && (
-                      <p className="text-red-500 text-sm text-center">{error}</p>
+                      <p className="text-red-500 text-sm text-center lp-font-body">{error}</p>
                     )}
                     <Button 
-                      className="w-full bg-emerald-700 hover:bg-emerald-800 py-6"
+                      className="w-full lp-bg-sage text-white hover:opacity-90 py-6"
                       onClick={handleJoin}
                       disabled={!email || joinMutation.isPending}
                       data-testid="button-join"
@@ -575,7 +621,7 @@ export default function JourneyLandingPage() {
                       {joinMutation.isPending ? "Processing..." : (isFree ? "Start Now" : `Continue to Payment - ${currencySymbol}${price}`)}
                     </Button>
                     <button 
-                      className="text-sm text-stone-500 hover:text-stone-700 w-full text-center"
+                      className="text-sm lp-text-muted hover:lp-text-earth w-full text-center lp-font-body"
                       onClick={() => setShowForm(false)}
                     >
                       Go back
@@ -589,10 +635,10 @@ export default function JourneyLandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-stone-800 text-center">
-        <p className="text-stone-400 text-sm">Created with Flow 83</p>
+      <footer className="py-8 text-center" style={{ backgroundColor: 'hsl(25 20% 20%)' }}>
+        <p className="text-white/60 text-sm lp-font-body">Created with Flow 83</p>
         {journey.mentor && (
-          <p className="text-stone-500 text-xs mt-2">By {mentorName}</p>
+          <p className="text-white/40 text-xs mt-2 lp-font-body">By {mentorName}</p>
         )}
       </footer>
     </div>
