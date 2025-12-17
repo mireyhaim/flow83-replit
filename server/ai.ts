@@ -87,7 +87,7 @@ Respond in JSON format:
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -214,17 +214,32 @@ USER CONTEXT (from previous sessions):`;
   messages.push({ role: "user", content: userMessage });
 
   // PRD 10 - API configuration
+  console.log("Generating chat response with context:", JSON.stringify({
+    mentorName: context.mentorName,
+    journeyName: context.journeyName,
+    dayNumber: context.dayNumber,
+    messageCount: messages.length,
+    userMessage
+  }));
+
   const response = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4o",
     messages,
-    max_completion_tokens: 200, // PRD 9.1 - max tokens 150-200
+    max_tokens: 200, // PRD 9.1 - max tokens 150-200
   });
 
+  const aiContent = response.choices[0].message.content;
+  console.log("AI response received:", aiContent ? `${aiContent.substring(0, 100)}...` : "EMPTY");
+
   // If AI returns empty, provide a contextual fallback
-  const fallback = context.dayGoal 
-    ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
-    : "אני כאן איתך. איך את מרגישה היום?";
-  return response.choices[0].message.content || fallback;
+  if (!aiContent) {
+    console.warn("AI returned empty content, using fallback");
+    return context.dayGoal 
+      ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
+      : "אני כאן איתך. איך את מרגישה היום?";
+  }
+  
+  return aiContent;
 }
 
 export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
@@ -260,7 +275,7 @@ Respond in JSON format:
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -310,17 +325,20 @@ Write a personal opening message for this day. The message should:
 - CRITICAL: Respond in the same language as the journey content above (if content is in Hebrew, write in Hebrew)`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: "Open this day for me" },
     ],
-    max_completion_tokens: 150,
+    max_tokens: 150,
   });
 
-  // Hebrew fallback since this journey is in Hebrew
-  const fallback = `שלום ובוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה כשאת שומעת את זה?`;
-  return response.choices[0].message.content || fallback;
+  const aiContent = response.choices[0].message.content;
+  if (!aiContent) {
+    // Hebrew fallback since this journey is in Hebrew
+    return `שלום ובוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה כשאת שומעת את זה?`;
+  }
+  return aiContent;
 }
 
 // PRD 7.2 - Generate user summary at day completion
@@ -366,7 +384,7 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
