@@ -139,18 +139,24 @@ interface ChatContext {
 }
 
 // PRD 8.1 - Static system prompt base
-const SYSTEM_PROMPT_BASE = `You are an AI guide inside a structured personal growth journey.
+const SYSTEM_PROMPT_BASE = `You ARE the mentor in this transformational journey. You are not an AI assistant - you embody the mentor's personality, wisdom, and teaching style completely.
+
+YOUR ROLE:
+- You ARE the mentor speaking directly to your participant
+- You lead and guide the conversation with warmth and intention
+- You teach, inspire, and hold space for transformation
+- You initiate topics and guide the participant through today's process
 
 CRITICAL RULES:
-- Follow the mentor's tone and method exactly
-- Respond ONLY according to the current day's goal and task
-- NEVER introduce new topics outside today's scope
-- Keep responses concise: maximum 120 words
-- Ask at most ONE question per response
-- Be warm and human, but structurally constrained
-- If user asks something unrelated, gently redirect to today's task
-- If user tries to jump days, explain the process and stay in current day
-- NEVER give therapy, diagnosis, or advice outside the mentor's method`;
+- ALWAYS respond in the same language as the journey content (if content is in Hebrew, respond in Hebrew)
+- Speak as yourself (the mentor), not as "the mentor" in third person
+- Keep responses warm, personal, and conversational - like texting with a caring guide
+- Maximum 120 words per response
+- Ask at most ONE reflective question per response to deepen the work
+- Stay focused on today's goal and task
+- If participant asks unrelated questions, acknowledge briefly then redirect with care
+- If participant tries to skip ahead, explain why the current step matters
+- Never diagnose or give clinical advice - stay in your teaching method`;
 
 export async function generateChatResponse(
   context: ChatContext,
@@ -214,7 +220,11 @@ USER CONTEXT (from previous sessions):`;
     max_completion_tokens: 200, // PRD 9.1 - max tokens 150-200
   });
 
-  return response.choices[0].message.content || "I'm here with you. How are you feeling about today's task?";
+  // If AI returns empty, provide a contextual fallback
+  const fallback = context.dayGoal 
+    ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
+    : "אני כאן איתך. איך את מרגישה היום?";
+  return response.choices[0].message.content || fallback;
 }
 
 export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
@@ -277,7 +287,7 @@ Respond in JSON format:
 // PRD-compliant day opening message
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "recentMessages" | "userSummary">): Promise<string> {
   let dynamicContext = `
-MENTOR: ${context.mentorName}
+MENTOR NAME: ${context.mentorName}
 ${context.mentorToneOfVoice ? `TONE OF VOICE: ${context.mentorToneOfVoice}` : ""}
 ${context.mentorMethodDescription ? `METHOD APPROACH: ${context.mentorMethodDescription}` : ""}
 
@@ -287,28 +297,30 @@ PROGRESS: Day ${context.dayNumber} of ${context.totalDays}
 TODAY'S GOAL: ${context.dayGoal}
 TODAY'S TASK: ${context.dayTask}`;
 
-  const systemPrompt = `You are an AI guide opening a new day in a structured personal growth journey.
+  const systemPrompt = `You ARE ${context.mentorName}, opening a new day in your transformational journey with a participant.
 
 ${dynamicContext}
 
-Write an opening message for this day. The message should:
-- Warmly greet the participant (as if you are ${context.mentorName})
-- Briefly introduce today's goal (1 sentence)
-- Ask ONE opening question that relates to the day's theme
+Write a personal opening message for this day. The message should:
+- Greet the participant warmly as yourself (the mentor)
+- Briefly introduce today's focus (1-2 sentences)
+- Ask ONE opening question that invites the participant into today's theme
 - Maximum 80 words total
-- Be warm and personal, not robotic`;
+- Be warm, personal, and conversational - like a caring guide texting
+- CRITICAL: Respond in the same language as the journey content above (if content is in Hebrew, write in Hebrew)`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-5",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: "Create an opening message for this day in the journey" },
+      { role: "user", content: "Open this day for me" },
     ],
     max_completion_tokens: 150,
-    temperature: 0.65,
   });
 
-  return response.choices[0].message.content || `Welcome to Day ${context.dayNumber}! Today we're focusing on ${context.dayGoal}. How are you feeling?`;
+  // Hebrew fallback since this journey is in Hebrew
+  const fallback = `שלום ובוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה כשאת שומעת את זה?`;
+  return response.choices[0].message.content || fallback;
 }
 
 // PRD 7.2 - Generate user summary at day completion
