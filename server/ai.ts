@@ -40,75 +40,82 @@ interface GeneratedDaySimple {
   task: string;
 }
 
-export async function generateJourneyContent(
+async function generateDaysBatch(
   intent: JourneyIntent,
-  mentorContent: string
+  mentorContent: string,
+  startDay: number,
+  endDay: number,
+  totalDays: number
 ): Promise<GeneratedDay[]> {
-  const prompt = `You are an expert in creating transformational journeys and courses. A mentor/teacher wants to create a ${intent.duration}-day digital journey for their clients.
+  const prompt = `You are an expert in creating transformational journeys. Create days ${startDay} to ${endDay} of a ${totalDays}-day journey.
 
 JOURNEY DETAILS:
 - Name: ${intent.journeyName}
 - Goal: ${intent.mainGoal}
 - Target Audience: ${intent.targetAudience}
-- Desired Feeling at End: ${intent.desiredFeeling || "empowered and transformed"}
-- Additional Notes: ${intent.additionalNotes || "none"}
+- Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
 
-MENTOR'S CONTENT AND METHODOLOGY:
-${mentorContent}
+MENTOR'S CONTENT:
+${mentorContent.substring(0, 15000)}
 
-Based on the mentor's content and methodology above, create a structured ${intent.duration}-day journey. Each day should be a progressive step toward the goal.
+Create days ${startDay}-${endDay} that progressively build toward the goal.
+${startDay === 1 ? "Day 1 should be an introduction and foundation." : `Days ${startDay}-${endDay} should deepen and expand on earlier concepts.`}
+${endDay === totalDays ? `Day ${endDay} should be a powerful conclusion.` : ""}
 
-For each day, create:
-1. A compelling title for that day
-2. A description of what participants will learn/experience
-3. Content blocks that can include:
-   - "text" blocks (teaching content, explanations)
-   - "reflection" blocks (questions for self-reflection)
-   - "task" blocks (practical exercises or assignments)
-   - "affirmation" blocks (positive statements to internalize)
+For each day create:
+- title: compelling name
+- description: what they'll learn
+- goal: main objective
+- explanation: teaching content (2-3 paragraphs)
+- task: practical exercise
+- blocks: array with text, reflection, and task blocks
 
-IMPORTANT: Use the mentor's actual teachings, examples, and methodology. Don't invent new content - extract and structure what the mentor has provided.
-
-Respond in JSON format:
-{
-  "days": [
-    {
-      "dayNumber": 1,
-      "title": "Day title",
-      "description": "Brief description of this day's focus",
-      "blocks": [
-        {"type": "text", "content": {"text": "Teaching content..."}},
-        {"type": "reflection", "content": {"question": "Reflection question..."}},
-        {"type": "task", "content": {"task": "Exercise or task..."}},
-        {"type": "affirmation", "content": {"affirmation": "Positive affirmation..."}}
-      ]
-    }
-  ]
-}`;
+Respond in JSON:
+{"days": [{"dayNumber": ${startDay}, "title": "...", "description": "...", "goal": "...", "explanation": "...", "task": "...", "blocks": [...]}]}`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      {
-        role: "system",
-        content: "You are an expert course designer who creates transformational journeys. Always respond with valid JSON only, no additional text."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
+      { role: "system", content: "Expert course designer. Respond with valid JSON only." },
+      { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 8192,
+    max_completion_tokens: 4096,
   });
 
   const content = response.choices[0].message.content;
-  if (!content) {
-    throw new Error("No content generated");
-  }
+  if (!content) throw new Error("No content generated");
+  
+  return JSON.parse(content).days as GeneratedDay[];
+}
 
-  const parsed = JSON.parse(content);
-  return parsed.days as GeneratedDay[];
+export async function generateJourneyContent(
+  intent: JourneyIntent,
+  mentorContent: string
+): Promise<GeneratedDay[]> {
+  const totalDays = intent.duration || 7;
+  
+  // Split into parallel batches for faster generation
+  if (totalDays <= 3) {
+    // Small journeys: single request
+    return generateDaysBatch(intent, mentorContent, 1, totalDays, totalDays);
+  } else if (totalDays <= 5) {
+    // Medium journeys: 2 parallel requests
+    const [batch1, batch2] = await Promise.all([
+      generateDaysBatch(intent, mentorContent, 1, 3, totalDays),
+      generateDaysBatch(intent, mentorContent, 4, totalDays, totalDays)
+    ]);
+    return [...batch1, ...batch2].sort((a, b) => a.dayNumber - b.dayNumber);
+  } else {
+    // 7-day journeys: 3 parallel requests
+    const midPoint = Math.ceil(totalDays / 3);
+    const [batch1, batch2, batch3] = await Promise.all([
+      generateDaysBatch(intent, mentorContent, 1, midPoint, totalDays),
+      generateDaysBatch(intent, mentorContent, midPoint + 1, midPoint * 2, totalDays),
+      generateDaysBatch(intent, mentorContent, midPoint * 2 + 1, totalDays, totalDays)
+    ]);
+    return [...batch1, ...batch2, ...batch3].sort((a, b) => a.dayNumber - b.dayNumber);
+  }
 }
 
 // PRD-compliant chat context
@@ -290,61 +297,62 @@ USER CONTEXT (from previous sessions):`;
   return aiContent;
 }
 
-export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
-  const prompt = `You are an expert in creating transformational journeys and personal development programs. Create a ${intent.duration}-day flow for the following:
+async function generateSimpleDaysBatch(
+  intent: JourneyIntent,
+  startDay: number,
+  endDay: number,
+  totalDays: number
+): Promise<GeneratedDaySimple[]> {
+  const prompt = `Create days ${startDay}-${endDay} of a ${totalDays}-day transformation journey.
 
-FLOW DETAILS:
-- Name: ${intent.journeyName}
-- Main Goal: ${intent.mainGoal}
-- Target Audience: ${intent.targetAudience}
-- Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
-- Additional Context: ${intent.additionalNotes || "none"}
+FLOW: ${intent.journeyName}
+GOAL: ${intent.mainGoal}
+AUDIENCE: ${intent.targetAudience}
+${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
 
-For each day, create:
-1. A title (short, inspiring name for the day)
-2. A goal (what the participant will achieve today - 1-2 sentences)
-3. An explanation (teaching content, insights, or guidance - 2-3 paragraphs)
-4. A task (practical exercise or action to take - be specific)
+${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
+${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
 
-Make each day build on the previous one, creating a clear progression toward the main goal.
-Keep the tone warm, personal, and supportive.
+For each day: title, goal (1-2 sentences), explanation (2-3 paragraphs), task (specific exercise).
 
-Respond in JSON format:
-{
-  "days": [
-    {
-      "dayNumber": 1,
-      "title": "Day title",
-      "goal": "What the participant will achieve today",
-      "explanation": "Teaching content and guidance for this day...",
-      "task": "Specific exercise or action to take"
-    }
-  ]
-}`;
+JSON: {"days": [{"dayNumber": 1, "title": "...", "goal": "...", "explanation": "...", "task": "..."}]}`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      {
-        role: "system",
-        content: "You are an expert course designer who creates transformational journeys. Always respond with valid JSON only."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
+      { role: "system", content: "Expert course designer. Respond with valid JSON only." },
+      { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 8192,
+    max_completion_tokens: 3000,
   });
 
   const content = response.choices[0].message.content;
-  if (!content) {
-    throw new Error("No content generated");
-  }
+  if (!content) throw new Error("No content generated");
+  
+  return JSON.parse(content).days as GeneratedDaySimple[];
+}
 
-  const parsed = JSON.parse(content);
-  return parsed.days as GeneratedDaySimple[];
+export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
+  const totalDays = intent.duration || 7;
+  
+  // Parallel generation for speed
+  if (totalDays <= 3) {
+    return generateSimpleDaysBatch(intent, 1, totalDays, totalDays);
+  } else if (totalDays <= 5) {
+    const [batch1, batch2] = await Promise.all([
+      generateSimpleDaysBatch(intent, 1, 3, totalDays),
+      generateSimpleDaysBatch(intent, 4, totalDays, totalDays)
+    ]);
+    return [...batch1, ...batch2].sort((a, b) => a.dayNumber - b.dayNumber);
+  } else {
+    const [batch1, batch2, batch3] = await Promise.all([
+      generateSimpleDaysBatch(intent, 1, 3, totalDays),
+      generateSimpleDaysBatch(intent, 4, 5, totalDays),
+      generateSimpleDaysBatch(intent, 6, totalDays, totalDays)
+    ]);
+    return [...batch1, ...batch2, ...batch3].sort((a, b) => a.dayNumber - b.dayNumber);
+  }
 }
 
 // PRD-compliant day opening message
