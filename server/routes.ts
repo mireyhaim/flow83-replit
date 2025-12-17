@@ -790,6 +790,10 @@ export async function registerRoutes(
       const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
       const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() || "Your Guide" : "Your Guide";
       const totalDays = journey.duration || 7;
+      
+      // Get participant's name
+      const participantUser = await storage.getUser(userId);
+      const participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
 
       // PRD-compliant context for day opening
       const openingMessage = await generateDayOpeningMessage({
@@ -804,6 +808,7 @@ export async function registerRoutes(
         mentorToneOfVoice: mentor?.toneOfVoice || undefined,
         mentorMethodDescription: mentor?.methodDescription || undefined,
         mentorBehavioralRules: mentor?.behavioralRules || undefined,
+        participantName,
       });
 
       const message = await storage.createMessage({
