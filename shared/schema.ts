@@ -49,6 +49,7 @@ export const journeys = pgTable("journeys", {
   currency: text("currency").default("USD"),
   mentorMessage: text("mentor_message"),
   shortCode: varchar("short_code").unique(),
+  landingPageContent: jsonb("landing_page_content"),
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({
