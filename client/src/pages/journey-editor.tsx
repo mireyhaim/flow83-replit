@@ -609,25 +609,45 @@ const JourneyEditorPage = () => {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            <div className="space-y-3">
-              <Label className="text-white/80">Flow Landing Page Link</Label>
-              <div className="flex gap-2">
-                <div className="flex-1 bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-sm text-white/80 truncate">
-                  {getShareableLink()}
-                </div>
-                <Button
-                  onClick={handleCopyLink}
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 shrink-0"
-                  data-testid="button-copy-link"
-                >
-                  {copiedLink ? (
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  ) : (
+            {journeyData?.shortCode && (
+              <div className="text-center py-4">
+                <p className="text-xs text-white/50 mb-2">Your unique short code</p>
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 rounded-xl px-6 py-4">
+                  <span className="text-3xl font-bold text-white tracking-wider">{journeyData.shortCode}</span>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(journeyData.shortCode || "");
+                      toast({ title: "Code copied!" });
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/60 hover:text-white hover:bg-white/10"
+                    data-testid="button-copy-code"
+                  >
                     <Copy className="w-4 h-4" />
-                  )}
-                </Button>
+                  </Button>
+                </div>
+                <p className="text-xs text-white/40 mt-3">yoursite.com/f/{journeyData.shortCode}</p>
               </div>
+            )}
+
+            <div className="space-y-3">
+              <Label className="text-white/80 text-sm">Full Link (tap to copy)</Label>
+              <Button
+                onClick={handleCopyLink}
+                variant="outline"
+                className="w-full border-white/20 text-white/70 hover:bg-white/10 justify-between h-auto py-3 px-4"
+                data-testid="button-copy-link"
+              >
+                <span className="text-xs truncate flex-1 text-left">
+                  {getShareableLink()}
+                </span>
+                {copiedLink ? (
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                ) : (
+                  <Copy className="w-4 h-4 shrink-0 ml-2" />
+                )}
+              </Button>
               {copiedLink && (
                 <p className="text-sm text-emerald-400 text-center">Link copied!</p>
               )}
