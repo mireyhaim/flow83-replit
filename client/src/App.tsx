@@ -38,6 +38,7 @@ import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
 import ProfilePage from "@/pages/profile";
 import NotificationSettingsPage from "@/pages/notification-settings";
+import PaymentSuccessPage from "@/pages/payment-success";
 
 function Router() {
   return (
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/journey/:id/settings" component={JourneySettingsPage} />
       <Route path="/j/:id" component={JourneyLandingPage} />
       <Route path="/p/:token" component={ParticipantView} />
+      <Route path="/payment/success" component={PaymentSuccessPage} />
       
       {/* New routes */}
       <Route path="/pricing" component={Pricing} />

@@ -92,8 +92,12 @@ export type JourneyBlock = typeof journeyBlocks.$inferSelect;
 
 export const participants = pgTable("participants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
   journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
+  accessToken: varchar("access_token").unique().default(sql`gen_random_uuid()`),
+  email: varchar("email"),
+  name: varchar("name"),
+  stripeSessionId: varchar("stripe_session_id"),
   currentDay: integer("current_day").default(1),
   completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
   startedAt: timestamp("started_at").defaultNow(),

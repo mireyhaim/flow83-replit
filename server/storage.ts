@@ -41,7 +41,10 @@ export interface IStorage {
   getParticipants(journeyId: string): Promise<Participant[]>;
   getParticipant(userId: string, journeyId: string): Promise<Participant | undefined>;
   getParticipantById(id: string): Promise<Participant | undefined>;
+  getParticipantByAccessToken(accessToken: string): Promise<Participant | undefined>;
+  getParticipantByStripeSession(stripeSessionId: string): Promise<Participant | undefined>;
   createParticipant(participant: InsertParticipant): Promise<Participant>;
+  createExternalParticipant(journeyId: string, email: string, name?: string, stripeSessionId?: string): Promise<Participant>;
   updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined>;
 
   getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]>;
@@ -196,6 +199,26 @@ export class DatabaseStorage implements IStorage {
     return participant;
   }
 
+  async getParticipantByAccessToken(accessToken: string): Promise<Participant | undefined> {
+    const [participant] = await db.select().from(participants).where(eq(participants.accessToken, accessToken));
+    return participant;
+  }
+
+  async getParticipantByStripeSession(stripeSessionId: string): Promise<Participant | undefined> {
+    const [participant] = await db.select().from(participants).where(eq(participants.stripeSessionId, stripeSessionId));
+    return participant;
+  }
+
+  async createExternalParticipant(journeyId: string, email: string, name?: string, stripeSessionId?: string): Promise<Participant> {
+    const [created] = await db.insert(participants).values({
+      journeyId,
+      email,
+      name,
+      stripeSessionId,
+    }).returning();
+    return created;
+  }
+
   async getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]> {
     return db.select().from(journeyMessages)
       .where(and(eq(journeyMessages.participantId, participantId), eq(journeyMessages.stepId, stepId)))
@@ -242,14 +265,7 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
     
     return results.map(r => ({
-      id: r.participants.id,
-      userId: r.participants.userId,
-      journeyId: r.participants.journeyId,
-      currentDay: r.participants.currentDay,
-      completedBlocks: r.participants.completedBlocks,
-      startedAt: r.participants.startedAt,
-      lastActiveAt: r.participants.lastActiveAt,
-      completedAt: r.participants.completedAt,
+      ...r.participants,
       journey: r.journeys,
       user: r.users,
     }));

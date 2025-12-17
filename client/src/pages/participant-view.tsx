@@ -21,6 +21,11 @@ interface JourneyWithSteps extends Journey {
   mentor?: User | null;
 }
 
+function isAccessToken(token: string): boolean {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidPattern.test(token);
+}
+
 export default function ParticipantView() {
   const [, params] = useRoute("/p/:token");
   const tokenFromRoute = params?.token;
@@ -33,28 +38,42 @@ export default function ParticipantView() {
   const [dayReadyForCompletion, setDayReadyForCompletion] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const isExternalAccess = tokenFromRoute && isAccessToken(tokenFromRoute);
+
+  const { data: externalData, isLoading: externalLoading, error: externalError } = useQuery<{
+    participant: Participant;
+    journey: Journey;
+  }>({
+    queryKey: ["/api/participant/token", tokenFromRoute],
+    queryFn: () => fetch(`/api/participant/token/${tokenFromRoute}`).then(res => {
+      if (!res.ok) throw new Error("Invalid access token");
+      return res.json();
+    }),
+    enabled: !!isExternalAccess,
+  });
+
   const { data: allJourneys } = useQuery<Journey[]>({
     queryKey: ["/api/journeys"],
     queryFn: () => fetch("/api/journeys").then(res => res.json()),
-    enabled: !tokenFromRoute,
+    enabled: !tokenFromRoute && !isExternalAccess,
   });
 
-  // Get current user info
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/auth/user");
       return res.json();
     },
+    enabled: !isExternalAccess,
   });
 
   const publishedJourneys = allJourneys?.filter(j => j.status === "published") || [];
-  const journeyId = tokenFromRoute || publishedJourneys[0]?.id;
+  const journeyId = isExternalAccess ? externalData?.journey?.id : (tokenFromRoute || publishedJourneys[0]?.id);
 
   const { data: journey, isLoading: journeyLoading } = useQuery<JourneyWithSteps>({
     queryKey: ["/api/journeys", journeyId, "full"],
     queryFn: () => fetch(`/api/journeys/${journeyId}/full`).then(res => res.json()),
-    enabled: !!journeyId,
+    enabled: !!journeyId && !isExternalAccess,
   });
 
   const { data: participant, isLoading: participantLoading } = useQuery<Participant>({
@@ -63,23 +82,29 @@ export default function ParticipantView() {
       const res = await apiRequest("GET", `/api/participants/journey/${journeyId}`);
       return res.json();
     },
-    enabled: !!journeyId,
+    enabled: !!journeyId && !isExternalAccess,
   });
 
+  const resolvedJourney = isExternalAccess ? externalData?.journey as JourneyWithSteps | undefined : journey;
+  const resolvedParticipant = isExternalAccess ? externalData?.participant : participant;
+  const resolvedLoading = isExternalAccess ? externalLoading : (journeyLoading || participantLoading);
+
   // Helper to get mentor display name
-  const mentorName = journey?.mentor?.firstName 
-    ? `${journey.mentor.firstName}${journey.mentor.lastName ? ' ' + journey.mentor.lastName : ''}`
+  const mentorName = resolvedJourney?.mentor?.firstName 
+    ? `${resolvedJourney.mentor.firstName}${resolvedJourney.mentor.lastName ? ' ' + resolvedJourney.mentor.lastName : ''}`
     : "Your Mentor";
   
-  const mentorImage = journey?.mentor?.profileImageUrl;
+  const mentorImage = resolvedJourney?.mentor?.profileImageUrl;
   
-  // Helper to get user display name
-  const userName = currentUser?.firstName || "You";
+  // Helper to get user display name - for external participants, use their name
+  const userName = isExternalAccess 
+    ? (resolvedParticipant?.name || resolvedParticipant?.email?.split('@')[0] || "You")
+    : (currentUser?.firstName || "You");
 
-  const currentDay = participant?.currentDay ?? 1;
-  const sortedSteps = [...(journey?.steps || [])].sort((a, b) => a.dayNumber - b.dayNumber);
+  const currentDay = resolvedParticipant?.currentDay ?? 1;
+  const sortedSteps = [...(resolvedJourney?.steps || [])].sort((a, b) => a.dayNumber - b.dayNumber);
   const currentStep = sortedSteps.find(s => s.dayNumber === currentDay);
-  const totalDays = sortedSteps.length || journey?.duration || 7;
+  const totalDays = sortedSteps.length || resolvedJourney?.duration || 7;
   const isCompleted = currentDay > totalDays;
   const progressPercent = Math.round(((currentDay - 1) / totalDays) * 100);
   const completedDays = currentDay - 1;
@@ -87,26 +112,25 @@ export default function ParticipantView() {
   const streak = completedDays;
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<JourneyMessage[]>({
-    queryKey: ["messages", participant?.id, currentStep?.id],
+    queryKey: ["messages", resolvedParticipant?.id, currentStep?.id],
     queryFn: async () => {
-      if (!participant?.id || !currentStep?.id) return [];
-      const msgs = await chatApi.startDay(participant.id, currentStep.id);
+      if (!resolvedParticipant?.id || !currentStep?.id) return [];
+      const msgs = await chatApi.startDay(resolvedParticipant.id, currentStep.id);
       return msgs;
     },
-    enabled: !!participant?.id && !!currentStep?.id && !isCompleted,
+    enabled: !!resolvedParticipant?.id && !!currentStep?.id && !isCompleted,
   });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      if (!participant?.id || !currentStep?.id) throw new Error("Missing participant or step");
-      return chatApi.sendMessage(participant.id, currentStep.id, content);
+      if (!resolvedParticipant?.id || !currentStep?.id) throw new Error("Missing participant or step");
+      return chatApi.sendMessage(resolvedParticipant.id, currentStep.id, content);
     },
     onSuccess: (data) => {
       queryClient.setQueryData<JourneyMessage[]>(
-        ["messages", participant?.id, currentStep?.id],
+        ["messages", resolvedParticipant?.id, currentStep?.id],
         (old = []) => [...old, data.userMessage, data.botMessage]
       );
-      // If AI marked the day as complete, show the complete day button
       if (data.dayCompleted) {
         setDayReadyForCompletion(true);
       }
@@ -115,30 +139,32 @@ export default function ParticipantView() {
 
   const completeDayMutation = useMutation({
     mutationFn: async () => {
-      if (!participant || !journey) return;
-      const res = await apiRequest("POST", `/api/participants/${participant.id}/complete-day`, {
-        dayNumber: participant.currentDay,
-        journeyId: journey.id,
+      if (!resolvedParticipant || !resolvedJourney) return;
+      const res = await apiRequest("POST", `/api/participants/${resolvedParticipant.id}/complete-day`, {
+        dayNumber: resolvedParticipant.currentDay,
+        journeyId: resolvedJourney.id,
       });
       return res.json();
     },
     onSuccess: () => {
       setShowCelebration(true);
-      setDayReadyForCompletion(false); // Reset the completion state
+      setDayReadyForCompletion(false);
       setTimeout(() => {
         setShowCelebration(false);
-        queryClient.invalidateQueries({ queryKey: ["/api/participants/journey", journeyId] });
+        if (isExternalAccess) {
+          queryClient.invalidateQueries({ queryKey: ["/api/participant/token", tokenFromRoute] });
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["/api/participants/journey", journeyId] });
+        }
       }, 2000);
     },
   });
 
-  // Reset dayReadyForCompletion when day changes
   useEffect(() => {
     setDayReadyForCompletion(false);
   }, [currentDay]);
 
   useEffect(() => {
-    // Use setTimeout to ensure DOM has rendered before scrolling
     const timer = setTimeout(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTo({
@@ -150,6 +176,20 @@ export default function ParticipantView() {
     return () => clearTimeout(timer);
   }, [messages]);
 
+  if (isExternalAccess && externalError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4" dir="rtl">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4 text-gray-800">קישור לא תקין</h1>
+          <p className="text-gray-600 mb-6">הקישור שלך לא תקין או פג תוקף.</p>
+          <Link href="/">
+            <Button>חזרה לדף הבית</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
     
@@ -158,10 +198,10 @@ export default function ParticipantView() {
     setIsSending(true);
 
     queryClient.setQueryData<JourneyMessage[]>(
-      ["messages", participant?.id, currentStep?.id],
+      ["messages", resolvedParticipant?.id, currentStep?.id],
       (old = []) => [...old, {
         id: "temp-" + Date.now(),
-        participantId: participant!.id,
+        participantId: resolvedParticipant!.id,
         stepId: currentStep!.id,
         role: "user",
         content,
@@ -202,7 +242,7 @@ export default function ParticipantView() {
     );
   }
 
-  if (journeyLoading || participantLoading) {
+  if (resolvedLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -213,13 +253,13 @@ export default function ParticipantView() {
     );
   }
 
-  if (!journey || !participant) {
+  if (!resolvedJourney || !resolvedParticipant) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-gray-500 mb-4">Flow not found</p>
-          <Link href="/dashboard">
-            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
+          <Link href="/">
+            <Button className="bg-violet-600 hover:bg-violet-700">Go Home</Button>
           </Link>
         </div>
       </div>
@@ -247,7 +287,7 @@ export default function ParticipantView() {
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Flow Complete!</h1>
           <p className="text-gray-500 mb-6">
-            Congratulations on completing "{journey.name}"
+            Congratulations on completing "{resolvedJourney?.name}"
           </p>
           
           <div className="bg-white rounded-2xl p-6 mb-6 border border-gray-200 shadow-lg">
@@ -342,7 +382,7 @@ export default function ParticipantView() {
 
         {/* Journey name */}
         <div className="p-4 border-b border-white/10">
-          <h2 className="font-semibold text-white text-sm">{journey.name}</h2>
+          <h2 className="font-semibold text-white text-sm">{resolvedJourney?.name}</h2>
           <p className="text-xs text-violet-200 mt-1">Day {currentDay} of {totalDays}</p>
         </div>
 

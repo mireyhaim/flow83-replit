@@ -942,10 +942,14 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/checkout/journey/:journeyId", async (req, res) => {
+  app.post("/api/join/journey/:journeyId", async (req, res) => {
     try {
       const { journeyId } = req.params;
       const { email, name } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
 
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
@@ -953,55 +957,134 @@ export async function registerRoutes(
       }
 
       if (journey.status !== "published") {
-        return res.status(400).json({ error: "Flow is not available for purchase" });
+        return res.status(400).json({ error: "Flow is not available" });
       }
 
       const price = journey.price || 0;
-      if (price <= 0) {
-        return res.status(400).json({ error: "Free flow - no payment needed", free: true });
-      }
-
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
       
-      const session = await stripeService.createOneTimePaymentSession({
-        customerEmail: email,
-        amount: price * 100,
-        currency: (journey.currency || "ILS").toLowerCase(),
-        productName: journey.name,
-        successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&journey_id=${journeyId}`,
-        cancelUrl: `${baseUrl}/j/${journeyId}`,
-        metadata: {
-          journeyId,
-          customerEmail: email || "",
-          customerName: name || "",
-        },
-      });
+      if (price > 0) {
+        const baseUrl = `https://${req.get("host")}`;
+        
+        const session = await stripeService.createOneTimePaymentSession({
+          customerEmail: email,
+          amount: price * 100,
+          currency: (journey.currency || "ILS").toLowerCase(),
+          productName: journey.name,
+          successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${baseUrl}/j/${journeyId}`,
+          metadata: {
+            journeyId,
+            customerEmail: email,
+            customerName: name || "",
+          },
+        });
 
-      res.json({ url: session.url, sessionId: session.id });
+        res.json({ 
+          requiresPayment: true, 
+          checkoutUrl: session.url, 
+          sessionId: session.id 
+        });
+      } else {
+        const participant = await storage.createExternalParticipant(
+          journeyId,
+          email,
+          name
+        );
+
+        if (journey.creatorId) {
+          await storage.createActivityEvent({
+            creatorId: journey.creatorId,
+            participantId: participant.id,
+            journeyId,
+            eventType: 'joined',
+            eventData: { participantName: name || email },
+          });
+        }
+
+        res.json({ 
+          requiresPayment: false, 
+          accessToken: participant.accessToken 
+        });
+      }
     } catch (error) {
-      console.error("Error creating checkout session:", error);
-      res.status(500).json({ error: "Failed to create checkout session" });
+      console.error("Error joining journey:", error);
+      res.status(500).json({ error: "Failed to join flow" });
     }
   });
 
   app.get("/api/payment/verify/:sessionId", async (req, res) => {
     try {
       const { sessionId } = req.params;
+      
+      let participant = await storage.getParticipantByStripeSession(sessionId);
+      
+      if (participant) {
+        return res.json({ 
+          success: true, 
+          accessToken: participant.accessToken 
+        });
+      }
+
       const session = await stripeService.getCheckoutSession(sessionId);
       
-      if (session.payment_status === "paid") {
-        const journeyId = session.metadata?.journeyId;
-        res.json({ 
-          success: true, 
-          journeyId,
-          customerEmail: session.customer_email || session.metadata?.customerEmail,
-        });
-      } else {
-        res.json({ success: false, status: session.payment_status });
+      if (session.payment_status !== "paid") {
+        return res.json({ success: false, status: session.payment_status });
       }
+
+      const journeyId = session.metadata?.journeyId;
+      const email = session.customer_email || session.metadata?.customerEmail;
+      const name = session.metadata?.customerName;
+
+      if (!journeyId || !email) {
+        return res.status(400).json({ error: "Invalid session data" });
+      }
+
+      participant = await storage.createExternalParticipant(
+        journeyId,
+        email,
+        name || undefined,
+        sessionId
+      );
+
+      const journey = await storage.getJourney(journeyId);
+      if (journey?.creatorId) {
+        await storage.createActivityEvent({
+          creatorId: journey.creatorId,
+          participantId: participant.id,
+          journeyId,
+          eventType: 'joined',
+          eventData: { participantName: name || email, paymentVerified: true },
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        accessToken: participant.accessToken 
+      });
     } catch (error) {
       console.error("Error verifying payment:", error);
       res.status(500).json({ error: "Failed to verify payment" });
+    }
+  });
+
+  app.get("/api/participant/token/:accessToken", async (req, res) => {
+    try {
+      const { accessToken } = req.params;
+      const participant = await storage.getParticipantByAccessToken(accessToken);
+      
+      if (!participant) {
+        return res.status(404).json({ error: "Invalid access token" });
+      }
+
+      const journey = await storage.getJourney(participant.journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      res.json({ participant, journey });
+    } catch (error) {
+      console.error("Error fetching participant:", error);
+      res.status(500).json({ error: "Failed to fetch participant data" });
     }
   });
 
