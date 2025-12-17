@@ -111,75 +111,112 @@ Respond in JSON format:
   return parsed.days as GeneratedDay[];
 }
 
+// PRD-compliant chat context
 interface ChatContext {
+  // Journey context
   journeyName: string;
-  dayTitle: string;
-  dayDescription: string;
   dayNumber: number;
-  mentorBlocks: { type: string; content: any }[];
-  messageHistory: { role: string; content: string }[];
+  totalDays: number;
+  // Current day content
+  dayTitle: string;
+  dayGoal: string;
+  dayTask: string;
+  dayExplanation?: string;
+  // Mentor personality
+  mentorName: string;
+  mentorToneOfVoice?: string;
+  mentorMethodDescription?: string;
+  mentorBehavioralRules?: string;
+  // Memory - last 5 messages only
+  recentMessages: { role: string; content: string }[];
+  // User summary from previous days (long-term memory)
+  userSummary?: {
+    challenge?: string;
+    emotionalTone?: string;
+    insight?: string;
+    resistance?: string;
+  };
 }
+
+// PRD 8.1 - Static system prompt base
+const SYSTEM_PROMPT_BASE = `You are an AI guide inside a structured personal growth journey.
+
+CRITICAL RULES:
+- Follow the mentor's tone and method exactly
+- Respond ONLY according to the current day's goal and task
+- NEVER introduce new topics outside today's scope
+- Keep responses concise: maximum 120 words
+- Ask at most ONE question per response
+- Be warm and human, but structurally constrained
+- If user asks something unrelated, gently redirect to today's task
+- If user tries to jump days, explain the process and stay in current day
+- NEVER give therapy, diagnosis, or advice outside the mentor's method`;
 
 export async function generateChatResponse(
   context: ChatContext,
   userMessage: string
 ): Promise<string> {
-  const blocksContext = context.mentorBlocks
-    .map((b) => {
-      if (b.type === "text") return `Content: ${b.content.text || ""}`;
-      if (b.type === "reflection") return `Reflection Question: ${b.content.question || ""}`;
-      if (b.type === "task") return `Task: ${b.content.task || ""}`;
-      if (b.type === "affirmation") return `Affirmation: ${b.content.affirmation || ""}`;
-      return "";
-    })
-    .filter(Boolean)
-    .join("\n");
+  // PRD 8.2 - Build dynamic prompt
+  let dynamicContext = `
+MENTOR: ${context.mentorName}
+${context.mentorToneOfVoice ? `TONE OF VOICE: ${context.mentorToneOfVoice}` : ""}
+${context.mentorMethodDescription ? `METHOD: ${context.mentorMethodDescription}` : ""}
+${context.mentorBehavioralRules ? `BEHAVIORAL RULES: ${context.mentorBehavioralRules}` : ""}
 
-  const historyText = context.messageHistory
-    .slice(-10)
-    .map((m) => `${m.role === "bot" ? "Bot" : "Participant"}: ${m.content}`)
-    .join("\n");
+JOURNEY: ${context.journeyName}
+PROGRESS: Day ${context.dayNumber} of ${context.totalDays}
 
-  const systemPrompt = `You are a warm and human digital mentor named Flow 83.
-You are having a personal conversation with a participant in a transformational journey.
+TODAY'S GOAL: ${context.dayGoal}
+TODAY'S TASK: ${context.dayTask}
+${context.dayExplanation ? `GUIDANCE: ${context.dayExplanation}` : ""}`;
 
-The Journey: ${context.journeyName}
-Day ${context.dayNumber}: ${context.dayTitle}
-${context.dayDescription}
+  // Add user summary if exists (long-term memory)
+  if (context.userSummary && Object.values(context.userSummary).some(v => v)) {
+    dynamicContext += `
 
-Today's content:
-${blocksContext}
+USER CONTEXT (from previous sessions):`;
+    if (context.userSummary.challenge) {
+      dynamicContext += `\n- Main challenge: ${context.userSummary.challenge}`;
+    }
+    if (context.userSummary.emotionalTone) {
+      dynamicContext += `\n- Emotional state: ${context.userSummary.emotionalTone}`;
+    }
+    if (context.userSummary.insight) {
+      dynamicContext += `\n- Insight reached: ${context.userSummary.insight}`;
+    }
+    if (context.userSummary.resistance) {
+      dynamicContext += `\n- Resistance noted: ${context.userSummary.resistance}`;
+    }
+  }
 
-Important guidelines:
-- Speak in a warm, personal, and supportive tone
-- Use today's content to guide the conversation
-- Ask open-ended questions that invite reflection
-- Respond to the participant's answers with empathy and depth
-- If the participant shares something personal - acknowledge it and respond to it
-- Guide the participant to exercises and tasks when appropriate
-- Write short to medium responses (2-4 sentences usually)
-- Don't be robotic or generic - be human and present`;
+  const systemPrompt = SYSTEM_PROMPT_BASE + "\n\n" + dynamicContext;
 
+  // PRD 7.1 - Short-term memory: only last 5 messages
   const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
     { role: "system", content: systemPrompt },
   ];
 
-  for (const msg of context.messageHistory.slice(-10)) {
+  // Add only recent messages (max 5 per PRD)
+  const recentMessages = context.recentMessages.slice(-5);
+  for (const msg of recentMessages) {
     messages.push({
-      role: msg.role === "bot" ? "assistant" : "user",
+      role: msg.role === "assistant" ? "assistant" : "user",
       content: msg.content,
     });
   }
 
   messages.push({ role: "user", content: userMessage });
 
+  // PRD 10 - API configuration
   const response = await openai.chat.completions.create({
     model: "gpt-5",
     messages,
-    max_completion_tokens: 500,
+    max_completion_tokens: 200, // PRD 9.1 - max tokens 150-200
+    temperature: 0.65, // PRD 10 - temperature 0.6-0.7
+    frequency_penalty: 0.5, // PRD 10
   });
 
-  return response.choices[0].message.content || "I'm here with you. Tell me more.";
+  return response.choices[0].message.content || "I'm here with you. How are you feeling about today's task?";
 }
 
 export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
@@ -239,35 +276,29 @@ Respond in JSON format:
   return parsed.days as GeneratedDaySimple[];
 }
 
-export async function generateDayOpeningMessage(context: Omit<ChatContext, "messageHistory">): Promise<string> {
-  const blocksContext = context.mentorBlocks
-    .map((b) => {
-      if (b.type === "text") return `Content: ${b.content.text || ""}`;
-      if (b.type === "reflection") return `Reflection Question: ${b.content.question || ""}`;
-      if (b.type === "task") return `Task: ${b.content.task || ""}`;
-      if (b.type === "affirmation") return `Affirmation: ${b.content.affirmation || ""}`;
-      return "";
-    })
-    .filter(Boolean)
-    .join("\n");
+// PRD-compliant day opening message
+export async function generateDayOpeningMessage(context: Omit<ChatContext, "recentMessages" | "userSummary">): Promise<string> {
+  let dynamicContext = `
+MENTOR: ${context.mentorName}
+${context.mentorToneOfVoice ? `TONE OF VOICE: ${context.mentorToneOfVoice}` : ""}
+${context.mentorMethodDescription ? `METHOD APPROACH: ${context.mentorMethodDescription}` : ""}
 
-  const systemPrompt = `You are a warm and human digital mentor named Flow 83.
-You are opening a new day in a transformational journey with a participant.
+JOURNEY: ${context.journeyName}
+PROGRESS: Day ${context.dayNumber} of ${context.totalDays}
 
-The Journey: ${context.journeyName}
-Day ${context.dayNumber}: ${context.dayTitle}
-${context.dayDescription}
+TODAY'S GOAL: ${context.dayGoal}
+TODAY'S TASK: ${context.dayTask}`;
 
-Today's content:
-${blocksContext}
+  const systemPrompt = `You are an AI guide opening a new day in a structured personal growth journey.
 
-Write an opening message for this day.
-The message should:
-- Warmly greet the participant
-- Briefly explain what we're working on today
-- Ask an opening question that starts the conversation
-- Be personal and warm, not robotic
-- Be medium length (3-5 sentences)`;
+${dynamicContext}
+
+Write an opening message for this day. The message should:
+- Warmly greet the participant (as if you are ${context.mentorName})
+- Briefly introduce today's goal (1 sentence)
+- Ask ONE opening question that relates to the day's theme
+- Maximum 80 words total
+- Be warm and personal, not robotic`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-5",
@@ -275,8 +306,87 @@ The message should:
       { role: "system", content: systemPrompt },
       { role: "user", content: "Create an opening message for this day in the journey" },
     ],
-    max_completion_tokens: 300,
+    max_completion_tokens: 150,
+    temperature: 0.65,
   });
 
-  return response.choices[0].message.content || `Welcome to Day ${context.dayNumber}!`;
+  return response.choices[0].message.content || `Welcome to Day ${context.dayNumber}! Today we're focusing on ${context.dayGoal}. How are you feeling?`;
+}
+
+// PRD 7.2 - Generate user summary at day completion
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface DaySummaryInput {
+  conversation: ConversationMessage[];
+  dayGoal: string;
+  dayTask: string;
+  mentorName: string;
+}
+
+interface DaySummary {
+  challenge: string;
+  emotionalTone: string;
+  insight: string;
+  resistance: string;
+}
+
+export async function generateDaySummary(input: DaySummaryInput): Promise<DaySummary> {
+  // Format conversation with clear role labels
+  const conversationText = input.conversation
+    .map(m => `${m.role === "user" ? "PARTICIPANT" : input.mentorName.toUpperCase()}: ${m.content}`)
+    .join("\n\n");
+
+  const prompt = `Analyze the following conversation from today's personal growth session between ${input.mentorName} (mentor) and the participant.
+
+TODAY'S GOAL: ${input.dayGoal}
+TODAY'S TASK: ${input.dayTask}
+
+CONVERSATION:
+${conversationText}
+
+Based on the participant's responses AND how they engaged with ${input.mentorName}'s guidance, extract:
+{
+  "challenge": "The main challenge or issue the participant expressed or revealed (1-2 sentences, or 'none identified')",
+  "emotionalTone": "The dominant emotional tone of the participant (e.g., 'hopeful', 'resistant', 'curious', 'anxious', 'motivated', 'engaged')",
+  "insight": "Any key insight or realization the participant reached during the session (1-2 sentences, or 'none yet')",
+  "resistance": "Any resistance, blockage, avoidance, or hesitation detected in the participant's responses (1-2 sentences, or 'none detected')"
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-5",
+    messages: [
+      { 
+        role: "system", 
+        content: "You are an expert at analyzing personal growth coaching sessions. Extract psychological insights about the participant based on both their explicit statements and implicit patterns in their engagement. Always respond with valid JSON only." 
+      },
+      { role: "user", content: prompt }
+    ],
+    response_format: { type: "json_object" },
+    max_completion_tokens: 300,
+    temperature: 0.3,
+  });
+
+  const content = response.choices[0].message.content;
+  if (!content) {
+    return {
+      challenge: "none identified",
+      emotionalTone: "neutral",
+      insight: "none yet",
+      resistance: "none detected"
+    };
+  }
+
+  try {
+    return JSON.parse(content) as DaySummary;
+  } catch {
+    return {
+      challenge: "none identified",
+      emotionalTone: "neutral",
+      insight: "none yet",
+      resistance: "none detected"
+    };
+  }
 }

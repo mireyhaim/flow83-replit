@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary } from "./ai";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -448,9 +448,54 @@ export async function registerRoutes(
       
       const steps = await storage.getJourneySteps(journeyId);
       const totalDays = steps.length || 7;
+      const currentStep = steps.find(s => s.dayNumber === dayNumber);
       
       const nextDay = Math.min(dayNumber + 1, totalDays + 1);
       const isJourneyComplete = nextDay > totalDays;
+      
+      // PRD 7.2 - Generate user summary at day completion
+      if (currentStep) {
+        try {
+          const allMessages = await storage.getMessages(id, currentStep.id);
+          
+          // Filter out any existing summary messages to avoid feedback loops
+          const messages = allMessages.filter(m => !m.isSummary);
+          
+          // Get actual mentor name from journey creator
+          const journey = await storage.getJourney(journeyId);
+          const mentor = journey?.creatorId ? await storage.getUser(journey.creatorId) : null;
+          
+          // Mentor name is required for personalization - use journey name as backup context
+          const mentorName = mentor?.firstName 
+            ? `${mentor.firstName}${mentor.lastName ? ' ' + mentor.lastName : ''}`
+            : journey?.name || "Guide";
+          
+          // Convert messages to structured conversation format
+          const conversation = messages.map(m => ({
+            role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+            content: m.content,
+          }));
+          
+          if (conversation.length > 0) {
+            const summary = await generateDaySummary({
+              conversation,
+              dayGoal: currentStep.goal || currentStep.description || "Day goal",
+              dayTask: currentStep.task || "Day task",
+              mentorName,
+            });
+            
+            // Store the summary in day state
+            await storage.completeDayState(id, dayNumber, {
+              summaryChallenge: summary.challenge,
+              summaryEmotionalTone: summary.emotionalTone,
+              summaryInsight: summary.insight,
+              summaryResistance: summary.resistance,
+            });
+          }
+        } catch (summaryError) {
+          console.error("Failed to generate day summary:", summaryError);
+        }
+      }
       
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
@@ -741,22 +786,35 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      const blocks = await storage.getJourneyBlocks(stepId);
+      // Get mentor info for PRD-compliant context
+      const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
+      const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() || "Your Guide" : "Your Guide";
+      const totalDays = journey.duration || 7;
 
+      // PRD-compliant context for day opening
       const openingMessage = await generateDayOpeningMessage({
         journeyName: journey.name,
-        dayTitle: step.title,
-        dayDescription: step.description || "",
         dayNumber: step.dayNumber,
-        mentorBlocks: blocks.map(b => ({ type: b.type, content: b.content })),
+        totalDays,
+        dayTitle: step.title,
+        dayGoal: step.goal || step.description || "Focus on today's growth",
+        dayTask: step.task || "Complete today's exercise",
+        dayExplanation: step.explanation || undefined,
+        mentorName,
+        mentorToneOfVoice: mentor?.toneOfVoice || undefined,
+        mentorMethodDescription: mentor?.methodDescription || undefined,
+        mentorBehavioralRules: mentor?.behavioralRules || undefined,
       });
 
       const message = await storage.createMessage({
         participantId,
         stepId,
-        role: "bot",
+        role: "assistant",
         content: openingMessage,
       });
+
+      // Track day state
+      await storage.createOrUpdateDayState(participantId, step.dayNumber);
 
       res.json([message]);
     } catch (error) {
@@ -797,17 +855,42 @@ export async function registerRoutes(
         content: content.trim(),
       });
 
-      const blocks = await storage.getJourneyBlocks(stepId);
+      // PRD 7.1 - Get only last 5 messages for short-term memory
       const history = await storage.getMessages(participantId, stepId);
+      const recentMessages = history.slice(-5).map(m => ({ 
+        role: m.role === "assistant" ? "assistant" : "user", 
+        content: m.content 
+      }));
 
+      // Get mentor info for PRD-compliant context
+      const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
+      const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() || "Your Guide" : "Your Guide";
+      const totalDays = journey.duration || 7;
+
+      // PRD 7.2 - Get user summary from previous days (long-term memory)
+      const previousDaySummary = await storage.getLatestDaySummary(participantId, step.dayNumber - 1);
+
+      // PRD-compliant chat context
       const botResponse = await generateChatResponse(
         {
           journeyName: journey.name,
-          dayTitle: step.title,
-          dayDescription: step.description || "",
           dayNumber: step.dayNumber,
-          mentorBlocks: blocks.map(b => ({ type: b.type, content: b.content })),
-          messageHistory: history.map(m => ({ role: m.role, content: m.content })),
+          totalDays,
+          dayTitle: step.title,
+          dayGoal: step.goal || step.description || "Focus on today's growth",
+          dayTask: step.task || "Complete today's exercise",
+          dayExplanation: step.explanation || undefined,
+          mentorName,
+          mentorToneOfVoice: mentor?.toneOfVoice || undefined,
+          mentorMethodDescription: mentor?.methodDescription || undefined,
+          mentorBehavioralRules: mentor?.behavioralRules || undefined,
+          recentMessages,
+          userSummary: previousDaySummary ? {
+            challenge: previousDaySummary.summaryChallenge || undefined,
+            emotionalTone: previousDaySummary.summaryEmotionalTone || undefined,
+            insight: previousDaySummary.summaryInsight || undefined,
+            resistance: previousDaySummary.summaryResistance || undefined,
+          } : undefined,
         },
         content.trim()
       );
@@ -815,7 +898,7 @@ export async function registerRoutes(
       const botMessage = await storage.createMessage({
         participantId,
         stepId,
-        role: "bot",
+        role: "assistant",
         content: botResponse,
       });
 

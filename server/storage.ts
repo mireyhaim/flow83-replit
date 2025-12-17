@@ -7,7 +7,8 @@ import {
   type JourneyMessage, type InsertJourneyMessage,
   type ActivityEvent, type InsertActivityEvent,
   type NotificationSettings, type InsertNotificationSettings,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings
+  type UserDayState, type InsertUserDayState,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or } from "drizzle-orm";
@@ -53,6 +54,12 @@ export interface IStorage {
 
   getNotificationSettings(userId: string): Promise<NotificationSettings | undefined>;
   upsertNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings>;
+
+  // Day state tracking (PRD 5, 6.6)
+  createOrUpdateDayState(participantId: string, dayNumber: number): Promise<UserDayState>;
+  completeDayState(participantId: string, dayNumber: number, summary: Partial<InsertUserDayState>): Promise<UserDayState | undefined>;
+  getLatestDaySummary(participantId: string, maxDayNumber: number): Promise<UserDayState | undefined>;
+  getDayState(participantId: string, dayNumber: number): Promise<UserDayState | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -280,6 +287,63 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return result;
+  }
+
+  // PRD Day State tracking methods
+  async createOrUpdateDayState(participantId: string, dayNumber: number): Promise<UserDayState> {
+    const existing = await this.getDayState(participantId, dayNumber);
+    if (existing) {
+      return existing;
+    }
+    const [state] = await db.insert(userDayState).values({
+      participantId,
+      dayNumber,
+    }).returning();
+    return state;
+  }
+
+  async completeDayState(participantId: string, dayNumber: number, summary: Partial<InsertUserDayState>): Promise<UserDayState | undefined> {
+    const [updated] = await db
+      .update(userDayState)
+      .set({
+        completedAt: new Date(),
+        summaryChallenge: summary.summaryChallenge,
+        summaryEmotionalTone: summary.summaryEmotionalTone,
+        summaryInsight: summary.summaryInsight,
+        summaryResistance: summary.summaryResistance,
+      })
+      .where(and(
+        eq(userDayState.participantId, participantId),
+        eq(userDayState.dayNumber, dayNumber)
+      ))
+      .returning();
+    return updated;
+  }
+
+  async getLatestDaySummary(participantId: string, maxDayNumber: number): Promise<UserDayState | undefined> {
+    if (maxDayNumber < 1) return undefined;
+    
+    const [state] = await db
+      .select()
+      .from(userDayState)
+      .where(and(
+        eq(userDayState.participantId, participantId),
+        lt(userDayState.dayNumber, maxDayNumber + 1)
+      ))
+      .orderBy(desc(userDayState.dayNumber))
+      .limit(1);
+    return state;
+  }
+
+  async getDayState(participantId: string, dayNumber: number): Promise<UserDayState | undefined> {
+    const [state] = await db
+      .select()
+      .from(userDayState)
+      .where(and(
+        eq(userDayState.participantId, participantId),
+        eq(userDayState.dayNumber, dayNumber)
+      ));
+    return state;
   }
 }
 

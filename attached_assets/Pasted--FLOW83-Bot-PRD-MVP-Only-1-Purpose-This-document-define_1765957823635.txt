@@ -1,0 +1,269 @@
+# FLOW83 – Bot PRD (MVP Only)
+
+## 1. Purpose
+
+This document defines the functional and technical requirements for the **FLOW83 AI Bot**, responsible for guiding users through structured personal-growth journeys (3-day or 7-day) created from mentor-provided content.
+
+The bot is **not a free chat assistant**. It is a **stateful process engine** that operates strictly within a predefined journey structure.
+
+---
+
+## 2. Core Principles
+
+### 2.1 What the Bot IS
+
+* A guided AI companion inside a deterministic journey
+* Context-aware (user, journey, day, progress)
+* Emotionally intelligent but structurally constrained
+* Memory-aware through summaries, not raw chat logs
+
+### 2.2 What the Bot IS NOT
+
+* ❌ Not ChatGPT-style free conversation
+* ❌ Not allowed to invent content beyond the current day
+* ❌ Not allowed to introduce new topics
+* ❌ Not allowed to give therapy, diagnosis, or advice outside the mentor’s method
+* ❌ Not allowed to answer with long explanations or essays
+
+---
+
+## 3. Supported Journeys (MVP Scope)
+
+* Journey duration: **3 days or 7 days only**
+* Journey structure is generated once and stored
+* No editing after creation (MVP constraint)
+
+Each journey is composed of ordered days.
+
+---
+
+## 4. Journey Day Structure
+
+Each day contains:
+
+* **Goal** – emotional or cognitive intention of the day
+* **Explanation** – short guidance aligned with mentor method
+* **Task** – one actionable exercise or reflection
+
+The bot may only operate within the current day’s scope.
+
+---
+
+## 5. User Awareness & State Management
+
+The bot must always know:
+
+* Who the user is (authenticated user_id)
+* Which journey the user is enrolled in
+* Which day the user is currently on
+* Whether the day has started or completed
+* What the user has already expressed (via summaries)
+
+All state is persisted in the database.
+
+---
+
+## 6. Required Data Models (Logical Level)
+
+### 6.1 Mentor
+
+* mentor_id
+* name
+* tone_of_voice
+* method_description
+* behavioral_rules (do / don’t)
+
+### 6.2 Journey
+
+* journey_id
+* mentor_id
+* duration (3 | 7)
+* generation_prompt_version
+
+### 6.3 JourneyDay
+
+* day_id
+* journey_id
+* day_number
+* goal
+* explanation
+* task
+
+### 6.4 User
+
+* user_id
+* name
+* email
+
+### 6.5 UserJourney
+
+* user_journey_id
+* user_id
+* journey_id
+* current_day
+* status (active / completed)
+
+### 6.6 UserDayState
+
+* user_day_state_id
+* user_journey_id
+* day_number
+* started_at
+* completed_at
+
+### 6.7 UserMessages
+
+* message_id
+* user_journey_id
+* day_number
+* role (user / assistant)
+* content
+* is_summary (boolean)
+
+---
+
+## 7. Memory Strategy
+
+### 7.1 Short-Term Memory
+
+* Last 3–5 user/assistant messages
+* Used only for conversational flow
+
+### 7.2 Long-Term Memory (Mandatory)
+
+At meaningful points (end of task / day), the system must generate and store a **user summary**:
+
+Summary structure:
+
+* Main challenge
+* Emotional tone
+* Insight reached
+* Resistance or blockage detected
+
+Only summaries are reused in future AI calls.
+
+❌ Raw historical messages must NOT be resent to the model.
+
+---
+
+## 8. OpenAI Prompt Architecture
+
+### 8.1 System Prompt (Static)
+
+"You are an AI guide inside a structured personal growth journey.
+You must:
+
+* Follow the mentor’s tone and method
+* Respond only according to the current day goal
+* Never introduce new topics
+* Keep responses concise (max 120 words)
+* Ask at most one question per response"
+
+### 8.2 Dynamic Prompt (Per Request)
+
+* Mentor method summary
+* Journey metadata (day X of Y)
+* Current day goal
+* Current day task
+* User summary (if exists)
+* Last user message only
+
+❌ Do NOT include:
+
+* Full journey content
+* Previous days’ tasks
+* Full chat history
+
+---
+
+## 9. Response Constraints
+
+### 9.1 Length Control
+
+* Max tokens: 150–200
+* Target response length: 60–120 words
+
+### 9.2 Style Rules
+
+* Calm, human, supportive
+* Clear structure
+* No over-explaining
+* No lists longer than 3 items
+
+### 9.3 Question Rules
+
+* Max one question per response
+* Question must relate directly to today’s task
+
+---
+
+## 10. OpenAI API Configuration (MVP)
+
+* model: GPT-5.x (or configured default)
+* temperature: 0.6–0.7
+* max_tokens: 150–200
+* frequency_penalty: ~0.5
+
+---
+
+## 11. Invocation Rules (Cost & Traffic Control)
+
+The bot may call OpenAI only when:
+
+* A new day starts
+* The user submits a task response
+* A summary needs to be generated
+
+❌ The bot must NOT call OpenAI:
+
+* On every keystroke
+* For static content
+* For navigation or UI actions
+
+---
+
+## 12. Caching & Reuse
+
+* Generated journeys are cached permanently
+* Mentor method summaries are cached
+* System prompts are static and reused
+
+---
+
+## 13. Error & Boundary Handling
+
+If the user:
+
+* Asks something unrelated → gently redirect to today’s task
+* Tries to jump days → explain the process and stay in current day
+* Requests advice outside scope → decline politely
+
+---
+
+## 14. Key Design Statement
+
+"The AI is not thinking freely. It is operating inside a deterministic journey with controlled memory."
+
+---
+
+## 15. Explicit Do NOT List (Critical)
+
+* ❌ Do not send full DB records to OpenAI
+* ❌ Do not send full chat history
+* ❌ Do not allow AI to choose the journey structure
+* ❌ Do not allow AI to advance the day autonomously
+* ❌ Do not allow verbose responses
+* ❌ Do not let AI store memory by itself (system-controlled only)
+
+---
+
+## 16. MVP Limitations (Intentional)
+
+* No journey editing after creation
+* No branching logic between days
+* No personalization beyond summaries
+* No multi-journey per user
+
+---
+
+End of Document
