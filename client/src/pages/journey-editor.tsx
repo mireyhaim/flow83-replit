@@ -29,7 +29,7 @@ const JourneyEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [publishStep, setPublishStep] = useState<1 | 2>(1);
   const [publishPrice, setPublishPrice] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
@@ -136,11 +136,10 @@ const JourneyEditorPage = () => {
     if (!journeyData) return;
     
     if (journeyData.status === "published") {
-      // If already published, just unpublish
       handleUnpublish();
     } else {
-      // Show the publish modal with pricing
       setPublishPrice(journeyData.price?.toString() || "0");
+      setPublishStep(1);
       setShowPublishModal(true);
     }
   };
@@ -169,7 +168,6 @@ const JourneyEditorPage = () => {
   const handleConfirmPublish = async () => {
     if (!journeyData) return;
     setIsPublishing(true);
-    setShowPublishModal(false);
     
     const priceValue = parseFloat(publishPrice) || 0;
     
@@ -180,7 +178,7 @@ const JourneyEditorPage = () => {
         currency: "USD"
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
-      setShowSuccessModal(true);
+      setPublishStep(2);
     } catch (error) {
       toast({
         title: "Error",
@@ -537,133 +535,151 @@ const JourneyEditorPage = () => {
         )}
       </main>
 
-      {/* Publish Modal - Pricing */}
+      {/* Publish Modal - 2 Steps */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Publish Your Flow</DialogTitle>
-            <DialogDescription className="text-white/60">
-              Set a price for your flow. Clients will be able to purchase it through the link that will be created.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            <div className="space-y-3">
-              <Label className="text-white/80">Price (in USD)</Label>
-              <div className="relative">
-                <Input
-                  type="number"
-                  min="0"
-                  value={publishPrice}
-                  onChange={(e) => setPublishPrice(e.target.value)}
-                  placeholder="0"
-                  className="bg-white/5 border-white/20 text-white text-2xl text-center h-16"
-                  data-testid="input-publish-price"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">$</span>
-              </div>
-              <p className="text-sm text-white/40 text-center">
-                {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to join`}
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowPublishModal(false)}
-                className="flex-1 border-white/20 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmPublish}
-                disabled={isPublishing}
-                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
-                data-testid="button-confirm-publish"
-              >
-                {isPublishing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Globe className="w-4 h-4 mr-2" />
-                    Publish Now
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Success Modal - Share Link */}
-      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
         <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[90vw] max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <CheckCircle className="w-6 h-6 text-emerald-400" />
-              Flow Published Successfully!
-            </DialogTitle>
-            <DialogDescription className="text-white/60">
-              Your link is ready to share with clients
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-5 py-4">
-            <div className="space-y-3">
-              <Label className="text-white/80 text-sm">Your shareable link</Label>
-              <div 
-                onClick={handleCopyLink}
-                className="w-full bg-white/5 border border-white/20 rounded-lg p-3 cursor-pointer hover:bg-white/10 transition-colors"
-                data-testid="button-copy-link"
-              >
-                <p className="text-xs text-white/80 break-all leading-relaxed">
-                  {getShareableLink()}
-                </p>
+          {/* Step Indicator */}
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                {publishStep > 1 ? <Check className="w-4 h-4" /> : '1'}
               </div>
-              <Button
-                onClick={handleCopyLink}
-                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2 text-emerald-400" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
+              <span className={`text-sm ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
             </div>
-
-            <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
-              <p className="text-sm text-white/70">
-                <strong className="text-white">What's next?</strong><br />
-                Share this link with your clients. They'll see the flow landing page, can purchase (if priced), and begin their journey.
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowSuccessModal(false)}
-                className="flex-1 border-white/20 text-white hover:bg-white/10"
-              >
-                Close
-              </Button>
-              <Button
-                onClick={() => window.open(getShareableLink(), '_blank')}
-                variant="outline"
-                className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10"
-                data-testid="button-view-landing"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                View Page
-              </Button>
+            <div className={`w-12 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                2
+              </div>
+              <span className={`text-sm ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Share</span>
             </div>
           </div>
+
+          {publishStep === 1 ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold">Publish Your Flow</DialogTitle>
+                <DialogDescription className="text-white/60">
+                  Set a price for your flow
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-4">
+                <div className="space-y-3">
+                  <Label className="text-white/80">Price (in USD)</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={publishPrice}
+                      onChange={(e) => setPublishPrice(e.target.value)}
+                      placeholder="0"
+                      className="bg-white/5 border-white/20 text-white text-2xl text-center h-16"
+                      data-testid="input-publish-price"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">$</span>
+                  </div>
+                  <p className="text-sm text-white/40 text-center">
+                    {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to join`}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPublishModal(false)}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmPublish}
+                    disabled={isPublishing}
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                    data-testid="button-confirm-publish"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Globe className="w-4 h-4 mr-2" />
+                        Publish Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                  <CheckCircle className="w-6 h-6 text-emerald-400" />
+                  Flow Published!
+                </DialogTitle>
+                <DialogDescription className="text-white/60">
+                  Your link is ready to share with clients
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-5 py-4">
+                <div className="space-y-3">
+                  <Label className="text-white/80 text-sm">Your shareable link</Label>
+                  <div 
+                    onClick={handleCopyLink}
+                    className="w-full bg-white/5 border border-white/20 rounded-lg p-3 cursor-pointer hover:bg-white/10 transition-colors"
+                    data-testid="button-copy-link"
+                  >
+                    <p className="text-xs text-white/80 break-all leading-relaxed">
+                      {getShareableLink()}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleCopyLink}
+                    className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2 text-emerald-400" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
+                  <p className="text-sm text-white/70">
+                    <strong className="text-white">What's next?</strong><br />
+                    Share this link with your clients. They'll see the flow landing page, can purchase (if priced), and begin their journey.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPublishModal(false)}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => window.open(getShareableLink(), '_blank')}
+                    variant="outline"
+                    className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10"
+                    data-testid="button-view-landing"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Page
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
