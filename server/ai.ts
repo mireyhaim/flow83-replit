@@ -87,7 +87,7 @@ Respond in JSON format:
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
@@ -223,7 +223,7 @@ USER CONTEXT (from previous sessions):`;
   }));
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages,
     max_tokens: 200, // PRD 9.1 - max tokens 150-200
   });
@@ -275,7 +275,7 @@ Respond in JSON format:
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
@@ -325,7 +325,7 @@ Write a personal opening message for this day. The message should:
 - CRITICAL: Respond in the same language as the journey content above (match the language of the goal and task)`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: "Open this day for me" },
@@ -384,7 +384,7 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages: [
       { 
         role: "system", 
