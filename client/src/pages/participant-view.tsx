@@ -144,13 +144,13 @@ export default function ParticipantView() {
 
   if (!journeyId) {
     return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-violet-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-violet-400" />
+          <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-violet-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">No Flow Available</h2>
-          <p className="text-white/60 mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Flow Available</h2>
+          <p className="text-gray-500 mb-4">
             {!tokenFromRoute 
               ? "No published flows are available yet. Check back soon!" 
               : "This flow could not be found."}
@@ -165,10 +165,10 @@ export default function ParticipantView() {
 
   if (journeyLoading || participantLoading) {
     return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
-          <p className="text-white/60">Loading your journey...</p>
+          <p className="text-gray-500">Loading your journey...</p>
         </div>
       </div>
     );
@@ -176,9 +176,9 @@ export default function ParticipantView() {
 
   if (!journey || !participant) {
     return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-white/60 mb-4">Flow not found</p>
+          <p className="text-gray-500 mb-4">Flow not found</p>
           <Link href="/dashboard">
             <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
           </Link>
@@ -189,7 +189,7 @@ export default function ParticipantView() {
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -206,24 +206,24 @@ export default function ParticipantView() {
             />
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-2">Flow Complete!</h1>
-          <p className="text-white/60 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Flow Complete!</h1>
+          <p className="text-gray-500 mb-6">
             Congratulations on completing "{journey.name}"
           </p>
           
-          <div className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/10">
+          <div className="bg-white rounded-2xl p-6 mb-6 border border-gray-200 shadow-lg">
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-violet-400">{totalDays}</div>
-                <div className="text-xs text-white/40">Days</div>
+                <div className="text-2xl font-bold text-violet-600">{totalDays}</div>
+                <div className="text-xs text-gray-500">Days</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">{xpPoints + 100}</div>
-                <div className="text-xs text-white/40">XP Earned</div>
+                <div className="text-2xl font-bold text-yellow-500">{xpPoints + 100}</div>
+                <div className="text-xs text-gray-500">XP Earned</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">{totalDays}</div>
-                <div className="text-xs text-white/40">Streak</div>
+                <div className="text-2xl font-bold text-orange-500">{totalDays}</div>
+                <div className="text-xs text-gray-500">Streak</div>
               </div>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function ParticipantView() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f23] flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (
@@ -247,7 +247,7 @@ export default function ParticipantView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm"
           >
             <motion.div 
               initial={{ scale: 0, rotate: -10 }}
@@ -258,8 +258,8 @@ export default function ParticipantView() {
               <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-emerald-500/50">
                 <CheckCircle2 className="w-12 h-12 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-1">Day Complete!</h2>
-              <p className="text-emerald-400 font-semibold">+100 XP</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Day Complete!</h2>
+              <p className="text-emerald-600 font-semibold">+100 XP</p>
             </motion.div>
           </motion.div>
         )}
@@ -268,63 +268,63 @@ export default function ParticipantView() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-[#0a0a1a] border-r border-white/5 flex flex-col transition-transform duration-300 lg:translate-x-0",
+          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 lg:translate-x-0 shadow-lg lg:shadow-none",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Sidebar header */}
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
                 F
               </div>
               <div>
-                <h1 className="font-bold text-white text-sm truncate max-w-[150px]">{journey.name}</h1>
-                <p className="text-xs text-white/40">Day {currentDay} of {totalDays}</p>
+                <h1 className="font-bold text-gray-900 text-sm truncate max-w-[150px]">{journey.name}</h1>
+                <p className="text-xs text-gray-500">Day {currentDay} of {totalDays}</p>
               </div>
             </div>
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-white/60" />
+              <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
         </div>
 
         {/* Stats summary */}
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-gray-100">
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-orange-500/10 rounded-xl p-3 border border-orange-500/20">
+            <div className="bg-orange-50 rounded-xl p-3 border border-orange-200">
               <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <span className="text-xs text-white/60">Streak</span>
+                <Flame className="w-4 h-4 text-orange-500" />
+                <span className="text-xs text-gray-500">Streak</span>
               </div>
-              <span className="text-lg font-bold text-white">{streak}</span>
+              <span className="text-lg font-bold text-gray-900">{streak}</span>
             </div>
-            <div className="bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20">
+            <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
               <div className="flex items-center gap-2 mb-1">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span className="text-xs text-white/60">XP</span>
+                <Star className="w-4 h-4 text-yellow-500" />
+                <span className="text-xs text-gray-500">XP</span>
               </div>
-              <span className="text-lg font-bold text-white">{xpPoints}</span>
+              <span className="text-lg font-bold text-gray-900">{xpPoints}</span>
             </div>
           </div>
         </div>
 
         {/* Progress */}
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-white/60">Progress</span>
-            <span className="text-xs font-bold text-violet-400">{progressPercent}%</span>
+            <span className="text-xs text-gray-500">Progress</span>
+            <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2 bg-white/10" />
+          <Progress value={progressPercent} className="h-2 bg-gray-200" />
         </div>
 
         {/* Days navigation */}
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-xs text-white/40 uppercase tracking-wider mb-3 px-2">Your Journey</div>
+          <div className="text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Your Journey</div>
           <div className="space-y-1">
             {sortedSteps.map((step) => {
               const isPast = step.dayNumber < currentDay;
@@ -336,36 +336,36 @@ export default function ParticipantView() {
                   key={step.id}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer",
-                    isCurrent && "bg-violet-600/20 border border-violet-500/30",
-                    isPast && "opacity-60 hover:opacity-80",
+                    isCurrent && "bg-violet-50 border border-violet-200",
+                    isPast && "opacity-70 hover:opacity-100 hover:bg-gray-50",
                     isFuture && "opacity-40 cursor-not-allowed"
                   )}
                   data-testid={`sidebar-day-${step.dayNumber}`}
                 >
                   <div className={cn(
                     "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
-                    isPast && "bg-emerald-500/20 text-emerald-400",
+                    isPast && "bg-emerald-100 text-emerald-600",
                     isCurrent && "bg-violet-600 text-white",
-                    isFuture && "bg-white/10 text-white/40"
+                    isFuture && "bg-gray-100 text-gray-400"
                   )}>
                     {isPast ? <CheckCircle2 className="w-4 h-4" /> : step.dayNumber}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className={cn(
                       "text-sm font-medium truncate",
-                      isCurrent ? "text-white" : "text-white/60"
+                      isCurrent ? "text-gray-900" : "text-gray-600"
                     )}>
                       {step.title || `Day ${step.dayNumber}`}
                     </div>
                     {isCurrent && (
-                      <div className="text-xs text-violet-400">In progress</div>
+                      <div className="text-xs text-violet-600">In progress</div>
                     )}
                     {isPast && (
-                      <div className="text-xs text-emerald-400">Completed</div>
+                      <div className="text-xs text-emerald-600">Completed</div>
                     )}
                   </div>
                   {isCurrent && (
-                    <ChevronRight className="w-4 h-4 text-violet-400 shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-violet-600 shrink-0" />
                   )}
                 </div>
               );
@@ -374,11 +374,11 @@ export default function ParticipantView() {
         </div>
 
         {/* Sidebar footer */}
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-gray-100">
           <Link href="/dashboard">
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-white/60 hover:text-white hover:bg-white/5"
+              className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <Home className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -390,7 +390,7 @@ export default function ParticipantView() {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -398,32 +398,32 @@ export default function ParticipantView() {
       {/* Main content */}
       <main className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 bg-[#0f0f23]/80 backdrop-blur-sm sticky top-0 z-30">
+        <header className="h-16 border-b border-gray-200 flex items-center justify-between px-4 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <Menu className="w-5 h-5 text-white/60" />
+              <Menu className="w-5 h-5 text-gray-500" />
             </button>
             <div className="hidden sm:block">
-              <h2 className="text-lg font-semibold text-white" data-testid="text-step-title">
+              <h2 className="text-lg font-semibold text-gray-900" data-testid="text-step-title">
                 {currentStep?.title || `Day ${currentDay}`}
               </h2>
-              <p className="text-xs text-white/40" data-testid="text-day-progress">
+              <p className="text-xs text-gray-500" data-testid="text-day-progress">
                 Day {currentDay} of {totalDays}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
-              <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-sm font-bold text-orange-400">{streak}</span>
+            <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-bold text-orange-600">{streak}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20">
-              <Star className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-bold text-yellow-400">{xpPoints}</span>
+            <div className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-bold text-yellow-600">{xpPoints}</span>
             </div>
           </div>
         </header>
@@ -433,29 +433,29 @@ export default function ParticipantView() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
             {/* Day context card */}
-            <div className="bg-gradient-to-r from-violet-600/10 to-fuchsia-600/10 rounded-2xl p-5 border border-violet-500/20 mb-6">
+            <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-2xl p-5 border border-violet-200 mb-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0">
                   {currentDay}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-white mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {currentStep?.title || `Day ${currentDay}`}
                   </h3>
                   {currentStep?.goal && (
-                    <div className="flex items-center gap-2 text-sm text-white/60 mb-2">
-                      <Target className="w-4 h-4 text-violet-400 shrink-0" />
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                      <Target className="w-4 h-4 text-violet-600 shrink-0" />
                       <span>{currentStep.goal}</span>
                     </div>
                   )}
                   {currentStep?.task && (
-                    <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2">
+                    <div className="flex items-center gap-2 text-sm text-emerald-600 mb-2">
                       <Zap className="w-4 h-4 shrink-0" />
                       <span>{currentStep.task}</span>
                     </div>
                   )}
                   {currentStep?.explanation && (
-                    <p className="text-sm text-white/50 mt-3 pt-3 border-t border-white/10">
+                    <p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-200">
                       {currentStep.explanation}
                     </p>
                   )}
@@ -466,27 +466,27 @@ export default function ParticipantView() {
             {/* Achievements section */}
             <div className="flex flex-wrap gap-2 mb-4">
               {completedDays >= 1 && (
-                <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
-                  <Award className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-medium text-emerald-400">First Step</span>
+                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+                  <Award className="w-4 h-4 text-emerald-500" />
+                  <span className="text-xs font-medium text-emerald-600">First Step</span>
                 </div>
               )}
               {streak >= 3 && (
-                <div className="flex items-center gap-2 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  <span className="text-xs font-medium text-orange-400">3-Day Streak</span>
+                <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs font-medium text-orange-600">3-Day Streak</span>
                 </div>
               )}
               {xpPoints >= 300 && (
-                <div className="flex items-center gap-2 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20">
-                  <Star className="w-4 h-4 text-yellow-400" />
-                  <span className="text-xs font-medium text-yellow-400">XP Master</span>
+                <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span className="text-xs font-medium text-yellow-600">XP Master</span>
                 </div>
               )}
               {completedDays >= Math.floor(totalDays / 2) && (
-                <div className="flex items-center gap-2 bg-violet-500/10 px-3 py-1.5 rounded-full border border-violet-500/20">
-                  <TrendingUp className="w-4 h-4 text-violet-400" />
-                  <span className="text-xs font-medium text-violet-400">Halfway There</span>
+                <div className="flex items-center gap-2 bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200">
+                  <TrendingUp className="w-4 h-4 text-violet-500" />
+                  <span className="text-xs font-medium text-violet-600">Halfway There</span>
                 </div>
               )}
             </div>
@@ -521,7 +521,7 @@ export default function ParticipantView() {
                       "max-w-[70%] p-4 rounded-2xl text-sm leading-relaxed",
                       msg.role === "user" 
                         ? "bg-violet-600 text-white rounded-br-sm" 
-                        : "bg-[#1a1a2e] text-white/90 border border-white/5 rounded-bl-sm"
+                        : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm"
                     )}
                   >
                     <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -544,11 +544,11 @@ export default function ParticipantView() {
                 <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center shrink-0">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl rounded-bl-sm p-4">
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm p-4 shadow-sm">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                    <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
                   </div>
                 </div>
               </motion.div>
@@ -556,7 +556,7 @@ export default function ParticipantView() {
           </div>
 
           {/* Input area */}
-          <div className="border-t border-white/5 p-4 bg-[#0f0f23]/80 backdrop-blur-sm">
+          <div className="border-t border-gray-200 p-4 bg-white/80 backdrop-blur-sm">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
               className="flex gap-3 max-w-3xl mx-auto"
@@ -566,7 +566,7 @@ export default function ParticipantView() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="Type your message..."
-                  className="w-full rounded-xl bg-[#1a1a2e] border-white/10 text-white placeholder:text-white/30 focus-visible:ring-violet-500 pr-12 py-6"
+                  className="w-full rounded-xl bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
                   disabled={isSending}
                   data-testid="input-chat"
                 />
