@@ -633,6 +633,22 @@ export default function ParticipantView() {
           </div>
         </div>
 
+        {/* Feedback button at bottom of sidebar */}
+        <div className="p-4 border-t border-white/10">
+          <button
+            onClick={() => {
+              setCompletedDayNumber(currentDay);
+              setShowFeedbackModal(true);
+              setFeedbackRating(0);
+              setFeedbackComment("");
+            }}
+            className="w-full flex items-center justify-center gap-2 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-sm"
+            data-testid="button-open-feedback"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Share Feedback
+          </button>
+        </div>
       </aside>
 
       {/* Mobile sidebar overlay */}
