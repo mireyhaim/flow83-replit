@@ -296,7 +296,8 @@ export default function JourneyLandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 lp-animate-fade-up lp-animation-delay-600">
               <Button 
                 size="lg"
-                className="text-lg px-10 py-6 lp-bg-sage-light lp-text-sage hover:opacity-80 rounded-full border-0"
+                className="text-lg px-10 py-6 rounded-full border-0"
+                style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}
                 onClick={handleStartJourney}
                 data-testid="button-start-journey"
               >
@@ -305,7 +306,8 @@ export default function JourneyLandingPage() {
               <Button 
                 size="lg"
                 variant="outline"
-                className="text-lg px-10 py-6 bg-white lp-text-earth hover:bg-gray-50 rounded-full border border-gray-200"
+                className="text-lg px-10 py-6 rounded-full"
+                style={{ backgroundColor: 'white', color: 'hsl(25 20% 20%)', borderColor: '#e5e7eb' }}
                 onClick={() => document.getElementById("audience")?.scrollIntoView({ behavior: "smooth" })}
               >
                 Learn More
@@ -469,7 +471,8 @@ export default function JourneyLandingPage() {
                 </p>
                 <Button 
                   size="lg"
-                  className="lp-bg-sage-light lp-text-sage hover:opacity-80 rounded-full group border-0"
+                  className="rounded-full group border-0"
+                  style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}
                   onClick={handleStartJourney}
                 >
                   Start Your Transformation
@@ -583,7 +586,8 @@ export default function JourneyLandingPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                   <Button 
                     size="lg"
-                    className="text-lg px-10 py-6 lp-bg-sage-light lp-text-sage hover:opacity-80 rounded-full border-0 group"
+                    className="text-lg px-10 py-6 rounded-full border-0 group"
+                    style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}
                     onClick={handleStartJourney}
                     data-testid="button-start-journey-bottom"
                   >
@@ -593,7 +597,8 @@ export default function JourneyLandingPage() {
                   <Button 
                     size="lg"
                     variant="outline"
-                    className="text-lg px-10 py-6 bg-white lp-text-earth hover:bg-gray-50 rounded-full border border-gray-200"
+                    className="text-lg px-10 py-6 rounded-full"
+                    style={{ backgroundColor: 'white', color: 'hsl(25 20% 20%)', borderColor: '#e5e7eb' }}
                     onClick={() => window.location.href = `mailto:?subject=Question about ${journey.name}`}
                   >
                     Ask a Question
@@ -638,7 +643,8 @@ export default function JourneyLandingPage() {
                       <p className="text-red-500 text-sm text-center lp-font-body">{error}</p>
                     )}
                     <Button 
-                      className="w-full lp-bg-sage-light lp-text-sage hover:opacity-80 py-6 border-0"
+                      className="w-full py-6 border-0"
+                      style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}
                       onClick={handleJoin}
                       disabled={!email || joinMutation.isPending}
                       data-testid="button-join"
