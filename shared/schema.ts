@@ -222,3 +222,24 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
+
+// Participant feedback for journeys
+export const journeyFeedback = pgTable("journey_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "set null" }),
+  dayNumber: integer("day_number"), // null for overall journey feedback
+  rating: integer("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  feedbackType: text("feedback_type").default("day"), // 'day' | 'final' | 'general'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertJourneyFeedbackSchema = createInsertSchema(journeyFeedback).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertJourneyFeedback = z.infer<typeof insertJourneyFeedbackSchema>;
+export type JourneyFeedback = typeof journeyFeedback.$inferSelect;

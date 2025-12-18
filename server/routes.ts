@@ -1386,5 +1386,70 @@ export async function registerRoutes(
     }
   });
 
+  // Participant feedback routes
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const { participantId, journeyId, rating, comment, dayNumber, feedbackType } = req.body;
+
+      if (!participantId || !journeyId || !rating) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      if (rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "Rating must be between 1 and 5" });
+      }
+
+      const participant = await storage.getParticipantById(participantId);
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+
+      const journey = await storage.getJourney(journeyId);
+      if (!journey || !journey.creatorId) {
+        return res.status(404).json({ error: "Journey not found" });
+      }
+
+      const feedback = await storage.createFeedback({
+        participantId,
+        journeyId,
+        mentorId: journey.creatorId,
+        rating,
+        comment: comment || null,
+        dayNumber: dayNumber || null,
+        feedbackType: feedbackType || "day",
+      });
+
+      // Create activity event for mentor
+      await storage.createActivityEvent({
+        creatorId: journey.creatorId,
+        participantId,
+        journeyId,
+        eventType: 'feedback',
+        eventData: { 
+          rating,
+          journeyName: journey.name,
+          dayNumber,
+        },
+      });
+
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
+    }
+  });
+
+  // Get feedback for mentor's journeys
+  app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const feedback = await storage.getFeedbackByMentor(userId);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
   return httpServer;
 }

@@ -9,7 +9,8 @@ import {
   type NotificationSettings, type InsertNotificationSettings,
   type UserDayState, type InsertUserDayState,
   type Payment, type InsertPayment,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments
+  type JourneyFeedback, type InsertJourneyFeedback,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or, sum } from "drizzle-orm";
@@ -71,6 +72,11 @@ export interface IStorage {
   getPaymentsByMentor(mentorId: string): Promise<Payment[]>;
   getTotalEarningsByMentor(mentorId: string): Promise<number>;
   getPaymentByStripeSession(stripeSessionId: string): Promise<Payment | undefined>;
+
+  // Participant feedback
+  createFeedback(feedback: InsertJourneyFeedback): Promise<JourneyFeedback>;
+  getFeedbackByMentor(mentorId: string): Promise<JourneyFeedback[]>;
+  getFeedbackByJourney(journeyId: string): Promise<JourneyFeedback[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -402,6 +408,24 @@ export class DatabaseStorage implements IStorage {
     const [payment] = await db.select().from(payments)
       .where(eq(payments.stripeCheckoutSessionId, stripeSessionId));
     return payment;
+  }
+
+  // Feedback methods
+  async createFeedback(feedback: InsertJourneyFeedback): Promise<JourneyFeedback> {
+    const [created] = await db.insert(journeyFeedback).values(feedback).returning();
+    return created;
+  }
+
+  async getFeedbackByMentor(mentorId: string): Promise<JourneyFeedback[]> {
+    return db.select().from(journeyFeedback)
+      .where(eq(journeyFeedback.mentorId, mentorId))
+      .orderBy(desc(journeyFeedback.createdAt));
+  }
+
+  async getFeedbackByJourney(journeyId: string): Promise<JourneyFeedback[]> {
+    return db.select().from(journeyFeedback)
+      .where(eq(journeyFeedback.journeyId, journeyId))
+      .orderBy(desc(journeyFeedback.createdAt));
   }
 }
 
