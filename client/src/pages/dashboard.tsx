@@ -188,8 +188,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3 mb-8">
-            <div className="lg:col-span-2 bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-earnings">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-earnings">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center">
@@ -229,9 +229,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-recent-activity">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 flex items-center justify-center">
@@ -260,8 +258,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-
-            </div>
+          </div>
         </>
       )}
     </DashboardLayout>
