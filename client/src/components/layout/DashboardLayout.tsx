@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, PenTool, LogOut, Plus, User, Bell, Menu, X, MessageCircle } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
