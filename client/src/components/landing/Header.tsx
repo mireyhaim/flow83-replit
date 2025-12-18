@@ -36,7 +36,7 @@ const Header = () => {
             <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10" data-testid="button-header-login">Login</Button>
           </Link>
           <Link href="/dashboard">
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20" data-testid="button-header-get-started">
+            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
               Get Started
             </Button>
           </Link>
@@ -63,7 +63,7 @@ const Header = () => {
               <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">Login</Button>
             </Link>
             <Link href="/dashboard">
-              <Button className="w-full bg-violet-600 hover:bg-violet-700">Get Started</Button>
+              <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
             </Link>
           </div>
         </div>

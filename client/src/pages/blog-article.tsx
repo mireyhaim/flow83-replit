@@ -486,7 +486,7 @@ Maria's $50K income increase wasn't just about using new technology—it was abo
         <main className="container mx-auto px-6 py-16 pt-24 text-center">
           <h1 className="text-2xl font-bold">Article not found</h1>
           <Link href="/blog">
-            <Button className="mt-4">Back to Blog</Button>
+            <Button className="mt-4 bg-violet-600 hover:bg-violet-700 rounded-full">Back to Blog</Button>
           </Link>
         </main>
         <Footer />
