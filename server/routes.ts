@@ -1507,5 +1507,184 @@ export async function registerRoutes(
     }
   });
 
+  // ============== SUBSCRIPTION ROUTES ==============
+  
+  // Create subscription checkout session
+  app.post("/api/subscription/checkout", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { plan } = req.body;
+      
+      if (!plan || !['starter', 'pro', 'business'].includes(plan)) {
+        return res.status(400).json({ error: "Invalid plan" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+      
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const result = await subscriptionService.createSubscriptionCheckout({
+        userId,
+        email: user.email || '',
+        plan,
+        successUrl: `${baseUrl}/dashboard?subscription=success`,
+        cancelUrl: `${baseUrl}/pricing?subscription=canceled`,
+        customerId: user.stripeCustomerId || undefined,
+      });
+
+      res.json({ url: result.url, sessionId: result.sessionId });
+    } catch (error) {
+      console.error("Error creating subscription checkout:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Get customer portal URL for managing subscription
+  app.get("/api/subscription/portal", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeCustomerId) {
+        return res.status(400).json({ error: "No active subscription" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const portalUrl = await subscriptionService.getCustomerPortalUrl(
+        user.stripeCustomerId,
+        `${baseUrl}/dashboard`
+      );
+
+      res.json({ url: portalUrl });
+    } catch (error) {
+      console.error("Error getting portal URL:", error);
+      res.status(500).json({ error: "Failed to get billing portal" });
+    }
+  });
+
+  // Get current user subscription status
+  app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({
+        plan: user.subscriptionPlan || null,
+        status: user.subscriptionStatus || null,
+        trialEndsAt: user.trialEndsAt || null,
+        subscriptionEndsAt: user.subscriptionEndsAt || null,
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ error: "Failed to fetch subscription status" });
+    }
+  });
+
+  // Cancel subscription
+  app.post("/api/subscription/cancel", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.subscriptionId) {
+        return res.status(400).json({ error: "No active subscription" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+      await subscriptionService.cancelSubscription(user.subscriptionId);
+      
+      await storage.upsertUser({
+        id: userId,
+        subscriptionStatus: 'canceling',
+      });
+
+      res.json({ success: true, message: "Subscription will be canceled at end of billing period" });
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
+  // Reactivate canceled subscription
+  app.post("/api/subscription/reactivate", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.subscriptionId) {
+        return res.status(400).json({ error: "No subscription to reactivate" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+      await subscriptionService.reactivateSubscription(user.subscriptionId);
+      
+      await storage.upsertUser({
+        id: userId,
+        subscriptionStatus: 'active',
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reactivating subscription:", error);
+      res.status(500).json({ error: "Failed to reactivate subscription" });
+    }
+  });
+
+  // Subscription webhook handler (no auth - Stripe calls this)
+  app.post("/api/subscription/webhook", async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      if (!sig) {
+        return res.status(400).json({ error: "Missing signature" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+      const { getUncachableStripeClient } = await import('./stripeClient');
+      const stripe = await getUncachableStripeClient();
+      
+      const webhookSecret = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET;
+      if (!webhookSecret) {
+        console.error("Missing STRIPE_SUBSCRIPTION_WEBHOOK_SECRET");
+        return res.status(500).json({ error: "Webhook not configured" });
+      }
+
+      let event;
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } catch (err: any) {
+        console.error("Webhook signature verification failed:", err.message);
+        return res.status(400).json({ error: "Invalid signature" });
+      }
+
+      const result = await subscriptionService.handleSubscriptionWebhook(event);
+      
+      if (result && result.userId) {
+        await storage.upsertUser({
+          id: result.userId,
+          stripeCustomerId: result.customerId,
+          subscriptionId: result.subscriptionId,
+          subscriptionPlan: result.plan,
+          subscriptionStatus: result.status,
+          trialEndsAt: result.trialEnd,
+          subscriptionEndsAt: result.currentPeriodEnd,
+        });
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(500).json({ error: "Webhook processing failed" });
+    }
+  });
+
   return httpServer;
 }
