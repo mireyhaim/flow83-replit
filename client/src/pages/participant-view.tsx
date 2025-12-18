@@ -36,6 +36,11 @@ export default function ParticipantView() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [dayReadyForCompletion, setDayReadyForCompletion] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [completedDayNumber, setCompletedDayNumber] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isExternalAccess = tokenFromRoute && isAccessToken(tokenFromRoute);
@@ -147,10 +152,16 @@ export default function ParticipantView() {
       return res.json();
     },
     onSuccess: () => {
+      const justCompletedDay = resolvedParticipant?.currentDay ?? 1;
+      setCompletedDayNumber(justCompletedDay);
       setShowCelebration(true);
       setDayReadyForCompletion(false);
       setTimeout(() => {
         setShowCelebration(false);
+        // Show feedback modal after celebration
+        setShowFeedbackModal(true);
+        setFeedbackRating(0);
+        setFeedbackComment("");
         if (isExternalAccess) {
           queryClient.invalidateQueries({ queryKey: ["/api/participant/token", tokenFromRoute] });
         } else {
@@ -159,6 +170,35 @@ export default function ParticipantView() {
       }, 2000);
     },
   });
+
+  const handleSubmitFeedback = async () => {
+    if (!resolvedParticipant || !resolvedJourney || feedbackRating === 0) return;
+    
+    setFeedbackSubmitting(true);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participantId: resolvedParticipant.id,
+          journeyId: resolvedJourney.id,
+          rating: feedbackRating,
+          comment: feedbackComment || null,
+          dayNumber: completedDayNumber,
+          feedbackType: completedDayNumber === totalDays ? "final" : "day",
+        }),
+      });
+      setShowFeedbackModal(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
+  const handleSkipFeedback = () => {
+    setShowFeedbackModal(false);
+  };
 
   useEffect(() => {
     setDayReadyForCompletion(false);
@@ -339,6 +379,91 @@ export default function ParticipantView() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">Day Complete!</h2>
               <p className="text-emerald-600 font-semibold">+100 XP</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Feedback Modal */}
+      <AnimatePresence>
+        {showFeedbackModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  How was Day {completedDayNumber}?
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  Your feedback helps {mentorName} improve the experience
+                </p>
+              </div>
+
+              {/* Star Rating */}
+              <div className="flex justify-center gap-2 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setFeedbackRating(star)}
+                    className="p-1 transition-transform hover:scale-110"
+                    data-testid={`feedback-star-${star}`}
+                  >
+                    <Star 
+                      className={cn(
+                        "w-10 h-10 transition-colors",
+                        star <= feedbackRating 
+                          ? "fill-yellow-400 text-yellow-400" 
+                          : "text-gray-300"
+                      )} 
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {/* Comment */}
+              <textarea
+                value={feedbackComment}
+                onChange={(e) => setFeedbackComment(e.target.value)}
+                placeholder="Share your thoughts (optional)"
+                className="w-full p-3 border border-gray-200 rounded-xl resize-none h-24 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 mb-4"
+                data-testid="feedback-comment"
+              />
+
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleSkipFeedback}
+                  className="flex-1"
+                  data-testid="feedback-skip"
+                >
+                  Skip
+                </Button>
+                <Button
+                  onClick={handleSubmitFeedback}
+                  disabled={feedbackRating === 0 || feedbackSubmitting}
+                  className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
+                  data-testid="feedback-submit"
+                >
+                  {feedbackSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Send Feedback"
+                  )}
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
         )}

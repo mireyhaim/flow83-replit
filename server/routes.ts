@@ -1404,6 +1404,11 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Participant not found" });
       }
 
+      // Security: verify participant belongs to this journey
+      if (participant.journeyId !== journeyId) {
+        return res.status(403).json({ error: "Participant does not belong to this journey" });
+      }
+
       const journey = await storage.getJourney(journeyId);
       if (!journey || !journey.creatorId) {
         return res.status(404).json({ error: "Journey not found" });
