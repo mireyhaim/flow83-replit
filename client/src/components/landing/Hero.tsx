@@ -26,7 +26,7 @@ const Hero = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Empower teachers, coaches, and healers to create personalized digital journeys for their clients — 
+            Empower teachers, coaches, and healers to create personalized digital journeys for their clients - 
             powered by AI and your unique expertise.
           </p>
           
