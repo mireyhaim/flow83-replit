@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1 space-y-6">
-            <span className="text-2xl font-bold text-indigo-500">
+            <span className="text-2xl font-bold text-violet-600">
               Flow 83
             </span>
             <p className="text-white/40 leading-relaxed max-w-sm">

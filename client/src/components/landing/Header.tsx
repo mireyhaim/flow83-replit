@@ -9,7 +9,7 @@ const Header = () => {
   return (
     <header className="w-full px-6 py-4 bg-[#0f0f23]/90 backdrop-blur-xl border-b border-white/5 fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-indigo-500 cursor-pointer hover:text-indigo-400 transition-colors">
+        <Link href="/" className="text-2xl font-bold text-violet-600 cursor-pointer hover:text-violet-500 transition-colors">
           Flow 83
         </Link>
         
