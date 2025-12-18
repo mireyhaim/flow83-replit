@@ -18,6 +18,7 @@ import { eq, and, asc, desc, inArray, lt, isNull, or, sum } from "drizzle-orm";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserProfileImage(userId: string, imageUrl: string): Promise<User>;
 
   getJourneys(): Promise<Journey[]>;
   getJourneysByCreator(creatorId: string): Promise<Journey[]>;
@@ -102,6 +103,15 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async updateUserProfileImage(userId: string, imageUrl: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ profileImageUrl: imageUrl, updatedAt: new Date() })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }

@@ -64,6 +64,36 @@ export async function registerRoutes(
       res.status(500).json({ message: "Failed to update profile" });
     }
   });
+
+  // Upload profile image
+  app.post('/api/profile/image', isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file as Express.Multer.File;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No image uploaded" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return res.status(400).json({ message: "Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image." });
+      }
+
+      // Convert to base64 data URL for storage
+      const base64 = file.buffer.toString('base64');
+      const dataUrl = `data:${file.mimetype};base64,${base64}`;
+
+      // Update user profile with image URL
+      const user = await storage.updateUserProfileImage(userId, dataUrl);
+      
+      res.json({ profileImageUrl: user.profileImageUrl });
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
   
   // Journey routes - public read, authenticated write
   app.get("/api/journeys", async (req, res) => {

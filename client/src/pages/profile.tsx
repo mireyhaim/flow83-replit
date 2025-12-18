@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Mail, Globe, Save, CreditCard, Receipt, XCircle, AlertTriangle } from "lucide-react";
+import { Loader2, Mail, Globe, Save, CreditCard, Receipt, XCircle, AlertTriangle, Camera } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +23,11 @@ import { useToast } from "@/hooks/use-toast";
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -40,12 +44,60 @@ export default function ProfilePage() {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
-        bio: "",
-        website: "",
-        specialty: "",
+        bio: (user as any).bio || "",
+        website: (user as any).website || "",
+        specialty: (user as any).specialty || "",
       });
+      setProfileImage((user as any).profileImageUrl || null);
     }
   }, [user]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/profile/image", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to upload image");
+      }
+
+      const data = await response.json();
+      setProfileImage(data.profileImageUrl);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      toast({
+        title: "Image uploaded",
+        description: "Your profile picture has been updated.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -96,8 +148,38 @@ export default function ProfilePage() {
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 flex items-center justify-center text-2xl font-semibold text-white border border-white/10">
-              {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
+            <div className="relative group">
+              {profileImage ? (
+                <img 
+                  src={profileImage} 
+                  alt="Profile" 
+                  className="w-16 h-16 rounded-2xl object-cover border border-white/10"
+                  data-testid="img-profile"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 flex items-center justify-center text-2xl font-semibold text-white border border-white/10">
+                  {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
+              <label 
+                htmlFor="profile-image-upload" 
+                className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+              >
+                {isUploadingImage ? (
+                  <Loader2 className="h-5 w-5 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-5 w-5 text-white" />
+                )}
+              </label>
+              <input
+                type="file"
+                id="profile-image-upload"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={isUploadingImage}
+                data-testid="input-profile-image"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-white" data-testid="text-profile-title">
