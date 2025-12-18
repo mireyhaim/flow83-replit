@@ -43,8 +43,9 @@ export default function ParticipantView() {
   const [completedDayNumber, setCompletedDayNumber] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const isExternalAccess = tokenFromRoute && isAccessToken(tokenFromRoute);
+  const isUuidFormat = tokenFromRoute && isAccessToken(tokenFromRoute);
 
+  // Try to fetch as access token first (for external participants)
   const { data: externalData, isLoading: externalLoading, error: externalError } = useQuery<{
     participant: Participant;
     journey: Journey;
@@ -54,14 +55,12 @@ export default function ParticipantView() {
       if (!res.ok) throw new Error("Invalid access token");
       return res.json();
     }),
-    enabled: !!isExternalAccess,
+    enabled: !!isUuidFormat,
+    retry: false,
   });
 
-  const { data: allJourneys } = useQuery<Journey[]>({
-    queryKey: ["/api/journeys"],
-    queryFn: () => fetch("/api/journeys").then(res => res.json()),
-    enabled: !tokenFromRoute && !isExternalAccess,
-  });
+  // Determine if this is truly external access (access token worked) or mentor preview (access token failed)
+  const isExternalAccess = !!externalData && !externalError;
 
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/auth/user"],
@@ -72,8 +71,18 @@ export default function ParticipantView() {
     enabled: !isExternalAccess,
   });
 
+  const { data: allJourneys } = useQuery<Journey[]>({
+    queryKey: ["/api/journeys"],
+    queryFn: () => fetch("/api/journeys").then(res => res.json()),
+    enabled: !tokenFromRoute,
+  });
+
   const publishedJourneys = allJourneys?.filter(j => j.status === "published") || [];
-  const journeyId = isExternalAccess ? externalData?.journey?.id : (tokenFromRoute || publishedJourneys[0]?.id);
+  
+  // For mentor preview: if access token lookup failed but we have a UUID, treat it as journey ID
+  const journeyId = isExternalAccess 
+    ? externalData?.journey?.id 
+    : (tokenFromRoute || publishedJourneys[0]?.id);
 
   const { data: journey, isLoading: journeyLoading } = useQuery<JourneyWithSteps>({
     queryKey: ["/api/journeys", journeyId, "full"],
@@ -81,18 +90,18 @@ export default function ParticipantView() {
     enabled: !!journeyId && !isExternalAccess,
   });
 
-  const { data: participant, isLoading: participantLoading } = useQuery<Participant>({
+  const { data: participant, isLoading: participantLoading, error: participantError } = useQuery<Participant>({
     queryKey: ["/api/participants/journey", journeyId],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/participants/journey/${journeyId}`);
       return res.json();
     },
-    enabled: !!journeyId && !isExternalAccess,
+    enabled: !!journeyId && !isExternalAccess && !!currentUser,
   });
 
   const resolvedJourney = isExternalAccess ? externalData?.journey as JourneyWithSteps | undefined : journey;
   const resolvedParticipant = isExternalAccess ? externalData?.participant : participant;
-  const resolvedLoading = isExternalAccess ? externalLoading : (journeyLoading || participantLoading);
+  const resolvedLoading = isExternalAccess ? externalLoading : (journeyLoading || (!!currentUser && participantLoading));
 
   // Helper to get mentor display name
   const mentorName = resolvedJourney?.mentor?.firstName 
@@ -216,7 +225,10 @@ export default function ParticipantView() {
     return () => clearTimeout(timer);
   }, [messages]);
 
-  if (isExternalAccess && externalError) {
+  // Show error only if access token is invalid AND user is not logged in (can't preview)
+  const showInvalidLinkError = externalError && !externalLoading && !currentUser && !journey;
+  
+  if (showInvalidLinkError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4" dir="rtl">
         <div className="text-center max-w-md">
@@ -229,6 +241,9 @@ export default function ParticipantView() {
       </div>
     );
   }
+
+  // Check if this is mentor preview mode (logged in user viewing their own flow)
+  const isMentorPreview = !!currentUser && !!journey && journey.creatorId === currentUser.id && !resolvedParticipant;
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
@@ -288,6 +303,48 @@ export default function ParticipantView() {
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
           <p className="text-gray-500">Loading your journey...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // For mentor preview, show preview mode with the journey content
+  if (isMentorPreview && resolvedJourney) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          <div className="bg-amber-100 border border-amber-300 rounded-xl p-4 mb-6 text-center">
+            <p className="text-amber-800 font-medium">Preview Mode</p>
+            <p className="text-amber-700 text-sm">This is how participants will see your flow</p>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{resolvedJourney.name}</h1>
+            <p className="text-gray-500 mb-6">{resolvedJourney.duration} Days Journey</p>
+            
+            <div className="space-y-4 text-right mb-8">
+              {sortedSteps.map((step, index) => (
+                <div key={step.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 font-bold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{step.title}</p>
+                    <p className="text-sm text-gray-500">{step.description?.slice(0, 60)}...</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <Link href={`/journeys/${resolvedJourney.id}`}>
+              <Button className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                Back to Editor
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
