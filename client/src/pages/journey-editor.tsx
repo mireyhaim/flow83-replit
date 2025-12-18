@@ -768,12 +768,11 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => setPublishStep(3)}
-                    disabled={(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50 h-14 text-base"
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-base"
                     data-testid="button-next-after-stripe"
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
-                    Next Step
+                    {stripeStatus?.chargesEnabled ? "Next Step" : "Skip & Continue"}
                   </Button>
                 </div>
               </div>
