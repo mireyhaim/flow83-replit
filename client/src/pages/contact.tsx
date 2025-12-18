@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
+import { Mail, Clock, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -144,24 +144,6 @@ const ContactUs = () => {
                       <a href="mailto:hello@flow83.com" className="hover:text-primary transition-colors">
                         hello@flow83.com
                       </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="font-medium text-foreground">Phone</p>
-                      <a href="tel:+15551234567" className="hover:text-primary transition-colors">
-                        +1 (555) 123-4567
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="font-medium text-foreground">Address</p>
-                      <p>San Francisco, CA</p>
                     </div>
                   </div>
 
