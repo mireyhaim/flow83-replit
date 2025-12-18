@@ -12,7 +12,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { icon: PenTool, label: "Flows", href: "/journeys" },
     { icon: MessageCircle, label: "Feedback", href: "/feedback" },
     { icon: User, label: "My Profile", href: "/profile" },
-    { icon: Bell, label: "Notifications", href: "/settings/notifications" },
   ];
 
   const NavContent = () => (
