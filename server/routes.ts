@@ -212,6 +212,32 @@ export async function registerRoutes(
     }
   });
 
+  // Mentor earnings endpoints
+  app.get("/api/earnings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const totalCents = await storage.getTotalEarningsByMentor(userId);
+      const payments = await storage.getPaymentsByMentor(userId);
+      res.json({ 
+        totalEarnings: totalCents / 100,
+        totalCents,
+        currency: "USD",
+        paymentCount: payments.length,
+        recentPayments: payments.slice(0, 10).map(p => ({
+          id: p.id,
+          amount: p.amount / 100,
+          currency: p.currency,
+          customerEmail: p.customerEmail,
+          customerName: p.customerName,
+          createdAt: p.createdAt,
+        })),
+      });
+    } catch (error) {
+      console.error("Error fetching earnings:", error);
+      res.status(500).json({ error: "Failed to fetch earnings" });
+    }
+  });
+
   app.get("/api/journeys/:id", async (req, res) => {
     try {
       const journey = await storage.getJourney(req.params.id);
@@ -1305,6 +1331,28 @@ export async function registerRoutes(
           eventType: 'joined',
           eventData: { participantName: name || email, paymentVerified: true },
         });
+
+        // Record payment for mentor earnings tracking
+        const amountPaid = session.amount_total || 0;
+        if (amountPaid > 0) {
+          try {
+            await storage.createPayment({
+              journeyId,
+              participantId: participant.id,
+              mentorId: journey.creatorId,
+              stripeCheckoutSessionId: sessionId,
+              stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
+              amount: amountPaid,
+              currency: session.currency?.toUpperCase() || "USD",
+              status: "completed",
+              customerEmail: email,
+              customerName: name || undefined,
+            });
+            console.log(`Payment recorded: $${amountPaid / 100} for journey ${journeyId}`);
+          } catch (paymentErr) {
+            console.error("Error recording payment (non-blocking):", paymentErr);
+          }
+        }
       }
 
       res.json({ 
