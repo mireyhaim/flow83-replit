@@ -2069,12 +2069,12 @@ Resilience isn't about never struggling. It's about having the skills and resour
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#f8f7ff]">
         <Header />
         <main className="container mx-auto px-6 py-16 pt-24 text-center">
-          <h1 className="text-2xl font-bold">Article not found</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Article not found</h1>
           <Link href="/blog">
-            <Button className="mt-4 bg-violet-600 hover:bg-violet-700 rounded-full">Back to Blog</Button>
+            <Button className="mt-4 text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20">Back to Blog</Button>
           </Link>
         </main>
         <Footer />
@@ -2083,27 +2083,27 @@ Resilience isn't about never struggling. It's about having the skills and resour
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="pt-24 pb-20">
         <article className="max-w-4xl mx-auto px-6">
           <Link href="/blog">
-            <Button variant="ghost" className="mb-8 pl-0 hover:pl-0 hover:bg-transparent hover:text-primary">
+            <Button variant="ghost" className="mb-8 pl-0 hover:pl-0 hover:bg-transparent hover:text-violet-600">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Articles
             </Button>
           </Link>
 
           <div className="mb-8">
-            <Badge className="mb-4">{post.category}</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+            <Badge className="mb-4 bg-violet-100 text-violet-700">{post.category}</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
               {post.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-6 text-muted-foreground border-b pb-8">
+            <div className="flex flex-wrap items-center gap-6 text-gray-500 border-b border-gray-200 pb-8">
               <div className="flex items-center">
                 <User className="w-4 h-4 mr-2" />
-                <span className="font-medium text-foreground">{post.author}</span>
+                <span className="font-medium text-gray-900">{post.author}</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -2124,25 +2124,25 @@ Resilience isn't about never struggling. It's about having the skills and resour
             />
           </div>
 
-          <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="prose prose-lg prose-gray max-w-none">
              <ReactMarkdown>{content}</ReactMarkdown>
           </div>
 
-          <div className="mt-12 pt-8 border-t">
-            <h3 className="text-lg font-semibold mb-4">Tags</h3>
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
             <div className="flex flex-wrap gap-2 mb-8">
               {tags.map((tag, i) => (
-                <Badge key={i} variant="outline" className="text-sm py-1 px-3">
+                <Badge key={i} variant="outline" className="text-sm py-1 px-3 border-violet-200 text-violet-600">
                   {tag}
                 </Badge>
               ))}
             </div>
 
             <div className="flex gap-4">
-               <Button variant="outline" className="flex-1">
+               <Button variant="outline" className="flex-1 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-violet-600">
                  <Heart className="w-4 h-4 mr-2" /> Like this article
                </Button>
-               <Button variant="outline" className="flex-1">
+               <Button variant="outline" className="flex-1 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-violet-600">
                  <Share2 className="w-4 h-4 mr-2" /> Share
                </Button>
             </div>

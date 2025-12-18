@@ -58,10 +58,14 @@ const Pricing = () => {
       <main className="pt-20">
         {/* Hero Section */}
         <section className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Simple, Transparent Pricing
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+            <span className="text-gray-900">Simple, </span>
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+              Transparent
+            </span>
+            <span className="text-gray-900"> Pricing</span>
           </h1>
-          <p className="text-xl text-gray-500 max-w-3xl mx-auto mb-8">
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
             Choose the perfect plan to transform your practice and reach more people with your expertise
           </p>
         </section>
@@ -104,8 +108,7 @@ const Pricing = () => {
                   </ul>
                   
                   <Button 
-                    className={`w-full rounded-full ${plan.popular ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-                    variant={plan.popular ? "default" : "outline"}
+                    className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
                   >
                     Get Started
                   </Button>

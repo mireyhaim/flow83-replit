@@ -127,10 +127,13 @@ const Blog = () => {
       <main className="pt-20">
         {/* Hero Section */}
         <section className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Flow 83 Blog
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+            <span className="text-gray-900">Flow 83 </span>
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+              Blog
+            </span>
           </h1>
-          <p className="text-xl text-gray-500 max-w-3xl mx-auto mb-8">
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
             Insights, research, and best practices from leading experts in digital therapeutics and transformative journeys
           </p>
         </section>

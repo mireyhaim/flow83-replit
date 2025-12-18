@@ -35,10 +35,13 @@ const ContactUs = () => {
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-              Get in Touch
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+              <span className="text-gray-900">Get in </span>
+              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+                Touch
+              </span>
             </h1>
-            <p className="text-xl text-gray-500 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Have questions about Flow 83? We're here to help you create transformative journeys and grow your practice.
             </p>
           </div>
@@ -116,7 +119,7 @@ const ContactUs = () => {
 
                     <Button
                       type="submit"
-                      className="w-full bg-violet-600 hover:bg-violet-700 rounded-full"
+                      className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                       size="lg"
                       disabled={isSubmitting}
                     >

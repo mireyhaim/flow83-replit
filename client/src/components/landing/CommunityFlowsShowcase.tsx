@@ -62,17 +62,20 @@ const CommunityFlowsShowcase = () => {
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-foreground mb-4">
-          Examples of Community-Created Flows
+        <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
+          <span className="text-gray-900">Examples of </span>
+          <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+            Community-Created Flows
+          </span>
         </h2>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+        <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
           Discover transformative journeys created by our expert community members
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {featuredFlows.map((flow) => (
-          <Card key={flow.id} className="gradient-card border-0 shadow-card hover:shadow-spiritual transition-all duration-300">
+          <Card key={flow.id} className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
@@ -82,18 +85,18 @@ const CommunityFlowsShowcase = () => {
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div>
-                    <CardTitle className="text-lg">{flow.title}</CardTitle>
-                    <CardDescription>by {flow.creator}</CardDescription>
+                    <CardTitle className="text-lg text-gray-900">{flow.title}</CardTitle>
+                    <CardDescription className="text-gray-500">by {flow.creator}</CardDescription>
                   </div>
                 </div>
-                <Badge variant="secondary">{flow.category}</Badge>
+                <Badge className="bg-violet-100 text-violet-700">{flow.category}</Badge>
               </div>
             </CardHeader>
             
             <CardContent>
-              <p className="text-muted-foreground mb-4">{flow.description}</p>
+              <p className="text-gray-600 mb-4">{flow.description}</p>
               
-              <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <Users className="w-4 h-4 mr-1" />
@@ -108,7 +111,7 @@ const CommunityFlowsShowcase = () => {
                     {flow.duration}
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs border-violet-200 text-violet-600">
                   {flow.difficulty}
                 </Badge>
               </div>

@@ -22,10 +22,13 @@ const Community = () => {
         <section className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Meet Our Creator Community
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+                <span className="text-gray-900">Meet Our </span>
+                <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+                  Creator Community
+                </span>
               </h1>
-              <p className="text-xl text-gray-500 mb-8">
+              <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
                 Connect with expert therapists, coaches, and healers who are transforming lives through personalized digital flows
               </p>
             </div>
@@ -62,14 +65,17 @@ const Community = () => {
 
         {/* Join Community CTA */}
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Ready to Join Our Community?
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight tracking-tight">
+            <span className="text-gray-900">Ready to </span>
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+              Join Our Community?
+            </span>
           </h2>
-          <p className="text-xl text-gray-500 mb-8">
+          <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
             Start creating transformative flows and connect with like-minded professionals
           </p>
           <Link href="/journeys/new">
-            <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg rounded-full">
+            <Button size="lg" className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20">
               Become a Creator
             </Button>
           </Link>

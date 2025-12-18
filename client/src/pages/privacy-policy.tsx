@@ -47,19 +47,18 @@ const privacyContent = [
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="container mx-auto px-6 py-16 pt-28">
         <div className="max-w-4xl mx-auto">
           <header className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 border border-violet-200 text-violet-600 text-sm font-medium mb-6">
-              <Shield className="w-4 h-4" />
-              Legal
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4" data-testid="text-privacy-title">
-              Privacy Policy
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight tracking-tight" data-testid="text-privacy-title">
+              <span className="text-gray-900">Privacy </span>
+              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+                Policy
+              </span>
             </h1>
-            <p className="text-gray-500 text-lg">
+            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
               Last updated: December 2024
             </p>
           </header>

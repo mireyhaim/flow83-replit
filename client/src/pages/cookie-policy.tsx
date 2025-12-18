@@ -3,12 +3,20 @@ import Footer from "@/components/landing/Footer";
 
 const CookiePolicy = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="container mx-auto px-6 py-16 pt-24">
-        <div className="max-w-4xl mx-auto prose prose-lg prose-gray">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">Cookie Policy</h1>
-          <p className="text-gray-500 mb-8">Last updated: January 2024</p>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight tracking-tight">
+              <span className="text-gray-900">Cookie </span>
+              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+                Policy
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">Last updated: January 2024</p>
+          </div>
+          <div className="prose prose-lg prose-gray">
           
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">What Are Cookies</h2>
@@ -145,6 +153,7 @@ const CookiePolicy = () => {
               </a>
             </p>
           </section>
+          </div>
         </div>
       </main>
       <Footer />
