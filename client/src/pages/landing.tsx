@@ -14,7 +14,7 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0f0f23] font-sans selection:bg-violet-500/20 selection:text-violet-300">
+    <div className="min-h-screen bg-[#f8f7ff] font-sans selection:bg-violet-500/20 selection:text-violet-300">
       <Header />
       <main>
         <Hero />

@@ -47,21 +47,21 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section className="py-32 bg-[#0f0f23] relative overflow-hidden">
+    <section className="py-32 bg-white relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] rounded-full bg-violet-600/5 blur-[150px]" />
-        <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] rounded-full bg-fuchsia-600/5 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] rounded-full bg-violet-100/50 blur-[150px]" />
+        <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] rounded-full bg-fuchsia-100/50 blur-[120px]" />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
-          <span className="text-violet-400 text-sm font-medium tracking-wider uppercase mb-4 block">
+          <span className="text-violet-600 text-sm font-medium tracking-wider uppercase mb-4 block">
             Trusted by Guides
           </span>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
             What Our Mentors Say
           </h2>
-          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
             Join thousands of coaches, therapists, and healers who are scaling their impact
           </p>
           
@@ -72,8 +72,8 @@ const Testimonials = () => {
                 <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-2xl font-bold text-white" data-testid="text-rating-score">4.9</span>
-            <span className="text-white/50" data-testid="text-review-count">from 500+ reviews</span>
+            <span className="text-2xl font-bold text-gray-900" data-testid="text-rating-score">4.9</span>
+            <span className="text-gray-500" data-testid="text-review-count">from 500+ reviews</span>
           </div>
         </div>
         
@@ -81,7 +81,7 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => (
             <div 
               key={index}
-              className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300"
+              className="bg-gray-50 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 hover:border-violet-300 transition-all duration-300 hover:shadow-lg"
               data-testid={`card-testimonial-${index}`}
             >
               {/* Stars */}
@@ -92,18 +92,18 @@ const Testimonials = () => {
               </div>
               
               {/* Quote */}
-              <p className="text-white/70 leading-relaxed mb-6">
+              <p className="text-gray-600 leading-relaxed mb-6">
                 "{testimonial.text}"
               </p>
               
               {/* Author */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-violet-600/30 flex items-center justify-center text-violet-300 font-semibold text-sm">
+                <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-semibold text-sm">
                   {testimonial.avatar}
                 </div>
                 <div>
-                  <p className="text-white font-medium">{testimonial.name}</p>
-                  <p className="text-white/50 text-sm">{testimonial.role}</p>
+                  <p className="text-gray-900 font-medium">{testimonial.name}</p>
+                  <p className="text-gray-500 text-sm">{testimonial.role}</p>
                 </div>
               </div>
             </div>

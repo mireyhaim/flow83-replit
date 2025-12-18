@@ -32,20 +32,20 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-32 bg-[#0f0f23] relative overflow-hidden">
+    <section className="py-32 bg-white relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-20">
-          <span className="text-violet-400 text-sm font-medium tracking-wider uppercase mb-4 block">
+          <span className="text-violet-600 text-sm font-medium tracking-wider uppercase mb-4 block">
             Simple Process
           </span>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
             How It Works
           </h2>
-          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
             Transform your expertise into a digital journey in three simple steps
           </p>
         </div>
@@ -59,18 +59,18 @@ const HowItWorks = () => {
               {/* Content */}
               <div className="flex-1 text-center lg:text-left">
                 <div className="inline-flex items-center gap-3 mb-6">
-                  <div className="w-14 h-14 rounded-2xl bg-violet-600/20 flex items-center justify-center">
-                    <step.icon className="w-7 h-7 text-violet-400" />
+                  <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
+                    <step.icon className="w-7 h-7 text-violet-600" />
                   </div>
-                  <span className="text-6xl font-bold text-violet-500/20">
+                  <span className="text-6xl font-bold text-violet-200">
                     {step.number}
                   </span>
                 </div>
                 
-                <h3 className="text-3xl font-bold text-white mb-4">
+                <h3 className="text-3xl font-bold text-gray-900 mb-4">
                   {step.title}
                 </h3>
-                <p className="text-lg text-white/60 leading-relaxed max-w-md mx-auto lg:mx-0">
+                <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto lg:mx-0">
                   {step.description}
                 </p>
               </div>
@@ -78,11 +78,11 @@ const HowItWorks = () => {
               {/* Screenshot */}
               <div className="flex-1">
                 <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
-                  <div className="absolute inset-0 bg-violet-600/20 blur-3xl rounded-full" />
+                  <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
                   <img 
                     src={step.image} 
                     alt={step.imageAlt}
-                    className={`relative rounded-2xl shadow-2xl border border-white/10 ${index === 2 ? 'w-full' : 'w-full'}`}
+                    className={`relative rounded-2xl shadow-2xl border border-gray-200 ${index === 2 ? 'w-full' : 'w-full'}`}
                   />
                 </div>
               </div>
