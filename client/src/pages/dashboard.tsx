@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { statsApi, activityApi, participantsApi, type DashboardStats, type InactiveParticipant } from "@/lib/api";
+import { statsApi, activityApi, participantsApi, earningsApi, type DashboardStats, type InactiveParticipant, type EarningsData } from "@/lib/api";
 import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle, Clock, AlertCircle, UserPlus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -39,6 +39,12 @@ export default function Dashboard() {
   const { data: inactiveParticipants = [] } = useQuery<InactiveParticipant[]>({
     queryKey: ["/api/participants/inactive"],
     queryFn: () => participantsApi.getInactive(3),
+    enabled: isAuthenticated,
+  });
+
+  const { data: earnings } = useQuery<EarningsData>({
+    queryKey: ["/api/earnings"],
+    queryFn: earningsApi.get,
     enabled: isAuthenticated,
   });
 
@@ -201,16 +207,33 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
-                  Coming Soon
+                  {(earnings?.paymentCount ?? 0) > 0 ? `${earnings?.paymentCount} sales` : 'No sales yet'}
                 </span>
               </div>
-              <div className="text-4xl font-bold text-white mb-2" data-testid="text-earnings">$0</div>
-              <p className="text-sm text-white/40 mb-6">Total earnings from all flows</p>
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <p className="text-sm text-white/60">
-                  Payment integration coming soon. You'll be able to set prices for your flows and collect payments automatically.
-                </p>
+              <div className="text-4xl font-bold text-white mb-2" data-testid="text-earnings">
+                ${(earnings?.totalEarnings ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
+              <p className="text-sm text-white/40 mb-6">Total earnings from all flows</p>
+              {(earnings?.recentPayments?.length ?? 0) > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-white/40 mb-2">Recent sales</p>
+                  {earnings?.recentPayments.slice(0, 3).map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                      <div>
+                        <p className="text-sm text-white">{payment.customerName || payment.customerEmail}</p>
+                        <p className="text-xs text-white/40">{new Date(payment.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <span className="text-emerald-400 font-medium">${payment.amount.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <p className="text-sm text-white/60">
+                    Set a price for your flows and start collecting payments. Your earnings will appear here automatically.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-tips">

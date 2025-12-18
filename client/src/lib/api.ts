@@ -260,6 +260,28 @@ export const participantsApi = {
   },
 };
 
+export interface EarningsData {
+  totalEarnings: number;
+  totalCents: number;
+  currency: string;
+  paymentCount: number;
+  recentPayments: Array<{
+    id: number;
+    amount: number;
+    currency: string;
+    customerEmail: string | null;
+    customerName: string | null;
+    createdAt: string;
+  }>;
+}
+
+export const earningsApi = {
+  get: async (): Promise<EarningsData> => {
+    const res = await fetch(`${API_BASE}/earnings`);
+    return handleResponse(res);
+  },
+};
+
 export const chatApi = {
   getMessages: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`);
