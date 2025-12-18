@@ -31,11 +31,11 @@ const CallToAction = () => {
             <Link href="/dashboard">
               <Button 
                 size="lg"
-                className="text-lg px-10 py-8 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/25 transition-all duration-300 hover:shadow-violet-500/40 hover:scale-105"
+                className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                 data-testid="button-cta-get-started"
               >
                 Start Your Journey as a Guide
-                <ArrowRight className="w-6 h-6 ml-2" />
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
