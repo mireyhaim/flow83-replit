@@ -238,6 +238,27 @@ export async function registerRoutes(
     }
   });
 
+  // Mentor feedback endpoint - get all feedback with journey/participant details
+  app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const feedbackList = await storage.getFeedbackByMentorWithDetails(userId);
+      res.json(feedbackList.map(item => ({
+        id: item.feedback.id,
+        rating: item.feedback.rating,
+        comment: item.feedback.comment,
+        dayNumber: item.feedback.dayNumber,
+        feedbackType: item.feedback.feedbackType,
+        createdAt: item.feedback.createdAt,
+        journeyName: item.journeyName || "Unknown Flow",
+        participantName: item.participantName || item.participantEmail || "Anonymous",
+      })));
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
   app.get("/api/journeys/:id", async (req, res) => {
     try {
       const journey = await storage.getJourney(req.params.id);

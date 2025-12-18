@@ -76,6 +76,12 @@ export interface IStorage {
   // Participant feedback
   createFeedback(feedback: InsertJourneyFeedback): Promise<JourneyFeedback>;
   getFeedbackByMentor(mentorId: string): Promise<JourneyFeedback[]>;
+  getFeedbackByMentorWithDetails(mentorId: string): Promise<{
+    feedback: JourneyFeedback;
+    journeyName: string | null;
+    participantName: string | null;
+    participantEmail: string | null;
+  }[]>;
   getFeedbackByJourney(journeyId: string): Promise<JourneyFeedback[]>;
 }
 
@@ -420,6 +426,27 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(journeyFeedback)
       .where(eq(journeyFeedback.mentorId, mentorId))
       .orderBy(desc(journeyFeedback.createdAt));
+  }
+
+  async getFeedbackByMentorWithDetails(mentorId: string): Promise<{
+    feedback: JourneyFeedback;
+    journeyName: string | null;
+    participantName: string | null;
+    participantEmail: string | null;
+  }[]> {
+    const results = await db
+      .select({
+        feedback: journeyFeedback,
+        journeyName: journeys.name,
+        participantName: participants.name,
+        participantEmail: participants.email,
+      })
+      .from(journeyFeedback)
+      .leftJoin(journeys, eq(journeyFeedback.journeyId, journeys.id))
+      .leftJoin(participants, eq(journeyFeedback.participantId, participants.id))
+      .where(eq(journeyFeedback.mentorId, mentorId))
+      .orderBy(desc(journeyFeedback.createdAt));
+    return results;
   }
 
   async getFeedbackByJourney(journeyId: string): Promise<JourneyFeedback[]> {

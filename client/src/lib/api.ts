@@ -282,6 +282,24 @@ export const earningsApi = {
   },
 };
 
+export interface FeedbackItem {
+  id: string;
+  rating: number;
+  comment: string | null;
+  dayNumber: number | null;
+  feedbackType: string | null;
+  createdAt: string;
+  journeyName: string;
+  participantName: string;
+}
+
+export const feedbackApi = {
+  getAll: async (): Promise<FeedbackItem[]> => {
+    const res = await fetch(`${API_BASE}/feedback`);
+    return handleResponse(res);
+  },
+};
+
 export const chatApi = {
   getMessages: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`);
