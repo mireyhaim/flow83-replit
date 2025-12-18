@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle
+  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle, ArrowRight, Rocket
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -575,43 +575,61 @@ const JourneyEditorPage = () => {
 
       {/* Publish Modal - 3 Steps */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[90vw] max-w-lg">
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
           {/* Step Indicator */}
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="flex items-center gap-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
-                {publishStep > 1 ? <Check className="w-3 h-3" /> : '1'}
+          <div className="flex items-center justify-center gap-4 mb-6 pt-2">
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                {publishStep > 1 ? <Check className="w-5 h-5" /> : '1'}
               </div>
-              <span className={`text-xs ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
+              <span className={`text-sm font-medium ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
             </div>
-            <div className={`w-8 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
-            <div className="flex items-center gap-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
-                {publishStep > 2 ? <Check className="w-3 h-3" /> : '2'}
+            <div className={`w-16 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                {publishStep > 2 ? <Check className="w-5 h-5" /> : '2'}
               </div>
-              <span className={`text-xs ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Payment</span>
+              <span className={`text-sm font-medium ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Payment</span>
             </div>
-            <div className={`w-8 h-0.5 ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
-            <div className="flex items-center gap-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 3 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+            <div className={`w-16 h-0.5 ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 3 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 3
               </div>
-              <span className={`text-xs ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Share</span>
+              <span className={`text-sm font-medium ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Publish</span>
             </div>
           </div>
 
           {publishStep === 1 ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold">Publish Your Flow</DialogTitle>
-                <DialogDescription className="text-white/60">
-                  Set a price for your flow
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-2xl font-bold text-center">Set Your Price</DialogTitle>
+                <DialogDescription className="text-white/60 text-center text-base">
+                  Choose how much clients will pay to access your flow
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-4">
-                <div className="space-y-3">
-                  <Label className="text-white/80">Price (in USD)</Label>
+              <div className="space-y-6 py-6">
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-violet-300 mb-2">What happens when you publish?</h4>
+                  <ul className="text-sm text-white/70 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Your flow becomes available to clients via a shareable link</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>A beautiful landing page is automatically generated</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Clients can sign up and start their journey immediately</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-white/80 text-lg">Price (in USD)</Label>
                   <div className="relative">
                     <Input
                       type="number"
@@ -619,21 +637,21 @@ const JourneyEditorPage = () => {
                       value={publishPrice}
                       onChange={(e) => setPublishPrice(e.target.value)}
                       placeholder="0"
-                      className="bg-white/5 border-white/20 text-white text-2xl text-center h-16"
+                      className="bg-white/5 border-white/20 text-white text-3xl text-center h-20 rounded-xl"
                       data-testid="input-publish-price"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 text-lg">$</span>
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 text-2xl">$</span>
                   </div>
-                  <p className="text-sm text-white/40 text-center">
-                    {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to join`}
+                  <p className="text-base text-white/50 text-center">
+                    {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to access your flow`}
                   </p>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-4 pt-6">
                   <Button
                     variant="outline"
                     onClick={() => setShowPublishModal(false)}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
                     Cancel
                   </Button>
@@ -643,169 +661,256 @@ const JourneyEditorPage = () => {
                       if (price > 0 && !stripeStatus?.chargesEnabled) {
                         setPublishStep(2);
                       } else {
-                        handleConfirmPublish();
+                        setPublishStep(3);
                       }
                     }}
-                    disabled={isPublishing}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
-                    data-testid="button-confirm-publish"
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-base"
+                    data-testid="button-next-step"
                   >
-                    {isPublishing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Globe className="w-4 h-4 mr-2" />
-                        {(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled ? "Next" : "Publish Now"}
-                      </>
-                    )}
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                    Next Step
                   </Button>
                 </div>
               </div>
             </>
           ) : publishStep === 2 ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                  <CreditCard className="w-6 h-6 text-violet-400" />
-                  Connect Stripe
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                  <CreditCard className="w-7 h-7 text-violet-400" />
+                  Connect Your Stripe Account
                 </DialogTitle>
-                <DialogDescription className="text-white/60">
-                  Connect your Stripe account to receive payments
+                <DialogDescription className="text-white/60 text-center text-base">
+                  To receive payments, you need to connect your Stripe account
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-5 py-4">
+              <div className="space-y-6 py-6">
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-violet-300 mb-2">Why connect Stripe?</h4>
+                  <ul className="text-sm text-white/70 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Payments from clients go directly to your bank account</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Secure and trusted payment processing worldwide</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>You control your own Stripe dashboard and payouts</span>
+                    </li>
+                  </ul>
+                </div>
+
                 {stripeStatus?.chargesEnabled ? (
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-5 flex items-center gap-4">
+                    <CheckCircle className="w-8 h-8 text-emerald-400 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-emerald-300">Stripe Connected!</p>
+                      <p className="font-medium text-emerald-300 text-lg">Stripe Connected!</p>
                       <p className="text-sm text-white/60">Your account is ready to receive payments.</p>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 flex items-start gap-4">
+                      <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-amber-300">Stripe Connection Required</p>
-                        <p className="text-sm text-white/60">To sell paid flows, you need to connect your Stripe account. Payments will go directly to you.</p>
+                        <p className="font-medium text-amber-300 text-lg">Connection Required</p>
+                        <p className="text-sm text-white/60">Click the button below to connect your Stripe account. This only takes a few minutes.</p>
                       </div>
                     </div>
 
                     <Button
                       onClick={() => connectStripeMutation.mutate()}
                       disabled={connectStripeMutation.isPending}
-                      className="w-full bg-[#635bff] hover:bg-[#7a73ff] text-white py-6"
+                      className="w-full bg-[#635bff] hover:bg-[#7a73ff] text-white h-16 text-lg rounded-xl"
                       data-testid="button-connect-stripe"
                     >
                       {connectStripeMutation.isPending ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-6 h-6 animate-spin" />
                       ) : (
                         <>
-                          <CreditCard className="w-5 h-5 mr-2" />
+                          <CreditCard className="w-6 h-6 mr-3" />
                           Connect Stripe Account
                         </>
                       )}
                     </Button>
 
-                    <p className="text-xs text-white/40 text-center">
-                      After connecting, return here and click "Continue" to publish your flow.
+                    <p className="text-sm text-white/40 text-center">
+                      After connecting, return to this window and click "Next Step" to continue.
                     </p>
                   </>
                 )}
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-4 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => setPublishStep(1)}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
                     Back
                   </Button>
                   <Button
-                    onClick={handleConfirmPublish}
-                    disabled={isPublishing || !stripeStatus?.chargesEnabled}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50"
-                    data-testid="button-publish-after-stripe"
+                    onClick={() => setPublishStep(3)}
+                    disabled={!stripeStatus?.chargesEnabled}
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50 h-14 text-base"
+                    data-testid="button-next-after-stripe"
                   >
-                    {isPublishing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Globe className="w-4 h-4 mr-2" />
-                        Publish Now
-                      </>
-                    )}
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                    Next Step
                   </Button>
                 </div>
               </div>
             </>
-          ) : (
+          ) : journeyData.status === "published" ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                  <CheckCircle className="w-6 h-6 text-emerald-400" />
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                  <CheckCircle className="w-8 h-8 text-emerald-400" />
                   Flow Published!
                 </DialogTitle>
-                <DialogDescription className="text-white/60">
-                  Your link is ready to share with clients
+                <DialogDescription className="text-white/60 text-center text-base">
+                  Your flow is live and ready to share with clients
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-5 py-4">
-                <div className="space-y-3">
-                  <Label className="text-white/80 text-sm">Your shareable link</Label>
+              <div className="space-y-6 py-6">
+                <div className="space-y-4">
+                  <Label className="text-white/80 text-base">Your shareable link</Label>
                   <div 
                     onClick={handleCopyLink}
-                    className="w-full bg-white/5 border border-white/20 rounded-lg p-3 cursor-pointer hover:bg-white/10 transition-colors"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl p-4 cursor-pointer hover:bg-white/10 transition-colors"
                     data-testid="button-copy-link"
                   >
-                    <p className="text-xs text-white/80 break-all leading-relaxed">
+                    <p className="text-sm text-white/80 break-all leading-relaxed">
                       {getShareableLink()}
                     </p>
                   </div>
                   <Button
                     onClick={handleCopyLink}
-                    className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+                    className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-base"
                   >
                     {copiedLink ? (
                       <>
-                        <Check className="w-4 h-4 mr-2 text-emerald-400" />
+                        <Check className="w-5 h-5 mr-2 text-emerald-400" />
                         Copied!
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-2" />
+                        <Copy className="w-5 h-5 mr-2" />
                         Copy Link
                       </>
                     )}
                   </Button>
                 </div>
 
-                <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4">
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-violet-300 mb-2">What's next?</h4>
                   <p className="text-sm text-white/70">
-                    <strong className="text-white">What's next?</strong><br />
                     Share this link with your clients. They'll see the flow landing page, can purchase (if priced), and begin their journey.
                   </p>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-4 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => setShowPublishModal(false)}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
                     Close
                   </Button>
                   <Button
                     onClick={() => window.open(getShareableLink(), '_blank')}
                     variant="outline"
-                    className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10"
+                    className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10 h-14 text-base"
                     data-testid="button-view-landing"
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <ExternalLink className="w-5 h-5 mr-2" />
                     View Page
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                  <Rocket className="w-8 h-8 text-violet-400" />
+                  Ready to Publish
+                </DialogTitle>
+                <DialogDescription className="text-white/60 text-center text-base">
+                  Review your settings and publish your flow
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-6">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+                  <h4 className="font-medium text-white mb-3">Summary</h4>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white/60">Flow Name</span>
+                    <span className="text-white font-medium">{journeyData.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white/60">Duration</span>
+                    <span className="text-white font-medium">{journeyData.steps.length} days</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-white/60">Price</span>
+                    <span className="text-white font-medium text-lg">
+                      {(parseFloat(publishPrice) || 0) === 0 ? "Free" : `$${publishPrice}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-emerald-300 mb-2">What will happen?</h4>
+                  <ul className="text-sm text-white/70 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span>Your flow will be published and available to clients</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span>You'll get a shareable link to send to clients</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span>Clients can sign up and start their journey</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const price = parseFloat(publishPrice) || 0;
+                      if (price > 0) {
+                        setPublishStep(2);
+                      } else {
+                        setPublishStep(1);
+                      }
+                    }}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleConfirmPublish}
+                    disabled={isPublishing}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 h-16 text-lg font-semibold"
+                    data-testid="button-publish-now"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <>
+                        <Rocket className="w-6 h-6 mr-3" />
+                        Publish Now
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
