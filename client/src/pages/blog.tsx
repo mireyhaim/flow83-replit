@@ -1,4 +1,5 @@
 import Header from "@/components/landing/Header";
+import Footer from "@/components/landing/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, User } from "lucide-react";
@@ -237,6 +238,7 @@ const Blog = () => {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import Header from "@/components/landing/Header";
+import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Users, Star, Award, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
@@ -74,6 +75,7 @@ const Community = () => {
           </Link>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };
