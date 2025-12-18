@@ -28,6 +28,9 @@ export const users = pgTable("users", {
   toneOfVoice: text("tone_of_voice"), // e.g., "warm and supportive", "direct and practical"
   methodDescription: text("method_description"), // summary of mentor's approach
   behavioralRules: text("behavioral_rules"), // do's and don'ts for the AI
+  // Stripe Connect for receiving payments
+  stripeAccountId: varchar("stripe_account_id"),
+  stripeAccountStatus: varchar("stripe_account_status"), // 'pending' | 'active' | 'restricted'
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

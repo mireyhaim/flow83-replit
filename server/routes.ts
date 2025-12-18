@@ -1037,6 +1037,126 @@ export async function registerRoutes(
     }
   });
 
+  // Stripe Connect routes for mentors
+  app.post("/api/stripe/connect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      let accountId = user.stripeAccountId;
+      
+      if (!accountId) {
+        const account = await stripeService.createConnectAccount(
+          user.email || "",
+          userId
+        );
+        accountId = account.id;
+        
+        await storage.upsertUser({
+          id: userId,
+          stripeAccountId: accountId,
+          stripeAccountStatus: "pending",
+        });
+      }
+
+      const baseUrl = `https://${req.get("host")}`;
+      const accountLink = await stripeService.createConnectAccountLink(
+        accountId,
+        `${baseUrl}/api/stripe/connect/refresh`,
+        `${baseUrl}/api/stripe/connect/return`
+      );
+
+      res.json({ url: accountLink.url });
+    } catch (error) {
+      console.error("Error creating Stripe Connect account:", error);
+      res.status(500).json({ error: "Failed to connect Stripe account" });
+    }
+  });
+
+  app.get("/api/stripe/connect/refresh", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeAccountId) {
+        return res.redirect("/journeys");
+      }
+
+      const baseUrl = `https://${req.get("host")}`;
+      const accountLink = await stripeService.createConnectAccountLink(
+        user.stripeAccountId,
+        `${baseUrl}/api/stripe/connect/refresh`,
+        `${baseUrl}/api/stripe/connect/return`
+      );
+
+      res.redirect(accountLink.url);
+    } catch (error) {
+      console.error("Error refreshing Stripe Connect link:", error);
+      res.redirect("/journeys?error=stripe_connect_failed");
+    }
+  });
+
+  app.get("/api/stripe/connect/return", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.stripeAccountId) {
+        const account = await stripeService.getConnectAccount(user.stripeAccountId);
+        const status = account.charges_enabled ? "active" : "pending";
+        
+        await storage.upsertUser({
+          id: userId,
+          stripeAccountStatus: status,
+        });
+      }
+
+      res.redirect("/journeys?stripe_connected=true");
+    } catch (error) {
+      console.error("Error processing Stripe Connect return:", error);
+      res.redirect("/journeys?error=stripe_connect_failed");
+    }
+  });
+
+  app.get("/api/stripe/connect/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeAccountId) {
+        return res.json({ connected: false });
+      }
+
+      try {
+        const account = await stripeService.getConnectAccount(user.stripeAccountId);
+        const status = account.charges_enabled ? "active" : "pending";
+        
+        if (user.stripeAccountStatus !== status) {
+          await storage.upsertUser({
+            id: userId,
+            stripeAccountStatus: status,
+          });
+        }
+
+        res.json({ 
+          connected: true, 
+          status,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+        });
+      } catch (error) {
+        res.json({ connected: false, error: "Account not found" });
+      }
+    } catch (error) {
+      console.error("Error checking Stripe Connect status:", error);
+      res.status(500).json({ error: "Failed to check Stripe status" });
+    }
+  });
+
   app.post("/api/join/journey/:journeyId", async (req, res) => {
     try {
       const { journeyId } = req.params;
@@ -1060,25 +1180,54 @@ export async function registerRoutes(
       if (price > 0) {
         const baseUrl = `https://${req.get("host")}`;
         
-        const session = await stripeService.createOneTimePaymentSession({
-          customerEmail: email,
-          amount: price * 100,
-          currency: (journey.currency || "USD").toLowerCase(),
-          productName: journey.name,
-          successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${baseUrl}/j/${journeyId}`,
-          metadata: {
-            journeyId,
-            customerEmail: email,
-            customerName: name || "",
-          },
-        });
+        let mentor = null;
+        if (journey.creatorId) {
+          mentor = await storage.getUser(journey.creatorId);
+        }
 
-        res.json({ 
-          requiresPayment: true, 
-          checkoutUrl: session.url, 
-          sessionId: session.id 
-        });
+        if (mentor?.stripeAccountId && mentor.stripeAccountStatus === "active") {
+          const session = await stripeService.createConnectedCheckoutSession({
+            connectedAccountId: mentor.stripeAccountId,
+            customerEmail: email,
+            amount: price * 100,
+            currency: (journey.currency || "USD").toLowerCase(),
+            productName: journey.name,
+            successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&connected_account=${mentor.stripeAccountId}`,
+            cancelUrl: `${baseUrl}/j/${journeyId}`,
+            metadata: {
+              journeyId,
+              customerEmail: email,
+              customerName: name || "",
+              connectedAccountId: mentor.stripeAccountId,
+            },
+          });
+
+          res.json({ 
+            requiresPayment: true, 
+            checkoutUrl: session.url, 
+            sessionId: session.id 
+          });
+        } else {
+          const session = await stripeService.createOneTimePaymentSession({
+            customerEmail: email,
+            amount: price * 100,
+            currency: (journey.currency || "USD").toLowerCase(),
+            productName: journey.name,
+            successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancelUrl: `${baseUrl}/j/${journeyId}`,
+            metadata: {
+              journeyId,
+              customerEmail: email,
+              customerName: name || "",
+            },
+          });
+
+          res.json({ 
+            requiresPayment: true, 
+            checkoutUrl: session.url, 
+            sessionId: session.id 
+          });
+        }
       } else {
         const participant = await storage.createExternalParticipant(
           journeyId,
@@ -1110,6 +1259,7 @@ export async function registerRoutes(
   app.get("/api/payment/verify/:sessionId", async (req, res) => {
     try {
       const { sessionId } = req.params;
+      const connectedAccount = req.query.connected_account as string | undefined;
       
       let participant = await storage.getParticipantByStripeSession(sessionId);
       
@@ -1120,7 +1270,12 @@ export async function registerRoutes(
         });
       }
 
-      const session = await stripeService.getCheckoutSession(sessionId);
+      let session;
+      if (connectedAccount) {
+        session = await stripeService.getConnectedCheckoutSession(sessionId, connectedAccount);
+      } else {
+        session = await stripeService.getCheckoutSession(sessionId);
+      }
       
       if (session.payment_status !== "paid") {
         return res.json({ success: false, status: session.payment_status });

@@ -7,15 +7,23 @@ import { CheckCircle, Sparkles, ArrowRight } from "lucide-react";
 export default function PaymentSuccessPage() {
   const [, navigate] = useLocation();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setSessionId(params.get("session_id"));
+    setConnectedAccount(params.get("connected_account"));
   }, []);
 
   const { data: verification, isLoading, error } = useQuery({
-    queryKey: ["/api/payment/verify", sessionId],
-    queryFn: () => fetch(`/api/payment/verify/${sessionId}`).then(res => res.json()),
+    queryKey: ["/api/payment/verify", sessionId, connectedAccount],
+    queryFn: () => {
+      let url = `/api/payment/verify/${sessionId}`;
+      if (connectedAccount) {
+        url += `?connected_account=${connectedAccount}`;
+      }
+      return fetch(url).then(res => res.json());
+    },
     enabled: !!sessionId,
     retry: 3,
     retryDelay: 1000,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation, Link } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink
+  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -29,9 +30,46 @@ const JourneyEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [publishStep, setPublishStep] = useState<1 | 2>(1);
+  const [publishStep, setPublishStep] = useState<1 | 2 | 3>(1);
   const [publishPrice, setPublishPrice] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+
+  const { data: stripeStatus, refetch: refetchStripeStatus } = useQuery({
+    queryKey: ["/api/stripe/connect/status"],
+    queryFn: () => fetch("/api/stripe/connect/status").then(res => res.json()),
+    retry: false,
+  });
+
+  const connectStripeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/stripe/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.open(data.url, "_blank");
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to connect Stripe account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  useEffect(() => {
+    const handleFocus = () => {
+      refetchStripeStatus();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refetchStripeStatus]);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
 
@@ -178,7 +216,7 @@ const JourneyEditorPage = () => {
         currency: "USD"
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
-      setPublishStep(2);
+      setPublishStep(3);
     } catch (error) {
       toast({
         title: "Error",
@@ -535,23 +573,30 @@ const JourneyEditorPage = () => {
         )}
       </main>
 
-      {/* Publish Modal - 2 Steps */}
+      {/* Publish Modal - 3 Steps */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
         <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[90vw] max-w-lg">
           {/* Step Indicator */}
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
-                {publishStep > 1 ? <Check className="w-4 h-4" /> : '1'}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="flex items-center gap-1">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                {publishStep > 1 ? <Check className="w-3 h-3" /> : '1'}
               </div>
-              <span className={`text-sm ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
+              <span className={`text-xs ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
             </div>
-            <div className={`w-12 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
-            <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
-                2
+            <div className={`w-8 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex items-center gap-1">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                {publishStep > 2 ? <Check className="w-3 h-3" /> : '2'}
               </div>
-              <span className={`text-sm ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Share</span>
+              <span className={`text-xs ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Payment</span>
+            </div>
+            <div className={`w-8 h-0.5 ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex items-center gap-1">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${publishStep >= 3 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                3
+              </div>
+              <span className={`text-xs ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Share</span>
             </div>
           </div>
 
@@ -593,10 +638,96 @@ const JourneyEditorPage = () => {
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleConfirmPublish}
+                    onClick={() => {
+                      const price = parseFloat(publishPrice) || 0;
+                      if (price > 0 && !stripeStatus?.chargesEnabled) {
+                        setPublishStep(2);
+                      } else {
+                        handleConfirmPublish();
+                      }
+                    }}
                     disabled={isPublishing}
                     className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
                     data-testid="button-confirm-publish"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Globe className="w-4 h-4 mr-2" />
+                        {(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled ? "Next" : "Publish Now"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : publishStep === 2 ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                  <CreditCard className="w-6 h-6 text-violet-400" />
+                  Connect Stripe
+                </DialogTitle>
+                <DialogDescription className="text-white/60">
+                  Connect your Stripe account to receive payments
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-5 py-4">
+                {stripeStatus?.chargesEnabled ? (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 flex items-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-emerald-300">Stripe Connected!</p>
+                      <p className="text-sm text-white/60">Your account is ready to receive payments.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-300">Stripe Connection Required</p>
+                        <p className="text-sm text-white/60">To sell paid flows, you need to connect your Stripe account. Payments will go directly to you.</p>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => connectStripeMutation.mutate()}
+                      disabled={connectStripeMutation.isPending}
+                      className="w-full bg-[#635bff] hover:bg-[#7a73ff] text-white py-6"
+                      data-testid="button-connect-stripe"
+                    >
+                      {connectStripeMutation.isPending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <CreditCard className="w-5 h-5 mr-2" />
+                          Connect Stripe Account
+                        </>
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-white/40 text-center">
+                      After connecting, return here and click "Continue" to publish your flow.
+                    </p>
+                  </>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPublishStep(1)}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleConfirmPublish}
+                    disabled={isPublishing || !stripeStatus?.chargesEnabled}
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50"
+                    data-testid="button-publish-after-stripe"
                   >
                     {isPublishing ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
