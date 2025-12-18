@@ -152,13 +152,14 @@ export default function JourneyLandingPage() {
   let rawContent: LandingPageContent | undefined;
   
   if (rawApiContent) {
+    const nested = rawApiContent.landingPageContent || rawApiContent;
     rawContent = {
-      hero: rawApiContent.hero || rawApiContent.heroSection,
-      audience: rawApiContent.audience || rawApiContent.audienceSection,
-      painPoints: rawApiContent.painPoints || rawApiContent.painPointsSection,
-      transformation: rawApiContent.transformation || rawApiContent.transformationSection,
-      testimonials: rawApiContent.testimonials,
-      cta: rawApiContent.cta || rawApiContent.ctaSection,
+      hero: nested.hero || nested.heroSection,
+      audience: nested.audience || nested.audienceSection,
+      painPoints: nested.painPoints || nested.painPointsSection,
+      transformation: nested.transformation || nested.transformationSection,
+      testimonials: nested.testimonials,
+      cta: nested.cta || nested.ctaSection,
     };
   }
   
