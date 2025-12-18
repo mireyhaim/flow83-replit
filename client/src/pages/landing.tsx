@@ -1,7 +1,6 @@
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
-import HowItWorks from "@/components/landing/HowItWorks";
 import Testimonials from "@/components/landing/Testimonials";
 import CallToAction from "@/components/landing/CallToAction";
 import Footer from "@/components/landing/Footer";
@@ -18,7 +17,6 @@ const LandingPage = () => {
       <Header />
       <main>
         <Hero />
-        <HowItWorks />
         <Features />
         <Testimonials />
         <CallToAction />

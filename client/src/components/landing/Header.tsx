@@ -17,6 +17,9 @@ const Header = () => {
           <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
             Home
           </Link>
+          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
+            How It Works
+          </Link>
           <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
             Pricing
           </Link>
@@ -51,6 +54,7 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 space-y-4">
           <Link href="/" className="block text-gray-600 hover:text-gray-900 py-2">Home</Link>
+          <Link href="/how-it-works" className="block text-gray-600 hover:text-gray-900 py-2">How It Works</Link>
           <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">Pricing</Link>
           <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">Community</Link>
           <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">Contact</Link>

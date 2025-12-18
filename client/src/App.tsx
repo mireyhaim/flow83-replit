@@ -39,6 +39,7 @@ import BlogArticle from "@/pages/blog-article";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
+import HowItWorksPage from "@/pages/how-it-works";
 import ProfilePage from "@/pages/profile";
 import NotificationSettingsPage from "@/pages/notification-settings";
 import PaymentSuccessPage from "@/pages/payment-success";
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/payment/success" component={PaymentSuccessPage} />
       
       {/* New routes */}
+      <Route path="/how-it-works" component={HowItWorksPage} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={ContactUs} />
       <Route path="/community" component={Community} />
