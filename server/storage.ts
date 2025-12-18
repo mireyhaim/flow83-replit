@@ -8,10 +8,11 @@ import {
   type ActivityEvent, type InsertActivityEvent,
   type NotificationSettings, type InsertNotificationSettings,
   type UserDayState, type InsertUserDayState,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState
+  type Payment, type InsertPayment,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, asc, desc, inArray, lt, isNull, or } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, lt, isNull, or, sum } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -64,6 +65,12 @@ export interface IStorage {
   completeDayState(participantId: string, dayNumber: number, summary: Partial<InsertUserDayState>): Promise<UserDayState | undefined>;
   getLatestDaySummary(participantId: string, maxDayNumber: number): Promise<UserDayState | undefined>;
   getDayState(participantId: string, dayNumber: number): Promise<UserDayState | undefined>;
+
+  // Payment tracking
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPaymentsByMentor(mentorId: string): Promise<Payment[]>;
+  getTotalEarningsByMentor(mentorId: string): Promise<number>;
+  getPaymentByStripeSession(stripeSessionId: string): Promise<Payment | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -366,6 +373,35 @@ export class DatabaseStorage implements IStorage {
         eq(userDayState.dayNumber, dayNumber)
       ));
     return state;
+  }
+
+  // Payment tracking methods
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const [created] = await db.insert(payments).values(payment).returning();
+    return created;
+  }
+
+  async getPaymentsByMentor(mentorId: string): Promise<Payment[]> {
+    return db.select().from(payments)
+      .where(eq(payments.mentorId, mentorId))
+      .orderBy(desc(payments.createdAt));
+  }
+
+  async getTotalEarningsByMentor(mentorId: string): Promise<number> {
+    const [result] = await db
+      .select({ total: sum(payments.amount) })
+      .from(payments)
+      .where(and(
+        eq(payments.mentorId, mentorId),
+        eq(payments.status, "completed")
+      ));
+    return Number(result?.total || 0);
+  }
+
+  async getPaymentByStripeSession(stripeSessionId: string): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments)
+      .where(eq(payments.stripeCheckoutSessionId, stripeSessionId));
+    return payment;
   }
 }
 

@@ -198,3 +198,27 @@ export const insertNotificationSettingsSchema = createInsertSchema(notificationS
 
 export type InsertNotificationSettings = z.infer<typeof insertNotificationSettingsSchema>;
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
+
+// Payment records for tracking mentor earnings
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "set null" }),
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id").unique(),
+  stripeCheckoutSessionId: varchar("stripe_checkout_session_id"),
+  amount: integer("amount").notNull(), // Amount in cents
+  currency: text("currency").default("USD"),
+  status: text("status").default("completed"), // 'pending' | 'completed' | 'failed' | 'refunded'
+  customerEmail: varchar("customer_email"),
+  customerName: varchar("customer_name"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
