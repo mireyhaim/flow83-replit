@@ -34,7 +34,7 @@ const CallToAction = () => {
                 className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                 data-testid="button-cta-get-started"
               >
-                Start Your Journey as a Guide
+                Start Your Flow as a Guide
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
