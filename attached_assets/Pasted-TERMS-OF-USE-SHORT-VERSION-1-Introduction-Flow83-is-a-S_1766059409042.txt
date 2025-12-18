@@ -1,0 +1,42 @@
+TERMS OF USE (SHORT VERSION)
+
+1. Introduction
+Flow83 is a SaaS platform that enables mentors to create, publish, and sell personalized journeys, programs, and guided experiences to their clients. By using the platform, you confirm that you have read, understood, and agreed to these Terms.
+
+2. Not a Medical Provider
+Flow83 is not a medical organization and does not provide medical advice, diagnosis, or treatment. The platform is not a substitute for professional medical care. Always consult a licensed healthcare provider for medical guidance or concerns. Flow83 does not operate under HIPAA/ICP/clinical compliance standards and should not be used for medical records or medical decision-making.
+
+3. Mentor Responsibility
+Mentors who upload content, build journeys, and sell programs through Flow83 are solely and fully responsible for the content they provide. Flow83 does not review, edit, evaluate, or guarantee the accuracy, safety, legality, or effectiveness of mentor content. Mentors are responsible for complying with all legal, ethical, and professional standards in their region or field.
+
+4. Content Ownership
+Mentors retain ownership of their intellectual property and grant Flow83 permission to host, display, and deliver the content to end-users. Flow83 does not claim rights to mentor methods, systems, or materials.
+
+5. No Guarantees
+Flow83 does not guarantee any emotional, mental, physical, energetic, or financial outcomes. All results and experiences are subjective and vary by individual. Use of the platform is entirely at your own risk.
+
+6. End-User Relationship
+All financial transactions from end-users purchasing mentor journeys are processed directly through the mentor’s Stripe account. Flow83 does not handle or transfer end-user revenue. The mentor is the sole provider of the service purchased by the end-user.
+
+7. Payments to Flow83
+Mentors pay Flow83 a recurring subscription fee for platform access. Plans may vary by features, usage limits, and tools such as Stripe integration. Fees are non-refundable unless otherwise stated.
+
+8. Platform Use
+Mentors and users agree not to misuse the system, copy platform features, reverse engineer the product, or upload harmful, illegal, or abusive content. Flow83 may suspend or remove any account that violates these terms.
+
+9. Limitation of Liability
+Flow83 is not liable for:
+
+mentor content
+
+user outcomes
+
+business results
+
+emotional, mental, or physical effects
+
+system downtime or data loss
+Liability is limited to the subscription fees paid to Flow83.
+
+10. Changes to Terms
+Flow83 may update these terms occasionally. Continued use of the platform signifies agreement to the updated version.
