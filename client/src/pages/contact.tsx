@@ -130,30 +130,7 @@ const ContactUs = () => {
               </Card>
             </div>
 
-            {/* Contact Information */}
-            <div className="space-y-6">
-              {/* Contact Details */}
-              <Card className="bg-white border border-gray-200 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 text-gray-500">
-                    <Mail className="w-5 h-5 text-violet-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Email</p>
-                      <a href="mailto:hello@flow83.com" className="hover:text-violet-600 transition-colors">
-                        hello@flow83.com
-                      </a>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
             </div>
-          </div>
         </div>
       </main>
       <Footer />
