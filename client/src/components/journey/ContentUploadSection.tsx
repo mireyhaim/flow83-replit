@@ -109,7 +109,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
 
   return (
     <div className="space-y-8">
-      <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-xl p-6">
+      <div className="bg-violet-600/20 border border-violet-500/30 rounded-xl p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Share Your Content & Method</h3>
         <p className="text-white/60 mb-4">
           To create a personalized digital flow for your clients, we need your unique content and methodology. 
@@ -262,7 +262,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
           Back to Intent
         </Button>
         <Button 
-          className="bg-indigo-600 hover:bg-indigo-700" 
+          className="bg-violet-600 hover:bg-violet-700" 
           size="lg"
           onClick={handleGenerateJourney}
           disabled={isGenerating || !hasContent}

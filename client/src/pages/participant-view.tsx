@@ -340,7 +340,7 @@ export default function ParticipantView() {
             </div>
             
             <Link href={`/journeys/${resolvedJourney.id}`}>
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <Button className="w-full bg-violet-600 hover:bg-violet-700">
                 Back to Editor
               </Button>
             </Link>
@@ -405,7 +405,7 @@ export default function ParticipantView() {
           </div>
           
           <Link href="/dashboard">
-            <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+            <Button className="w-full bg-violet-600 hover:bg-violet-700">
               Back to Home
             </Button>
           </Link>
@@ -511,7 +511,7 @@ export default function ParticipantView() {
                 <Button
                   onClick={handleSubmitFeedback}
                   disabled={feedbackRating === 0 || feedbackSubmitting}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
                   data-testid="feedback-submit"
                 >
                   {feedbackSubmitting ? (
@@ -810,7 +810,7 @@ export default function ParticipantView() {
                 <Button 
                   type="submit" 
                   size="icon" 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-lg"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg"
                   disabled={isSending || !inputValue.trim()}
                   data-testid="button-send"
                 >

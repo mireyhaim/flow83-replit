@@ -17,7 +17,7 @@ export default function FeedbackPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
   }
@@ -88,7 +88,7 @@ export default function FeedbackPage() {
         
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
           </div>
         ) : feedbackList.length === 0 ? (
           <div className="text-center py-12">
@@ -109,7 +109,7 @@ export default function FeedbackPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <User className="h-5 w-5 text-indigo-600" />
+                      <User className="h-5 w-5 text-violet-600" />
                     </div>
                     <div>
                       <p className="text-slate-900 font-medium">{feedback.participantName}</p>

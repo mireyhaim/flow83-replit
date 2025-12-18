@@ -64,7 +64,7 @@ export default function JourneysPage() {
           <p className="text-slate-500 text-sm mt-1">Manage your transformational flows</p>
         </div>
         <Link href="/journeys/new">
-          <Button data-testid="button-create-journey" className="bg-indigo-600 hover:bg-indigo-700">
+          <Button data-testid="button-create-journey" className="bg-violet-600 hover:bg-violet-700">
             <Plus className="mr-2 h-4 w-4" />
             New Flow
           </Button>
@@ -73,16 +73,16 @@ export default function JourneysPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
         </div>
       ) : journeys.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="h-8 w-8 text-indigo-600" />
+          <div className="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="h-8 w-8 text-violet-600" />
           </div>
           <p className="text-slate-600 mb-6">You haven't created any flows yet.</p>
           <Link href="/journeys/new">
-            <Button data-testid="button-create-first-journey" className="bg-indigo-600 hover:bg-indigo-700">
+            <Button data-testid="button-create-first-journey" className="bg-violet-600 hover:bg-violet-700">
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Flow
             </Button>
@@ -93,7 +93,7 @@ export default function JourneysPage() {
           {journeys.map((journey) => (
             <div 
               key={journey.id} 
-              className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-indigo-200 transition-all group"
+              className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-violet-200 transition-all group"
               data-testid={`card-journey-${journey.id}`}
             >
               <div className="flex items-start justify-between mb-3">
@@ -155,7 +155,7 @@ export default function JourneysPage() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="w-full mt-4 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-indigo-200"
+                  className="w-full mt-4 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-violet-200"
                 >
                   <Pencil className="mr-2 h-3 w-3" />
                   Edit Flow

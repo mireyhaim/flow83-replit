@@ -66,7 +66,7 @@ export default function Dashboard() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export default function Dashboard() {
           <p className="text-slate-600 mb-8">
             Transform your knowledge into powerful 7-day flows that help others grow.
           </p>
-          <Button size="lg" asChild data-testid="button-login" className="bg-indigo-600 hover:bg-indigo-700">
+          <Button size="lg" asChild data-testid="button-login" className="bg-violet-600 hover:bg-violet-700">
             <a href="/api/login">Sign In to Get Started</a>
           </Button>
         </div>
@@ -130,15 +130,15 @@ export default function Dashboard() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
         </div>
       ) : (
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-indigo-200 transition-all" data-testid="card-total-journeys">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-violet-200 transition-all" data-testid="card-total-journeys">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-violet-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-total-journeys">{stats?.totalJourneys ?? 0}</div>
@@ -220,8 +220,8 @@ export default function Dashboard() {
 
             <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all" data-testid="card-recent-activity">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-violet-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
               </div>

@@ -17,7 +17,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const NavContent = () => (
     <>
       <div className="p-6 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+        <Link href="/" className="text-xl font-bold text-violet-600 hover:text-violet-700 transition-colors">
           Flow 83
         </Link>
         <button 
@@ -40,11 +40,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                 isActive 
-                  ? "bg-indigo-50 text-indigo-700 border border-indigo-100" 
+                  ? "bg-violet-50 text-violet-700 border border-indigo-100" 
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               )}
             >
-              <item.icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? "text-indigo-600" : ""} />
+              <item.icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? "text-violet-600" : ""} />
               {item.label}
             </Link>
           );
@@ -55,7 +55,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <Link 
           href="/journeys/new"
           onClick={() => setMobileMenuOpen(false)}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all w-full justify-center shadow-sm"
+          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-all w-full justify-center shadow-sm"
         >
           <Plus size={18} />
           New Flow
@@ -75,7 +75,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-lg font-bold text-indigo-600">
+        <Link href="/" className="text-lg font-bold text-violet-600">
           Flow 83
         </Link>
         <button 

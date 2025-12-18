@@ -383,7 +383,7 @@ const JourneyEditorPage = () => {
                 size="sm"
                 className={journeyData.status === "published" 
                   ? "bg-amber-600 hover:bg-amber-700" 
-                  : "bg-indigo-600 hover:bg-indigo-700"}
+                  : "bg-violet-600 hover:bg-violet-700"}
                 disabled={isPublishing}
                 data-testid="button-publish"
               >
@@ -565,7 +565,7 @@ const JourneyEditorPage = () => {
             <p className="text-white/50 mb-6">Content generation may have failed. Try refreshing the page.</p>
             <Button 
               onClick={() => window.location.reload()}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-violet-600 hover:bg-violet-700"
             >
               Refresh Page
             </Button>
@@ -671,7 +671,7 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => setPublishStep(2)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-14 text-base"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
                     data-testid="button-next-step"
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
@@ -768,7 +768,7 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => setPublishStep(3)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-14 text-base"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
                     data-testid="button-next-after-stripe"
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
@@ -888,7 +888,7 @@ const JourneyEditorPage = () => {
                   </div>
                   <Button
                     onClick={handleCopyLink}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 text-base"
+                    className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-base"
                   >
                     {copiedLink ? (
                       <>
@@ -921,7 +921,7 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => window.open(getShareableLink(), '_blank')}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-14 text-base"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
                     data-testid="button-view-landing"
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />

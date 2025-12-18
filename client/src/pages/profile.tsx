@@ -125,7 +125,7 @@ export default function ProfilePage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
   }
@@ -135,7 +135,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4 text-slate-900">Please sign in</h1>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+          <Button asChild className="bg-violet-600 hover:bg-violet-700">
             <a href="/api/login">Sign In</a>
           </Button>
         </div>
@@ -157,7 +157,7 @@ export default function ProfilePage() {
                   data-testid="img-profile"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl font-semibold text-indigo-600 border border-slate-200">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl font-semibold text-violet-600 border border-slate-200">
                   {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
                 </div>
               )}
@@ -192,7 +192,7 @@ export default function ProfilePage() {
             onClick={handleSave} 
             disabled={isSaving} 
             data-testid="button-save-profile"
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-violet-600 hover:bg-violet-700"
           >
             {isSaving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -359,7 +359,7 @@ export default function ProfilePage() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
                     <Receipt className="h-5 w-5 text-indigo-500" />
                   </div>
                   <div>

@@ -39,7 +39,7 @@ const Hero = () => {
             <Link href="/dashboard">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-6 h-auto rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:shadow-indigo-500/40 hover:scale-105"
+                className="text-lg px-8 py-6 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/25 transition-all duration-300 hover:shadow-violet-500/40 hover:scale-105"
                 data-testid="button-hero-get-started"
               >
                 Start Creating
