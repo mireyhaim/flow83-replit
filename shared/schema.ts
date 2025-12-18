@@ -28,9 +28,16 @@ export const users = pgTable("users", {
   toneOfVoice: text("tone_of_voice"), // e.g., "warm and supportive", "direct and practical"
   methodDescription: text("method_description"), // summary of mentor's approach
   behavioralRules: text("behavioral_rules"), // do's and don'ts for the AI
-  // Stripe Connect for receiving payments
+  // Stripe Connect for receiving payments from participants
   stripeAccountId: varchar("stripe_account_id"),
   stripeAccountStatus: varchar("stripe_account_status"), // 'pending' | 'active' | 'restricted'
+  // Platform subscription fields
+  stripeCustomerId: varchar("stripe_customer_id"),
+  subscriptionId: varchar("subscription_id"),
+  subscriptionPlan: varchar("subscription_plan"), // 'starter' | 'pro' | 'business'
+  subscriptionStatus: varchar("subscription_status"), // 'trialing' | 'active' | 'canceled' | 'past_due'
+  trialEndsAt: timestamp("trial_ends_at"),
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
