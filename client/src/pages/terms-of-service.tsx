@@ -57,24 +57,24 @@ const termsContent = [
 
 const TermsOfService = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#0f0f23]">
+    <div className="min-h-screen bg-white">
       <Header />
       <main className="container mx-auto px-6 py-16 pt-28">
         <div className="max-w-4xl mx-auto">
           <header className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 border border-violet-200 text-violet-600 text-sm font-medium mb-6">
               <FileText className="w-4 h-4" />
               Legal
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" data-testid="text-terms-title">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4" data-testid="text-terms-title">
               Terms of Use
             </h1>
-            <p className="text-white/50 text-lg">
+            <p className="text-gray-500 text-lg">
               Last updated: December 2024
             </p>
           </header>
 
-          <div className="bg-[#1a1a2e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
+          <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 md:p-12">
             <div className="space-y-10">
               {termsContent.map((section, index) => {
                 const Icon = section.icon;
@@ -85,14 +85,14 @@ const TermsOfService = () => {
                     data-testid={`terms-section-${index + 1}`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center border border-violet-500/20">
-                        <Icon className="w-5 h-5 text-violet-400" />
+                      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center border border-violet-200">
+                        <Icon className="w-5 h-5 text-violet-600" />
                       </div>
                       <div className="flex-1">
-                        <h2 className="text-xl font-semibold text-white mb-3">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-3">
                           {index + 1}. {section.title}
                         </h2>
-                        <p className="text-white/60 leading-relaxed">
+                        <p className="text-gray-600 leading-relaxed">
                           {section.content}
                         </p>
                       </div>
@@ -102,13 +102,13 @@ const TermsOfService = () => {
               })}
             </div>
 
-            <footer className="mt-16 pt-8 border-t border-white/10">
-              <div className="bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 rounded-2xl p-6 border border-violet-500/20">
-                <p className="text-white/70 text-center">
+            <footer className="mt-16 pt-8 border-t border-gray-200">
+              <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-2xl p-6 border border-violet-200">
+                <p className="text-gray-600 text-center">
                   If you have questions about these terms, please contact us at{" "}
                   <a 
                     href="mailto:support@flow83.com" 
-                    className="text-violet-400 hover:text-violet-300 transition-colors font-medium"
+                    className="text-violet-600 hover:text-violet-700 transition-colors font-medium"
                   >
                     support@flow83.com
                   </a>
