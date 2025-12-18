@@ -328,7 +328,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
         <Button
           type="button"
           onClick={handleNext}
-          className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 px-8 disabled:opacity-50"
+          className="bg-indigo-600 hover:bg-indigo-700 px-8 disabled:opacity-50"
           data-testid="button-next"
         >
           {currentStep === totalSteps - 1 ? (

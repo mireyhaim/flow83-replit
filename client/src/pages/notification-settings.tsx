@@ -105,7 +105,7 @@ const NotificationSettingsPage = () => {
           <Button 
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+            className="bg-indigo-600 hover:bg-indigo-700"
             data-testid="button-save-notifications"
           >
             {isSaving ? (

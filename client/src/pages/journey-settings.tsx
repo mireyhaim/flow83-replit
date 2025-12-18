@@ -199,7 +199,7 @@ const JourneySettingsPage = () => {
 
             <Button 
               onClick={handleSave} 
-              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90" 
+              className="w-full bg-indigo-600 hover:bg-indigo-700" 
               size="lg"
               disabled={isSaving || !formData.name || !formData.goal || !formData.audience}
               data-testid="button-save-settings"

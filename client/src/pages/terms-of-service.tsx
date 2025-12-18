@@ -85,8 +85,8 @@ const TermsOfService = () => {
                     data-testid={`terms-section-${index + 1}`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center border border-violet-200">
-                        <Icon className="w-5 h-5 text-violet-600" />
+                      <div className="shrink-0 w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-200">
+                        <Icon className="w-5 h-5 text-indigo-600" />
                       </div>
                       <div className="flex-1">
                         <h2 className="text-xl font-semibold text-gray-900 mb-3">
@@ -103,12 +103,12 @@ const TermsOfService = () => {
             </div>
 
             <footer className="mt-16 pt-8 border-t border-gray-200">
-              <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-2xl p-6 border border-violet-200">
+              <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-200">
                 <p className="text-gray-600 text-center">
                   If you have questions about these terms, please contact us at{" "}
                   <a 
                     href="mailto:support@flow83.com" 
-                    className="text-violet-600 hover:text-violet-700 transition-colors font-medium"
+                    className="text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
                   >
                     support@flow83.com
                   </a>
