@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, PenTool, LogOut, Plus, User, Search, Bell, Menu, X, MessageCircle } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus, User, Bell, Menu, X, MessageCircle } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -27,19 +27,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         >
           <X size={20} />
         </button>
-      </div>
-
-      <div className="px-4 mb-4 hidden md:block">
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10">
-          <Search size={16} className="text-white/40" aria-hidden="true" />
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            aria-label="Search flows and content"
-            className="bg-transparent border-none outline-none text-sm text-white/70 placeholder:text-white/30 w-full"
-            data-testid="input-dashboard-search"
-          />
-        </div>
       </div>
 
       <nav className="flex-1 px-3 py-2 space-y-1">
