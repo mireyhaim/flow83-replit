@@ -42,6 +42,7 @@ import CookiePolicy from "@/pages/cookie-policy";
 import ProfilePage from "@/pages/profile";
 import NotificationSettingsPage from "@/pages/notification-settings";
 import PaymentSuccessPage from "@/pages/payment-success";
+import FeedbackPage from "@/pages/feedback";
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/method" component={MethodPage} />
       <Route path="/journeys" component={JourneysPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/feedback" component={FeedbackPage} />
       <Route path="/settings/notifications" component={NotificationSettingsPage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
       <Route path="/journey/create" component={JourneyCreatePage} />
