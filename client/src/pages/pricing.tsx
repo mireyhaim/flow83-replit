@@ -2,11 +2,16 @@ import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 const pricingPlans = [
   {
     name: "Starter",
+    planId: "starter" as const,
     price: "$38",
     period: "/month",
     trialText: "Includes a 7-day free trial",
@@ -26,6 +31,7 @@ const pricingPlans = [
   },
   {
     name: "Pro",
+    planId: "pro" as const,
     price: "$83",
     period: "/month",
     trialText: null,
@@ -46,6 +52,7 @@ const pricingPlans = [
   },
   {
     name: "Business",
+    planId: "business" as const,
     price: "$183",
     period: "/month",
     trialText: null,
@@ -64,7 +71,33 @@ const pricingPlans = [
   }
 ];
 
+type PlanId = "starter" | "pro" | "business";
+
 const Pricing = () => {
+  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
+  const { isAuthenticated } = useAuth();
+  const [, navigate] = useLocation();
+
+  const handleSubscribe = async (planId: PlanId) => {
+    if (!isAuthenticated) {
+      navigate(`/api/login?returnTo=/pricing`);
+      return;
+    }
+
+    setLoadingPlan(planId);
+    try {
+      const response = await apiRequest("POST", "/api/subscription/checkout", { plan: planId });
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
@@ -137,7 +170,13 @@ const Pricing = () => {
                   <div className="mt-auto">
                     <Button 
                       className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                      onClick={() => handleSubscribe(plan.planId)}
+                      disabled={loadingPlan !== null}
+                      data-testid={`button-subscribe-${plan.planId}`}
                     >
+                      {loadingPlan === plan.planId ? (
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      ) : null}
                       {plan.buttonText}
                     </Button>
                   </div>
@@ -225,7 +264,13 @@ const Pricing = () => {
               </p>
               <Button 
                 className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                onClick={() => handleSubscribe("starter")}
+                disabled={loadingPlan !== null}
+                data-testid="button-cta-free-trial"
               >
+                {loadingPlan === "starter" ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : null}
                 Start Free Trial
               </Button>
             </div>
