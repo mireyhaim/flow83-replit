@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
 const pricingPlans = [
@@ -76,11 +75,10 @@ type PlanId = "starter" | "pro" | "business";
 const Pricing = () => {
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
   const { isAuthenticated } = useAuth();
-  const [, navigate] = useLocation();
 
   const handleSubscribe = async (planId: PlanId) => {
     if (!isAuthenticated) {
-      navigate(`/api/login?returnTo=/pricing`);
+      window.location.href = `/api/login?returnTo=/pricing`;
       return;
     }
 
