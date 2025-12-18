@@ -147,6 +147,68 @@ const Pricing = () => {
           </div>
         </section>
 
+        <section className="max-w-4xl mx-auto px-6 py-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
+            Frequently Asked Questions
+          </h2>
+          
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                How does the 7-day free trial work?
+              </h3>
+              <p className="text-gray-600">
+                Sign up for the Starter plan and get 7 full days to explore the platform. Build your first journey, preview everything risk-free. After 7 days, automatic billing of $38/month begins. You can cancel anytime before the trial ends.
+              </p>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                What happens if I exceed my user limit?
+              </h3>
+              <p className="text-gray-600">
+                If you go over your included users, you'll be charged $0.60 per additional user. Usage is calculated monthly and added to your next invoice.
+              </p>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Can I upgrade or downgrade my plan?
+              </h3>
+              <p className="text-gray-600">
+                Yes, you can change your plan at any time. When upgrading, you'll get immediate access to new features. When downgrading, changes take effect at the start of your next billing cycle.
+              </p>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                How do payments work? Do you take a percentage?
+              </h3>
+              <p className="text-gray-600">
+                No, we never take a percentage of your earnings. Payments from your participants go directly to your connected Stripe account. You keep 100% of what you earn (minus standard Stripe processing fees).
+              </p>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                What counts as a "user"?
+              </h3>
+              <p className="text-gray-600">
+                A user is anyone who actively participates in your journey. This includes anyone who signs up and engages with your flow content, whether they paid or accessed it for free.
+              </p>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Can I cancel my subscription?
+              </h3>
+              <p className="text-gray-600">
+                Yes, you can cancel anytime. Your access continues until the end of your current billing period. There are no cancellation fees or long-term commitments.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
           <div className="bg-white border border-gray-200 rounded-3xl p-12 shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
