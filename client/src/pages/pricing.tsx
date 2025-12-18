@@ -10,7 +10,7 @@ const pricingPlans = [
     price: "$38",
     period: "/month",
     trialText: "Includes a 7-day free trial",
-    description: "The simplest, fastest, and most affordable way to launch your first journey and start selling online — without a website, without tech skills, and without risk.",
+    description: "The simplest, fastest, and most affordable way to launch your first journey and start selling online - without a website, without tech skills, and without risk.",
     features: [
       "1 active Journey (Flow)",
       "Up to 60 users",
@@ -29,7 +29,7 @@ const pricingPlans = [
     price: "$83",
     period: "/month",
     trialText: null,
-    description: "For mentors who are already selling and want to grow — with more journeys, more clients, and deeper performance visibility.",
+    description: "For mentors who are already selling and want to grow - with more journeys, more clients, and deeper performance visibility.",
     features: [
       "Up to 5 active Journeys",
       "Up to 300 users",
@@ -49,7 +49,7 @@ const pricingPlans = [
     price: "$183",
     period: "/month",
     trialText: null,
-    description: "For established mentors, schools, and creators who want to turn their method into a long-term digital income stream — without limitations.",
+    description: "For established mentors, schools, and creators who want to turn their method into a long-term digital income stream - without limitations.",
     features: [
       "Unlimited active Journeys",
       "Unlimited users",
@@ -77,7 +77,7 @@ const Pricing = () => {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-4 leading-relaxed">
-            Three levels — start, grow, and scale.
+            Three levels - start, grow, and scale.
           </p>
           <p className="text-lg text-gray-500 max-w-4xl mx-auto leading-relaxed">
             All plans include a personal sales landing page, payment integration (funds go directly to you), cloud hosting, and a mentor dashboard.
@@ -212,7 +212,7 @@ const Pricing = () => {
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
           <div className="bg-white border border-gray-200 rounded-3xl p-12 shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              100% of your revenue — stays yours.
+              100% of your revenue - stays yours.
             </h2>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
               We don't take percentages, we don't touch your income, and we don't interfere with your client relationships.
