@@ -5,7 +5,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, participantsApi, earningsApi, feedbackApi, type DashboardStats, type InactiveParticipant, type EarningsData, type FeedbackItem } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Lightbulb, Sparkles, Target, MessageCircle, Clock, AlertCircle, UserPlus, Trophy, Star } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, MessageCircle, Clock, AlertCircle, UserPlus, Trophy, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -242,38 +242,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-tips">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-fuchsia-600/10 flex items-center justify-center">
-                  <Lightbulb className="h-5 w-5 text-fuchsia-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-white">Tips</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                  <Sparkles className="h-4 w-4 text-fuchsia-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-white">Start with your expertise</p>
-                    <p className="text-xs text-white/40">Upload your existing documents</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                  <Target className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-white">Focus on one transformation</p>
-                    <p className="text-xs text-white/40">Solve one specific problem</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                  <MessageCircle className="h-4 w-4 text-violet-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-white">Make it personal</p>
-                    <p className="text-xs text-white/40">Engage with tasks & reflections</p>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-recent-activity">
