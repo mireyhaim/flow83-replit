@@ -15,17 +15,17 @@ const stats = [
 
 const Community = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="pt-20">
         {/* Hero Section */}
         <section className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
                 Meet Our Creator Community
               </h1>
-              <p className="text-xl text-muted-foreground mb-8">
+              <p className="text-xl text-gray-500 mb-8">
                 Connect with expert therapists, coaches, and healers who are transforming lives through personalized digital flows
               </p>
             </div>
@@ -33,7 +33,7 @@ const Community = () => {
               <img 
                 src={communityHero} 
                 alt="Community of professional therapists, coaches, and wellness practitioners collaborating"
-                className="w-full h-auto rounded-2xl shadow-spiritual"
+                className="w-full h-auto rounded-2xl shadow-xl"
               />
             </div>
           </div>
@@ -47,10 +47,10 @@ const Community = () => {
               return (
                 <div key={stat.label} className="text-center">
                   <div className="flex justify-center mb-4">
-                    <IconComponent className="w-8 h-8 text-primary" />
+                    <IconComponent className="w-8 h-8 text-violet-600" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">{stat.value}</div>
-                  <div className="text-muted-foreground">{stat.label}</div>
+                  <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
+                  <div className="text-gray-500">{stat.label}</div>
                 </div>
               );
             })}
@@ -62,14 +62,14 @@ const Community = () => {
 
         {/* Join Community CTA */}
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
             Ready to Join Our Community?
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-xl text-gray-500 mb-8">
             Start creating transformative flows and connect with like-minded professionals
           </p>
           <Link href="/journeys/new">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
+            <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg rounded-full">
               Become a Creator
             </Button>
           </Link>

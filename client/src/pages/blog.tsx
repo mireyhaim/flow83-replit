@@ -122,27 +122,27 @@ export const blogPosts = [
 
 const Blog = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="pt-20">
         {/* Hero Section */}
         <section className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Flow 83 Blog
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-gray-500 max-w-3xl mx-auto mb-8">
             Insights, research, and best practices from leading experts in digital therapeutics and transformative journeys
           </p>
         </section>
 
         {/* Featured Posts */}
         <section className="max-w-7xl mx-auto px-6 mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">Featured Articles</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Articles</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogPosts.filter(post => post.featured).map((post) => (
               <Link key={post.id} href={`/blog/${post.id}`}>
-                <Card className="gradient-card border-0 shadow-card hover:shadow-spiritual transition-all duration-300 cursor-pointer hover:scale-105">
+                <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105">
                   <CardHeader>
                     <div className="w-full h-48 mb-4 overflow-hidden rounded-lg">
                       <img 
@@ -152,16 +152,16 @@ const Blog = () => {
                       />
                     </div>
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary">{post.category}</Badge>
+                      <Badge className="bg-violet-100 text-violet-700">{post.category}</Badge>
                     </div>
-                    <CardTitle className="text-xl hover:text-primary transition-colors">
+                    <CardTitle className="text-xl text-gray-900 hover:text-violet-600 transition-colors">
                       {post.title}
                     </CardTitle>
-                    <CardDescription>{post.excerpt}</CardDescription>
+                    <CardDescription className="text-gray-500">{post.excerpt}</CardDescription>
                   </CardHeader>
                   
                   <CardContent>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between text-sm text-gray-500">
                       <div className="flex items-center">
                         <User className="w-4 h-4 mr-1" />
                         {post.author}
@@ -185,13 +185,13 @@ const Blog = () => {
         </section>
 
         {/* All Posts */}
-        <section className="max-w-7xl mx-auto px-6 py-16 bg-muted/20">
-          <h2 className="text-3xl font-bold text-foreground mb-8">All Articles</h2>
+        <section className="max-w-7xl mx-auto px-6 py-16 bg-white/50">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">All Articles</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {blogPosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.id}`}>
-                <Card className="border hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105">
+                <Card className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
                       <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
@@ -203,23 +203,23 @@ const Blog = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs border-violet-200 text-violet-600">
                             {post.category}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-gray-500">
                             {new Date(post.date).toLocaleDateString()}
                           </span>
                         </div>
                         
-                        <h3 className="text-lg font-semibold text-foreground mb-2 hover:text-primary transition-colors">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-violet-600 transition-colors">
                           {post.title}
                         </h3>
                         
-                        <p className="text-muted-foreground text-sm mb-3">
+                        <p className="text-gray-500 text-sm mb-3">
                           {post.excerpt}
                         </p>
                         
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-gray-500">
                           <span className="flex items-center">
                             <User className="w-3 h-3 mr-1" />
                             {post.author}

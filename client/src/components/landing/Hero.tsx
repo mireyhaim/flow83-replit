@@ -13,11 +13,6 @@ const Hero = () => {
       
       <div className="container mx-auto px-6 text-center relative z-10">
         <div className="max-w-5xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 border border-violet-200 mb-8 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-violet-600" />
-            <span className="text-sm text-violet-700">AI-Powered Journey Creation</span>
-          </div>
-          
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
             <span className="text-gray-900">Share Your </span>
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">

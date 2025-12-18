@@ -29,16 +29,16 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="container mx-auto px-6 py-16 pt-24">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Get in Touch
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-gray-500 max-w-3xl mx-auto">
               Have questions about Flow 83? We're here to help you create transformative journeys and grow your practice.
             </p>
           </div>
@@ -46,13 +46,13 @@ const ContactUs = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <Card className="gradient-card shadow-card border-0">
+              <Card className="bg-white border border-gray-200 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
-                    <MessageCircle className="w-6 h-6 text-primary" />
+                  <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <MessageCircle className="w-6 h-6 text-violet-600" />
                     Send us a Message
                   </CardTitle>
-                  <CardDescription className="text-muted-foreground">
+                  <CardDescription className="text-gray-500">
                     Fill out the form below and we'll respond within 24 hours.
                   </CardDescription>
                 </CardHeader>
@@ -130,18 +130,18 @@ const ContactUs = () => {
             {/* Contact Information */}
             <div className="space-y-6">
               {/* Contact Details */}
-              <Card className="gradient-card shadow-card border-0">
+              <Card className="bg-white border border-gray-200 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-foreground">
+                  <CardTitle className="text-xl font-bold text-gray-900">
                     Contact Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <Mail className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-3 text-gray-500">
+                    <Mail className="w-5 h-5 text-violet-600" />
                     <div>
-                      <p className="font-medium text-foreground">Email</p>
-                      <a href="mailto:hello@flow83.com" className="hover:text-primary transition-colors">
+                      <p className="font-medium text-gray-900">Email</p>
+                      <a href="mailto:hello@flow83.com" className="hover:text-violet-600 transition-colors">
                         hello@flow83.com
                       </a>
                     </div>
