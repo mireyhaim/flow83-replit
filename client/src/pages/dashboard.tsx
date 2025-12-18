@@ -5,7 +5,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
