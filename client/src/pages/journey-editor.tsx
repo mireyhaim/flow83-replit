@@ -30,7 +30,7 @@ const JourneyEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [publishStep, setPublishStep] = useState<1 | 2 | 3>(1);
+  const [publishStep, setPublishStep] = useState<1 | 2 | 3 | 4>(1);
   const [publishPrice, setPublishPrice] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
@@ -216,7 +216,7 @@ const JourneyEditorPage = () => {
         currency: "USD"
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
-      setPublishStep(3);
+      setPublishStep(4);
     } catch (error) {
       toast({
         title: "Error",
@@ -573,30 +573,37 @@ const JourneyEditorPage = () => {
         )}
       </main>
 
-      {/* Publish Modal - 3 Steps */}
+      {/* Publish Modal - 4 Steps */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
         <DialogContent className="bg-[#1a1a2e] border-white/10 text-white w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
           {/* Step Indicator */}
-          <div className="flex items-center justify-center gap-4 mb-6 pt-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2 mb-6 pt-2">
+            <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 {publishStep > 1 ? <Check className="w-5 h-5" /> : '1'}
               </div>
-              <span className={`text-sm font-medium ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
+              <span className={`text-xs ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
             </div>
-            <div className={`w-16 h-0.5 ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
-            <div className="flex items-center gap-2">
+            <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 {publishStep > 2 ? <Check className="w-5 h-5" /> : '2'}
               </div>
-              <span className={`text-sm font-medium ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Payment</span>
+              <span className={`text-xs ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Stripe</span>
             </div>
-            <div className={`w-16 h-0.5 ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
-            <div className="flex items-center gap-2">
+            <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 3 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
-                3
+                {publishStep > 3 ? <Check className="w-5 h-5" /> : '3'}
               </div>
-              <span className={`text-sm font-medium ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Publish</span>
+              <span className={`text-xs ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Create</span>
+            </div>
+            <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 4 ? 'bg-violet-600' : 'bg-white/20'}`} />
+            <div className="flex flex-col items-center gap-1">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 4 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
+                4
+              </div>
+              <span className={`text-xs ${publishStep >= 4 ? 'text-white' : 'text-white/50'}`}>Share</span>
             </div>
           </div>
 
@@ -656,14 +663,7 @@ const JourneyEditorPage = () => {
                     Cancel
                   </Button>
                   <Button
-                    onClick={() => {
-                      const price = parseFloat(publishPrice) || 0;
-                      if (price > 0 && !stripeStatus?.chargesEnabled) {
-                        setPublishStep(2);
-                      } else {
-                        setPublishStep(3);
-                      }
-                    }}
+                    onClick={() => setPublishStep(2)}
                     className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-base"
                     data-testid="button-next-step"
                   >
@@ -754,7 +754,7 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => setPublishStep(3)}
-                    disabled={!stripeStatus?.chargesEnabled}
+                    disabled={(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled}
                     className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50 h-14 text-base"
                     data-testid="button-next-after-stripe"
                   >
@@ -764,15 +764,96 @@ const JourneyEditorPage = () => {
                 </div>
               </div>
             </>
-          ) : journeyData.status === "published" ? (
+          ) : publishStep === 3 ? (
+            <>
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
+                  <Rocket className="w-8 h-8 text-violet-400" />
+                  Create Your Mini-Site
+                </DialogTitle>
+                <DialogDescription className="text-white/60 text-center text-base">
+                  Review your settings and create your flow's landing page
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-6">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+                  <h4 className="font-medium text-white mb-3">Summary</h4>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white/60">Flow Name</span>
+                    <span className="text-white font-medium">{journeyData.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white/60">Duration</span>
+                    <span className="text-white font-medium">{journeyData.steps.length} days</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white/60">Price</span>
+                    <span className="text-white font-medium text-lg">
+                      {(parseFloat(publishPrice) || 0) === 0 ? "Free" : `$${publishPrice}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-white/60">Stripe</span>
+                    <span className={`font-medium ${stripeStatus?.chargesEnabled ? 'text-emerald-400' : 'text-white/50'}`}>
+                      {stripeStatus?.chargesEnabled ? 'Connected' : (parseFloat(publishPrice) || 0) === 0 ? 'Not required' : 'Not connected'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-violet-300 mb-2">What will happen?</h4>
+                  <ul className="text-sm text-white/70 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>A beautiful landing page will be created for your flow</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Your flow will be published and available to clients</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>You'll get a shareable link in the next step</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPublishStep(2)}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleConfirmPublish}
+                    disabled={isPublishing}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 h-16 text-lg font-semibold"
+                    data-testid="button-publish-now"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <>
+                        <Rocket className="w-6 h-6 mr-3" />
+                        Publish Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
             <>
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <CheckCircle className="w-8 h-8 text-emerald-400" />
-                  Flow Published!
+                  Your Mini-Site is Ready!
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Your flow is live and ready to share with clients
+                  Share this link with your clients to start their journey
                 </DialogDescription>
               </DialogHeader>
               
@@ -809,7 +890,7 @@ const JourneyEditorPage = () => {
                 <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
                   <h4 className="font-medium text-violet-300 mb-2">What's next?</h4>
                   <p className="text-sm text-white/70">
-                    Share this link with your clients. They'll see the flow landing page, can purchase (if priced), and begin their journey.
+                    Share this link with your clients. They'll see your beautiful landing page, can sign up (and pay if priced), and begin their journey with you.
                   </p>
                 </div>
 
@@ -823,94 +904,11 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => window.open(getShareableLink(), '_blank')}
-                    variant="outline"
-                    className="flex-1 border-violet-500/50 text-violet-300 hover:bg-violet-500/10 h-14 text-base"
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-base"
                     data-testid="button-view-landing"
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />
-                    View Page
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <DialogHeader className="space-y-3">
-                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
-                  <Rocket className="w-8 h-8 text-violet-400" />
-                  Ready to Publish
-                </DialogTitle>
-                <DialogDescription className="text-white/60 text-center text-base">
-                  Review your settings and publish your flow
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-6 py-6">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
-                  <h4 className="font-medium text-white mb-3">Summary</h4>
-                  <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/60">Flow Name</span>
-                    <span className="text-white font-medium">{journeyData.name}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/60">Duration</span>
-                    <span className="text-white font-medium">{journeyData.steps.length} days</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-white/60">Price</span>
-                    <span className="text-white font-medium text-lg">
-                      {(parseFloat(publishPrice) || 0) === 0 ? "Free" : `$${publishPrice}`}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-emerald-300 mb-2">What will happen?</h4>
-                  <ul className="text-sm text-white/70 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      <span>Your flow will be published and available to clients</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      <span>You'll get a shareable link to send to clients</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      <span>Clients can sign up and start their journey</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const price = parseFloat(publishPrice) || 0;
-                      if (price > 0) {
-                        setPublishStep(2);
-                      } else {
-                        setPublishStep(1);
-                      }
-                    }}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleConfirmPublish}
-                    disabled={isPublishing}
-                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 h-16 text-lg font-semibold"
-                    data-testid="button-publish-now"
-                  >
-                    {isPublishing ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      <>
-                        <Rocket className="w-6 h-6 mr-3" />
-                        Publish Now
-                      </>
-                    )}
+                    View My Page
                   </Button>
                 </div>
               </div>
