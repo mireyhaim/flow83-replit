@@ -25,6 +25,8 @@ import JourneyEditorPage from "@/pages/journey-editor";
 import JourneySettingsPage from "@/pages/journey-settings";
 import ParticipantView from "@/pages/participant-view";
 import JourneyLandingPage from "@/pages/journey-landing";
+import ParticipantJoinPage from "@/pages/participant-join";
+import AuthCallbackPage from "@/pages/auth-callback";
 import ShortLinkRedirect from "@/pages/short-link-redirect";
 import NotFound from "@/pages/not-found";
 
@@ -56,6 +58,8 @@ function Router() {
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/settings" component={JourneySettingsPage} />
       <Route path="/j/:id" component={JourneyLandingPage} />
+      <Route path="/join/:journeyId" component={ParticipantJoinPage} />
+      <Route path="/auth/callback" component={AuthCallbackPage} />
       <Route path="/f/:code" component={ShortLinkRedirect} />
       <Route path="/p/:token" component={ParticipantView} />
       <Route path="/payment/success" component={PaymentSuccessPage} />

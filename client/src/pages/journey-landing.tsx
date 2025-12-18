@@ -228,10 +228,7 @@ export default function JourneyLandingPage() {
   const content: LandingPageContent = rawContent || fallbackContent;
 
   const handleStartJourney = () => {
-    setShowForm(true);
-    setTimeout(() => {
-      document.getElementById("signup-form")?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    navigate(`/join/${journeyId}`);
   };
 
   const handleJoin = () => {
