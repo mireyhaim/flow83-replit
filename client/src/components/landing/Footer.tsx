@@ -30,7 +30,7 @@ const Footer = () => {
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Platform</h3>
             <nav className="flex flex-col space-y-3">
               <Link href="/dashboard" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
-                Create Journey
+                Create Flow
               </Link>
               <Link href="/pricing" className="text-white/40 hover:text-white transition-colors cursor-pointer text-sm">
                 Pricing
