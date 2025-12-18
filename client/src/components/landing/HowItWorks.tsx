@@ -1,26 +1,32 @@
 import { Upload, Wand2, Share2 } from "lucide-react";
+import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
+import screenshotDashboard from "@/assets/screenshot-dashboard.png";
+import screenshotParticipant from "@/assets/screenshot-participant.png";
 
 const steps = [
   {
     icon: Upload,
     number: "01",
     title: "Upload Your Content",
-    description: "Share your existing documents, recordings, or notes. Our AI understands your unique methodology.",
-    color: "violet"
+    description: "Share your existing documents, recordings, or notes. Our AI understands your unique methodology and transforms it into structured content.",
+    image: screenshotFlowEditor,
+    imageAlt: "Flow editor interface"
   },
   {
     icon: Wand2,
     number: "02", 
     title: "AI Creates Your Journey",
-    description: "Watch as AI transforms your content into a structured 7-day transformational experience.",
-    color: "fuchsia"
+    description: "Watch as AI transforms your content into a structured 3 or 7-day transformational experience with daily goals, exercises, and personalized guidance.",
+    image: screenshotDashboard,
+    imageAlt: "Mentor dashboard with analytics"
   },
   {
     icon: Share2,
     number: "03",
     title: "Share & Earn",
-    description: "Publish your journey and start helping clients while building a sustainable income stream.",
-    color: "cyan"
+    description: "Publish your journey with a shareable link. Participants experience your wisdom through an AI-powered chat that speaks in your voice.",
+    image: screenshotParticipant,
+    imageAlt: "Participant chat experience"
   }
 ];
 
@@ -44,43 +50,41 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="space-y-24 max-w-6xl mx-auto">
           {steps.map((step, index) => (
             <div 
               key={step.number}
-              className="relative group"
+              className={`flex flex-col ${index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-12 items-center`}
             >
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/4 right-0 translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-white/20 to-transparent z-0" />
-              )}
-              
-              <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-3xl p-8 h-full relative z-10 hover:border-white/20 transition-all duration-300 group-hover:bg-[#1a1a2e]/80">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${
-                  step.color === 'violet' ? 'from-violet-500/20 to-violet-600/10' :
-                  step.color === 'fuchsia' ? 'from-fuchsia-500/20 to-fuchsia-600/10' :
-                  'from-cyan-500/20 to-cyan-600/10'
-                } flex items-center justify-center mb-6`}>
-                  <step.icon className={`w-7 h-7 ${
-                    step.color === 'violet' ? 'text-violet-400' :
-                    step.color === 'fuchsia' ? 'text-fuchsia-400' :
-                    'text-cyan-400'
-                  }`} />
+              {/* Content */}
+              <div className="flex-1 text-center lg:text-left">
+                <div className="inline-flex items-center gap-3 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-violet-600/20 flex items-center justify-center">
+                    <step.icon className="w-7 h-7 text-violet-400" />
+                  </div>
+                  <span className="text-6xl font-bold text-violet-500/20">
+                    {step.number}
+                  </span>
                 </div>
                 
-                <span className={`text-5xl font-bold ${
-                  step.color === 'violet' ? 'text-violet-500/20' :
-                  step.color === 'fuchsia' ? 'text-fuchsia-500/20' :
-                  'text-cyan-500/20'
-                } absolute top-6 right-8`}>
-                  {step.number}
-                </span>
-                
-                <h3 className="text-xl font-semibold text-white mb-3">
+                <h3 className="text-3xl font-bold text-white mb-4">
                   {step.title}
                 </h3>
-                <p className="text-white/50 leading-relaxed">
+                <p className="text-lg text-white/60 leading-relaxed max-w-md mx-auto lg:mx-0">
                   {step.description}
                 </p>
+              </div>
+              
+              {/* Screenshot */}
+              <div className="flex-1">
+                <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
+                  <div className="absolute inset-0 bg-violet-600/20 blur-3xl rounded-full" />
+                  <img 
+                    src={step.image} 
+                    alt={step.imageAlt}
+                    className={`relative rounded-2xl shadow-2xl border border-white/10 ${index === 2 ? 'w-full' : 'w-full'}`}
+                  />
+                </div>
               </div>
             </div>
           ))}
