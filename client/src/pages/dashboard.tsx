@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { statsApi, activityApi, participantsApi, earningsApi, feedbackApi, type DashboardStats, type InactiveParticipant, type EarningsData, type FeedbackItem } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, MessageCircle, Clock, AlertCircle, UserPlus, Trophy, Star } from "lucide-react";
+import { statsApi, activityApi, earningsApi, feedbackApi, type DashboardStats, type EarningsData, type FeedbackItem } from "@/lib/api";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, MessageCircle, Clock, UserPlus, Trophy, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -33,12 +33,6 @@ export default function Dashboard() {
   const { data: recentActivity = [] } = useQuery<ActivityEvent[]>({
     queryKey: ["/api/activity/recent"],
     queryFn: activityApi.getRecent,
-    enabled: isAuthenticated,
-  });
-
-  const { data: inactiveParticipants = [] } = useQuery<InactiveParticipant[]>({
-    queryKey: ["/api/participants/inactive"],
-    queryFn: () => participantsApi.getInactive(3),
     enabled: isAuthenticated,
   });
 
@@ -265,40 +259,6 @@ export default function Dashboard() {
                         <p className="text-sm text-white truncate">{getActivityText(event)}</p>
                         <p className="text-xs text-white/40">
                           {event.createdAt && formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-needs-attention">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-orange-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-white">Needs Attention</h3>
-              </div>
-              {inactiveParticipants.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-white/40">All participants are active</p>
-                  <p className="text-xs text-white/30 mt-1">Inactive participants will appear here</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {inactiveParticipants.slice(0, 5).map((p) => (
-                    <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/30 to-orange-600/20 flex items-center justify-center text-xs font-medium text-orange-300">
-                        {p.user?.firstName?.[0] || p.user?.email?.[0] || '?'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{p.user?.firstName || p.user?.email || 'Participant'}</p>
-                        <p className="text-xs text-white/40 truncate">
-                          Day {p.currentDay} of {p.journey?.name || 'flow'}
-                        </p>
-                        <p className="text-xs text-orange-400">
-                          Inactive {p.lastActiveAt && formatDistanceToNow(new Date(p.lastActiveAt))}
                         </p>
                       </div>
                     </div>
