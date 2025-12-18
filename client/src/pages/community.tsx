@@ -27,11 +27,6 @@ const Community = () => {
               <p className="text-xl text-muted-foreground mb-8">
                 Connect with expert therapists, coaches, and healers who are transforming lives through personalized digital flows
               </p>
-              <Link href="/journeys/new">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-spiritual">
-                  Join Our Community
-                </Button>
-              </Link>
             </div>
             <div className="relative">
               <img 
