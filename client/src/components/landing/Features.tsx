@@ -5,37 +5,37 @@ const benefits = [
     icon: Sparkles,
     title: "AI-Powered Creation",
     description: "Save hours of work with automatic journey generation from your existing content.",
-    gradient: "from-violet-500 to-violet-600"
+    gradient: "from-violet-400 to-violet-500"
   },
   {
     icon: Users,
     title: "Reach More People",
     description: "Scale from 1:1 sessions to dozens or hundreds of clients simultaneously.",
-    gradient: "from-cyan-500 to-cyan-600"
+    gradient: "from-cyan-400 to-cyan-500"
   },
   {
     icon: DollarSign,
     title: "Passive Income",
     description: "Create sustainable income from what you already know and teach.",
-    gradient: "from-emerald-500 to-emerald-600"
+    gradient: "from-fuchsia-400 to-fuchsia-500"
   },
   {
     icon: Palette,
     title: "Professional Look",
     description: "Beautiful, designed pages without needing a designer or developer.",
-    gradient: "from-fuchsia-500 to-fuchsia-600"
+    gradient: "from-violet-400 to-fuchsia-400"
   },
   {
     icon: BarChart3,
     title: "Track Progress",
     description: "Monitor every participant's journey and engagement in real-time.",
-    gradient: "from-amber-500 to-orange-500"
+    gradient: "from-fuchsia-400 to-cyan-400"
   },
   {
     icon: Settings2,
     title: "Full Control",
     description: "Edit and adjust at any moment, with no tech dependencies.",
-    gradient: "from-rose-500 to-pink-600"
+    gradient: "from-cyan-400 to-violet-400"
   }
 ];
 
