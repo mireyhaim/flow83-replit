@@ -589,11 +589,11 @@ Generate compelling, conversion-focused landing page content with these sections
 - outcomes: 6 specific outcomes they'll achieve
 - quote: Inspiring quote from the mentor perspective
 
-5. TESTIMONIALS (generate 6 realistic fake testimonials):
+5. TESTIMONIALS (generate exactly 3 realistic fake testimonials):
 Each with:
-- name: First name only
+- name: First name only (use English names)
 - text: 2-3 sentence testimonial about their transformation
-- feeling: Short phrase describing their experience
+- feeling: Short phrase describing their experience (e.g., "Found clarity", "Reconnected with purpose")
 
 6. CTA SECTION:
 - tagline: "Your Next Step"

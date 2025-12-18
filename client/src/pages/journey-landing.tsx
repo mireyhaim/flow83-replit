@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   Calendar, ArrowRight, Check, Quote, Leaf,
-  Heart, Compass, Sparkles, Moon, Sun, Star, User 
+  Heart, Compass, Sparkles, Moon, Sun, Star, User, Users 
 } from "lucide-react";
 import type { Journey, JourneyStep, JourneyBlock, User as UserType } from "@shared/schema";
 
@@ -215,9 +215,6 @@ export default function JourneyLandingPage() {
       { name: "Maya", text: "I came in feeling scattered and left feeling whole. For the first time in years, I can hear my own thoughts clearly.", feeling: "Found clarity after years of confusion" },
       { name: "David", text: "This wasn't therapy, it wasn't coaching—it was something gentler. Like having a conversation with the wisest part of myself.", feeling: "Reconnected with inner wisdom" },
       { name: "Sarah", text: "I finally gave myself permission to want what I want. That might sound simple, but for me, it was revolutionary.", feeling: "Embraced her authentic desires" },
-      { name: "Michael", text: "The weight I didn't know I was carrying—it's gone. I breathe easier now. I move through life with more grace.", feeling: "Released emotional burden" },
-      { name: "Elena", text: "I stopped fighting myself. I stopped trying to fix what wasn't broken. I just... started listening.", feeling: "Found self-acceptance" },
-      { name: "James", text: "At 52, I thought I knew myself. This process showed me there's always more to discover, and that's beautiful.", feeling: "Discovered new depths at 52" },
     ],
     cta: {
       tagline: "Your Next Step",
@@ -490,18 +487,46 @@ export default function JourneyLandingPage() {
         <div className="absolute inset-0 lp-gradient-warm opacity-50" />
         
         <div className="container mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-4">
               Voices of Transformation
             </span>
-            <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight">
+            <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-8">
               What others have{" "}
               <span className="lp-text-terracotta italic">experienced</span>
             </h2>
+            
+            {/* Stats Row - Participant Count & Star Rating */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 mb-8">
+              {/* Participant Count */}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 lp-bg-sage-light rounded-full flex items-center justify-center">
+                  <Users className="w-6 h-6 lp-text-sage" />
+                </div>
+                <div className="text-left">
+                  <p className="lp-font-heading text-2xl lp-text-earth font-semibold">250+</p>
+                  <p className="lp-font-body text-sm lp-text-muted">Completed this journey</p>
+                </div>
+              </div>
+              
+              {/* Star Rating */}
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-6 h-6 fill-current" style={{ color: 'hsl(45 93% 47%)' }} />
+                  ))}
+                </div>
+                <div className="text-left">
+                  <p className="lp-font-heading text-2xl lp-text-earth font-semibold">5.0</p>
+                  <p className="lp-font-body text-sm lp-text-muted">Average rating</p>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {content.testimonials.map((testimonial, index) => (
+          {/* Show only 3 testimonials */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {content.testimonials.slice(0, 3).map((testimonial, index) => (
               <div
                 key={index}
                 className="lp-bg-cream p-8 rounded-2xl lp-shadow-soft hover:lp-shadow-card transition-all duration-300 relative group"
