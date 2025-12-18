@@ -23,9 +23,6 @@ const Header = () => {
           <Link href="/community" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
             Community
           </Link>
-          <Link href="/blog" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            Blog
-          </Link>
           <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
             Contact
           </Link>
@@ -56,7 +53,6 @@ const Header = () => {
           <Link href="/" className="block text-gray-600 hover:text-gray-900 py-2">Home</Link>
           <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">Pricing</Link>
           <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">Community</Link>
-          <Link href="/blog" className="block text-gray-600 hover:text-gray-900 py-2">Blog</Link>
           <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">Contact</Link>
           <div className="pt-4 space-y-3">
             <Link href="/dashboard">
