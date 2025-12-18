@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { statsApi, activityApi, earningsApi, feedbackApi, type DashboardStats, type EarningsData, type FeedbackItem } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, MessageCircle, Clock, UserPlus, Trophy, Star } from "lucide-react";
+import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -39,12 +39,6 @@ export default function Dashboard() {
   const { data: earnings } = useQuery<EarningsData>({
     queryKey: ["/api/earnings"],
     queryFn: earningsApi.get,
-    enabled: isAuthenticated,
-  });
-
-  const { data: feedbackList = [] } = useQuery<FeedbackItem[]>({
-    queryKey: ["/api/feedback"],
-    queryFn: feedbackApi.getAll,
     enabled: isAuthenticated,
   });
 
@@ -267,46 +261,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6" data-testid="card-feedback">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-fuchsia-600/10 flex items-center justify-center">
-                  <MessageCircle className="h-5 w-5 text-fuchsia-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-white">Feedback</h3>
-              </div>
-              {feedbackList.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-white/40">No feedback yet</p>
-                  <p className="text-xs text-white/30 mt-1">Participant feedback will appear here</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {feedbackList.slice(0, 5).map((feedback) => (
-                    <div key={feedback.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors" data-testid={`feedback-item-${feedback.id}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-white truncate">{feedback.participantName}</span>
-                        <div className="flex items-center gap-0.5">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`h-3 w-3 ${star <= feedback.rating ? 'text-amber-400 fill-amber-400' : 'text-white/20'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      {feedback.comment && (
-                        <p className="text-xs text-white/60 line-clamp-2 mb-2">{feedback.comment}</p>
-                      )}
-                      <div className="flex items-center justify-between text-xs text-white/40">
-                        <span className="truncate">{feedback.journeyName}</span>
-                        {feedback.dayNumber && <span>Day {feedback.dayNumber}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
         </>
       )}
     </DashboardLayout>
