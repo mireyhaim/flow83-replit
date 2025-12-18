@@ -293,6 +293,19 @@ export default function JourneyLandingPage() {
               {content.hero.description}
             </p>
             
+            {/* Price Display */}
+            <div className="mb-8 opacity-0 lp-animate-fade-up lp-animation-delay-600">
+              {isFree ? (
+                <span className="inline-block lp-bg-sage-light px-6 py-2 rounded-full lp-text-sage lp-font-heading text-xl font-semibold" style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}>
+                  Free
+                </span>
+              ) : (
+                <span className="inline-block lp-bg-sage-light px-6 py-2 rounded-full lp-text-sage lp-font-heading text-xl font-semibold" style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}>
+                  {currencySymbol}{price}
+                </span>
+              )}
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 lp-animate-fade-up lp-animation-delay-600">
               <Button 
                 size="lg"
@@ -301,7 +314,7 @@ export default function JourneyLandingPage() {
                 onClick={handleStartJourney}
                 data-testid="button-start-journey"
               >
-                {content.hero.ctaText}
+                {isFree ? "Begin Your Journey" : `Join Now - ${currencySymbol}${price}`}
               </Button>
               <Button 
                 size="lg"
@@ -583,6 +596,19 @@ export default function JourneyLandingPage() {
             
             {!showForm ? (
               <>
+                {/* Price Display in CTA */}
+                <div className="mb-8">
+                  {isFree ? (
+                    <span className="inline-block px-6 py-2 rounded-full lp-font-heading text-2xl font-semibold" style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}>
+                      Free
+                    </span>
+                  ) : (
+                    <span className="inline-block px-6 py-2 rounded-full lp-font-heading text-2xl font-semibold" style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)' }}>
+                      {currencySymbol}{price}
+                    </span>
+                  )}
+                </div>
+                
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                   <Button 
                     size="lg"
@@ -591,7 +617,7 @@ export default function JourneyLandingPage() {
                     onClick={handleStartJourney}
                     data-testid="button-start-journey-bottom"
                   >
-                    {content.cta.buttonText}
+                    {isFree ? "Begin Your Journey" : `Join Now - ${currencySymbol}${price}`}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
