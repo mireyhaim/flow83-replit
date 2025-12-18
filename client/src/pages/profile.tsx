@@ -124,18 +124,18 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f0f23]">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f0f23]">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4 text-white">Please sign in</h1>
-          <Button asChild className="bg-gradient-to-r from-violet-600 to-fuchsia-600">
+          <h1 className="text-2xl font-bold mb-4 text-slate-900">Please sign in</h1>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
             <a href="/api/login">Sign In</a>
           </Button>
         </div>
@@ -153,11 +153,11 @@ export default function ProfilePage() {
                 <img 
                   src={profileImage} 
                   alt="Profile" 
-                  className="w-16 h-16 rounded-2xl object-cover border border-white/10"
+                  className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
                   data-testid="img-profile"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 flex items-center justify-center text-2xl font-semibold text-white border border-white/10">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl font-semibold text-indigo-600 border border-slate-200">
                   {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
                 </div>
               )}
@@ -182,17 +182,17 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-white" data-testid="text-profile-title">
+              <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-profile-title">
                 {formData.firstName ? `${formData.firstName} ${formData.lastName}` : "My Profile"}
               </h1>
-              <p className="text-white/50 text-sm">{formData.email}</p>
+              <p className="text-slate-500 text-sm">{formData.email}</p>
             </div>
           </div>
           <Button 
             onClick={handleSave} 
             disabled={isSaving} 
             data-testid="button-save-profile"
-            className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
+            className="bg-indigo-600 hover:bg-indigo-700"
           >
             {isSaving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -204,45 +204,45 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-8">
-          <section className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-            <h2 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-6">Personal Information</h2>
+          <section className="bg-white border border-slate-200 rounded-2xl p-6">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-6">Personal Information</h2>
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-xs text-white/50">First Name</Label>
+                  <Label htmlFor="firstName" className="text-xs text-slate-500">First Name</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     placeholder="Your first name"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl"
+                    className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl"
                     data-testid="input-first-name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-xs text-white/50">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-xs text-slate-500">Last Name</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     placeholder="Your last name"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl"
+                    className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl"
                     data-testid="input-last-name"
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs text-white/50">Email</Label>
+                <Label htmlFor="email" className="text-xs text-slate-500">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="your@email.com"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl pl-10"
+                    className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl pl-10"
                     data-testid="input-email"
                   />
                 </div>
@@ -250,44 +250,44 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <section className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-            <h2 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-6">Professional Details</h2>
+          <section className="bg-white border border-slate-200 rounded-2xl p-6">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-6">Professional Details</h2>
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="specialty" className="text-xs text-white/50">Specialty / Expertise</Label>
+                <Label htmlFor="specialty" className="text-xs text-slate-500">Specialty / Expertise</Label>
                 <Input
                   id="specialty"
                   value={formData.specialty}
                   onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
                   placeholder="e.g. Life Coach, Therapist, Meditation Teacher"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl"
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl"
                   data-testid="input-specialty"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="bio" className="text-xs text-white/50">About You</Label>
+                <Label htmlFor="bio" className="text-xs text-slate-500">About You</Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Tell participants about yourself and your expertise..."
                   rows={3}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl resize-none"
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl resize-none"
                   data-testid="input-bio"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="website" className="text-xs text-white/50">Website</Label>
+                <Label htmlFor="website" className="text-xs text-slate-500">Website</Label>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     id="website"
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     placeholder="https://yourwebsite.com"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50 rounded-xl pl-10"
+                    className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl pl-10"
                     data-testid="input-website"
                   />
                 </div>
@@ -295,55 +295,55 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <section className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-            <h2 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-6">Subscription & Billing</h2>
+          <section className="bg-white border border-slate-200 rounded-2xl p-6">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-6">Subscription & Billing</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-emerald-400" />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-emerald-500" />
                   </div>
                   <div>
-                    <p className="font-medium text-white">Free Plan</p>
-                    <p className="text-xs text-white/40">Currently active</p>
+                    <p className="font-medium text-slate-900">Free Plan</p>
+                    <p className="text-xs text-slate-400">Currently active</p>
                   </div>
-                  <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-medium">
+                  <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium">
                     Active
                   </span>
                 </div>
                 
-                <p className="text-sm text-white/40 leading-relaxed">
+                <p className="text-sm text-slate-500 leading-relaxed">
                   Premium plans coming soon with additional features and higher limits.
                 </p>
 
                 <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                   <AlertDialogTrigger asChild>
                     <button 
-                      className="text-sm text-white/40 hover:text-red-400 transition-colors underline underline-offset-2"
+                      className="text-sm text-slate-400 hover:text-red-500 transition-colors underline underline-offset-2"
                       data-testid="button-cancel-subscription"
                     >
                       Cancel account
                     </button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-[#1a1a2e] border-white/10">
+                  <AlertDialogContent className="bg-white border-slate-200">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2 text-white">
-                        <AlertTriangle className="h-5 w-5 text-red-400" />
+                      <AlertDialogTitle className="flex items-center gap-2 text-slate-900">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
                         Cancel Your Account?
                       </AlertDialogTitle>
-                      <AlertDialogDescription className="text-white/60">
+                      <AlertDialogDescription className="text-slate-600">
                         This will permanently delete your account and all data including:
                         <ul className="list-disc list-inside mt-2 space-y-1">
                           <li>All your journeys</li>
                           <li>Participant data and progress</li>
                           <li>Your profile information</li>
                         </ul>
-                        <p className="mt-3 font-medium text-white">This action cannot be undone.</p>
+                        <p className="mt-3 font-medium text-slate-900">This action cannot be undone.</p>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel className="bg-white/10 border-white/10 text-white hover:bg-white/20">Keep My Account</AlertDialogCancel>
+                      <AlertDialogCancel className="bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200">Keep My Account</AlertDialogCancel>
                       <AlertDialogAction 
                         className="bg-red-600 text-white hover:bg-red-700"
                         onClick={() => {
@@ -359,18 +359,18 @@ export default function ProfilePage() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-fuchsia-600/10 flex items-center justify-center">
-                    <Receipt className="h-5 w-5 text-fuchsia-400" />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <Receipt className="h-5 w-5 text-indigo-500" />
                   </div>
                   <div>
-                    <p className="font-medium text-white">Invoices</p>
-                    <p className="text-xs text-white/40">Billing history</p>
+                    <p className="font-medium text-slate-900">Invoices</p>
+                    <p className="text-xs text-slate-400">Billing history</p>
                   </div>
                 </div>
                 
                 <div className="py-6 text-center">
-                  <p className="text-sm text-white/40">No invoices yet</p>
-                  <p className="text-xs text-white/30 mt-1">
+                  <p className="text-sm text-slate-400">No invoices yet</p>
+                  <p className="text-xs text-slate-300 mt-1">
                     Your billing history will appear here
                   </p>
                 </div>
