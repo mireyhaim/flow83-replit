@@ -607,30 +607,37 @@ const JourneyEditorPage = () => {
             </div>
           </div>
 
+          {/* Intro Message */}
+          <div className="bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 rounded-xl p-4 mb-4">
+            <p className="text-center text-white/90">
+              <Sparkles className="w-4 h-4 inline-block mr-2 text-violet-400" />
+              A few more steps and you'll get a link to your flow that you can share with your clients
+            </p>
+          </div>
+
           {publishStep === 1 ? (
             <>
               <DialogHeader className="space-y-3">
-                <DialogTitle className="text-2xl font-bold text-center">Set Your Price</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-center">Step 1: Set Your Price</DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Choose how much clients will pay to access your flow
+                  Decide how much you want to charge for your flow
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-6">
+              <div className="space-y-6 py-4">
                 <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">What happens when you publish?</h4>
+                  <h4 className="font-medium text-violet-300 mb-2">Why set a price?</h4>
+                  <p className="text-sm text-white/70 mb-3">
+                    This is your work and expertise packaged into a digital experience. You decide its value.
+                  </p>
                   <ul className="text-sm text-white/70 space-y-2">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Your flow becomes available to clients via a shareable link</span>
+                      <span><strong>Free:</strong> Great for building your audience and getting testimonials</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>A beautiful landing page is automatically generated</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Clients can sign up and start their journey immediately</span>
+                      <span><strong>Paid:</strong> Clients invest in themselves and take the journey more seriously</span>
                     </li>
                   </ul>
                 </div>
@@ -654,7 +661,7 @@ const JourneyEditorPage = () => {
                   </p>
                 </div>
 
-                <div className="flex gap-4 pt-6">
+                <div className="flex gap-4 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => setShowPublishModal(false)}
@@ -678,28 +685,35 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <CreditCard className="w-7 h-7 text-violet-400" />
-                  Connect Your Stripe Account
+                  Step 2: Connect Payments
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  To receive payments, you need to connect your Stripe account
+                  {(parseFloat(publishPrice) || 0) > 0 
+                    ? "Connect your Stripe account so you can receive payments directly"
+                    : "This step is optional for free flows, but recommended for future paid offerings"}
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-6">
+              <div className="space-y-6 py-4">
                 <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">Why connect Stripe?</h4>
+                  <h4 className="font-medium text-violet-300 mb-2">Why do we need this?</h4>
+                  <p className="text-sm text-white/70 mb-3">
+                    {(parseFloat(publishPrice) || 0) > 0 
+                      ? "When clients pay for your flow, the money goes directly to your bank account through Stripe - the world's most trusted payment platform."
+                      : "Even though your flow is free, connecting Stripe now means you're ready when you decide to charge for future flows."}
+                  </p>
                   <ul className="text-sm text-white/70 space-y-2">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Payments from clients go directly to your bank account</span>
+                      <span>Payments go directly to your bank account</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Secure and trusted payment processing worldwide</span>
+                      <span>Secure, trusted payment processing worldwide</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>You control your own Stripe dashboard and payouts</span>
+                      <span>You control your own Stripe dashboard</span>
                     </li>
                   </ul>
                 </div>
@@ -769,16 +783,37 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <Rocket className="w-8 h-8 text-violet-400" />
-                  Create Your Mini-Site
+                  Step 3: Create Your Mini-Site
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Review your settings and create your flow's landing page
+                  We'll create a beautiful landing page for your flow
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-6">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
-                  <h4 className="font-medium text-white mb-3">Summary</h4>
+              <div className="space-y-6 py-4">
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+                  <h4 className="font-medium text-violet-300 mb-2">What is a Mini-Site?</h4>
+                  <p className="text-sm text-white/70 mb-3">
+                    Your mini-site is a professional landing page that presents your flow to potential clients. It includes everything they need to decide to join.
+                  </p>
+                  <ul className="text-sm text-white/70 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Beautiful design that represents your brand</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Clear description of what clients will experience</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                      <span>Easy sign-up and payment process for clients</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
+                  <h4 className="font-medium text-white mb-2">Your Flow Summary</h4>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
                     <span className="text-white/60">Flow Name</span>
                     <span className="text-white font-medium">{journeyData.name}</span>
@@ -787,36 +822,12 @@ const JourneyEditorPage = () => {
                     <span className="text-white/60">Duration</span>
                     <span className="text-white font-medium">{journeyData.steps.length} days</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                  <div className="flex justify-between items-center py-2">
                     <span className="text-white/60">Price</span>
                     <span className="text-white font-medium text-lg">
                       {(parseFloat(publishPrice) || 0) === 0 ? "Free" : `$${publishPrice}`}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-white/60">Stripe</span>
-                    <span className={`font-medium ${stripeStatus?.chargesEnabled ? 'text-emerald-400' : 'text-white/50'}`}>
-                      {stripeStatus?.chargesEnabled ? 'Connected' : (parseFloat(publishPrice) || 0) === 0 ? 'Not required' : 'Not connected'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">What will happen?</h4>
-                  <ul className="text-sm text-white/70 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>A beautiful landing page will be created for your flow</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Your flow will be published and available to clients</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>You'll get a shareable link in the next step</span>
-                    </li>
-                  </ul>
                 </div>
 
                 <div className="flex gap-4 pt-4">
@@ -838,7 +849,7 @@ const JourneyEditorPage = () => {
                     ) : (
                       <>
                         <Rocket className="w-6 h-6 mr-3" />
-                        Publish Now
+                        Create & Publish
                       </>
                     )}
                   </Button>
@@ -850,14 +861,21 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <CheckCircle className="w-8 h-8 text-emerald-400" />
-                  Your Mini-Site is Ready!
+                  Step 4: Share Your Link
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Share this link with your clients to start their journey
+                  Your flow is live! Share this link with your clients
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-6">
+              <div className="space-y-6 py-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-5">
+                  <h4 className="font-medium text-emerald-300 mb-2">Congratulations!</h4>
+                  <p className="text-sm text-white/70">
+                    Your flow is now live and ready for clients. Copy the link below and share it on social media, in emails, or anywhere you connect with your audience.
+                  </p>
+                </div>
+
                 <div className="space-y-4">
                   <Label className="text-white/80 text-base">Your shareable link</Label>
                   <div 
