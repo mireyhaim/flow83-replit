@@ -40,7 +40,7 @@ const featuredFlows = [
     category: "Emotional Healing",
     participants: 456,
     likes: 198,
-    duration: "21 days",
+    duration: "7 days",
     thumbnail: digitalTherapyScience,
     difficulty: "All Levels"
   },

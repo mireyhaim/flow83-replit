@@ -78,7 +78,7 @@ const flowsData: Record<string, {
     category: "Emotional Healing",
     participants: 456,
     likes: 198,
-    duration: "21 days",
+    duration: "7 days",
     thumbnail: digitalTherapyScience,
     difficulty: "All Levels",
     goal: "Provide gentle support and practical tools for navigating the grief process",
