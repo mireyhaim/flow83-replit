@@ -63,11 +63,11 @@ const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) =
   return (
     <div className="relative">
       <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-      <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-gray-200 aspect-[4/3]">
         <img 
           src={images[currentIndex].src} 
           alt={images[currentIndex].alt}
-          className="w-full transition-opacity duration-300"
+          className="w-full h-full object-cover transition-opacity duration-300"
         />
       </div>
       <div className="absolute inset-y-0 left-0 flex items-center">
@@ -146,15 +146,15 @@ const HowItWorksPage = () => {
                     {step.video ? (
                       <div className="relative">
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+                        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden aspect-[4/3]">
                           <video 
                             src={step.video}
                             autoPlay
                             loop
                             muted
                             playsInline
-                            className="w-full"
-                            style={{ marginTop: '-18px', marginBottom: '-4px' }}
+                            className="w-full h-full object-cover"
+                            style={{ marginTop: '-18px' }}
                           />
                         </div>
                       </div>
@@ -166,13 +166,15 @@ const HowItWorksPage = () => {
                         ]} 
                       />
                     ) : (
-                      <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
+                      <div className="relative">
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                        <img 
-                          src={step.image} 
-                          alt={step.imageAlt}
-                          className={`relative rounded-2xl shadow-2xl border border-gray-200 w-full`}
-                        />
+                        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden aspect-[4/3]">
+                          <img 
+                            src={step.image} 
+                            alt={step.imageAlt}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
