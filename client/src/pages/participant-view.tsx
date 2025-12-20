@@ -257,17 +257,20 @@ export default function ParticipantView() {
     setInputValue("");
     setIsSending(true);
 
-    queryClient.setQueryData<JourneyMessage[]>(
+    queryClient.setQueryData<{ messages: JourneyMessage[], dayCompleted: boolean }>(
       ["messages", resolvedParticipant?.id, currentStep?.id],
-      (old = []) => [...old, {
-        id: "temp-" + Date.now(),
-        participantId: resolvedParticipant!.id,
-        stepId: currentStep!.id,
-        role: "user",
-        content,
-        createdAt: new Date(),
-        isSummary: false,
-      }]
+      (old) => ({
+        messages: [...(old?.messages ?? []), {
+          id: "temp-" + Date.now(),
+          participantId: resolvedParticipant!.id,
+          stepId: currentStep!.id,
+          role: "user",
+          content,
+          createdAt: new Date(),
+          isSummary: false,
+        }],
+        dayCompleted: old?.dayCompleted ?? false,
+      })
     );
 
     try {
