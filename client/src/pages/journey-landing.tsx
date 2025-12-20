@@ -256,29 +256,7 @@ export default function JourneyLandingPage() {
         
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            {journey.mentor && (
-              <div className="mb-8 flex justify-center opacity-0 lp-animate-fade-up">
-                <div className="relative">
-                  {journey.mentor.profileImageUrl ? (
-                    <img 
-                      src={journey.mentor.profileImageUrl} 
-                      alt={mentorName}
-                      className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white lp-shadow-card object-cover"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white lp-shadow-card lp-bg-sage flex items-center justify-center">
-                      <User className="w-12 h-12 text-white" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-6 opacity-0 lp-animate-fade-up">
-              {content.hero.tagline}
-            </span>
-            
-            <h1 className="lp-font-heading text-4xl md:text-5xl lg:text-6xl lp-text-earth leading-tight mb-8 opacity-0 lp-animate-fade-up lp-animation-delay-200" data-testid="text-journey-title">
+            <h1 className="lp-font-heading text-4xl md:text-5xl lg:text-6xl lp-text-earth leading-tight mb-8 opacity-0 lp-animate-fade-up" data-testid="text-journey-title">
               {content.hero.headline.includes("Inner Clarity") ? (
                 <>
                   A Gentle Path to{" "}
