@@ -11,6 +11,7 @@ import screenshotUploadContent from "@/assets/screenshot-upload-content.png";
 import screenshotAiJourney from "@/assets/screenshot-ai-journey.png";
 import screenshotAiJourney2 from "@/assets/screenshot-ai-journey-2.png";
 import screenshotParticipantChat from "@/assets/screenshot-participant-chat.png";
+import videoMarketingSite from "@/assets/video-marketing-site.mp4";
 
 const steps = [
   {
@@ -36,7 +37,7 @@ const steps = [
     number: "03",
     title: "We Create Your Marketing Site",
     description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately.",
-    video: "/assets/video-marketing-site.mp4",
+    video: videoMarketingSite,
     image: screenshotParticipant,
     imageAlt: "Marketing landing page"
   },
