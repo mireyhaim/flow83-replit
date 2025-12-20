@@ -174,7 +174,9 @@ RESPOND TO WHAT THEY ACTUALLY SAY:
 - If they share something emotional, stay with that emotion before moving on
 
 LANGUAGE RULES:
-- ALWAYS respond in the SAME LANGUAGE they use (Hebrew → Hebrew, English → English)
+- START in the same language as the journey content
+- ADAPT to the user's language: if they respond in a different language, continue in THEIR language from that point on
+- If user continues in the journey's language, keep using that language
 - Match their formality level and tone
 
 STAY FOCUSED ON TODAY:
@@ -286,12 +288,21 @@ USER CONTEXT (from previous sessions):`;
   const aiContent = response.choices[0].message.content;
   console.log("AI response received:", aiContent ? `${aiContent.substring(0, 100)}...` : "EMPTY");
 
-  // If AI returns empty, provide a contextual fallback
+  // If AI returns empty, provide a contextual fallback in the journey's language
   if (!aiContent) {
     console.warn("AI returned empty content, using fallback");
-    return context.dayGoal 
-      ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
-      : "אני כאן איתך. איך את מרגישה היום?";
+    const contentToCheck = `${context.journeyName} ${context.dayGoal || ""}`;
+    const isHebrew = isHebrewText(contentToCheck);
+    
+    if (isHebrew) {
+      return context.dayGoal 
+        ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
+        : "אני כאן איתך. איך את מרגישה היום?";
+    } else {
+      return context.dayGoal 
+        ? `Let's start the day. Today we're focusing on: ${context.dayGoal}. How do you feel about that?`
+        : "I'm here with you. How are you feeling today?";
+    }
   }
   
   return aiContent;
@@ -355,19 +366,39 @@ export async function generateFlowDays(intent: JourneyIntent): Promise<Generated
   }
 }
 
+// Helper to detect if text is primarily Hebrew
+function isHebrewText(text: string): boolean {
+  const hebrewPattern = /[\u0590-\u05FF]/;
+  const hebrewChars = (text.match(/[\u0590-\u05FF]/g) || []).length;
+  const latinChars = (text.match(/[a-zA-Z]/g) || []).length;
+  return hebrewChars > latinChars;
+}
+
 // PRD-compliant day opening message
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "recentMessages" | "userSummary">): Promise<string> {
   const isFirstDay = context.dayNumber === 1;
   const participantGreeting = context.participantName ? context.participantName : "";
   
+  // Detect language from journey content (name, goal, day title)
+  const contentToCheck = `${context.journeyName} ${context.dayGoal || ""} ${context.dayTitle || ""}`;
+  const isHebrew = isHebrewText(contentToCheck);
+  
   if (isFirstDay) {
-    // Day 1: Use EXACT format the user specified - this is a digital mentor introducing itself
-    // Format: היי [שם], אני [שם המנטור הדיגיטלי]. פיתחו אותי עם כל התוכן של [שם המנטור] ואני אשמח להעביר אותך תהליך [שם התהליך]. היום אנחנו ביום הראשון לתהליך ואשמח להכיר אותך קצת. אז קודם כל מה שלומך?
-    const greeting = participantGreeting ? `היי ${participantGreeting}` : "היי";
-    return `${greeting}, אני ${context.mentorName} הדיגיטלי.
+    // Day 1: Generate introduction in the journey's language
+    if (isHebrew) {
+      const greeting = participantGreeting ? `היי ${participantGreeting}` : "היי";
+      return `${greeting}, אני ${context.mentorName} הדיגיטלי.
 פיתחו אותי עם כל התוכן והידע של ${context.mentorName} ואני אשמח להעביר אותך את התהליך "${context.journeyName}".
 היום אנחנו ביום הראשון לתהליך ואשמח להכיר אותך קצת.
 אז קודם כל, מה שלומך?`;
+    } else {
+      // English version
+      const greeting = participantGreeting ? `Hi ${participantGreeting}` : "Hi";
+      return `${greeting}, I'm ${context.mentorName}'s digital mentor.
+I was created with all of ${context.mentorName}'s content and knowledge, and I'm excited to guide you through "${context.journeyName}".
+Today is Day 1 of your journey, and I'd love to get to know you a little.
+So first of all, how are you doing?`;
+    }
   }
   
   // Days 2+: Regular day opening
@@ -397,7 +428,12 @@ Write a warm, personal opening for today. The message should:
 
   const aiContent = response.choices[0].message.content;
   if (!aiContent) {
-    return `בוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה?`;
+    // Fallback in the journey's language
+    if (isHebrew) {
+      return `בוקר טוב! היום נתמקד ב${context.dayGoal}. איך את מרגישה?`;
+    } else {
+      return `Good morning! Today we'll focus on ${context.dayGoal}. How are you feeling?`;
+    }
   }
   return aiContent;
 }
