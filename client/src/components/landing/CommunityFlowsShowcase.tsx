@@ -28,7 +28,7 @@ const featuredFlows = [
     category: "Career Growth",
     participants: 8900,
     likes: 267,
-    duration: "14 days", 
+    duration: "7 days", 
     thumbnail: futureHealing,
     difficulty: "Intermediate"
   },
@@ -52,7 +52,7 @@ const featuredFlows = [
     category: "Leadership",
     participants: 23200,
     likes: 151,
-    duration: "10 days",
+    duration: "7 days",
     thumbnail: digitalResilience,
     difficulty: "Advanced"
   }
