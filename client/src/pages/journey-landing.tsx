@@ -305,7 +305,7 @@ export default function JourneyLandingPage() {
               <Button 
                 size="lg"
                 className="text-lg px-10 py-6 rounded-full"
-                style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)', border: '1px solid hsl(145 25% 75%)' }}
+                style={{ backgroundColor: 'hsl(25 85% 55%)', color: 'white', border: '1px solid hsl(25 85% 50%)' }}
                 onClick={handleStartJourney}
                 data-testid="button-start-journey"
               >
@@ -480,7 +480,7 @@ export default function JourneyLandingPage() {
                 <Button 
                   size="lg"
                   className="rounded-full group"
-                  style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)', border: '1px solid hsl(145 25% 75%)' }}
+                  style={{ backgroundColor: 'hsl(25 85% 55%)', color: 'white', border: '1px solid hsl(25 85% 50%)' }}
                   onClick={handleStartJourney}
                 >
                   Start Your Transformation
@@ -595,7 +595,7 @@ export default function JourneyLandingPage() {
                   <Button 
                     size="lg"
                     className="text-lg px-10 py-6 rounded-full group"
-                    style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)', border: '1px solid hsl(145 25% 75%)' }}
+                    style={{ backgroundColor: 'hsl(25 85% 55%)', color: 'white', border: '1px solid hsl(25 85% 50%)' }}
                     onClick={handleStartJourney}
                     data-testid="button-start-journey-bottom"
                   >
@@ -652,7 +652,7 @@ export default function JourneyLandingPage() {
                     )}
                     <Button 
                       className="w-full py-6"
-                      style={{ backgroundColor: 'hsl(145 30% 92%)', color: 'hsl(145 25% 45%)', border: '1px solid hsl(145 25% 75%)' }}
+                      style={{ backgroundColor: 'hsl(25 85% 55%)', color: 'white', border: '1px solid hsl(25 85% 50%)' }}
                       onClick={handleJoin}
                       disabled={!email || joinMutation.isPending}
                       data-testid="button-join"
