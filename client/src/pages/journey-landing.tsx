@@ -152,7 +152,7 @@ export default function JourneyLandingPage() {
   let rawContent: LandingPageContent | undefined;
   
   if (rawApiContent) {
-    const nested = rawApiContent.landingPageContent || rawApiContent;
+    const nested = rawApiContent.landingPage || rawApiContent.landingPageContent || rawApiContent;
     rawContent = {
       hero: nested.hero || nested.heroSection,
       audience: nested.audience || nested.audienceSection,
