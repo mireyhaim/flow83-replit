@@ -143,15 +143,15 @@ const HowItWorksPage = () => {
                     {step.video ? (
                       <div className="relative">
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden" style={{ minHeight: '600px' }}>
+                        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden" style={{ minHeight: '500px' }}>
                           <video 
                             src={step.video}
                             autoPlay
                             loop
                             muted
                             playsInline
-                            className="w-full h-full object-cover"
-                            style={{ marginTop: '-30px', height: 'calc(100% + 30px)' }}
+                            className="w-full h-full object-cover object-top"
+                            style={{ marginTop: '-20px', height: 'calc(100% + 20px)' }}
                           />
                         </div>
                       </div>
