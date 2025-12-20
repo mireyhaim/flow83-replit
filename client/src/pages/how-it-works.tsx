@@ -7,6 +7,7 @@ import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
 import screenshotUploadContent from "@/assets/screenshot-upload-content.png";
+import screenshotAiJourney from "@/assets/screenshot-ai-journey.png";
 
 const steps = [
   {
@@ -22,8 +23,8 @@ const steps = [
     number: "02", 
     title: "AI Creates Your Journey",
     description: "Watch as AI transforms your content into a structured 3 or 7-day transformational experience with daily goals, exercises, and personalized guidance.",
-    image: screenshotDashboard,
-    imageAlt: "Mentor dashboard with analytics"
+    image: screenshotAiJourney,
+    imageAlt: "AI generated journey with 7 days"
   },
   {
     icon: Share2,
