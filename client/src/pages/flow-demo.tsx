@@ -145,9 +145,9 @@ export default function FlowDemo() {
       <Header />
       <main className="pt-20">
         <section className="max-w-4xl mx-auto px-6 py-12">
-          <Link href="/" className="inline-flex items-center text-violet-600 hover:text-violet-700 mb-8" data-testid="link-back">
+          <Link href="/community#community-flows" className="inline-flex items-center text-violet-600 hover:text-violet-700 mb-8" data-testid="link-back">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            Back to Flows
           </Link>
 
           <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-lg mb-8" data-testid="card-flow-overview">
