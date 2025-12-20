@@ -153,12 +153,12 @@
   --spiritual-secondary: 230 89% 75%;
 }
 
-/* Landing Page Theme - Sage & Terracotta */
+/* Landing Page Theme - Orange & Terracotta */
 :root {
   /* Landing page tokens */
   --lp-cream: 40 30% 97%;
-  --lp-sage: 145 25% 45%;
-  --lp-sage-light: 145 30% 92%;
+  --lp-sage: 25 85% 55%;
+  --lp-sage-light: 30 80% 92%;
   --lp-terracotta: 18 50% 65%;
   --lp-terracotta-light: 18 45% 90%;
   --lp-earth: 25 20% 20%;
@@ -166,7 +166,7 @@
   --lp-muted: 25 15% 45%;
   
   --lp-gradient-warm: linear-gradient(135deg, hsl(40 30% 97%) 0%, hsl(35 25% 92%) 100%);
-  --lp-gradient-sage: linear-gradient(135deg, hsl(145 30% 95%) 0%, hsl(145 25% 88%) 100%);
+  --lp-gradient-sage: linear-gradient(135deg, hsl(30 80% 95%) 0%, hsl(25 75% 88%) 100%);
   --lp-gradient-sunset: linear-gradient(180deg, hsl(40 30% 97%) 0%, hsl(25 35% 92%) 100%);
   
   --lp-shadow-soft: 0 4px 20px -4px hsl(25 20% 20% / 0.08);
