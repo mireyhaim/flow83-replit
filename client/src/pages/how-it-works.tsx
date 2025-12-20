@@ -8,6 +8,7 @@ import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
 import screenshotUploadContent from "@/assets/screenshot-upload-content.png";
 import screenshotAiJourney from "@/assets/screenshot-ai-journey.png";
+import screenshotAiJourney2 from "@/assets/screenshot-ai-journey-2.png";
 
 const steps = [
   {
@@ -24,7 +25,9 @@ const steps = [
     title: "AI Creates Your Journey",
     description: "Watch as AI transforms your content into a structured 3 or 7-day transformational experience with daily goals, exercises, and personalized guidance.",
     image: screenshotAiJourney,
-    imageAlt: "AI generated journey with 7 days"
+    imageAlt: "AI generated journey overview",
+    image2: screenshotAiJourney2,
+    image2Alt: "Day content editor with goals and tasks"
   },
   {
     icon: Share2,
@@ -80,14 +83,34 @@ const HowItWorksPage = () => {
                   </div>
                   
                   <div className="flex-1">
-                    <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
-                      <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                      <img 
-                        src={step.image} 
-                        alt={step.imageAlt}
-                        className={`relative rounded-2xl shadow-2xl border border-gray-200 ${index === 2 ? 'w-full' : 'w-full'}`}
-                      />
-                    </div>
+                    {step.image2 ? (
+                      <div className="relative flex gap-4">
+                        <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
+                        <div className="relative flex-1 transform hover:scale-[1.02] transition-transform">
+                          <img 
+                            src={step.image} 
+                            alt={step.imageAlt}
+                            className="rounded-2xl shadow-2xl border border-gray-200 w-full"
+                          />
+                        </div>
+                        <div className="relative flex-1 transform hover:scale-[1.02] transition-transform mt-8">
+                          <img 
+                            src={step.image2} 
+                            alt={step.image2Alt}
+                            className="rounded-2xl shadow-2xl border border-gray-200 w-full"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
+                        <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
+                        <img 
+                          src={step.image} 
+                          alt={step.imageAlt}
+                          className={`relative rounded-2xl shadow-2xl border border-gray-200 w-full`}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
