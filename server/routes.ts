@@ -1133,12 +1133,33 @@ export async function registerRoutes(
 
       // Check if AI marked the day as complete - just signal to frontend, don't auto-advance
       let dayCompleted = false;
+      
+      // Primary detection: explicit marker
       if (botResponse.startsWith("[DAY_COMPLETE]")) {
         dayCompleted = true;
         // Remove the marker from the visible message
         botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
-        // Note: Don't call completeDayState here - let the user click "Continue" to advance
+      } else {
+        // Secondary detection: farewell patterns (AI sometimes forgets the marker)
+        const farewellPatterns = [
+          /see you tomorrow/i,
+          /I'll see you in Day/i,
+          /see you in day/i,
+          /until tomorrow/i,
+          /see you next time/i,
+          /נתראה מחר/i,
+          /נפגש מחר/i,
+          /להתראות מחר/i,
+        ];
+        const hasFarewell = farewellPatterns.some(pattern => pattern.test(botResponse));
+        
+        // Also check if we've had enough exchanges (at least 6 messages total)
+        if (hasFarewell && history.length >= 5) {
+          dayCompleted = true;
+          console.log("Day completion detected via farewell pattern");
+        }
       }
+      // Note: Don't call completeDayState here - let the user click "Continue" to advance
 
       const botMessage = await storage.createMessage({
         participantId,
