@@ -104,7 +104,7 @@ export default function JourneyLandingPage() {
       if (data.requiresPayment && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else if (data.accessToken) {
-        navigate(`/p/${data.accessToken}`);
+        window.location.href = `/p/${data.accessToken}`;
       }
     },
     onError: (err: Error) => {
