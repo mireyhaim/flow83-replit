@@ -1419,22 +1419,31 @@ export async function registerRoutes(
   app.get("/api/participant/token/:accessToken", async (req, res) => {
     try {
       const { accessToken } = req.params;
+      console.log("Looking up participant by token:", accessToken);
+      
       const participant = await storage.getParticipantByAccessToken(accessToken);
+      console.log("Participant found:", participant?.id);
       
       if (!participant) {
         return res.status(404).json({ error: "Invalid access token" });
       }
 
+      console.log("Getting journey:", participant.journeyId);
       const journey = await storage.getJourney(participant.journeyId);
+      console.log("Journey found:", journey?.id);
+      
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
 
       // Get steps with blocks for the journey
+      console.log("Getting steps for journey");
       const steps = await storage.getJourneySteps(participant.journeyId);
+      console.log("Steps found:", steps.length);
+      
       const stepsWithBlocks = await Promise.all(
         steps.map(async (step) => {
-          const blocks = await storage.getStepBlocks(step.id);
+          const blocks = await storage.getJourneyBlocks(step.id);
           return { ...step, blocks };
         })
       );
@@ -1442,9 +1451,11 @@ export async function registerRoutes(
       // Get mentor info
       let mentor = null;
       if (journey.creatorId) {
+        console.log("Getting mentor:", journey.creatorId);
         mentor = await storage.getUser(journey.creatorId);
       }
 
+      console.log("Returning participant data successfully");
       res.json({ 
         participant, 
         journey: {
@@ -1454,7 +1465,7 @@ export async function registerRoutes(
         }
       });
     } catch (error) {
-      console.error("Error fetching participant:", error);
+      console.error("Error fetching participant - full error:", error);
       res.status(500).json({ error: "Failed to fetch participant data" });
     }
   });
