@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,18 @@ const stats = [
 ];
 
 const Community = () => {
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
