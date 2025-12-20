@@ -250,23 +250,41 @@ export default function JourneyLandingPage() {
     <div className="min-h-screen lp-font-body" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, hsl(40 35% 96%) 0%, hsl(30 30% 92%) 50%, hsl(25 25% 88%) 100%)' }}>
-        {/* Large soft glowing orb - main focal element */}
+        {/* Large decorative circle - top left */}
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full lp-animate-gentle-float"
-          style={{ 
-            background: 'radial-gradient(circle, hsl(25 80% 70% / 0.15) 0%, hsl(25 70% 60% / 0.08) 40%, transparent 70%)',
-          }} 
+          className="absolute -top-20 -left-20 w-80 h-80 md:w-[500px] md:h-[500px] rounded-full border-2 lp-animate-gentle-float"
+          style={{ borderColor: 'hsl(25 85% 55% / 0.25)' }} 
+        />
+        <div 
+          className="absolute -top-10 -left-10 w-60 h-60 md:w-[400px] md:h-[400px] rounded-full border lp-animate-gentle-float lp-animation-delay-200"
+          style={{ borderColor: 'hsl(25 85% 55% / 0.15)' }} 
         />
         
-        {/* Subtle decorative arcs */}
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-          <ellipse cx="15%" cy="20%" rx="200" ry="150" fill="none" stroke="hsl(25 85% 55% / 0.08)" strokeWidth="1" />
-          <ellipse cx="85%" cy="75%" rx="180" ry="120" fill="none" stroke="hsl(25 85% 55% / 0.06)" strokeWidth="1" />
+        {/* Large decorative circle - bottom right */}
+        <div 
+          className="absolute -bottom-32 -right-32 w-96 h-96 md:w-[600px] md:h-[600px] rounded-full border-2 lp-animate-gentle-float lp-animation-delay-400"
+          style={{ borderColor: 'hsl(25 85% 55% / 0.2)' }} 
+        />
+        <div 
+          className="absolute -bottom-20 -right-20 w-72 h-72 md:w-[450px] md:h-[450px] rounded-full border lp-animate-gentle-float lp-animation-delay-600"
+          style={{ borderColor: 'hsl(25 85% 55% / 0.12)' }} 
+        />
+        
+        {/* Floating filled circles */}
+        <div className="absolute top-[15%] right-[10%] w-16 h-16 md:w-24 md:h-24 rounded-full lp-animate-gentle-float" style={{ backgroundColor: 'hsl(25 85% 55% / 0.12)' }} />
+        <div className="absolute bottom-[20%] left-[8%] w-12 h-12 md:w-20 md:h-20 rounded-full lp-animate-gentle-float lp-animation-delay-400" style={{ backgroundColor: 'hsl(25 85% 55% / 0.1)' }} />
+        <div className="absolute top-[40%] left-[5%] w-8 h-8 md:w-12 md:h-12 rounded-full lp-animate-gentle-float lp-animation-delay-200" style={{ backgroundColor: 'hsl(25 85% 55% / 0.15)' }} />
+        <div className="absolute top-[30%] right-[5%] w-6 h-6 md:w-10 md:h-10 rounded-full lp-animate-gentle-float lp-animation-delay-600" style={{ backgroundColor: 'hsl(25 85% 55% / 0.18)' }} />
+        
+        {/* Abstract wave shape */}
+        <svg className="absolute bottom-0 left-0 w-full h-40 md:h-56" viewBox="0 0 1440 200" preserveAspectRatio="none">
+          <path d="M0,100 C320,180 420,20 720,100 C1020,180 1120,20 1440,100 L1440,200 L0,200 Z" fill="hsl(25 85% 55% / 0.06)" />
+          <path d="M0,120 C360,200 460,40 760,120 C1060,200 1160,40 1440,120 L1440,200 L0,200 Z" fill="hsl(25 85% 55% / 0.04)" />
         </svg>
         
-        {/* Soft corner accents */}
-        <div className="absolute top-0 right-0 w-96 h-96 opacity-40" style={{ background: 'radial-gradient(circle at top right, hsl(25 80% 85% / 0.4) 0%, transparent 60%)' }} />
-        <div className="absolute bottom-0 left-0 w-80 h-80 opacity-30" style={{ background: 'radial-gradient(circle at bottom left, hsl(30 70% 80% / 0.3) 0%, transparent 60%)' }} />
+        {/* Decorative line elements */}
+        <div className="absolute top-[25%] left-[15%] w-32 md:w-48 h-px lp-animate-gentle-float" style={{ backgroundColor: 'hsl(25 85% 55% / 0.2)' }} />
+        <div className="absolute bottom-[35%] right-[12%] w-24 md:w-40 h-px rotate-45 lp-animate-gentle-float lp-animation-delay-400" style={{ backgroundColor: 'hsl(25 85% 55% / 0.15)' }} />
         
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
