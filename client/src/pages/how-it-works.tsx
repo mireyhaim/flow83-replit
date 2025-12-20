@@ -143,14 +143,16 @@ const HowItWorksPage = () => {
                     {step.video ? (
                       <div className="relative">
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                        <video 
-                          src={step.video}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className="relative rounded-2xl shadow-2xl border border-gray-200 w-full"
-                        />
+                        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
+                          <video 
+                            src={step.video}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                     ) : step.image2 ? (
                       <ImageCarousel 
