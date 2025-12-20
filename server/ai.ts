@@ -129,6 +129,8 @@ interface ChatContext {
   dayGoal: string;
   dayTask: string;
   dayExplanation?: string;
+  // Content blocks for the day
+  contentBlocks?: { type: string; content: string }[];
   // Mentor personality
   mentorName: string;
   mentorToneOfVoice?: string;
@@ -138,6 +140,8 @@ interface ChatContext {
   participantName?: string;
   // Memory - last 5 messages only
   recentMessages: { role: string; content: string }[];
+  // Message count for tracking conversation progress
+  messageCount?: number;
   // User summary from previous days (long-term memory)
   userSummary?: {
     challenge?: string;
@@ -176,16 +180,18 @@ RESPOND TO WHAT THEY ACTUALLY SAY:
 - Ask follow-up questions based on what THEY said, not scripted questions
 - If they share something emotional, stay with that emotion before moving on
 
-STAY FOCUSED ON TODAY:
-- Focus on today's specific goal - don't jump to future days
-- But weave in today's content naturally, don't announce it
-- If they mention future topics, gently guide back: "That's interesting, we'll get to that later. Right now I'm curious to hear..."
+=== DAY STRUCTURE AND FLOW ===
+Each day has specific content you MUST cover through natural conversation:
+1. THEME/GOAL - Introduce today's focus naturally
+2. REFLECTION/TEXT - Share the key insight or have them reflect
+3. TASK - Guide them through the practical exercise
+
+YOUR JOB: Weave these elements into the conversation organically. Don't announce them or read them like a script. After covering all elements and getting their genuine engagement, wrap up the day.
 
 DAY 1 - FIRST MEETING:
 This is your first time meeting them. Build genuine connection:
-1. After they answer how they're doing → Respond warmly, then: "I'd love to hear more about you, it will help me get to know you better"
-2. After they share about themselves → Reflect what you heard genuinely, then ask what brought them here
-3. After they share hopes → Validate warmly, THEN naturally transition to today's focus
+1. After they answer how they're doing → Respond warmly, then ask what brought them here
+2. After they share about themselves → Reflect genuinely, then naturally transition to today's focus
 - Don't rush! Connection first, content later
 - ONE question per message, respond to their answer before asking the next
 
@@ -202,15 +208,24 @@ NEVER DO:
 - Ignoring their emotions to push content
 - Generic responses that could apply to anyone
 - Responding in a different language than the journey content
+- Keep chatting endlessly without progressing toward completion
 
-GOAL COMPLETION:
-When they've genuinely engaged with today's work, wrap up naturally:
-- Summarize what came up (in your words, personally)
-- Acknowledge their effort
-- Give simple homework/intention
-- Warm closing inviting them back
-- Start with "[DAY_COMPLETE]" marker (system use only)
-Don't wrap up early - make sure they've actually done the work.`;
+=== WHEN TO COMPLETE THE DAY ===
+You MUST complete the day when ALL of these are true:
+1. You've covered today's theme/goal
+2. You've shared or discussed the reflection/insight
+3. They've engaged with or completed the task
+4. The conversation has had at least 4-5 meaningful exchanges
+
+COMPLETING THE DAY - MANDATORY:
+When the above conditions are met, you MUST wrap up:
+- Summarize what came up today (in your words, personally)
+- Acknowledge their effort and growth
+- Give a simple intention to carry forward
+- Say a warm goodbye: "I'll see you tomorrow" or "See you in Day X"
+- Start your message with "[DAY_COMPLETE]" marker (system use only, will be hidden from user)
+
+IMPORTANT: Don't keep the conversation going forever. Once you've covered the content and they've engaged, wrap it up warmly. The day should feel complete, not endless.`;
 
 export async function generateChatResponse(
   context: ChatContext,
@@ -229,7 +244,12 @@ DAY: ${context.dayNumber} of ${context.totalDays}
 
 TODAY'S THEME: ${context.dayGoal}
 TODAY'S ACTIVITY: ${context.dayTask}
-${context.dayExplanation ? `BACKGROUND: ${context.dayExplanation}` : ""}`;
+${context.dayExplanation ? `BACKGROUND: ${context.dayExplanation}` : ""}
+${context.contentBlocks && context.contentBlocks.length > 0 ? `
+TODAY'S CONTENT TO COVER:
+${context.contentBlocks.map((b, i) => `${i + 1}. [${b.type.toUpperCase()}] ${b.content}`).join('\n')}` : ""}
+${context.messageCount ? `
+CONVERSATION PROGRESS: ${context.messageCount} messages exchanged so far. ${context.messageCount >= 8 ? "You should be wrapping up soon if content is covered." : ""}` : ""}`;
 
   // Add user summary if exists (long-term memory)
   if (context.userSummary && Object.values(context.userSummary).some(v => v)) {

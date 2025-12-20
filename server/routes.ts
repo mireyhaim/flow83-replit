@@ -961,7 +961,9 @@ export async function registerRoutes(
 
       const existingMessages = await storage.getMessages(participantId, stepId);
       if (existingMessages.length > 0) {
-        return res.json(existingMessages);
+        // Check if day was already completed (any message with isSummary: true)
+        const dayCompleted = existingMessages.some(m => m.isSummary === true);
+        return res.json({ messages: existingMessages, dayCompleted });
       }
 
       const journey = await storage.getJourney(step.journeyId);
@@ -1009,7 +1011,7 @@ export async function registerRoutes(
       // Track day state
       await storage.createOrUpdateDayState(participantId, step.dayNumber);
 
-      res.json([message]);
+      res.json({ messages: [message], dayCompleted: false });
     } catch (error) {
       console.error("Error starting day:", error);
       res.status(500).json({ error: "Failed to start day" });
@@ -1043,6 +1045,13 @@ export async function registerRoutes(
       const step = await storage.getJourneyStep(stepId);
       if (!step || step.journeyId !== participant.journeyId) {
         return res.status(403).json({ error: "Step does not belong to this flow" });
+      }
+
+      // Check if day is already complete - block further messages
+      const existingMessages = await storage.getMessages(participantId, stepId);
+      const dayAlreadyComplete = existingMessages.some(m => m.isSummary === true);
+      if (dayAlreadyComplete) {
+        return res.status(400).json({ error: "Day is already complete. Please continue to the next day.", dayCompleted: true });
       }
 
       const journey = await storage.getJourney(step.journeyId);
@@ -1081,6 +1090,19 @@ export async function registerRoutes(
       // PRD 7.2 - Get user summary from previous days (long-term memory)
       const previousDaySummary = await storage.getLatestDaySummary(participantId, step.dayNumber - 1);
 
+      // Get content blocks for this step
+      const stepBlocks = await storage.getJourneyBlocks(stepId);
+      const contentBlocks = stepBlocks.map(b => {
+        let contentText = "";
+        try {
+          const parsed = typeof b.content === 'string' ? JSON.parse(b.content) : b.content;
+          contentText = parsed?.text || parsed?.question || parsed?.task || parsed?.content || String(b.content || "");
+        } catch {
+          contentText = String(b.content || "");
+        }
+        return { type: b.type, content: contentText };
+      });
+
       // PRD-compliant chat context
       let botResponse = await generateChatResponse(
         {
@@ -1091,12 +1113,14 @@ export async function registerRoutes(
           dayGoal: step.goal || step.description || "Focus on today's growth",
           dayTask: step.task || "Complete today's exercise",
           dayExplanation: step.explanation || undefined,
+          contentBlocks,
           mentorName,
           mentorToneOfVoice: mentor?.toneOfVoice || undefined,
           mentorMethodDescription: mentor?.methodDescription || undefined,
           mentorBehavioralRules: mentor?.behavioralRules || undefined,
           participantName,
           recentMessages,
+          messageCount: history.length,
           userSummary: previousDaySummary ? {
             challenge: previousDaySummary.summaryChallenge || undefined,
             emotionalTone: previousDaySummary.summaryEmotionalTone || undefined,

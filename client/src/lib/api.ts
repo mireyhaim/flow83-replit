@@ -306,7 +306,7 @@ export const chatApi = {
     return handleResponse(res);
   },
 
-  startDay: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
+  startDay: async (participantId: string, stepId: string): Promise<{ messages: JourneyMessage[], dayCompleted: boolean }> => {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/start-day`, {
       method: "POST",
     });

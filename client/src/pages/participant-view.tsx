@@ -125,15 +125,21 @@ export default function ParticipantView() {
   const xpPoints = completedDays * 100;
   const streak = completedDays;
 
-  const { data: messages = [], isLoading: messagesLoading } = useQuery<JourneyMessage[]>({
+  const { data: chatData, isLoading: messagesLoading } = useQuery<{ messages: JourneyMessage[], dayCompleted: boolean }>({
     queryKey: ["messages", resolvedParticipant?.id, currentStep?.id],
     queryFn: async () => {
-      if (!resolvedParticipant?.id || !currentStep?.id) return [];
-      const msgs = await chatApi.startDay(resolvedParticipant.id, currentStep.id);
-      return msgs;
+      if (!resolvedParticipant?.id || !currentStep?.id) return { messages: [], dayCompleted: false };
+      const result = await chatApi.startDay(resolvedParticipant.id, currentStep.id);
+      // Set day completion state on initial load
+      if (result.dayCompleted) {
+        setDayReadyForCompletion(true);
+      }
+      return result;
     },
     enabled: !!resolvedParticipant?.id && !!currentStep?.id && !isCompleted,
   });
+
+  const messages = chatData?.messages ?? [];
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -141,9 +147,12 @@ export default function ParticipantView() {
       return chatApi.sendMessage(resolvedParticipant.id, currentStep.id, content);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData<JourneyMessage[]>(
+      queryClient.setQueryData<{ messages: JourneyMessage[], dayCompleted: boolean }>(
         ["messages", resolvedParticipant?.id, currentStep?.id],
-        (old = []) => [...old, data.userMessage, data.botMessage]
+        (old) => ({
+          messages: [...(old?.messages ?? []), data.userMessage, data.botMessage],
+          dayCompleted: data.dayCompleted ?? false,
+        })
       );
       if (data.dayCompleted) {
         setDayReadyForCompletion(true);
@@ -790,54 +799,59 @@ export default function ParticipantView() {
 
           {/* Input area - sticky at bottom */}
           <div className="sticky bottom-0 border-t border-gray-200 p-4 bg-white z-20">
-            <form 
-              onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-              className="flex gap-3 max-w-3xl mx-auto"
-            >
-              <div className="flex-1 relative">
-                <Input 
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type a message..."
-                  className="w-full rounded-full bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
-                  disabled={isSending}
-                  data-testid="input-chat"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg"
-                  disabled={isSending || !inputValue.trim()}
-                  data-testid="button-send"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </form>
-            
-            {/* Complete day button - prominent when AI indicates day is done */}
-            {dayReadyForCompletion && (
+            {/* Show input form only when day is NOT complete */}
+            {!dayReadyForCompletion ? (
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                className="flex gap-3 max-w-3xl mx-auto"
+              >
+                <div className="flex-1 relative">
+                  <Input 
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Type a message..."
+                    className="w-full rounded-full bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
+                    disabled={isSending}
+                    data-testid="input-chat"
+                  />
+                  <Button 
+                    type="submit" 
+                    size="icon" 
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg"
+                    disabled={isSending || !inputValue.trim()}
+                    data-testid="button-send"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              /* Day complete - show "Take me to next day" button instead of input */
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-4 text-center"
+                className="text-center max-w-md mx-auto"
               >
-                <div className="text-sm text-emerald-600 font-medium mb-2">
-                  You've completed today's work!
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Day {currentDay} Complete!</h3>
+                  <p className="text-sm text-gray-600 mb-4">Great work today. Ready for the next step?</p>
+                  <Button
+                    onClick={handleCompleteDay}
+                    disabled={completeDayMutation.isPending}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 shadow-lg text-white py-6 text-lg"
+                    data-testid="button-complete-day"
+                  >
+                    {completeDayMutation.isPending ? (
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 mr-2" />
+                    )}
+                    {currentDay < totalDays ? `Take me to Day ${currentDay + 1}` : "Complete Journey"}
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleCompleteDay}
-                  disabled={completeDayMutation.isPending}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 shadow-lg text-white animate-pulse"
-                  data-testid="button-complete-day"
-                >
-                  {completeDayMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                  )}
-                  Continue to Day {currentDay + 1}
-                </Button>
               </motion.div>
             )}
           </div>
