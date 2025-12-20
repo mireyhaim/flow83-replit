@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +38,7 @@ interface JourneyIntentFormProps {
 }
 
 const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) => {
+  const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -183,6 +185,8 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
+    } else {
+      navigate("/journeys");
     }
   };
 
@@ -317,7 +321,6 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           type="button"
           variant="ghost"
           onClick={handleBack}
-          disabled={currentStep === 0}
           className="text-white/60 hover:text-white hover:bg-white/10"
           data-testid="button-back"
         >
