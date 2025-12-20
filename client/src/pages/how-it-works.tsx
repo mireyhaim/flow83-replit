@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Upload, Wand2, Share2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
@@ -34,7 +34,7 @@ const steps = [
     image2Alt: "Day content editor with goals and tasks"
   },
   {
-    icon: Share2,
+    icon: Globe,
     number: "03",
     title: "We Create Your Marketing Site",
     description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately. Both the site and the entire experience are fully mobile-friendly.",
