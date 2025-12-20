@@ -944,9 +944,13 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Participant not found" });
       }
       
-      // For authenticated users, verify they own this participant
-      // For external participants (no userId), the participant ID itself is the auth
-      if (participant.userId && req.user?.claims?.sub !== participant.userId) {
+      // Authorization: Allow if:
+      // 1. External participant (has accessToken) - token-based auth handled by having valid participantId
+      // 2. Authenticated user who is the journey creator
+      const isExternalParticipant = !!participant.accessToken;
+      const isJourneyCreator = req.user?.claims?.sub === participant.userId;
+      
+      if (!isExternalParticipant && !isJourneyCreator) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
