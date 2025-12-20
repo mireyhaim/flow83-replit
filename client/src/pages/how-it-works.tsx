@@ -11,6 +11,7 @@ import screenshotUploadContent from "@/assets/screenshot-upload-content.png";
 import screenshotAiJourney from "@/assets/screenshot-ai-journey.png";
 import screenshotAiJourney2 from "@/assets/screenshot-ai-journey-2.png";
 import screenshotParticipantChat from "@/assets/screenshot-participant-chat.png";
+import screenshotParticipantMobile from "@/assets/screenshot-participant-mobile.png";
 import videoMarketingSite from "@/assets/video-marketing-site.mp4";
 
 const steps = [
@@ -47,7 +48,9 @@ const steps = [
     title: "Share & Earn",
     description: "Publish your journey with a shareable link. Participants experience your wisdom through an AI-powered chat that speaks in your voice.",
     image: screenshotParticipantChat,
-    imageAlt: "Participant chat experience"
+    imageAlt: "Participant chat experience",
+    image2: screenshotParticipantMobile,
+    image2Alt: "Mobile participant chat experience"
   }
 ];
 
