@@ -36,7 +36,7 @@ const steps = [
     icon: Share2,
     number: "03",
     title: "We Create Your Marketing Site",
-    description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately.",
+    description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately. Both the site and the entire experience are fully mobile-friendly.",
     video: videoMarketingSite,
     image: screenshotParticipant,
     imageAlt: "Marketing landing page"
