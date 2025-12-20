@@ -60,9 +60,11 @@ const pricingPlans = [
       "Up to 10 active Journeys",
       "Up to 1000 users",
       "$0.40 per user above 1000",
-      "Direct payment integration (money goes directly to you)",
+      "Personal sales landing page for each journey",
+      "Direct payment integration (money goes to you)",
       "Full cloud hosting",
-      "Full AI Flow Composer access"
+      "Advanced AI Flow Composer",
+      "Extended data dashboard"
     ],
     bestFor: "Mentors and organizations who are ready to scale multiple journeys, build a product portfolio, and earn consistently at volume.",
     buttonText: "Scale Your Business",
