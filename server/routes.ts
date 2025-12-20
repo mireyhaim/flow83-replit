@@ -935,13 +935,18 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/participants/:participantId/steps/:stepId/start-day", isAuthenticated, async (req: any, res) => {
+  app.post("/api/participants/:participantId/steps/:stepId/start-day", async (req: any, res) => {
     try {
       const { participantId, stepId } = req.params;
-      const userId = req.user.claims.sub;
       
       const participant = await storage.getParticipantById(participantId);
-      if (!participant || participant.userId !== userId) {
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      
+      // For authenticated users, verify they own this participant
+      // For external participants (no userId), the participant ID itself is the auth
+      if (participant.userId && req.user?.claims?.sub !== participant.userId) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
@@ -965,9 +970,14 @@ export async function registerRoutes(
       const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() || "Your Guide" : "Your Guide";
       const totalDays = journey.duration || 7;
       
-      // Get participant's name
-      const participantUser = await storage.getUser(userId);
-      const participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
+      // Get participant's name - for external participants use their stored name
+      let participantName: string | undefined;
+      if (participant.userId) {
+        const participantUser = await storage.getUser(participant.userId);
+        participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
+      } else {
+        participantName = participant.name || participant.email?.split('@')[0] || undefined;
+      }
 
       // PRD-compliant context for day opening
       const openingMessage = await generateDayOpeningMessage({
@@ -1002,18 +1012,23 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/participants/:participantId/steps/:stepId/messages", isAuthenticated, async (req: any, res) => {
+  app.post("/api/participants/:participantId/steps/:stepId/messages", async (req: any, res) => {
     try {
       const { participantId, stepId } = req.params;
       const { content } = req.body;
-      const userId = req.user.claims.sub;
       
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ error: "Message content is required" });
       }
 
       const participant = await storage.getParticipantById(participantId);
-      if (!participant || participant.userId !== userId) {
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      
+      // For authenticated users, verify they own this participant
+      // For external participants (no userId), the participant ID itself is the auth
+      if (participant.userId && req.user?.claims?.sub !== participant.userId) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
