@@ -250,9 +250,43 @@ export default function JourneyLandingPage() {
     <div className="min-h-screen lp-font-body" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center lp-gradient-sunset relative overflow-hidden">
-        {/* Decorative elements */}
+        {/* Decorative background elements */}
         <div className="absolute top-20 left-10 w-64 h-64 lp-bg-sage-light rounded-full blur-3xl opacity-40 lp-animate-gentle-float" />
         <div className="absolute bottom-20 right-10 w-80 h-80 lp-bg-terracotta-light rounded-full blur-3xl opacity-30 lp-animate-gentle-float lp-animation-delay-400" />
+        
+        {/* Floating decorative shapes */}
+        <div className="absolute top-[15%] left-[8%] w-20 h-20 rounded-full border-2 opacity-20 lp-animate-gentle-float" style={{ borderColor: 'hsl(25 85% 55%)' }} />
+        <div className="absolute top-[25%] right-[12%] w-12 h-12 rounded-full lp-bg-sage opacity-15 lp-animate-gentle-float lp-animation-delay-200" />
+        <div className="absolute bottom-[30%] left-[5%] w-16 h-16 rotate-45 border-2 opacity-15 lp-animate-gentle-float lp-animation-delay-400" style={{ borderColor: 'hsl(25 85% 55%)' }} />
+        <div className="absolute top-[40%] right-[6%] w-8 h-8 rounded-full lp-bg-terracotta opacity-20 lp-animate-gentle-float lp-animation-delay-600" />
+        <div className="absolute bottom-[25%] right-[15%] w-24 h-24 rounded-full border opacity-10 lp-animate-gentle-float" style={{ borderColor: 'hsl(25 85% 55%)' }} />
+        <div className="absolute top-[60%] left-[10%] w-6 h-6 rounded-full lp-bg-sage opacity-25 lp-animate-gentle-float lp-animation-delay-800" />
+        
+        {/* Abstract line decorations */}
+        <svg className="absolute top-[20%] left-[15%] w-32 h-32 opacity-10 lp-animate-gentle-float lp-animation-delay-200" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(25 85% 55%)" strokeWidth="1" />
+          <circle cx="50" cy="50" r="25" fill="none" stroke="hsl(25 85% 55%)" strokeWidth="1" />
+        </svg>
+        <svg className="absolute bottom-[35%] right-[8%] w-40 h-40 opacity-8 lp-animate-gentle-float lp-animation-delay-400" viewBox="0 0 100 100">
+          <path d="M20,50 Q50,20 80,50 Q50,80 20,50" fill="none" stroke="hsl(25 85% 55%)" strokeWidth="1" opacity="0.15" />
+        </svg>
+        
+        {/* Decorative dots pattern */}
+        <div className="absolute top-[10%] right-[20%] grid grid-cols-3 gap-2 opacity-15">
+          {[...Array(9)].map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full lp-bg-sage" />
+          ))}
+        </div>
+        <div className="absolute bottom-[20%] left-[18%] grid grid-cols-3 gap-2 opacity-10">
+          {[...Array(9)].map((_, i) => (
+            <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'hsl(25 85% 55%)' }} />
+          ))}
+        </div>
+        
+        {/* Floating icons */}
+        <Heart className="absolute top-[18%] right-[25%] w-8 h-8 lp-text-sage opacity-15 lp-animate-gentle-float lp-animation-delay-200" />
+        <Sparkles className="absolute bottom-[40%] left-[12%] w-6 h-6 opacity-15 lp-animate-gentle-float lp-animation-delay-600" style={{ color: 'hsl(25 85% 55%)' }} />
+        <Star className="absolute top-[35%] left-[20%] w-5 h-5 lp-text-sage opacity-10 lp-animate-gentle-float lp-animation-delay-400" />
         
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
