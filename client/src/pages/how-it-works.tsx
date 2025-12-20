@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
+import screenshotUploadContent from "@/assets/screenshot-upload-content.png";
 
 const steps = [
   {
@@ -13,8 +14,8 @@ const steps = [
     number: "01",
     title: "Upload Your Content",
     description: "Share your existing documents, recordings, or notes. Our AI understands your unique methodology and transforms it into structured content.",
-    image: screenshotFlowEditor,
-    imageAlt: "Flow editor interface"
+    image: screenshotUploadContent,
+    imageAlt: "Upload content interface"
   },
   {
     icon: Wand2,
