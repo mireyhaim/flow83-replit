@@ -70,7 +70,7 @@ export default function ParticipantJoinPage() {
       if (data.requiresPayment && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else if (data.accessToken) {
-        navigate(`/p/${data.accessToken}`);
+        window.location.href = `/p/${data.accessToken}`;
       }
     } catch (err: any) {
       setError(err.message);
