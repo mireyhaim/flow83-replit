@@ -698,7 +698,7 @@ export default function ParticipantView() {
         {/* Chat area */}
         <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full min-h-0">
           {/* Messages - scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36" ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36 no-scrollbar" ref={scrollRef}>
             {messagesLoading && (
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
