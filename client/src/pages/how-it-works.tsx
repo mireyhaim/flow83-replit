@@ -1,7 +1,8 @@
+import { useState } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Upload, Wand2, Share2 } from "lucide-react";
+import { Upload, Wand2, Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
@@ -38,6 +39,51 @@ const steps = [
     imageAlt: "Participant chat experience"
   }
 ];
+
+const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const goNext = () => setCurrentIndex((prev) => (prev + 1) % images.length);
+  const goPrev = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
+        <img 
+          src={images[currentIndex].src} 
+          alt={images[currentIndex].alt}
+          className="w-full transition-opacity duration-300"
+        />
+      </div>
+      <div className="absolute inset-y-0 left-0 flex items-center">
+        <button
+          onClick={goPrev}
+          className="w-10 h-10 -ml-5 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-violet-50 transition-colors border border-gray-200"
+        >
+          <ChevronLeft className="w-5 h-5 text-violet-600" />
+        </button>
+      </div>
+      <div className="absolute inset-y-0 right-0 flex items-center">
+        <button
+          onClick={goNext}
+          className="w-10 h-10 -mr-5 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-violet-50 transition-colors border border-gray-200"
+        >
+          <ChevronRight className="w-5 h-5 text-violet-600" />
+        </button>
+      </div>
+      <div className="flex justify-center gap-2 mt-4">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`w-2 h-2 rounded-full transition-colors ${idx === currentIndex ? 'bg-violet-600' : 'bg-violet-200'}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const HowItWorksPage = () => {
   return (
@@ -84,23 +130,12 @@ const HowItWorksPage = () => {
                   
                   <div className="flex-1">
                     {step.image2 ? (
-                      <div className="relative flex gap-4">
-                        <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
-                        <div className="relative flex-1 transform hover:scale-[1.02] transition-transform">
-                          <img 
-                            src={step.image} 
-                            alt={step.imageAlt}
-                            className="rounded-2xl shadow-2xl border border-gray-200 w-full"
-                          />
-                        </div>
-                        <div className="relative flex-1 transform hover:scale-[1.02] transition-transform mt-8">
-                          <img 
-                            src={step.image2} 
-                            alt={step.image2Alt}
-                            className="rounded-2xl shadow-2xl border border-gray-200 w-full"
-                          />
-                        </div>
-                      </div>
+                      <ImageCarousel 
+                        images={[
+                          { src: step.image, alt: step.imageAlt },
+                          { src: step.image2, alt: step.image2Alt || "" }
+                        ]} 
+                      />
                     ) : (
                       <div className={`relative ${index === 2 ? 'max-w-[280px] mx-auto' : ''}`}>
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
