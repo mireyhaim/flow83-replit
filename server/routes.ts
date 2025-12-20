@@ -1062,8 +1062,13 @@ export async function registerRoutes(
       const totalDays = journey.duration || 7;
       
       // Get participant's name for personalized conversation
-      const participantUser = await storage.getUser(userId);
-      const participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
+      let participantName: string | undefined;
+      if (participant.userId) {
+        const participantUser = await storage.getUser(participant.userId);
+        participantName = participantUser ? `${participantUser.firstName || ""}`.trim() || undefined : undefined;
+      } else {
+        participantName = participant.name || participant.email?.split('@')[0] || undefined;
+      }
 
       // PRD 7.2 - Get user summary from previous days (long-term memory)
       const previousDaySummary = await storage.getLatestDaySummary(participantId, step.dayNumber - 1);
