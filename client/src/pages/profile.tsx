@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Mail, Globe, Save, CreditCard, Receipt, XCircle, AlertTriangle, Camera } from "lucide-react";
+import { Loader2, Mail, Globe, Save, CreditCard, XCircle, AlertTriangle, Camera } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -357,24 +357,6 @@ export default function ProfilePage() {
                 </AlertDialog>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
-                    <Receipt className="h-5 w-5 text-indigo-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">Invoices</p>
-                    <p className="text-xs text-slate-400">Billing history</p>
-                  </div>
-                </div>
-                
-                <div className="py-6 text-center">
-                  <p className="text-sm text-slate-400">No invoices yet</p>
-                  <p className="text-xs text-slate-300 mt-1">
-                    Your billing history will appear here
-                  </p>
-                </div>
-              </div>
             </div>
           </section>
         </div>
