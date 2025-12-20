@@ -1,6 +1,8 @@
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import { Button } from "@/components/ui/button";
 import { Upload, Wand2, Share2 } from "lucide-react";
+import { Link } from "wouter";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
@@ -87,6 +89,29 @@ const HowItWorksPage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-20">
+              <Link href="/journeys/new">
+                <Button 
+                  size="lg" 
+                  className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                  data-testid="button-create-flow"
+                >
+                  Create Your Flow
+                </Button>
+              </Link>
+              <Link href="/community#community-flows">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="text-lg px-8 py-4 h-auto rounded-full border-violet-200 text-violet-600 hover:bg-violet-50"
+                  data-testid="button-see-examples"
+                >
+                  See Examples
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
