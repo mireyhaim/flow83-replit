@@ -147,18 +147,19 @@ export default function ProfilePage() {
     <DashboardLayout>
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             <div className="relative group">
               {profileImage ? (
                 <img 
                   src={profileImage} 
                   alt="Profile" 
-                  className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-violet-200 shadow-lg"
                   data-testid="img-profile"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl font-semibold text-violet-600 border border-slate-200">
-                  {formData.firstName?.[0] || formData.email?.[0]?.toUpperCase() || "?"}
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex flex-col items-center justify-center border-2 border-dashed border-violet-300 cursor-pointer hover:border-violet-400 transition-colors">
+                  <Camera className="h-6 w-6 text-violet-400 mb-1" />
+                  <span className="text-[10px] text-violet-500 font-medium">Add Photo</span>
                 </div>
               )}
               <label 
@@ -186,6 +187,12 @@ export default function ProfilePage() {
                 {formData.firstName ? `${formData.firstName} ${formData.lastName}` : "My Profile"}
               </h1>
               <p className="text-slate-500 text-sm">{formData.email}</p>
+              {!profileImage && (
+                <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                  Your photo will appear in chats with participants
+                </p>
+              )}
             </div>
           </div>
           <Button 
