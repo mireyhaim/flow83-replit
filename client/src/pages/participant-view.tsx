@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -213,17 +213,13 @@ export default function ParticipantView() {
     setDayReadyForCompletion(false);
   }, [currentDay]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  useLayoutEffect(() => {
+    requestAnimationFrame(() => {
       if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: scrollRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages]);
+    });
+  }, [messages.length]);
 
   // Show error only if access token is invalid AND user is not logged in (can't preview)
   const showInvalidLinkError = externalError && !externalLoading && !currentUser && !journey;
@@ -700,9 +696,9 @@ export default function ParticipantView() {
         </header>
 
         {/* Chat area */}
-        <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full" style={{ height: 'calc(100vh - 4rem)' }}>
+        <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full min-h-0">
           {/* Messages - scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '120px' }} ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36" ref={scrollRef}>
             {messagesLoading && (
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
@@ -792,8 +788,8 @@ export default function ParticipantView() {
             )}
           </div>
 
-          {/* Input area - fixed at bottom */}
-          <div className="fixed bottom-0 left-0 right-0 lg:left-72 border-t border-gray-200 p-4 bg-white z-20">
+          {/* Input area - sticky at bottom */}
+          <div className="sticky bottom-0 border-t border-gray-200 p-4 bg-white z-20">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
               className="flex gap-3 max-w-3xl mx-auto"
