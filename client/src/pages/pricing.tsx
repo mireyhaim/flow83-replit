@@ -55,16 +55,16 @@ const pricingPlans = [
     price: "$183",
     period: "/month",
     trialText: null,
-    description: "For established mentors, schools, and creators who want to turn their method into a long-term digital income stream - without limitations.",
+    description: "For established mentors and growing schools who want to offer multiple journeys at scale — with bigger audiences, more products, and true long-term revenue.",
     features: [
-      "Unlimited active Journeys",
-      "Unlimited users",
-      "Unlimited sales pages",
-      "Direct payment integration (money goes to you)",
+      "Up to 10 active Journeys",
+      "Up to 1000 users",
+      "$0.40 per user above 1000",
+      "Direct payment integration (money goes directly to you)",
       "Full cloud hosting",
       "Full AI Flow Composer access"
     ],
-    bestFor: "Businesses ready to scale and monetize their method at a large, automated capacity.",
+    bestFor: "Mentors and organizations who are ready to scale multiple journeys, build a product portfolio, and earn consistently at volume.",
     buttonText: "Scale Your Business",
     popular: false
   }
