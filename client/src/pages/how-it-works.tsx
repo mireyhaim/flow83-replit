@@ -141,7 +141,7 @@ const HowItWorksPage = () => {
                   
                   <div className="flex-1">
                     {step.video ? (
-                      <div className="relative w-full max-w-2xl mx-auto">
+                      <div className="relative">
                         <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
                         <video 
                           src={step.video}
@@ -149,7 +149,7 @@ const HowItWorksPage = () => {
                           loop
                           muted
                           playsInline
-                          className="relative rounded-2xl shadow-2xl border border-gray-200 w-full h-auto scale-110 origin-center"
+                          className="relative rounded-2xl shadow-2xl border border-gray-200 w-full"
                         />
                       </div>
                     ) : step.image2 ? (
