@@ -44,6 +44,7 @@ import ProfilePage from "@/pages/profile";
 import NotificationSettingsPage from "@/pages/notification-settings";
 import PaymentSuccessPage from "@/pages/payment-success";
 import FeedbackPage from "@/pages/feedback";
+import FlowDemoPage from "@/pages/flow-demo";
 
 function Router() {
   return (
@@ -77,6 +78,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/cookie-policy" component={CookiePolicy} />
+      <Route path="/flow-demo/:id" component={FlowDemoPage} />
       
       <Route component={NotFound} />
     </Switch>

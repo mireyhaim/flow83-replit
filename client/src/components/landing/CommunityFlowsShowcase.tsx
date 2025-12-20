@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Users, Heart, Clock } from "lucide-react";
+import { Link } from "wouter";
 import digitalMindfulness from "@/assets/digital-mindfulness.jpg";
 import futureHealing from "@/assets/future-healing.jpg";
 import digitalTherapyScience from "@/assets/digital-therapy-science.jpg";
@@ -75,8 +75,9 @@ const CommunityFlowsShowcase = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {featuredFlows.map((flow) => (
-          <Card key={flow.id} className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader>
+          <Link href={`/flow-demo/${flow.id}`} key={flow.id} data-testid={`link-flow-${flow.id}`}>
+            <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl hover:border-violet-200 transition-all duration-300 cursor-pointer h-full">
+              <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
                   <img 
@@ -116,7 +117,8 @@ const CommunityFlowsShowcase = () => {
                 </Badge>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
     </section>
