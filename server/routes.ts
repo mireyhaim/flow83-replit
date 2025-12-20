@@ -1430,7 +1430,29 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      res.json({ participant, journey });
+      // Get steps with blocks for the journey
+      const steps = await storage.getJourneySteps(participant.journeyId);
+      const stepsWithBlocks = await Promise.all(
+        steps.map(async (step) => {
+          const blocks = await storage.getStepBlocks(step.id);
+          return { ...step, blocks };
+        })
+      );
+
+      // Get mentor info
+      let mentor = null;
+      if (journey.creatorId) {
+        mentor = await storage.getUser(journey.creatorId);
+      }
+
+      res.json({ 
+        participant, 
+        journey: {
+          ...journey,
+          steps: stepsWithBlocks,
+          mentor
+        }
+      });
     } catch (error) {
       console.error("Error fetching participant:", error);
       res.status(500).json({ error: "Failed to fetch participant data" });
