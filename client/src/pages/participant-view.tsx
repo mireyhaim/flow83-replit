@@ -219,7 +219,7 @@ export default function ParticipantView() {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
     });
-  }, [messages.length]);
+  }, [messages]);
 
   // Show error only if access token is invalid AND user is not logged in (can't preview)
   const showInvalidLinkError = externalError && !externalLoading && !currentUser && !journey;
@@ -656,7 +656,7 @@ export default function ParticipantView() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col min-h-screen bg-gray-50">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
         {/* Header */}
         <header className="h-16 border-b border-gray-200 flex items-center justify-between px-4 bg-white sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-3">
