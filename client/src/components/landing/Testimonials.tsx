@@ -1,4 +1,6 @@
 import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 const testimonials = [
   {
@@ -108,6 +110,19 @@ const Testimonials = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* CTA Button */}
+        <div className="text-center mt-12">
+          <Link href="/community#community-flows">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+              data-testid="button-see-flow-examples"
+            >
+              See Examples Created with Flow
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
