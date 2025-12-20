@@ -332,6 +332,8 @@ async function generateSimpleDaysBatch(
   endDay: number,
   totalDays: number
 ): Promise<GeneratedDaySimple[]> {
+  const isHebrew = isHebrewText(`${intent.journeyName} ${intent.mainGoal}`);
+  
   const prompt = `Create days ${startDay}-${endDay} of a ${totalDays}-day transformation journey.
 
 FLOW: ${intent.journeyName}
@@ -342,24 +344,56 @@ ${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
 ${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
 ${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
 
-For each day: title, goal (1-2 sentences), explanation (2-3 paragraphs), task (specific exercise).
+CRITICAL REQUIREMENTS - ALL FIELDS MUST BE FILLED:
+- title: A compelling, specific title for this day (5-10 words)
+- goal: What the participant will achieve today (2-3 complete sentences, NOT placeholders)
+- explanation: Teaching content with insights and guidance (2-3 full paragraphs, minimum 150 words)
+- task: A specific, actionable exercise the participant must complete (2-4 sentences describing exactly what to do)
 
-JSON: {"days": [{"dayNumber": 1, "title": "...", "goal": "...", "explanation": "...", "task": "..."}]}`;
+IMPORTANT: Every field must contain REAL, meaningful content. Do not use placeholder text like "..." or empty strings.
+${isHebrew ? "Write all content in Hebrew." : "Write all content in English."}
+
+JSON: {"days": [{"dayNumber": ${startDay}, "title": "Full title here", "goal": "Complete goal description here", "explanation": "Full explanation paragraphs here", "task": "Specific task description here"}]}`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: "Expert course designer. Respond with valid JSON only." },
+      { role: "system", content: "Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 3000,
+    max_completion_tokens: 4000,
   });
 
   const content = response.choices[0].message.content;
   if (!content) throw new Error("No content generated");
   
-  return JSON.parse(content).days as GeneratedDaySimple[];
+  const parsed = JSON.parse(content);
+  const days = parsed.days as GeneratedDaySimple[];
+  
+  // Validate and ensure all fields are filled
+  for (const day of days) {
+    if (!day.title || day.title.length < 5) {
+      day.title = isHebrew ? `יום ${day.dayNumber}: התעוררות והתחלה` : `Day ${day.dayNumber}: Awakening and Beginning`;
+    }
+    if (!day.goal || day.goal.length < 20) {
+      day.goal = isHebrew 
+        ? `ביום זה המשתתף ילמד ליישם את העקרונות הבסיסיים של התהליך ולהתחיל את המסע שלו לקראת שינוי.`
+        : `Today the participant will learn to apply the core principles of this journey and begin their path toward transformation.`;
+    }
+    if (!day.explanation || day.explanation.length < 100) {
+      day.explanation = isHebrew
+        ? `ביום זה אנחנו מתמקדים בבניית הבסיס לתהליך השינוי. זהו השלב שבו אנחנו מתחילים להבין את העקרונות המרכזיים ולהכין את עצמנו למסע שלפנינו.\n\nהשינוי האמיתי מתחיל מבפנים. כאשר אנחנו לומדים להקשיב לעצמנו ולהבין את הצרכים האמיתיים שלנו, אנחנו פותחים דלת לאפשרויות חדשות. היום נתחיל לחקור את הנושאים האלה יחד.\n\nזכור - כל מסע מתחיל בצעד הראשון. היום הוא הצעד הראשון שלך.`
+        : `Today we focus on building the foundation for your transformation journey. This is the stage where we begin to understand the core principles and prepare ourselves for the path ahead.\n\nReal change starts from within. When we learn to listen to ourselves and understand our true needs, we open the door to new possibilities. Today we'll start exploring these themes together.\n\nRemember - every journey begins with a first step. Today is your first step.`;
+    }
+    if (!day.task || day.task.length < 30) {
+      day.task = isHebrew
+        ? `קח 10 דקות לכתוב ביומן על המטרות שלך מהתהליך הזה. מה אתה מקווה להשיג? איזה שינוי אתה רוצה לראות בחייך?`
+        : `Take 10 minutes to journal about your goals for this journey. What do you hope to achieve? What change do you want to see in your life?`;
+    }
+  }
+  
+  return days;
 }
 
 export async function generateFlowDays(intent: JourneyIntent): Promise<GeneratedDaySimple[]> {
