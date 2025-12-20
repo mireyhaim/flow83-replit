@@ -46,9 +46,9 @@ const ContactUs = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="flex justify-center">
             {/* Contact Form */}
-            <div className="lg:col-span-2">
+            <div className="w-full max-w-2xl">
               <Card className="bg-white border border-gray-200 shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
