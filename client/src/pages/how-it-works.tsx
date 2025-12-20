@@ -33,10 +33,11 @@ const steps = [
   {
     icon: Share2,
     number: "03",
-    title: "Share & Earn",
-    description: "Publish your journey with a shareable link. Participants experience your wisdom through an AI-powered chat that speaks in your voice.",
+    title: "We Create Your Marketing Site",
+    description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately.",
+    video: "/assets/video-marketing-site.mp4",
     image: screenshotParticipant,
-    imageAlt: "Participant chat experience"
+    imageAlt: "Marketing landing page"
   }
 ];
 
@@ -129,7 +130,19 @@ const HowItWorksPage = () => {
                   </div>
                   
                   <div className="flex-1">
-                    {step.image2 ? (
+                    {step.video ? (
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-violet-200/50 blur-3xl rounded-full" />
+                        <video 
+                          src={step.video}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="relative rounded-2xl shadow-2xl border border-gray-200 w-full"
+                        />
+                      </div>
+                    ) : step.image2 ? (
                       <ImageCarousel 
                         images={[
                           { src: step.image, alt: step.imageAlt },
