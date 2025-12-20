@@ -95,11 +95,13 @@ export async function registerRoutes(
     }
   });
   
-  // Journey routes - public read, authenticated write
+  // Journey routes - public read returns only published flows
   app.get("/api/journeys", async (req, res) => {
     try {
       const journeys = await storage.getJourneys();
-      res.json(journeys);
+      // Only return published journeys for public access (security)
+      const publishedJourneys = journeys.filter(j => j.status === "published");
+      res.json(publishedJourneys);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flows" });
     }
