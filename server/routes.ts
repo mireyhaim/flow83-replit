@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./supabaseAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateLandingPageContent } from "./ai";
 import { stripeService } from "./stripeService";
@@ -30,22 +30,18 @@ export async function registerRoutes(
   
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+  // Supabase config for frontend
+  app.get("/api/config/supabase", (req, res) => {
+    res.json({
+      url: process.env.SUPABASE_URL || "",
+      anonKey: process.env.SUPABASE_ANON_KEY || "",
+    });
   });
 
   // Update user profile
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const { firstName, lastName, email, bio, website, specialty } = req.body;
       
       const user = await storage.upsertUser({
@@ -68,7 +64,7 @@ export async function registerRoutes(
   // Upload profile image
   app.post('/api/profile/image', isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const file = req.file as Express.Multer.File;
       
       if (!file) {
@@ -110,7 +106,7 @@ export async function registerRoutes(
   // Get current user's journeys
   app.get("/api/journeys/my", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const journeys = await storage.getJourneysByCreator(userId);
       res.json(journeys);
     } catch (error) {
@@ -121,7 +117,7 @@ export async function registerRoutes(
   // Get dashboard stats for current user
   app.get("/api/stats/dashboard", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const journeys = await storage.getJourneysByCreator(userId);
       
       // Calculate participant stats across all user's journeys
@@ -168,7 +164,7 @@ export async function registerRoutes(
   // Get recent activity for creator's dashboard
   app.get("/api/activity/recent", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const events = await storage.getActivityEvents(userId, 10);
       res.json(events);
     } catch (error) {
@@ -179,7 +175,7 @@ export async function registerRoutes(
   // Get inactive participants needing attention
   app.get("/api/participants/inactive", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const daysSinceActive = parseInt(req.query.days as string) || 3;
       const inactive = await storage.getInactiveParticipants(userId, daysSinceActive);
       res.json(inactive);
@@ -191,7 +187,7 @@ export async function registerRoutes(
   // Notification settings routes
   app.get("/api/notification-settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const settings = await storage.getNotificationSettings(userId);
       if (!settings) {
         // Return defaults if no settings exist
@@ -214,7 +210,7 @@ export async function registerRoutes(
 
   app.put("/api/notification-settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const body = req.body;
       
       // Validate required fields are present
@@ -247,7 +243,7 @@ export async function registerRoutes(
   // Mentor earnings endpoints
   app.get("/api/earnings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const totalCents = await storage.getTotalEarningsByMentor(userId);
       const payments = await storage.getPaymentsByMentor(userId);
       res.json({ 
@@ -273,7 +269,7 @@ export async function registerRoutes(
   // Mentor feedback endpoint - get all feedback with journey/participant details
   app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const feedbackList = await storage.getFeedbackByMentorWithDetails(userId);
       res.json(feedbackList.map(item => ({
         id: item.feedback.id,
@@ -305,7 +301,7 @@ export async function registerRoutes(
 
   app.post("/api/journeys", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const data = { ...req.body, creatorId: userId };
       const parsed = insertJourneySchema.safeParse(data);
       if (!parsed.success) {
@@ -549,7 +545,7 @@ export async function registerRoutes(
   // Participant routes
   app.get("/api/participants/journey/:journeyId", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const journeyId = req.params.journeyId;
       
       let participant = await storage.getParticipant(userId, journeyId);
@@ -592,7 +588,7 @@ export async function registerRoutes(
 
   app.put("/api/participants/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const { id } = req.params;
       const { journeyId } = req.body;
       
@@ -613,7 +609,7 @@ export async function registerRoutes(
 
   app.post("/api/participants/:id/complete-day", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const { id } = req.params;
       const { dayNumber, journeyId } = req.body;
       
@@ -917,7 +913,7 @@ export async function registerRoutes(
   app.get("/api/participants/:participantId/steps/:stepId/messages", isAuthenticated, async (req: any, res) => {
     try {
       const { participantId, stepId } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       
       const participant = await storage.getParticipantById(participantId);
       if (!participant || participant.userId !== userId) {
@@ -1192,7 +1188,7 @@ export async function registerRoutes(
   // Stripe Connect routes for mentors
   app.post("/api/stripe/connect", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -1231,7 +1227,7 @@ export async function registerRoutes(
 
   app.get("/api/stripe/connect/refresh", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user?.stripeAccountId) {
@@ -1254,7 +1250,7 @@ export async function registerRoutes(
 
   app.get("/api/stripe/connect/return", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (user?.stripeAccountId) {
@@ -1276,7 +1272,7 @@ export async function registerRoutes(
 
   app.get("/api/stripe/connect/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user?.stripeAccountId) {
@@ -1606,7 +1602,7 @@ export async function registerRoutes(
   // Get feedback for mentor's journeys
   app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const feedback = await storage.getFeedbackByMentor(userId);
       res.json(feedback);
     } catch (error) {
@@ -1620,7 +1616,7 @@ export async function registerRoutes(
   // Create subscription checkout session
   app.post("/api/subscription/checkout", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const { plan } = req.body;
       
       if (!plan || !['starter', 'pro', 'business'].includes(plan)) {
@@ -1654,7 +1650,7 @@ export async function registerRoutes(
   // Get customer portal URL for managing subscription
   app.get("/api/subscription/portal", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user?.stripeCustomerId) {
@@ -1678,7 +1674,7 @@ export async function registerRoutes(
   // Get current user subscription status
   app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -1700,7 +1696,7 @@ export async function registerRoutes(
   // Cancel subscription
   app.post("/api/subscription/cancel", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user?.subscriptionId) {
@@ -1725,7 +1721,7 @@ export async function registerRoutes(
   // Reactivate canceled subscription
   app.post("/api/subscription/reactivate", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId || (req.session as any)?.userId;
       const user = await storage.getUser(userId);
       
       if (!user?.subscriptionId) {

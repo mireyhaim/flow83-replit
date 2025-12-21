@@ -28,6 +28,7 @@ import JourneyLandingPage from "@/pages/journey-landing";
 import ParticipantJoinPage from "@/pages/participant-join";
 import AuthCallbackPage from "@/pages/auth-callback";
 import ShortLinkRedirect from "@/pages/short-link-redirect";
+import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 // New pages
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/j/:id" component={JourneyLandingPage} />
       <Route path="/join/:journeyId" component={ParticipantJoinPage} />
       <Route path="/auth/callback" component={AuthCallbackPage} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/f/:code" component={ShortLinkRedirect} />
       <Route path="/p/:token" component={ParticipantView} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
