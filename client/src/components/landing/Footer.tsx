@@ -7,7 +7,9 @@ const Footer = () => {
       <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1 space-y-6">
-            <img src="/logo.png" alt="Flow83" className="h-8 brightness-0 invert opacity-90" />
+            <span className="text-2xl font-bold text-violet-400">
+              Flow 83
+            </span>
             <p className="text-gray-400 leading-relaxed max-w-sm">
               Create personalized digital journeys that transform lives through wisdom and AI.
             </p>

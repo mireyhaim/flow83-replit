@@ -17,8 +17,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const NavContent = () => (
     <>
       <div className="p-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <img src="/logo.png" alt="Flow83" className="h-8" />
+        <Link href="/" className="text-xl font-bold text-violet-600 hover:text-violet-700 transition-colors">
+          Flow 83
         </Link>
         <button 
           onClick={() => setMobileMenuOpen(false)}
@@ -75,8 +75,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <img src="/logo.png" alt="Flow83" className="h-7" />
+        <Link href="/" className="text-lg font-bold text-violet-600">
+          Flow 83
         </Link>
         <button 
           onClick={() => setMobileMenuOpen(true)}
