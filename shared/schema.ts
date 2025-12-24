@@ -78,6 +78,7 @@ export const journeySteps = pgTable("journey_steps", {
   goal: text("goal"),
   explanation: text("explanation"),
   task: text("task"),
+  closingMessage: text("closing_message"),
 });
 
 export const insertJourneyStepSchema = createInsertSchema(journeySteps).omit({
