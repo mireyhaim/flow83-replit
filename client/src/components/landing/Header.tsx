@@ -9,8 +9,8 @@ const Header = () => {
   return (
     <header className="w-full px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-200 fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-violet-600 cursor-pointer hover:text-violet-500 transition-colors">
-          Flow 83
+        <Link href="/" className="cursor-pointer hover:opacity-90 transition-opacity">
+          <img src="/logo.png" alt="Flow83" className="h-8" />
         </Link>
         
         <nav className="hidden md:flex items-center space-x-8">

@@ -82,9 +82,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold" style={{ color: 'hsl(25 20% 20%)' }}>
-            Flow 83
-          </CardTitle>
+          <img src="/logo.png" alt="Flow83" className="h-12 mx-auto mb-2" />
           <CardDescription>
             Create transformational journeys for your clients
           </CardDescription>
