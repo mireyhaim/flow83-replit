@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
 
   return (
     <header className="w-full px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-200 fixed top-0 z-50">
@@ -35,7 +38,7 @@ const Header = () => {
           <a href="/api/login">
             <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
           </a>
-          <Link href="/start-flow">
+          <Link href={getStartLink()}>
             <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
               Get Started
             </Button>
@@ -62,7 +65,7 @@ const Header = () => {
             <a href="/api/login">
               <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
             </a>
-            <Link href="/start-flow">
+            <Link href={getStartLink()}>
               <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
             </Link>
           </div>

@@ -4,6 +4,7 @@ import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Users, Star, Award, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 import CommunityFlowsShowcase from "@/components/landing/CommunityFlowsShowcase";
 import communityHero from "@/assets/community-hero.jpg";
 
@@ -15,6 +16,9 @@ const stats = [
 ];
 
 const Community = () => {
+  const { isAuthenticated } = useAuth();
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
@@ -87,8 +91,8 @@ const Community = () => {
           <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
             Start creating transformative flows and connect with like-minded professionals
           </p>
-          <Link href="/journeys/new">
-            <Button size="lg" className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20">
+          <Link href={getStartLink()}>
+            <Button size="lg" className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20" data-testid="button-become-creator">
               Become a Creator
             </Button>
           </Link>

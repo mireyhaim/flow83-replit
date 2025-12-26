@@ -4,6 +4,7 @@ import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
@@ -108,6 +109,9 @@ const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) =
 };
 
 const HowItWorksPage = () => {
+  const { isAuthenticated } = useAuth();
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+
   return (
     <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
@@ -192,7 +196,7 @@ const HowItWorksPage = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-20">
-              <Link href="/journeys/new">
+              <Link href={getStartLink()}>
                 <Button 
                   size="lg" 
                   className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"

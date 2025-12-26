@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 const Hero = () => {
+  const { isAuthenticated } = useAuth();
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50">
@@ -31,7 +35,7 @@ const Hero = () => {
           </p>
           
           <div className="flex justify-center">
-            <Link href="/start-flow">
+            <Link href={getStartLink()}>
               <Button 
                 size="lg" 
                 className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"

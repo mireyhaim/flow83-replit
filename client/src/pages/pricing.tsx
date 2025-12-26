@@ -2,10 +2,9 @@ import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Check } from "lucide-react";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/queryClient";
 
 const pricingPlans = [
   {
@@ -72,30 +71,11 @@ const pricingPlans = [
   }
 ];
 
-type PlanId = "starter" | "pro" | "business";
-
 const Pricing = () => {
-  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
   const { isAuthenticated } = useAuth();
 
-  const handleSubscribe = async (planId: PlanId) => {
-    if (!isAuthenticated) {
-      window.location.href = `/api/login?returnTo=/pricing`;
-      return;
-    }
-
-    setLoadingPlan(planId);
-    try {
-      const response = await apiRequest("POST", "/api/subscription/checkout", { plan: planId });
-      const data = await response.json();
-      
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error("Failed to create checkout session:", error);
-      setLoadingPlan(null);
-    }
+  const getStartLink = () => {
+    return isAuthenticated ? "/dashboard" : "/start-flow";
   };
 
   return (
@@ -168,17 +148,14 @@ const Pricing = () => {
                   </div>
                   
                   <div className="mt-auto">
-                    <Button 
-                      className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
-                      onClick={() => handleSubscribe(plan.planId)}
-                      disabled={loadingPlan !== null}
-                      data-testid={`button-subscribe-${plan.planId}`}
-                    >
-                      {loadingPlan === plan.planId ? (
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      ) : null}
-                      {plan.buttonText}
-                    </Button>
+                    <Link href={getStartLink()}>
+                      <Button 
+                        className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                        data-testid={`button-subscribe-${plan.planId}`}
+                      >
+                        {plan.buttonText}
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
@@ -262,17 +239,14 @@ const Pricing = () => {
               <p className="text-gray-600 mb-6">
                 Your first journey can be live today. AI builds the process, the site goes live, and payments flow directly to you.
               </p>
-              <Button 
-                className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
-                onClick={() => handleSubscribe("starter")}
-                disabled={loadingPlan !== null}
-                data-testid="button-cta-free-trial"
-              >
-                {loadingPlan === "starter" ? (
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : null}
-                Start Free Trial
-              </Button>
+              <Link href={getStartLink()}>
+                <Button 
+                  className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                  data-testid="button-cta-free-trial"
+                >
+                  Start Free Trial
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
