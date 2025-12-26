@@ -9,6 +9,8 @@ import digitalMindfulness from "@/assets/digital-mindfulness.jpg";
 import futureHealing from "@/assets/future-healing.jpg";
 import digitalTherapyScience from "@/assets/digital-therapy-science.jpg";
 import digitalResilience from "@/assets/digital-resilience.jpg";
+import soulCareerAlignment from "@assets/generated_images/soul_career_alignment_abstract_art.png";
+import burnoutToBalance from "@assets/generated_images/burnout_to_balance_healing_art.png";
 
 const flowsData: Record<string, {
   title: string;
@@ -125,7 +127,7 @@ const flowsData: Record<string, {
     participants: 7340,
     likes: 289,
     duration: "7 days",
-    thumbnail: futureHealing,
+    thumbnail: soulCareerAlignment,
     difficulty: "All Levels",
     goal: "Reconnect your true self with your natural talents and transform this into meaningful income",
     audience: "Professionals who are successful on the outside but feel disconnected on the inside, sensing their talents are underused and their work doesn't reflect who they truly are",
@@ -148,7 +150,7 @@ const flowsData: Record<string, {
     participants: 15800,
     likes: 412,
     duration: "7 days",
-    thumbnail: digitalMindfulness,
+    thumbnail: burnoutToBalance,
     difficulty: "All Levels",
     goal: "Help you slow down, restore energy, and rebuild a healthier relationship with work",
     audience: "Professionals and entrepreneurs who keep going even when exhausted — those who function, deliver, and care deeply, but feel mentally and emotionally drained",

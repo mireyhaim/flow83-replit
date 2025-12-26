@@ -6,6 +6,8 @@ import digitalMindfulness from "@/assets/digital-mindfulness.jpg";
 import futureHealing from "@/assets/future-healing.jpg";
 import digitalTherapyScience from "@/assets/digital-therapy-science.jpg";
 import digitalResilience from "@/assets/digital-resilience.jpg";
+import soulCareerAlignment from "@assets/generated_images/soul_career_alignment_abstract_art.png";
+import burnoutToBalance from "@assets/generated_images/burnout_to_balance_healing_art.png";
 
 const featuredFlows = [
   {
@@ -65,7 +67,7 @@ const featuredFlows = [
     participants: 7340,
     likes: 289,
     duration: "7 days",
-    thumbnail: futureHealing,
+    thumbnail: soulCareerAlignment,
     difficulty: "All Levels"
   },
   {
@@ -77,7 +79,7 @@ const featuredFlows = [
     participants: 15800,
     likes: 412,
     duration: "7 days",
-    thumbnail: digitalMindfulness,
+    thumbnail: burnoutToBalance,
     difficulty: "All Levels"
   }
 ];
