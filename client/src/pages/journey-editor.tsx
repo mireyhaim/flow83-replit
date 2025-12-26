@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle, ArrowRight, Rocket
+  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle, ArrowRight, Rocket, Lock, Crown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -34,12 +34,21 @@ const JourneyEditorPage = () => {
   const [publishPrice, setPublishPrice] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   const { data: stripeStatus, refetch: refetchStripeStatus } = useQuery<{ connected: boolean; status?: string; chargesEnabled?: boolean; payoutsEnabled?: boolean }>({
     queryKey: ["/api/stripe/connect/status"],
     queryFn: () => fetch("/api/stripe/connect/status").then(res => res.json()),
     retry: false,
   });
+
+  const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
+    queryKey: ["/api/subscription/status"],
+    queryFn: () => fetch("/api/subscription/status", { credentials: "include" }).then(res => res.json()),
+    retry: false,
+  });
+
+  const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing";
 
   const connectStripeMutation = useMutation({
     mutationFn: async () => {
@@ -176,6 +185,11 @@ const JourneyEditorPage = () => {
     if (journeyData.status === "published") {
       handleUnpublish();
     } else {
+      // Wait for subscription status to load before checking
+      if (!isLoadingSubscription && !hasActiveSubscription) {
+        setShowPaywallModal(true);
+        return;
+      }
       refetchStripeStatus();
       setPublishPrice(journeyData.price?.toString() || "0");
       setPublishStep(1);
@@ -218,12 +232,19 @@ const JourneyEditorPage = () => {
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
       setPublishStep(4);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to publish flow",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      // Check if it's a subscription error (402)
+      const errorMsg = error?.message || "";
+      if (errorMsg.includes("subscription_required") || errorMsg.startsWith("402:")) {
+        setShowPublishModal(false);
+        setShowPaywallModal(true);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to publish flow",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsPublishing(false);
     }
@@ -385,10 +406,10 @@ const JourneyEditorPage = () => {
                 className={journeyData.status === "published" 
                   ? "bg-amber-600 hover:bg-amber-700" 
                   : "bg-violet-600 hover:bg-violet-700"}
-                disabled={isPublishing}
+                disabled={isPublishing || (isLoadingSubscription && journeyData.status !== "published")}
                 data-testid="button-publish"
               >
-                {isPublishing ? (
+                {isPublishing || (isLoadingSubscription && journeyData.status !== "published") ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : journeyData.status === "published" ? (
                   <GlobeLock className="w-4 h-4 mr-2" />
@@ -985,6 +1006,65 @@ const JourneyEditorPage = () => {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Paywall Modal */}
+      <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-lg">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+              <Crown className="w-8 h-8 text-white" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-center">
+              Choose a Plan to Activate Your Flow
+            </DialogTitle>
+            <DialogDescription className="text-white/60 text-center text-base">
+              You've created something amazing! To publish your flow and start sharing it with clients, choose a plan that fits your needs.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
+              <h4 className="font-medium text-violet-300 mb-3">What you'll unlock:</h4>
+              <ul className="text-sm text-white/70 space-y-2">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                  <span>Publish unlimited flows</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                  <span>Get your own shareable sales page</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                  <span>Accept payments directly to your account</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                  <span>Track participant progress and engagement</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaywallModal(false)}
+                className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
+              >
+                Continue Building
+              </Button>
+              <Button
+                onClick={() => setLocation("/pricing")}
+                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 h-14 text-base"
+                data-testid="button-choose-plan"
+              >
+                <Rocket className="w-5 h-5 mr-2" />
+                View Plans
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

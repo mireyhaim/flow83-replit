@@ -46,6 +46,7 @@ import NotificationSettingsPage from "@/pages/notification-settings";
 import PaymentSuccessPage from "@/pages/payment-success";
 import FeedbackPage from "@/pages/feedback";
 import FlowDemoPage from "@/pages/flow-demo";
+import StartFlowPage from "@/pages/start-flow";
 
 function Router() {
   return (
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/f/:code" component={ShortLinkRedirect} />
       <Route path="/p/:token" component={ParticipantView} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
+      <Route path="/start-flow" component={StartFlowPage} />
       
       {/* New routes */}
       <Route path="/how-it-works" component={HowItWorksPage} />

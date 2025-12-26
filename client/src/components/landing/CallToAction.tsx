@@ -28,13 +28,13 @@ const CallToAction = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/dashboard">
+            <Link href="/start-flow">
               <Button 
                 size="lg"
                 className="text-lg px-8 py-4 h-auto rounded-full bg-white text-violet-700 hover:bg-gray-100 shadow-lg"
                 data-testid="button-cta-get-started"
               >
-                Start Your Flow as a Guide
+                Turn Your Method Into a Journey
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>

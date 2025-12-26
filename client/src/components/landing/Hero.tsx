@@ -31,13 +31,13 @@ const Hero = () => {
           </p>
           
           <div className="flex justify-center">
-            <Link href="/dashboard">
+            <Link href="/start-flow">
               <Button 
                 size="lg" 
                 className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                 data-testid="button-hero-get-started"
               >
-                Start Creating
+                Create Your Flow
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
