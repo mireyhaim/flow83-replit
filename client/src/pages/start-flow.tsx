@@ -155,53 +155,13 @@ export default function StartFlowPage() {
           </div>
         </div>
 
-        {/* Right side - Image */}
-        <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-500 via-violet-600 to-fuchsia-600 overflow-hidden">
-          {/* Subtle pattern overlay */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-20 left-10 w-32 h-32 bg-white/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-40 right-10 w-40 h-40 bg-fuchsia-300/30 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-violet-300/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          </div>
-          
-          <div className="relative z-10 flex flex-col items-center justify-center p-8 text-white w-full">
-            <div className="max-w-md text-center mb-4">
-              <h3 className="text-3xl font-bold mb-3">
-                Create Your First Flow in Minutes
-              </h3>
-              <p className="text-white/80 text-lg">
-                Transform your expertise into a personalized 7-day journey your clients will love.
-              </p>
-            </div>
-            
-            {/* Image container with gradient fade */}
-            <div className="relative flex-1 flex items-center justify-center w-full max-w-md my-4">
-              <div className="relative">
-                <img
-                  src={loginImage}
-                  alt="Mentor using Flow 83"
-                  className="w-full max-w-[320px] h-auto object-contain rounded-2xl"
-                />
-                {/* Bottom gradient fade to blend with background */}
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-violet-600 via-violet-600/80 to-transparent rounded-b-2xl" />
-              </div>
-            </div>
-
-            <div className="flex gap-10 text-center">
-              <div>
-                <div className="text-3xl font-bold">7 days</div>
-                <div className="text-white/70 text-sm">Per journey</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">AI</div>
-                <div className="text-white/70 text-sm">Personalized</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">You</div>
-                <div className="text-white/70 text-sm">Keep earnings</div>
-              </div>
-            </div>
-          </div>
+        {/* Right side - Image only */}
+        <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-500 via-violet-600 to-fuchsia-600 items-center justify-center overflow-hidden">
+          <img
+            src={loginImage}
+            alt="Flow 83"
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
     );
