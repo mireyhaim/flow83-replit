@@ -11,7 +11,7 @@ const pricingPlans = [
   {
     name: "Starter",
     planId: "starter" as const,
-    price: "$38",
+    price: "$26",
     period: "/month",
     trialText: "Includes a 7-day free trial",
     description: "The simplest, fastest, and most affordable way to launch your first journey and start selling online - without a website, without tech skills, and without risk.",
@@ -52,7 +52,7 @@ const pricingPlans = [
   {
     name: "Business",
     planId: "business" as const,
-    price: "$183",
+    price: "$188",
     period: "/month",
     trialText: null,
     description: "For established mentors and growing schools who want to offer multiple journeys at scale — with bigger audiences, more products, and true long-term revenue.",
@@ -197,7 +197,7 @@ const Pricing = () => {
                 How does the 7-day free trial work?
               </h3>
               <p className="text-gray-600">
-                Sign up for the Starter plan and get 7 full days to explore the platform. Build your first journey, preview everything risk-free. After 7 days, automatic billing of $38/month begins. You can cancel anytime before the trial ends.
+                Sign up for the Starter plan and get 7 full days to explore the platform. Build your first journey, preview everything risk-free. After 7 days, automatic billing of $26/month begins. You can cancel anytime before the trial ends.
               </p>
             </div>
             
