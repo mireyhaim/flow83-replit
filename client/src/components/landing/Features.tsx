@@ -1,4 +1,4 @@
-import { Sparkles, Users, DollarSign, Palette, BarChart3, Settings2, Wallet } from "lucide-react";
+import { Sparkles, Users, Wallet, Palette, BarChart3, Settings2 } from "lucide-react";
 
 const benefits = [
   {
@@ -14,15 +14,9 @@ const benefits = [
     gradient: "from-cyan-400 to-cyan-500"
   },
   {
-    icon: DollarSign,
-    title: "Passive Income",
-    description: "Create sustainable income from what you already know and teach.",
-    gradient: "from-fuchsia-400 to-fuchsia-500"
-  },
-  {
     icon: Wallet,
     title: "Your Money, Directly",
-    description: "Connect your Stripe and get paid directly. Your clients, your brand, your money — we don't take a cut.",
+    description: "Connect your Stripe and get paid instantly. Your clients, your brand, your earnings — we never take a cut.",
     gradient: "from-emerald-400 to-emerald-500"
   },
   {
