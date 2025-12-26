@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
@@ -43,8 +43,16 @@ const steps = [
     imageAlt: "Marketing landing page"
   },
   {
-    icon: Share2,
+    icon: CreditCard,
     number: "04",
+    title: "Your Clients, Your Money",
+    description: "Connect your Stripe account and you're set. When clients purchase your journey, the payment goes directly to you — no middlemen, no commission, no waiting. You own your business, we just power it.",
+    image: screenshotParticipant,
+    imageAlt: "Direct payment flow"
+  },
+  {
+    icon: Share2,
+    number: "05",
     title: "Share & Earn",
     description: "Publish your journey with a shareable link. Participants experience your wisdom through an AI-powered chat that speaks in your voice.",
     image: screenshotParticipantChat,
