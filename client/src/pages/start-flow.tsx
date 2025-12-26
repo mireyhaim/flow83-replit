@@ -156,12 +156,17 @@ export default function StartFlowPage() {
         </div>
 
         {/* Right side - Image */}
-        <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-600 to-fuchsia-600">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-500 via-violet-600 to-fuchsia-600 overflow-hidden">
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-20 left-10 w-32 h-32 bg-white/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-40 right-10 w-40 h-40 bg-fuchsia-300/30 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-violet-300/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          </div>
           
-          <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
-            <div className="max-w-md text-center mb-8">
-              <h3 className="text-3xl font-bold mb-4">
+          <div className="relative z-10 flex flex-col items-center justify-center p-8 text-white w-full">
+            <div className="max-w-md text-center mb-4">
+              <h3 className="text-3xl font-bold mb-3">
                 Create Your First Flow in Minutes
               </h3>
               <p className="text-white/80 text-lg">
@@ -169,27 +174,31 @@ export default function StartFlowPage() {
               </p>
             </div>
             
-            <div className="relative">
-              <div className="absolute -inset-4 bg-white/20 rounded-3xl blur-xl" />
-              <img
-                src={loginImage}
-                alt="Mentor using Flow 83"
-                className="relative rounded-2xl w-80 h-auto shadow-2xl"
-              />
+            {/* Image container with gradient fade */}
+            <div className="relative flex-1 flex items-center justify-center w-full max-w-md my-4">
+              <div className="relative">
+                <img
+                  src={loginImage}
+                  alt="Mentor using Flow 83"
+                  className="w-full max-w-[320px] h-auto object-contain rounded-2xl"
+                />
+                {/* Bottom gradient fade to blend with background */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-violet-600 via-violet-600/80 to-transparent rounded-b-2xl" />
+              </div>
             </div>
 
-            <div className="mt-8 flex gap-8 text-center">
+            <div className="flex gap-10 text-center">
               <div>
                 <div className="text-3xl font-bold">7 days</div>
-                <div className="text-white/70">Per journey</div>
+                <div className="text-white/70 text-sm">Per journey</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">AI</div>
-                <div className="text-white/70">Personalized</div>
+                <div className="text-white/70 text-sm">Personalized</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">You</div>
-                <div className="text-white/70">Keep earnings</div>
+                <div className="text-white/70 text-sm">Keep earnings</div>
               </div>
             </div>
           </div>
