@@ -106,32 +106,23 @@ export default function StartFlowPage() {
                 className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-medium text-lg"
                 data-testid="button-start-free"
               >
-                Start Free
+                Get Started
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
               <p className="text-center text-sm text-gray-500">
-                Sign in with Google, GitHub, or email. No credit card required.
+                Sign in to start building your first Flow
               </p>
 
               <div className="border-t border-gray-200 pt-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-                      <Shield className="w-4 h-4 text-violet-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Secure & Private</p>
-                      <p className="text-sm text-gray-500">Your data is encrypted and never shared</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
                       <Sparkles className="w-4 h-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">AI-Powered Creation</p>
-                      <p className="text-sm text-gray-500">Build complete flows in minutes, not hours</p>
+                      <p className="font-medium text-gray-900">AI-Powered Journeys</p>
+                      <p className="text-sm text-gray-500">Turn your method into personalized daily experiences</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -139,8 +130,17 @@ export default function StartFlowPage() {
                       <Users className="w-4 h-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Unlimited Clients</p>
-                      <p className="text-sm text-gray-500">Serve more people without more hours</p>
+                      <p className="font-medium text-gray-900">Scale Your Practice</p>
+                      <p className="text-sm text-gray-500">Help more people with your unique expertise</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Your Method, Your Way</p>
+                      <p className="text-sm text-gray-500">Full control over your content and pricing</p>
                     </div>
                   </div>
                 </div>
@@ -180,16 +180,16 @@ export default function StartFlowPage() {
 
             <div className="mt-8 flex gap-8 text-center">
               <div>
-                <div className="text-3xl font-bold">5 min</div>
-                <div className="text-white/70">To create</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">Free</div>
-                <div className="text-white/70">To start</div>
-              </div>
-              <div>
                 <div className="text-3xl font-bold">7 days</div>
-                <div className="text-white/70">To transform</div>
+                <div className="text-white/70">Per journey</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">AI</div>
+                <div className="text-white/70">Personalized</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">You</div>
+                <div className="text-white/70">Keep earnings</div>
               </div>
             </div>
           </div>
