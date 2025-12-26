@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { journeyApi } from "@/lib/api";
 import { Loader2, Sparkles, ArrowRight, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import loginImage from "@assets/stock_images/professional_woman_m_5bea3f46.jpg";
+import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_06_36_20_PM_1766767014305.png";
 
 export default function StartFlowPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
