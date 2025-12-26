@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth as setupReplitAuth, isAuthenticated as isReplitAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth as setupCustomAuth, isAuthenticated } from "./auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateLandingPageContent } from "./ai";
 import { stripeService } from "./stripeService";
@@ -28,8 +29,11 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Setup Replit Auth (Google, GitHub, email, etc.)
-  await setupAuth(app);
+  // Setup custom email/password auth
+  setupCustomAuth(app);
+  
+  // Setup Replit Auth (Google, GitHub, email, etc.) - kept for backwards compatibility
+  await setupReplitAuth(app);
   registerAuthRoutes(app);
 
   // Update user profile
