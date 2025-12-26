@@ -35,7 +35,7 @@ const JourneyEditorPage = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
-  const { data: stripeStatus, refetch: refetchStripeStatus } = useQuery({
+  const { data: stripeStatus, refetch: refetchStripeStatus } = useQuery<{ connected: boolean; status?: string; chargesEnabled?: boolean; payoutsEnabled?: boolean }>({
     queryKey: ["/api/stripe/connect/status"],
     queryFn: () => fetch("/api/stripe/connect/status").then(res => res.json()),
     retry: false,
@@ -176,6 +176,7 @@ const JourneyEditorPage = () => {
     if (journeyData.status === "published") {
       handleUnpublish();
     } else {
+      refetchStripeStatus();
       setPublishPrice(journeyData.price?.toString() || "0");
       setPublishStep(1);
       setShowPublishModal(true);
@@ -726,6 +727,41 @@ const JourneyEditorPage = () => {
                       <p className="text-sm text-white/60">Your account is ready to receive payments.</p>
                     </div>
                   </div>
+                ) : stripeStatus?.connected ? (
+                  <>
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 flex items-start gap-4">
+                      <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-300 text-lg">Setup Incomplete</p>
+                        <p className="text-sm text-white/60">Your Stripe account is linked but you need to complete the onboarding process before you can receive payments.</p>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => connectStripeMutation.mutate()}
+                      disabled={connectStripeMutation.isPending}
+                      className="w-full bg-[#635bff] hover:bg-[#7a73ff] text-white h-16 text-lg rounded-xl"
+                      data-testid="button-connect-stripe"
+                    >
+                      {connectStripeMutation.isPending ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <>
+                          <CreditCard className="w-6 h-6 mr-3" />
+                          Complete Stripe Setup
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      onClick={() => refetchStripeStatus()}
+                      className="w-full text-white/60 hover:text-white hover:bg-white/10"
+                      data-testid="button-refresh-status"
+                    >
+                      I've completed the setup - Check again
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 flex items-start gap-4">
@@ -753,9 +789,26 @@ const JourneyEditorPage = () => {
                     </Button>
 
                     <p className="text-sm text-white/40 text-center">
-                      After connecting, return to this window and click "Next Step" to continue.
+                      After connecting, return to this window and click "Check again" to continue.
                     </p>
+
+                    <Button
+                      variant="ghost"
+                      onClick={() => refetchStripeStatus()}
+                      className="w-full text-white/60 hover:text-white hover:bg-white/10"
+                      data-testid="button-refresh-status"
+                    >
+                      I've completed the setup - Check again
+                    </Button>
                   </>
+                )}
+
+                {(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mt-2">
+                    <p className="text-sm text-red-300 text-center">
+                      Stripe connection is required for paid flows. You cannot publish without connecting your payment account.
+                    </p>
+                  </div>
                 )}
 
                 <div className="flex gap-4 pt-4">
@@ -768,11 +821,12 @@ const JourneyEditorPage = () => {
                   </Button>
                   <Button
                     onClick={() => setPublishStep(3)}
-                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-next-after-stripe"
+                    disabled={(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled}
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
-                    {stripeStatus?.chargesEnabled ? "Next Step" : "Skip & Continue"}
+                    {stripeStatus?.chargesEnabled ? "Next Step" : (parseFloat(publishPrice) || 0) > 0 ? "Connect Required" : "Skip & Continue"}
                   </Button>
                 </div>
               </div>

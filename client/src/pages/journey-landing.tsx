@@ -659,6 +659,12 @@ export default function JourneyLandingPage() {
                     >
                       {joinMutation.isPending ? "Processing..." : (isFree ? "Start Now" : `Continue to Payment - ${currencySymbol}${price}`)}
                     </Button>
+                    {!isFree && (
+                      <p className="text-xs lp-text-muted text-center mt-2">
+                        Payment is processed directly by the mentor through their Stripe account. 
+                        Flow 83 does not handle or store payment information.
+                      </p>
+                    )}
                     <button 
                       className="text-sm lp-text-muted hover:lp-text-earth w-full text-center lp-font-body"
                       onClick={() => setShowForm(false)}

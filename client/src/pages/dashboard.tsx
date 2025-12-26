@@ -5,7 +5,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink, AlertTriangle, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -52,6 +52,12 @@ export default function Dashboard() {
 
   const { data: subscription } = useQuery<SubscriptionStatus>({
     queryKey: ["/api/subscription/status"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: stripeStatus } = useQuery<{ connected: boolean; status?: string; chargesEnabled?: boolean; payoutsEnabled?: boolean }>({
+    queryKey: ["/api/stripe/connect/status"],
+    queryFn: () => fetch("/api/stripe/connect/status", { credentials: "include" }).then(res => res.json()),
     enabled: isAuthenticated,
   });
 
@@ -251,6 +257,31 @@ export default function Dashboard() {
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Manage Billing
+          </Button>
+        </div>
+      )}
+
+      {stripeStatus && !stripeStatus.chargesEnabled && (
+        <div className="mb-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between" data-testid="banner-stripe-not-connected">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Wallet className="h-6 w-6 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                {stripeStatus.connected ? "Complete Your Stripe Setup" : "Connect Payments to Receive Money"}
+              </h3>
+              <p className="text-sm text-amber-700">
+                {stripeStatus.connected 
+                  ? "Your Stripe account is linked but setup is incomplete. Complete it to receive payments."
+                  : "Connect your Stripe account to receive payments directly from your participants."
+                }
+              </p>
+            </div>
+          </div>
+          <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white rounded-full" data-testid="button-connect-stripe-dashboard">
+            <Link href="/profile">{stripeStatus.connected ? "Complete Setup" : "Connect Stripe"}</Link>
           </Button>
         </div>
       )}
