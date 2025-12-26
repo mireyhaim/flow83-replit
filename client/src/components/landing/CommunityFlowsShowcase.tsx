@@ -55,6 +55,30 @@ const featuredFlows = [
     duration: "7 days",
     thumbnail: digitalResilience,
     difficulty: "Advanced"
+  },
+  {
+    id: 5,
+    title: "Soul–Career Alignment",
+    description: "Aligning purpose, natural talents, and income for professionals feeling disconnected from their work",
+    creator: "Maya Goldstein",
+    category: "Purpose",
+    participants: 7340,
+    likes: 289,
+    duration: "7 days",
+    thumbnail: futureHealing,
+    difficulty: "All Levels"
+  },
+  {
+    id: 6,
+    title: "From Burnout to Balance",
+    description: "Restoring energy, boundaries, and clarity for professionals and entrepreneurs experiencing exhaustion",
+    creator: "Dr. Rachel Torres",
+    category: "Wellness",
+    participants: 15800,
+    likes: 412,
+    duration: "7 days",
+    thumbnail: digitalMindfulness,
+    difficulty: "All Levels"
   }
 ];
 

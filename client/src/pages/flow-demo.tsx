@@ -116,6 +116,52 @@ const flowsData: Record<string, {
       { title: "Difficult Conversations", description: "Navigate challenging discussions with grace and directness" },
       { title: "Inspiring Others", description: "Motivate and empower your team to achieve exceptional results" }
     ]
+  },
+  "5": {
+    title: "Soul–Career Alignment",
+    description: "Aligning purpose, natural talents, and income for professionals feeling disconnected from their work",
+    creator: "Maya Goldstein",
+    category: "Purpose",
+    participants: 7340,
+    likes: 289,
+    duration: "7 days",
+    thumbnail: futureHealing,
+    difficulty: "All Levels",
+    goal: "Reconnect your true self with your natural talents and transform this into meaningful income",
+    audience: "Professionals who are successful on the outside but feel disconnected on the inside, sensing their talents are underused and their work doesn't reflect who they truly are",
+    outcome: "Participants will gain clarity on their purpose, reconnect with their natural strengths, and discover how to align their career with their authentic self",
+    days: [
+      { title: "Pause & Listen", description: "Create space to slow down, explore where you are today, and listen to inner signals you may have ignored" },
+      { title: "Rediscovering Your Natural Talents", description: "Reconnect with your innate strengths — what comes naturally to you, before expectations shaped your path" },
+      { title: "Values & Purpose", description: "Explore what truly matters to you beneath achievements and productivity, building a deeper sense of direction" },
+      { title: "Releasing Career & Money Blocks", description: "Identify and release limiting beliefs like 'I can't make a living from what I love' or 'It's too late to change'" },
+      { title: "Translating Purpose Into Reality", description: "Explore how your purpose and talents could take shape — roles, projects, or career directions without pressure" },
+      { title: "Embodying a New Professional Identity", description: "Step into a new inner identity where your work aligns with who you truly are" },
+      { title: "Integration & Commitment", description: "Anchor your insights and commit to one aligned next step with clarity, confidence, and inner calm" }
+    ]
+  },
+  "6": {
+    title: "From Burnout to Balance",
+    description: "Restoring energy, boundaries, and clarity for professionals and entrepreneurs experiencing exhaustion",
+    creator: "Dr. Rachel Torres",
+    category: "Wellness",
+    participants: 15800,
+    likes: 412,
+    duration: "7 days",
+    thumbnail: digitalMindfulness,
+    difficulty: "All Levels",
+    goal: "Help you slow down, restore energy, and rebuild a healthier relationship with work",
+    audience: "Professionals and entrepreneurs who keep going even when exhausted — those who function, deliver, and care deeply, but feel mentally and emotionally drained",
+    outcome: "Participants will develop sustainable boundaries, reconnect with their body's signals, and create a work rhythm that respects their energy and limits",
+    days: [
+      { title: "Acknowledging Burnout", description: "Honestly recognize where you're depleted — emotionally, mentally, or physically — replacing self-judgment with awareness" },
+      { title: "Identifying Energy-Draining Patterns", description: "Explore patterns that create overload: over-responsibility, people-pleasing, constant availability, emotional labor" },
+      { title: "Boundaries Without Guilt", description: "Examine your relationship with boundaries and learn to see them as acts of self-respect, not selfishness" },
+      { title: "Reconnecting With Your Body & Energy", description: "Focus on grounding, breathing, and physical awareness to reconnect and refill your energy reserves" },
+      { title: "Reframing Your Relationship With Work", description: "Question beliefs like 'My value equals productivity' and 'If I slow down, I'll fail'" },
+      { title: "Creating a Supportive Daily Rhythm", description: "Design small, realistic shifts — a work rhythm that respects your energy, focus, and limits" },
+      { title: "Clarity & Sustainable Balance", description: "Define how you'll protect your energy, identify early warning signs, and respond differently going forward" }
+    ]
   }
 };
 
