@@ -96,10 +96,10 @@ const PrivacyPolicy = () => {
                 <p className="text-gray-600 text-center">
                   If you have questions about this privacy policy, please contact us at{" "}
                   <a 
-                    href="mailto:privacy@flow83.com" 
+                    href="mailto:support@flow83.com" 
                     className="text-violet-600 hover:text-violet-700 transition-colors font-medium"
                   >
-                    privacy@flow83.com
+                    support@flow83.com
                   </a>
                 </p>
               </div>

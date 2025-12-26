@@ -61,9 +61,9 @@ const Footer = () => {
 
           <div className="space-y-6">
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Contact</h3>
-            <a href="mailto:hello@flow83.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group text-sm">
+            <a href="mailto:support@flow83.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group text-sm">
               <Mail className="w-4 h-4" />
-              <span>hello@flow83.com</span>
+              <span>support@flow83.com</span>
             </a>
           </div>
         </div>

@@ -148,8 +148,8 @@ const CookiePolicy = () => {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Us</h2>
             <p className="text-gray-600">
               If you have questions about our use of cookies, please contact us at{" "}
-              <a href="mailto:privacy@flow83.com" className="text-violet-600 hover:underline">
-                privacy@flow83.com
+              <a href="mailto:support@flow83.com" className="text-violet-600 hover:underline">
+                support@flow83.com
               </a>
             </p>
           </section>
