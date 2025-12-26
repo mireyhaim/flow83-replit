@@ -1,221 +1,127 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Shield } from "lucide-react";
+import loginImage from "@assets/stock_images/professional_woman_m_5bea3f46.jpg";
 
 export default function LoginPage() {
-  const [, navigate] = useLocation();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [signUpFirstName, setSignUpFirstName] = useState("");
-  const [signUpLastName, setSignUpLastName] = useState("");
-
-  const signInMutation = useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const res = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to sign in");
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Welcome back!", description: "You have signed in successfully." });
-      navigate("/dashboard");
-    },
-    onError: (error: Error) => {
-      toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const signUpMutation = useMutation({
-    mutationFn: async ({ email, password, firstName, lastName }: { email: string; password: string; firstName: string; lastName: string }) => {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, firstName, lastName }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create account");
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Account created!", description: "Welcome to Flow 83." });
-      navigate("/dashboard");
-    },
-    onError: (error: Error) => {
-      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    signInMutation.mutate({ email: signInEmail, password: signInPassword });
-  };
-
-  const handleSignUp = (e: React.FormEvent) => {
-    e.preventDefault();
-    signUpMutation.mutate({ 
-      email: signUpEmail, 
-      password: signUpPassword,
-      firstName: signUpFirstName,
-      lastName: signUpLastName,
-    });
+  const handleLogin = () => {
+    const redirect = new URLSearchParams(window.location.search).get("redirect") || "/dashboard";
+    window.location.href = `/api/login?redirect=${encodeURIComponent(redirect)}`;
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold" style={{ color: 'hsl(25 20% 20%)' }}>
-            Flow 83
-          </CardTitle>
-          <CardDescription>
-            Create transformational journeys for your clients
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin" data-testid="tab-signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup" data-testid="tab-signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signInEmail}
-                    onChange={(e) => setSignInEmail(e.target.value)}
-                    required
-                    data-testid="input-signin-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={signInPassword}
-                    onChange={(e) => setSignInPassword(e.target.value)}
-                    required
-                    data-testid="input-signin-password"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={signInMutation.isPending}
-                  data-testid="button-signin"
-                >
-                  {signInMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-firstname">First Name</Label>
-                    <Input
-                      id="signup-firstname"
-                      type="text"
-                      placeholder="First name"
-                      value={signUpFirstName}
-                      onChange={(e) => setSignUpFirstName(e.target.value)}
-                      data-testid="input-signup-firstname"
-                    />
+    <div className="min-h-screen flex">
+      {/* Left side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <Link href="/">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent cursor-pointer inline-block">
+                Flow 83
+              </h1>
+            </Link>
+            <h2 className="mt-6 text-2xl font-semibold text-gray-900">
+              Welcome to Flow 83
+            </h2>
+            <p className="mt-2 text-gray-600">
+              Sign in to continue creating transformative journeys
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <Button
+              onClick={handleLogin}
+              className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-medium text-lg"
+              data-testid="button-login"
+            >
+              Continue with Replit
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+
+            <p className="text-center text-sm text-gray-500">
+              Sign in with your Replit account to access all features. We support Google, GitHub, and email login.
+            </p>
+
+            <div className="border-t border-gray-200 pt-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4 text-violet-600" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-lastname">Last Name</Label>
-                    <Input
-                      id="signup-lastname"
-                      type="text"
-                      placeholder="Last name"
-                      value={signUpLastName}
-                      onChange={(e) => setSignUpLastName(e.target.value)}
-                      data-testid="input-signup-lastname"
-                    />
+                  <div>
+                    <p className="font-medium text-gray-900">Secure & Private</p>
+                    <p className="text-sm text-gray-500">Your data is encrypted and never shared</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signUpEmail}
-                    onChange={(e) => setSignUpEmail(e.target.value)}
-                    required
-                    data-testid="input-signup-email"
-                  />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">AI-Powered Journeys</p>
+                    <p className="text-sm text-gray-500">Create personalized experiences for your clients</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Create a password (min 6 characters)"
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    data-testid="input-signup-password"
-                  />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Join Thousands of Mentors</p>
+                    <p className="text-sm text-gray-500">Build your community and scale your impact</p>
+                  </div>
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={signUpMutation.isPending}
-                  data-testid="button-signup"
-                >
-                  {signUpMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button variant="link" onClick={() => navigate("/")} data-testid="link-back-home">
-            Back to home
-          </Button>
-        </CardFooter>
-      </Card>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link href="/" className="text-sm text-gray-500 hover:text-violet-600" data-testid="link-back-home">
+              Back to home
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Image */}
+      <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-600 to-fuchsia-600">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        
+        <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
+          <div className="max-w-md text-center mb-8">
+            <h3 className="text-3xl font-bold mb-4">
+              Transform Your Expertise Into Impact
+            </h3>
+            <p className="text-white/80 text-lg">
+              Join thousands of mentors creating personalized AI-powered journeys for their clients.
+            </p>
+          </div>
+          
+          <div className="relative">
+            <div className="absolute -inset-4 bg-white/20 rounded-3xl blur-xl" />
+            <img
+              src={loginImage}
+              alt="Mentor using Flow 83"
+              className="relative rounded-2xl w-80 h-auto shadow-2xl"
+            />
+          </div>
+
+          <div className="mt-8 flex gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold">10k+</div>
+              <div className="text-white/70">Active Mentors</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">50k+</div>
+              <div className="text-white/70">Journeys Created</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">98%</div>
+              <div className="text-white/70">Satisfaction</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

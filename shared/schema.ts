@@ -14,7 +14,7 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table
+// User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
@@ -24,9 +24,6 @@ export const users = pgTable("users", {
   bio: text("bio"),
   website: varchar("website"),
   specialty: varchar("specialty"),
-  // Authentication fields
-  passwordHash: varchar("password_hash"),
-  authProvider: varchar("auth_provider").default("email"), // 'email' | 'google' | 'replit'
   // Mentor personality fields (from onboarding questionnaire)
   toneOfVoice: text("tone_of_voice"), // e.g., "warm and supportive", "direct and practical"
   methodDescription: text("method_description"), // summary of mentor's approach

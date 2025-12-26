@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { journeyApi } from "@/lib/api";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, ArrowRight, Users, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import loginImage from "@assets/stock_images/professional_woman_m_5bea3f46.jpg";
 
 export default function StartFlowPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -12,11 +14,7 @@ export default function StartFlowPage() {
 
   useEffect(() => {
     if (authLoading) return;
-
-    if (!isAuthenticated) {
-      window.location.href = "/api/login";
-      return;
-    }
+    if (!isAuthenticated) return;
 
     const createDraftFlow = async () => {
       if (isCreating) return;
@@ -44,6 +42,10 @@ export default function StartFlowPage() {
 
     createDraftFlow();
   }, [authLoading, isAuthenticated, isCreating, setLocation]);
+
+  const handleLogin = () => {
+    window.location.href = "/api/login?redirect=/start-flow";
+  };
 
   if (authLoading || isCreating) {
     return (
@@ -73,6 +75,124 @@ export default function StartFlowPage() {
           <h1 className="text-xl font-bold text-gray-900">Something went wrong</h1>
           <p className="text-gray-600">{error}</p>
           <p className="text-sm text-gray-500">Redirecting to your flows...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex">
+        {/* Left side - Form */}
+        <div className="flex-1 flex items-center justify-center p-8 bg-white">
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center">
+              <Link href="/">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent cursor-pointer inline-block">
+                  Flow 83
+                </h1>
+              </Link>
+              <h2 className="mt-6 text-2xl font-semibold text-gray-900">
+                Start Building Your Flow
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Sign in to create your first transformative journey
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <Button
+                onClick={handleLogin}
+                className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-medium text-lg"
+                data-testid="button-start-free"
+              >
+                Start Free
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+
+              <p className="text-center text-sm text-gray-500">
+                Sign in with Google, GitHub, or email. No credit card required.
+              </p>
+
+              <div className="border-t border-gray-200 pt-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Secure & Private</p>
+                      <p className="text-sm text-gray-500">Your data is encrypted and never shared</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">AI-Powered Creation</p>
+                      <p className="text-sm text-gray-500">Build complete flows in minutes, not hours</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Unlimited Clients</p>
+                      <p className="text-sm text-gray-500">Serve more people without more hours</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Link href="/" className="text-sm text-gray-500 hover:text-violet-600" data-testid="link-back-home">
+                Back to home
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Right side - Image */}
+        <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-600 to-fuchsia-600">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          
+          <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
+            <div className="max-w-md text-center mb-8">
+              <h3 className="text-3xl font-bold mb-4">
+                Create Your First Flow in Minutes
+              </h3>
+              <p className="text-white/80 text-lg">
+                Transform your expertise into a personalized 7-day journey your clients will love.
+              </p>
+            </div>
+            
+            <div className="relative">
+              <div className="absolute -inset-4 bg-white/20 rounded-3xl blur-xl" />
+              <img
+                src={loginImage}
+                alt="Mentor using Flow 83"
+                className="relative rounded-2xl w-80 h-auto shadow-2xl"
+              />
+            </div>
+
+            <div className="mt-8 flex gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold">5 min</div>
+                <div className="text-white/70">To create</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">Free</div>
+                <div className="text-white/70">To start</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">7 days</div>
+                <div className="text-white/70">To transform</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
