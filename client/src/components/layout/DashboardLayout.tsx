@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -60,13 +71,35 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Plus size={18} />
           New Flow
         </Link>
-        <a 
-          href="/api/logout"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 w-full transition-colors"
-        >
-          <LogOut size={18} />
-          Sign Out
-        </a>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button 
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 w-full transition-colors"
+              data-testid="button-sign-out"
+            >
+              <LogOut size={18} />
+              Sign Out
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+              <AlertDialogDescription>
+                האם אתה בטוח שאתה רוצה לצאת מהמערכת?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>לא</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  window.location.href = "/api/logout";
+                }}
+              >
+                כן
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </>
   );
