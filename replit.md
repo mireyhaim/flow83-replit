@@ -51,10 +51,24 @@ Preferred communication style: Simple, everyday language.
 
 ### Payment System
 
-Flow 83 supports two payment methods for paid journeys:
+Flow 83 has a dual payment structure:
 
-1. **Stripe Connect** - Integrated checkout where payments go directly to mentor's Stripe account
-2. **External Payment Links** - Mentors can use their own payment links (PayPal, Stripe Payment Links, etc.)
+**1. Platform Subscriptions (LemonSqueezy)**
+Mentors pay Flow 83 platform fees via LemonSqueezy:
+- Starter: $26/mo (7-day trial, 1 Flow, 60 users)
+- Pro: $83/mo (5 Flows, 300 users)
+- Business: $188/mo (10 Flows, 1000 users)
+
+Subscription management via webhook at `/api/webhooks/lemonsqueezy`:
+- Handles: subscription_created, subscription_updated, subscription_cancelled, subscription_expired
+- Handles: subscription_payment_success, subscription_payment_failed, subscription_paused
+- Requires `LEMONSQUEEZY_WEBHOOK_SECRET` environment variable
+
+**2. Participant Payments (External)**
+Participants pay mentors directly via mentor's own payment links:
+- Mentor configures `externalPaymentUrl` in journey settings
+- Supports PayPal, Stripe Payment Links, or any payment provider
+- Flow tracks payment sessions with unique tokens
 
 **External Payment Flow:**
 1. Mentor configures `externalPaymentUrl` in journey settings (publish modal)
