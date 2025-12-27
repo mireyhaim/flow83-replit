@@ -15,7 +15,6 @@ const pricingPlans = [
     trialText: "Includes a 7-day free trial",
     description: "The simplest, fastest, and most affordable way to launch your first journey and start selling online - without a website, without tech skills, and without risk.",
     features: [
-      "1 active Journey (Flow)",
       "Up to 60 users",
       "$0.60 per user above 60",
       "Personal sales landing page",
