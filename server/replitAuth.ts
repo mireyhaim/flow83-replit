@@ -102,9 +102,16 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/login", (req, res, next) => {
     const returnTo = req.query.returnTo as string;
-    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
-      (req.session as any).returnTo = returnTo;
+    const redirectUrl = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) 
+      ? returnTo 
+      : "/dashboard";
+    
+    // If user is already authenticated, redirect directly without showing login page
+    if (req.isAuthenticated()) {
+      return res.redirect(redirectUrl);
     }
+    
+    (req.session as any).returnTo = redirectUrl;
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
