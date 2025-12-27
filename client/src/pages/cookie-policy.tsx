@@ -95,7 +95,7 @@ const CookiePolicy = () => {
               <p>We may use third-party services that set their own cookies:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Google Analytics:</strong> For website analytics and performance monitoring</li>
-                <li><strong>Stripe:</strong> For secure payment processing</li>
+                <li><strong>Payment Providers:</strong> For secure payment processing (mentors may use their own payment links)</li>
                 <li><strong>Intercom:</strong> For customer support and communication</li>
                 <li><strong>Social Media Platforms:</strong> For sharing and integration features</li>
               </ul>

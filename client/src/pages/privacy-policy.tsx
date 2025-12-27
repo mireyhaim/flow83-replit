@@ -21,7 +21,7 @@ const privacyContent = [
   {
     icon: CreditCard,
     title: "Payments",
-    content: "Mentor subscriptions are processed through Lemon Squeezy. End-user payments are processed through Stripe directly into the mentor's account. Flow83 does not store credit card data or banking information."
+    content: "Mentor subscriptions are processed through our payment provider. End-user payments are processed through the mentor's own payment link (PayPal, Stripe, or other payment provider of their choice) directly into their account. Flow83 does not store credit card data or banking information."
   },
   {
     icon: Shield,

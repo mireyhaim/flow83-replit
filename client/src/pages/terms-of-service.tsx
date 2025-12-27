@@ -31,12 +31,12 @@ const termsContent = [
   {
     icon: Briefcase,
     title: "End-User Relationship",
-    content: "All financial transactions from end-users purchasing mentor journeys are processed directly through the mentor's Stripe account. Flow83 does not handle or transfer end-user revenue. The mentor is the sole provider of the service purchased by the end-user."
+    content: "All financial transactions from end-users purchasing mentor journeys are processed directly through the mentor's own payment link (PayPal, Stripe, or other payment provider of their choice). Flow83 does not handle or transfer end-user revenue. The mentor is the sole provider of the service purchased by the end-user."
   },
   {
     icon: CreditCard,
     title: "Payments to Flow83",
-    content: "Mentors pay Flow83 a recurring subscription fee for platform access. Plans may vary by features, usage limits, and tools such as Stripe integration. Fees are non-refundable unless otherwise stated."
+    content: "Mentors pay Flow83 a recurring subscription fee for platform access. Plans may vary by features, usage limits, and available tools. Fees are non-refundable unless otherwise stated."
   },
   {
     icon: CheckCircle,
