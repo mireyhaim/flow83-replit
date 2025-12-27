@@ -35,9 +35,15 @@ const Header = () => {
         </nav>
         
         <div className="hidden md:flex items-center space-x-4">
-          <a href="/api/login?redirect=/dashboard">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
-          </a>
+          {isAuthenticated ? (
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-my-flows">My Flows</Button>
+            </Link>
+          ) : (
+            <a href="/api/login?redirect=/dashboard">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
+            </a>
+          )}
           <Link href={getStartLink()}>
             <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
               Get Started
@@ -62,9 +68,15 @@ const Header = () => {
           <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">Community</Link>
           <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">Contact</Link>
           <div className="pt-4 space-y-3">
-            <a href="/api/login?redirect=/dashboard">
-              <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
-            </a>
+            {isAuthenticated ? (
+              <Link href="/dashboard">
+                <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">My Flows</Button>
+              </Link>
+            ) : (
+              <a href="/api/login?redirect=/dashboard">
+                <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
+              </a>
+            )}
             <Link href={getStartLink()}>
               <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
             </Link>
