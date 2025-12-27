@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Mail, Globe, Save, CreditCard, XCircle, AlertTriangle, Camera, CheckCircle2, Wallet, ExternalLink } from "lucide-react";
+import { Loader2, Mail, Globe, Save, CreditCard, XCircle, Camera, CheckCircle2 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -28,14 +28,6 @@ export default function ProfilePage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
-
-  // Fetch Stripe Connect status
-  const { data: stripeStatus, isLoading: stripeLoading } = useQuery<{ connected: boolean; status?: string; chargesEnabled?: boolean; payoutsEnabled?: boolean }>({
-    queryKey: ["/api/stripe/connect/status"],
-    queryFn: () => fetch("/api/stripe/connect/status", { credentials: "include" }).then(res => res.json()),
-    enabled: isAuthenticated,
-  });
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -127,33 +119,6 @@ export default function ProfilePage() {
       });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleConnectStripe = async () => {
-    setIsConnectingStripe(true);
-    try {
-      const response = await fetch("/api/stripe/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to initiate Stripe connection");
-      }
-      
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to connect Stripe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsConnectingStripe(false);
     }
   };
 
@@ -333,93 +298,6 @@ export default function ProfilePage() {
                     data-testid="input-website"
                   />
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-white border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-6">Payment Settings</h2>
-            
-            <div className="space-y-5">
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  (stripeStatus as any)?.chargesEnabled ? 'bg-emerald-50' : 'bg-amber-50'
-                }`}>
-                  <Wallet className={`h-6 w-6 ${
-                    (stripeStatus as any)?.chargesEnabled ? 'text-emerald-500' : 'text-amber-500'
-                  }`} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-slate-900">Stripe Connect</p>
-                    {stripeLoading ? (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">
-                        Checking...
-                      </span>
-                    ) : (stripeStatus as any)?.chargesEnabled ? (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Connected
-                      </span>
-                    ) : (stripeStatus as any)?.connected ? (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium">
-                        Setup Incomplete
-                      </span>
-                    ) : (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium">
-                        Not Connected
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-4">
-                    {(stripeStatus as any)?.chargesEnabled 
-                      ? "Your Stripe account is connected. Payments from participants go directly to you."
-                      : (stripeStatus as any)?.connected
-                      ? "Your Stripe account is linked but setup is incomplete. Complete the onboarding to receive payments."
-                      : "Connect your Stripe account to receive payments directly from your participants."
-                    }
-                  </p>
-                  
-                  {!(stripeStatus as any)?.chargesEnabled && (
-                    <Button
-                      onClick={handleConnectStripe}
-                      disabled={isConnectingStripe}
-                      className="bg-violet-600 hover:bg-violet-700"
-                      data-testid="button-connect-stripe"
-                    >
-                      {isConnectingStripe ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                      )}
-                      {(stripeStatus as any)?.connected ? "Complete Setup" : "Connect Payments"}
-                    </Button>
-                  )}
-                  
-                  {(stripeStatus as any)?.chargesEnabled && (
-                    <Button
-                      variant="outline"
-                      onClick={handleConnectStripe}
-                      disabled={isConnectingStripe}
-                      className="border-slate-200 text-slate-600 hover:bg-slate-50"
-                      data-testid="button-manage-stripe"
-                    >
-                      {isConnectingStripe ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                      )}
-                      Manage Account
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              <div className="border-t border-slate-100 pt-4">
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  <strong>Legal Notice:</strong> Payments are handled directly by you, the mentor. 
-                  Flow 83 does not collect or manage participant payments. All transactions go through your own Stripe account.
-                </p>
               </div>
             </div>
           </section>

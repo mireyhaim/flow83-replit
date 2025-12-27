@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink, CreditCard, AlertTriangle, ArrowRight, Rocket, Lock, Crown
+  Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -33,16 +33,8 @@ const JourneyEditorPage = () => {
   const [publishStep, setPublishStep] = useState<1 | 2 | 3 | 4>(1);
   const [publishPrice, setPublishPrice] = useState("");
   const [externalPaymentUrl, setExternalPaymentUrl] = useState("");
-  const [useExternalPayment, setUseExternalPayment] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
-
-  const { data: stripeStatus, refetch: refetchStripeStatus } = useQuery<{ connected: boolean; status?: string; chargesEnabled?: boolean; payoutsEnabled?: boolean }>({
-    queryKey: ["/api/stripe/connect/status"],
-    queryFn: () => fetch("/api/stripe/connect/status").then(res => res.json()),
-    retry: false,
-  });
 
   const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
     queryKey: ["/api/subscription/status"],
@@ -51,36 +43,6 @@ const JourneyEditorPage = () => {
   });
 
   const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing";
-
-  const connectStripeMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/stripe/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      if (data.url) {
-        window.open(data.url, "_blank");
-      }
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to connect Stripe account",
-        variant: "destructive",
-      });
-    },
-  });
-
-  useEffect(() => {
-    const handleFocus = () => {
-      refetchStripeStatus();
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [refetchStripeStatus]);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
 
@@ -724,102 +686,31 @@ const JourneyEditorPage = () => {
               <div className="space-y-6 py-4">
                 {(parseFloat(publishPrice) || 0) > 0 ? (
                   <>
-                    <div className="space-y-4">
-                      <div 
-                        className={`border rounded-xl p-5 cursor-pointer transition-all ${!useExternalPayment ? 'border-violet-500 bg-violet-500/10' : 'border-white/20 hover:border-white/40'}`}
-                        onClick={() => setUseExternalPayment(false)}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!useExternalPayment ? 'border-violet-400' : 'border-white/40'}`}>
-                            {!useExternalPayment && <div className="w-3 h-3 rounded-full bg-violet-400" />}
-                          </div>
-                          <h4 className="font-medium text-white">Use Stripe Connect</h4>
-                        </div>
-                        <p className="text-sm text-white/60 ml-8">
-                          We handle the checkout process - payments go directly to your bank account.
-                        </p>
-                        {!useExternalPayment && (
-                          <div className="mt-4 ml-8 space-y-4">
-                            {stripeStatus?.chargesEnabled ? (
-                              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 flex items-center gap-3">
-                                <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-emerald-300">Stripe Connected!</p>
-                                  <p className="text-xs text-white/50">Ready to receive payments.</p>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <Button
-                                  onClick={() => connectStripeMutation.mutate()}
-                                  disabled={connectStripeMutation.isPending}
-                                  className="w-full bg-[#635bff] hover:bg-[#7a73ff] text-white h-12 rounded-lg"
-                                  data-testid="button-connect-stripe"
-                                >
-                                  {connectStripeMutation.isPending ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                  ) : (
-                                    <>
-                                      <CreditCard className="w-5 h-5 mr-2" />
-                                      Connect Stripe Account
-                                    </>
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => refetchStripeStatus()}
-                                  className="w-full text-white/50 hover:text-white hover:bg-white/10 text-sm h-10"
-                                  data-testid="button-refresh-status"
-                                >
-                                  I've completed setup - Check again
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        )}
+                    <div className="border border-violet-500 bg-violet-500/10 rounded-xl p-5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <ExternalLink className="w-5 h-5 text-violet-400" />
+                        <h4 className="font-medium text-white">Your Payment Link</h4>
                       </div>
-
-                      <div 
-                        className={`border rounded-xl p-5 cursor-pointer transition-all ${useExternalPayment ? 'border-violet-500 bg-violet-500/10' : 'border-white/20 hover:border-white/40'}`}
-                        onClick={() => setUseExternalPayment(true)}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${useExternalPayment ? 'border-violet-400' : 'border-white/40'}`}>
-                            {useExternalPayment && <div className="w-3 h-3 rounded-full bg-violet-400" />}
-                          </div>
-                          <h4 className="font-medium text-white">Use Your Own Payment Link</h4>
-                        </div>
-                        <p className="text-sm text-white/60 ml-8">
-                          Use your existing PayPal, Stripe Payment Link, or any other payment link. Works from any country.
+                      <p className="text-sm text-white/60 mb-4">
+                        Use your existing PayPal, Stripe Payment Link, or any other payment link. Works from any country - payments go directly to you.
+                      </p>
+                      <div className="space-y-3">
+                        <Label className="text-white/70 text-sm">Payment Link URL</Label>
+                        <Input
+                          type="url"
+                          value={externalPaymentUrl}
+                          onChange={(e) => setExternalPaymentUrl(e.target.value)}
+                          placeholder="https://paypal.me/... or https://buy.stripe.com/..."
+                          className="bg-white/5 border-white/20 text-white h-12 rounded-lg"
+                          data-testid="input-external-payment-url"
+                        />
+                        <p className="text-xs text-white/40">
+                          Clients will be redirected to this link to pay, then return to access your flow.
                         </p>
-                        {useExternalPayment && (
-                          <div className="mt-4 ml-8 space-y-3">
-                            <Label className="text-white/70 text-sm">Your Payment Link</Label>
-                            <Input
-                              type="url"
-                              value={externalPaymentUrl}
-                              onChange={(e) => setExternalPaymentUrl(e.target.value)}
-                              placeholder="https://paypal.me/... or https://buy.stripe.com/..."
-                              className="bg-white/5 border-white/20 text-white h-12 rounded-lg"
-                              data-testid="input-external-payment-url"
-                            />
-                            <p className="text-xs text-white/40">
-                              Clients will be redirected to this link to pay, then return to access your flow.
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
 
-                    {!useExternalPayment && !stripeStatus?.chargesEnabled && (
-                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-                        <p className="text-sm text-amber-300 text-center">
-                          Connect Stripe or use an external payment link to continue with a paid flow.
-                        </p>
-                      </div>
-                    )}
-
-                    {useExternalPayment && !externalPaymentUrl && (
+                    {!externalPaymentUrl && (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
                         <p className="text-sm text-amber-300 text-center">
                           Please enter your payment link to continue.
@@ -846,12 +737,12 @@ const JourneyEditorPage = () => {
                   <Button
                     onClick={() => setPublishStep(3)}
                     className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                    data-testid="button-next-after-stripe"
-                    disabled={(parseFloat(publishPrice) || 0) > 0 && !stripeStatus?.chargesEnabled && !(useExternalPayment && externalPaymentUrl)}
+                    data-testid="button-next-after-payment"
+                    disabled={(parseFloat(publishPrice) || 0) > 0 && !externalPaymentUrl}
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
                     {(parseFloat(publishPrice) || 0) === 0 ? "Skip & Continue" : 
-                      (stripeStatus?.chargesEnabled || (useExternalPayment && externalPaymentUrl)) ? "Next Step" : "Setup Required"}
+                      externalPaymentUrl ? "Next Step" : "Setup Required"}
                   </Button>
                 </div>
               </div>
