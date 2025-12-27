@@ -35,7 +35,7 @@ const JourneyEditorPage = () => {
   const [externalPaymentUrl, setExternalPaymentUrl] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
-  const [expandedPlanDetails, setExpandedPlanDetails] = useState<string | null>(null);
+  const [expandedPlanDetails, setExpandedPlanDetails] = useState(false);
 
   const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
     queryKey: ["/api/subscription/status"],
@@ -996,7 +996,7 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Sales landing page</span>
                   </li>
-                  {expandedPlanDetails === 'starter' && (
+                  {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
@@ -1018,10 +1018,10 @@ const JourneyEditorPage = () => {
                   )}
                 </ul>
                 <button
-                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'starter' ? null : 'starter')}
+                  onClick={() => setExpandedPlanDetails(!expandedPlanDetails)}
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
-                  {expandedPlanDetails === 'starter' ? (
+                  {expandedPlanDetails ? (
                     <>Show less <ChevronUp className="w-3 h-3" /></>
                   ) : (
                     <>Read more <ChevronDown className="w-3 h-3" /></>
@@ -1079,7 +1079,7 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Advanced AI Composer</span>
                   </li>
-                  {expandedPlanDetails === 'pro' && (
+                  {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
@@ -1105,10 +1105,10 @@ const JourneyEditorPage = () => {
                   )}
                 </ul>
                 <button
-                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'pro' ? null : 'pro')}
+                  onClick={() => setExpandedPlanDetails(!expandedPlanDetails)}
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
-                  {expandedPlanDetails === 'pro' ? (
+                  {expandedPlanDetails ? (
                     <>Show less <ChevronUp className="w-3 h-3" /></>
                   ) : (
                     <>Read more <ChevronDown className="w-3 h-3" /></>
@@ -1161,7 +1161,7 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>$0.40/user overage</span>
                   </li>
-                  {expandedPlanDetails === 'business' && (
+                  {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
@@ -1187,10 +1187,10 @@ const JourneyEditorPage = () => {
                   )}
                 </ul>
                 <button
-                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'business' ? null : 'business')}
+                  onClick={() => setExpandedPlanDetails(!expandedPlanDetails)}
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
-                  {expandedPlanDetails === 'business' ? (
+                  {expandedPlanDetails ? (
                     <>Show less <ChevronUp className="w-3 h-3" /></>
                   ) : (
                     <>Read more <ChevronDown className="w-3 h-3" /></>
