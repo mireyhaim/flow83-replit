@@ -108,27 +108,42 @@ export async function registerRoutes(
     }
   });
 
-  // Get dashboard stats for current user
+  // Get dashboard stats for current user (optimized with parallel queries)
   app.get("/api/stats/dashboard", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const journeys = await storage.getJourneysByCreator(userId);
       
-      // Calculate participant stats across all user's journeys
+      if (journeys.length === 0) {
+        return res.json({
+          totalJourneys: 0,
+          publishedJourneys: 0,
+          draftJourneys: 0,
+          totalParticipants: 0,
+          activeParticipants: 0,
+          completedParticipants: 0,
+          completionRate: 0,
+        });
+      }
+      
+      // Fetch all participants and steps in parallel for all journeys
+      const [allParticipantsResults, allStepsResults] = await Promise.all([
+        Promise.all(journeys.map(j => storage.getParticipants(j.id))),
+        Promise.all(journeys.map(j => storage.getJourneySteps(j.id)))
+      ]);
+      
       let totalParticipants = 0;
       let activeParticipants = 0;
       let completedParticipants = 0;
       
-      for (const journey of journeys) {
-        const participants = await storage.getParticipants(journey.id);
-        const steps = await storage.getJourneySteps(journey.id);
-        const totalDays = steps.length || 7; // Default to 7 if no steps yet
+      for (let i = 0; i < journeys.length; i++) {
+        const participants = allParticipantsResults[i];
+        const steps = allStepsResults[i];
+        const totalDays = steps.length || 7;
         
         totalParticipants += participants.length;
         
         for (const p of participants) {
-          // Consider completed only if they've passed the final day
-          // currentDay is 1-indexed, so day 8 means they finished a 7-day journey
           if ((p.currentDay ?? 1) > totalDays) {
             completedParticipants++;
           } else {
