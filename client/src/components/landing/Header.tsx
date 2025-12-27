@@ -40,7 +40,7 @@ const Header = () => {
               <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-my-flows">My Flows</Button>
             </Link>
           ) : (
-            <a href="/api/login?redirect=/dashboard">
+            <a href="/api/login?returnTo=/dashboard">
               <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
             </a>
           )}
@@ -73,7 +73,7 @@ const Header = () => {
                 <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">My Flows</Button>
               </Link>
             ) : (
-              <a href="/api/login?redirect=/dashboard">
+              <a href="/api/login?returnTo=/dashboard">
                 <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
               </a>
             )}

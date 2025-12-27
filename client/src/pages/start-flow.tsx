@@ -44,7 +44,7 @@ export default function StartFlowPage() {
   }, [authLoading, isAuthenticated, isCreating, setLocation]);
 
   const handleLogin = () => {
-    window.location.href = "/api/login?redirect=/start-flow";
+    window.location.href = "/api/login?returnTo=/start-flow";
   };
 
   if (authLoading || isCreating) {

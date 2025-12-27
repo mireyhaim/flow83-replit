@@ -5,8 +5,8 @@ import loginImage from "@assets/stock_images/professional_woman_m_5bea3f46.jpg";
 
 export default function LoginPage() {
   const handleLogin = () => {
-    const redirect = new URLSearchParams(window.location.search).get("redirect") || "/dashboard";
-    window.location.href = `/api/login?redirect=${encodeURIComponent(redirect)}`;
+    const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/dashboard";
+    window.location.href = `/api/login?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   return (
