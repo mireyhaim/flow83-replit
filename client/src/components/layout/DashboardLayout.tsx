@@ -83,19 +83,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                האם אתה בטוח שאתה רוצה לצאת מהמערכת?
+                Are you sure you want to sign out?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>לא</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   window.location.href = "/api/logout";
                 }}
               >
-                כן
+                Sign Out
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
