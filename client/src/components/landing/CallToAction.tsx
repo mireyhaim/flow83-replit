@@ -35,7 +35,6 @@ const CallToAction = () => {
                 data-testid="button-cta-get-started"
               >
                 Turn Your Method Into a Journey
-                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
