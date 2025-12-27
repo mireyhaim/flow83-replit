@@ -47,7 +47,7 @@ const steps = [
     icon: CreditCard,
     number: "04",
     title: "Your Clients, Your Money",
-    description: "Connect your Stripe account and you're set. When clients purchase your journey, the payment goes directly to you — no middlemen, no commission, no waiting. You own your business, we just power it.",
+    description: "Connect your own payment link and you're set. When clients purchase your journey, the payment goes directly to you — no middlemen, no commission, no waiting. You own your business, we just power it.",
     image: screenshotParticipant,
     imageAlt: "Direct payment flow"
   },

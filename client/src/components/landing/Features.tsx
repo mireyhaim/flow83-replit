@@ -16,7 +16,7 @@ const benefits = [
   {
     icon: Wallet,
     title: "Your Money, Directly",
-    description: "Connect your Stripe and get paid instantly. Your clients, your brand, your earnings — we never take a cut.",
+    description: "Connect your own payment link and get paid instantly. Your clients, your brand, your earnings — we never take a cut.",
     gradient: "from-emerald-400 to-emerald-500"
   },
   {
