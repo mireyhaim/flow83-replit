@@ -986,7 +986,7 @@ const JourneyEditorPage = () => {
                 <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>1 active Flow</span>
+                    <span>Create 1 Flow</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
