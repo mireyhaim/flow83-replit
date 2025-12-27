@@ -335,7 +335,9 @@ export async function registerRoutes(
         const userId = req.user?.claims?.sub;
         if (userId) {
           const user = await storage.getUser(userId);
-          const hasActiveSubscription = user?.subscriptionStatus === "active" || user?.subscriptionStatus === "trialing";
+          // Support both old Stripe values (trialing) and new LemonSqueezy values (on_trial)
+          const status = user?.subscriptionStatus;
+          const hasActiveSubscription = status === "active" || status === "trialing" || status === "on_trial";
           if (!hasActiveSubscription) {
             return res.status(402).json({ error: "subscription_required", message: "An active subscription is required to publish flows" });
           }
@@ -1880,7 +1882,230 @@ export async function registerRoutes(
     }
   });
 
-  // Subscription webhook handler (no auth - Stripe calls this)
+  // LemonSqueezy webhook handler (no auth - LemonSqueezy calls this)
+  app.post("/api/webhooks/lemonsqueezy", async (req, res) => {
+    try {
+      const crypto = await import('crypto');
+      const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+      
+      if (!secret) {
+        console.error("Missing LEMONSQUEEZY_WEBHOOK_SECRET");
+        return res.status(500).json({ error: "Webhook not configured" });
+      }
+
+      // Get signature from header (handle array headers)
+      const signatureHeader = req.headers['x-signature'];
+      const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+      if (!signature) {
+        console.error("Missing X-Signature header");
+        return res.status(400).json({ error: "Missing signature" });
+      }
+
+      // Verify signature using raw body (stored by express.json verify function)
+      const rawBody = (req as any).rawBody;
+      if (!rawBody || !Buffer.isBuffer(rawBody)) {
+        console.error("Missing raw body for webhook verification");
+        return res.status(400).json({ error: "Missing raw body" });
+      }
+      
+      const hmac = crypto.createHmac('sha256', secret);
+      const digest = hmac.update(rawBody).digest('hex');
+      
+      // Case-insensitive, constant-time comparison
+      const digestBuffer = Buffer.from(digest.toLowerCase(), 'utf8');
+      const signatureBuffer = Buffer.from(signature.toLowerCase(), 'utf8');
+      
+      if (digestBuffer.length !== signatureBuffer.length || !crypto.timingSafeEqual(digestBuffer, signatureBuffer)) {
+        console.error("Invalid webhook signature");
+        return res.status(403).json({ error: "Invalid signature" });
+      }
+
+      // Parse event
+      const payload = req.body;
+      const eventName = payload.meta?.event_name;
+      const customData = payload.meta?.custom_data || {};
+      const attributes = payload.data?.attributes || {};
+      
+      console.log(`LemonSqueezy webhook: ${eventName}`, { customData });
+
+      // Extract user identifier from custom data or email
+      const userEmail = attributes.user_email || customData.email;
+      const userId = customData.user_id;
+      
+      // Determine plan from product/variant
+      const productName = attributes.product_name?.toLowerCase() || '';
+      let plan = 'starter';
+      if (productName.includes('pro')) plan = 'pro';
+      else if (productName.includes('business')) plan = 'business';
+      
+      // Map LemonSqueezy status to our status
+      const lsStatus = attributes.status;
+      let subscriptionStatus = lsStatus; // on_trial, active, cancelled, expired, past_due, paused
+      
+      switch (eventName) {
+        case 'subscription_created':
+        case 'subscription_updated':
+        case 'subscription_resumed':
+        case 'subscription_unpaused': {
+          // Find user by ID or email
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (!user) {
+            console.log(`User not found for subscription event: ${userEmail || userId}`);
+            return res.json({ received: true, warning: "User not found" });
+          }
+
+          // Update subscription data
+          await storage.upsertUser({
+            id: user.id,
+            lemonSqueezyCustomerId: String(attributes.customer_id),
+            subscriptionId: String(payload.data.id),
+            subscriptionPlan: plan,
+            subscriptionStatus: subscriptionStatus,
+            trialEndsAt: attributes.trial_ends_at ? new Date(attributes.trial_ends_at) : null,
+            subscriptionEndsAt: attributes.renews_at ? new Date(attributes.renews_at) : null,
+          });
+          
+          console.log(`Updated subscription for user ${user.id}: ${plan} (${subscriptionStatus})`);
+          break;
+        }
+        
+        case 'subscription_cancelled': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'cancelled',
+              subscriptionEndsAt: attributes.ends_at ? new Date(attributes.ends_at) : null,
+            });
+            console.log(`Subscription cancelled for user ${user.id}`);
+          }
+          break;
+        }
+        
+        case 'subscription_expired': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'expired',
+              subscriptionEndsAt: new Date(),
+            });
+            console.log(`Subscription expired for user ${user.id}`);
+          }
+          break;
+        }
+        
+        case 'subscription_payment_failed': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'past_due',
+            });
+            console.log(`Payment failed for user ${user.id}`);
+          }
+          break;
+        }
+        
+        case 'subscription_payment_success':
+        case 'subscription_payment_recovered': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'active',
+            });
+            console.log(`Payment successful for user ${user.id}`);
+          }
+          break;
+        }
+        
+        case 'subscription_plan_changed': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionPlan: plan,
+              subscriptionStatus: subscriptionStatus,
+            });
+            console.log(`Plan changed for user ${user.id}: ${plan}`);
+          }
+          break;
+        }
+        
+        case 'subscription_paused': {
+          let user;
+          if (userId) {
+            user = await storage.getUser(userId);
+          }
+          if (!user && userEmail) {
+            user = await storage.getUserByEmail(userEmail);
+          }
+          
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'paused',
+            });
+            console.log(`Subscription paused for user ${user.id}`);
+          }
+          break;
+        }
+        
+        default:
+          console.log(`Unhandled LemonSqueezy event: ${eventName}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("LemonSqueezy webhook error:", error);
+      res.status(500).json({ error: "Webhook processing failed" });
+    }
+  });
+
+  // Legacy Stripe subscription webhook handler (kept for backwards compatibility)
   app.post("/api/subscription/webhook", async (req, res) => {
     try {
       const sig = req.headers['stripe-signature'];

@@ -31,11 +31,12 @@ export const users = pgTable("users", {
   // Stripe Connect for receiving payments from participants
   stripeAccountId: varchar("stripe_account_id"),
   stripeAccountStatus: varchar("stripe_account_status"), // 'pending' | 'active' | 'restricted'
-  // Platform subscription fields
-  stripeCustomerId: varchar("stripe_customer_id"),
+  // Platform subscription fields (LemonSqueezy)
+  lemonSqueezyCustomerId: varchar("lemonsqueezy_customer_id"),
+  stripeCustomerId: varchar("stripe_customer_id"), // Legacy - kept for backwards compatibility
   subscriptionId: varchar("subscription_id"),
   subscriptionPlan: varchar("subscription_plan"), // 'starter' | 'pro' | 'business'
-  subscriptionStatus: varchar("subscription_status"), // 'trialing' | 'active' | 'canceled' | 'past_due'
+  subscriptionStatus: varchar("subscription_status"), // 'on_trial' | 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused'
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
