@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown, CreditCard
+  Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown, CreditCard, ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -35,6 +35,7 @@ const JourneyEditorPage = () => {
   const [externalPaymentUrl, setExternalPaymentUrl] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [expandedPlanDetails, setExpandedPlanDetails] = useState<string | null>(null);
 
   const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
     queryKey: ["/api/subscription/status"],
@@ -928,7 +929,16 @@ const JourneyEditorPage = () => {
       {/* Paywall Modal - Inline Pricing */}
       <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
         <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="space-y-4">
+          {/* Back button at top left */}
+          <button
+            onClick={() => setShowPaywallModal(false)}
+            className="absolute left-4 top-4 flex items-center gap-1.5 text-white/60 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+
+          <DialogHeader className="space-y-4 pt-4">
             <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
               <Crown className="w-8 h-8 text-white" />
             </div>
@@ -973,7 +983,7 @@ const JourneyEditorPage = () => {
                   <span className="text-white/50 ml-1">/month</span>
                 </div>
                 <p className="text-xs text-violet-400 mb-3">7-day free trial</p>
-                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>1 active Flow</span>
@@ -986,7 +996,37 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Sales landing page</span>
                   </li>
+                  {expandedPlanDetails === 'starter' && (
+                    <>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>$0.60 per user above 60</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Direct payment integration</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Full cloud hosting</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Analytics dashboard</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
+                <button
+                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'starter' ? null : 'starter')}
+                  className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
+                >
+                  {expandedPlanDetails === 'starter' ? (
+                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                  ) : (
+                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                  )}
+                </button>
                 <Button
                   onClick={async () => {
                     try {
@@ -1026,7 +1066,7 @@ const JourneyEditorPage = () => {
                   <span className="text-3xl font-bold text-white">$83</span>
                   <span className="text-white/50 ml-1">/month</span>
                 </div>
-                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Up to 5 Flows</span>
@@ -1039,7 +1079,41 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Advanced AI Composer</span>
                   </li>
+                  {expandedPlanDetails === 'pro' && (
+                    <>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>$0.60 per user above 300</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Personal sales landing page for each journey</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Direct payment integration</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Full cloud hosting</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Extended data dashboard</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
+                <button
+                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'pro' ? null : 'pro')}
+                  className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
+                >
+                  {expandedPlanDetails === 'pro' ? (
+                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                  ) : (
+                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                  )}
+                </button>
                 <Button
                   onClick={async () => {
                     try {
@@ -1074,7 +1148,7 @@ const JourneyEditorPage = () => {
                   <span className="text-3xl font-bold text-white">$188</span>
                   <span className="text-white/50 ml-1">/month</span>
                 </div>
-                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>Up to 10 Flows</span>
@@ -1087,7 +1161,41 @@ const JourneyEditorPage = () => {
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                     <span>$0.40/user overage</span>
                   </li>
+                  {expandedPlanDetails === 'business' && (
+                    <>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Personal sales landing page for each journey</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Direct payment integration</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Full cloud hosting</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Advanced AI Flow Composer</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                        <span>Extended data dashboard</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
+                <button
+                  onClick={() => setExpandedPlanDetails(expandedPlanDetails === 'business' ? null : 'business')}
+                  className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
+                >
+                  {expandedPlanDetails === 'business' ? (
+                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                  ) : (
+                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                  )}
+                </button>
                 <Button
                   onClick={async () => {
                     try {
@@ -1114,16 +1222,6 @@ const JourneyEditorPage = () => {
                   Choose Business
                 </Button>
               </div>
-            </div>
-
-            <div className="flex justify-center pt-2">
-              <Button
-                variant="ghost"
-                onClick={() => setShowPaywallModal(false)}
-                className="text-white/50 hover:text-white hover:bg-white/10"
-              >
-                Continue Building (No Payment)
-              </Button>
             </div>
           </div>
         </DialogContent>
