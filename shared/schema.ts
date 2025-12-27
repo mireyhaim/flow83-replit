@@ -60,6 +60,8 @@ export const journeys = pgTable("journeys", {
   mentorMessage: text("mentor_message"),
   shortCode: varchar("short_code").unique(),
   landingPageContent: jsonb("landing_page_content"),
+  // External payment settings (mentor's own payment link)
+  externalPaymentUrl: text("external_payment_url"), // PayPal/Stripe Payment Link
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({
@@ -251,3 +253,24 @@ export const insertJourneyFeedbackSchema = createInsertSchema(journeyFeedback).o
 
 export type InsertJourneyFeedback = z.infer<typeof insertJourneyFeedbackSchema>;
 export type JourneyFeedback = typeof journeyFeedback.$inferSelect;
+
+// External payment sessions for tracking payment flow without Stripe Connect
+export const externalPaymentSessions = pgTable("external_payment_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
+  email: varchar("email").notNull(),
+  name: varchar("name"),
+  token: varchar("token").unique().notNull(), // Unique token to verify return
+  status: text("status").default("pending"), // 'pending' | 'completed'
+  expiresAt: timestamp("expires_at").notNull(), // Session expires after some time
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertExternalPaymentSessionSchema = createInsertSchema(externalPaymentSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertExternalPaymentSession = z.infer<typeof insertExternalPaymentSessionSchema>;
+export type ExternalPaymentSession = typeof externalPaymentSessions.$inferSelect;

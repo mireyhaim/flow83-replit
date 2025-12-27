@@ -67,8 +67,15 @@ export default function ParticipantJoinPage() {
         throw new Error(data.error || "Failed to join");
       }
 
-      if (data.requiresPayment && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (data.requiresPayment) {
+        if (data.paymentType === "external" && data.externalPaymentUrl) {
+          localStorage.setItem("external_payment_token", data.token);
+          localStorage.setItem("external_payment_return_url", data.returnUrl);
+          window.open(data.externalPaymentUrl, "_blank");
+          window.location.href = data.returnUrl;
+        } else if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        }
       } else if (data.accessToken) {
         window.location.href = `/p/${data.accessToken}`;
       }

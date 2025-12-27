@@ -10,7 +10,8 @@ import {
   type UserDayState, type InsertUserDayState,
   type Payment, type InsertPayment,
   type JourneyFeedback, type InsertJourneyFeedback,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback
+  type ExternalPaymentSession, type InsertExternalPaymentSession,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or, sum } from "drizzle-orm";
@@ -46,6 +47,7 @@ export interface IStorage {
 
   getParticipants(journeyId: string): Promise<Participant[]>;
   getParticipant(userId: string, journeyId: string): Promise<Participant | undefined>;
+  getParticipantByEmail(email: string, journeyId: string): Promise<Participant | undefined>;
   getParticipantById(id: string): Promise<Participant | undefined>;
   getParticipantByAccessToken(accessToken: string): Promise<Participant | undefined>;
   getParticipantByStripeSession(stripeSessionId: string): Promise<Participant | undefined>;
@@ -86,6 +88,11 @@ export interface IStorage {
     participantEmail: string | null;
   }[]>;
   getFeedbackByJourney(journeyId: string): Promise<JourneyFeedback[]>;
+
+  // External payment sessions (for mentor's own payment links)
+  createExternalPaymentSession(session: InsertExternalPaymentSession): Promise<ExternalPaymentSession>;
+  getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined>;
+  completeExternalPaymentSession(token: string): Promise<ExternalPaymentSession | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -232,6 +239,13 @@ export class DatabaseStorage implements IStorage {
   async getParticipant(userId: string, journeyId: string): Promise<Participant | undefined> {
     const [participant] = await db.select().from(participants).where(
       and(eq(participants.userId, userId), eq(participants.journeyId, journeyId))
+    );
+    return participant;
+  }
+
+  async getParticipantByEmail(email: string, journeyId: string): Promise<Participant | undefined> {
+    const [participant] = await db.select().from(participants).where(
+      and(eq(participants.email, email), eq(participants.journeyId, journeyId))
     );
     return participant;
   }
@@ -480,6 +494,29 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(journeyFeedback)
       .where(eq(journeyFeedback.journeyId, journeyId))
       .orderBy(desc(journeyFeedback.createdAt));
+  }
+
+  // External payment session methods
+  async createExternalPaymentSession(session: InsertExternalPaymentSession): Promise<ExternalPaymentSession> {
+    const [created] = await db.insert(externalPaymentSessions).values(session).returning();
+    return created;
+  }
+
+  async getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined> {
+    const [session] = await db.select().from(externalPaymentSessions)
+      .where(eq(externalPaymentSessions.token, token));
+    return session;
+  }
+
+  async completeExternalPaymentSession(token: string): Promise<ExternalPaymentSession | undefined> {
+    const [updated] = await db.update(externalPaymentSessions)
+      .set({ 
+        status: "completed",
+        completedAt: new Date()
+      })
+      .where(eq(externalPaymentSessions.token, token))
+      .returning();
+    return updated;
   }
 }
 

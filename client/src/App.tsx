@@ -44,6 +44,7 @@ import HowItWorksPage from "@/pages/how-it-works";
 import ProfilePage from "@/pages/profile";
 import NotificationSettingsPage from "@/pages/notification-settings";
 import PaymentSuccessPage from "@/pages/payment-success";
+import ExternalPaymentSuccessPage from "@/pages/external-payment-success";
 import FeedbackPage from "@/pages/feedback";
 import FlowDemoPage from "@/pages/flow-demo";
 import StartFlowPage from "@/pages/start-flow";
@@ -70,6 +71,7 @@ function Router() {
       <Route path="/f/:code" component={ShortLinkRedirect} />
       <Route path="/p/:token" component={ParticipantView} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
+      <Route path="/payment/external-success" component={ExternalPaymentSuccessPage} />
       <Route path="/start-flow" component={StartFlowPage} />
       
       {/* New routes */}

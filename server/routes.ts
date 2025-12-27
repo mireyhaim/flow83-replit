@@ -1336,6 +1336,34 @@ export async function registerRoutes(
       if (price > 0) {
         const baseUrl = `https://${req.get("host")}`;
         
+        // Check if mentor has configured external payment URL (PayPal/Stripe Payment Link)
+        if (journey.externalPaymentUrl) {
+          // Generate a unique token for this payment session
+          const token = crypto.randomUUID();
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour expiry
+          
+          await storage.createExternalPaymentSession({
+            journeyId,
+            email,
+            name: name || null,
+            token,
+            status: "pending",
+            expiresAt,
+          });
+          
+          // Build the return URL with the token
+          const returnUrl = `${baseUrl}/payment/external-success?token=${token}`;
+          
+          res.json({ 
+            requiresPayment: true,
+            paymentType: "external",
+            externalPaymentUrl: journey.externalPaymentUrl,
+            returnUrl, // Tell participant where to return after payment
+            token,
+          });
+          return;
+        }
+
         let mentor = null;
         if (journey.creatorId) {
           mentor = await storage.getUser(journey.creatorId);
@@ -1360,6 +1388,7 @@ export async function registerRoutes(
 
           res.json({ 
             requiresPayment: true, 
+            paymentType: "stripe",
             checkoutUrl: session.url, 
             sessionId: session.id 
           });
@@ -1380,6 +1409,7 @@ export async function registerRoutes(
 
           res.json({ 
             requiresPayment: true, 
+            paymentType: "stripe",
             checkoutUrl: session.url, 
             sessionId: session.id 
           });
@@ -1409,6 +1439,81 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error joining journey:", error);
       res.status(500).json({ error: "Failed to join flow" });
+    }
+  });
+
+  // External payment verification - participant returns after paying via external link
+  app.get("/api/payment/external-verify/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      const session = await storage.getExternalPaymentSessionByToken(token);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Payment session not found" });
+      }
+
+      if (session.status === "completed") {
+        // Session already completed, find the participant by email
+        const participant = await storage.getParticipantByEmail(session.email, session.journeyId);
+        if (participant) {
+          return res.json({ 
+            success: true, 
+            accessToken: participant.accessToken 
+          });
+        }
+        return res.status(400).json({ error: "Participant not found" });
+      }
+
+      // Check if session has expired
+      if (new Date() > session.expiresAt) {
+        return res.status(400).json({ error: "Payment session has expired" });
+      }
+
+      // Complete the session and create participant
+      await storage.completeExternalPaymentSession(token);
+      
+      const journey = await storage.getJourney(session.journeyId);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      const participant = await storage.createExternalParticipant(
+        session.journeyId,
+        session.email,
+        session.name || undefined
+      );
+
+      if (journey.creatorId) {
+        await storage.createActivityEvent({
+          creatorId: journey.creatorId,
+          participantId: participant.id,
+          journeyId: session.journeyId,
+          eventType: 'joined',
+          eventData: { participantName: session.name || session.email },
+        });
+
+        // Record payment (external payment)
+        await storage.createPayment({
+          participantId: participant.id,
+          journeyId: session.journeyId,
+          mentorId: journey.creatorId,
+          amount: (journey.price || 0) * 100, // Amount in cents
+          currency: journey.currency || "USD",
+          status: "completed",
+          stripeCheckoutSessionId: `external_${token}`, // Mark as external
+          customerEmail: session.email,
+          customerName: session.name,
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        accessToken: participant.accessToken 
+      });
+    } catch (error) {
+      console.error("Error verifying external payment:", error);
+      res.status(500).json({ error: "Failed to verify payment" });
     }
   });
 

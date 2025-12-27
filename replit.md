@@ -47,6 +47,23 @@ Preferred communication style: Simple, everyday language.
 - `journeyBlocks` - Content blocks within steps (text, questions, tasks, meditations, videos)
 - `participants` - Users enrolled in journeys
 - `sessions` - Authentication session storage
+- `externalPaymentSessions` - Token-based payment tracking for external payment links
+
+### Payment System
+
+Flow 83 supports two payment methods for paid journeys:
+
+1. **Stripe Connect** - Integrated checkout where payments go directly to mentor's Stripe account
+2. **External Payment Links** - Mentors can use their own payment links (PayPal, Stripe Payment Links, etc.)
+
+**External Payment Flow:**
+1. Mentor configures `externalPaymentUrl` in journey settings (publish modal)
+2. When participant joins, API creates an `externalPaymentSession` with unique token
+3. Participant is redirected to mentor's external payment link (opens in new tab)
+4. Participant returns to `/payment/external-success?token=xxx`
+5. Token is verified, session is marked complete, and participant gains access
+
+This approach allows mentors from any country to receive payments directly through their preferred payment provider.
 
 ### Key Architectural Decisions
 
