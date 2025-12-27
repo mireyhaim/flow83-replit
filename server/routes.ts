@@ -1745,7 +1745,7 @@ export async function registerRoutes(
   app.post("/api/subscription/checkout", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      const { plan } = req.body;
+      const { plan, returnToJourney } = req.body;
       
       if (!plan || !['starter', 'pro', 'business'].includes(plan)) {
         return res.status(400).json({ error: "Invalid plan" });
@@ -1759,12 +1759,21 @@ export async function registerRoutes(
       const { subscriptionService } = await import('./subscriptionService');
       
       const baseUrl = `${req.protocol}://${req.get('host')}`;
+      
+      // If returnToJourney is provided, return to the journey editor after subscription
+      const successUrl = returnToJourney 
+        ? `${baseUrl}/journey/${returnToJourney}/edit?subscription=success`
+        : `${baseUrl}/dashboard?subscription=success`;
+      const cancelUrl = returnToJourney
+        ? `${baseUrl}/journey/${returnToJourney}/edit?subscription=canceled`
+        : `${baseUrl}/pricing?subscription=canceled`;
+      
       const result = await subscriptionService.createSubscriptionCheckout({
         userId,
         email: user.email || '',
         plan,
-        successUrl: `${baseUrl}/dashboard?subscription=success`,
-        cancelUrl: `${baseUrl}/pricing?subscription=canceled`,
+        successUrl,
+        cancelUrl,
         customerId: user.stripeCustomerId || undefined,
       });
 

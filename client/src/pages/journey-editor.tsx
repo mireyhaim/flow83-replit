@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, ChevronUp,
-  Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown
+  Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown, CreditCard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -45,6 +45,29 @@ const JourneyEditorPage = () => {
   const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing";
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
+
+  // Check for subscription success return and auto-open publish modal
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionResult = urlParams.get('subscription');
+    
+    if (subscriptionResult === 'success' && journeyData && hasActiveSubscription) {
+      // Clear the URL param
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      // Show success toast
+      toast({
+        title: "Subscription activated!",
+        description: "You can now publish your flow.",
+      });
+      
+      // Auto-open the publish modal
+      setPublishPrice(journeyData.price?.toString() || "0");
+      setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
+      setPublishStep(1);
+      setShowPublishModal(true);
+    }
+  }, [journeyData, hasActiveSubscription]);
 
   useEffect(() => {
     const loadJourney = async () => {
@@ -154,10 +177,8 @@ const JourneyEditorPage = () => {
         setShowPaywallModal(true);
         return;
       }
-      refetchStripeStatus();
       setPublishPrice(journeyData.price?.toString() || "0");
       setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
-      setUseExternalPayment(!!journeyData.externalPaymentUrl);
       setPublishStep(1);
       setShowPublishModal(true);
     }
@@ -195,7 +216,7 @@ const JourneyEditorPage = () => {
         status: "published",
         price: priceValue,
         currency: "USD",
-        externalPaymentUrl: useExternalPayment && externalPaymentUrl ? externalPaymentUrl : null,
+        externalPaymentUrl: externalPaymentUrl || null,
       });
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney, steps: prev.steps } : null);
       setPublishStep(4);
@@ -904,9 +925,9 @@ const JourneyEditorPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Paywall Modal */}
+      {/* Paywall Modal - Inline Pricing */}
       <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-lg">
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="space-y-4">
             <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
               <Crown className="w-8 h-8 text-white" />
@@ -920,43 +941,188 @@ const JourneyEditorPage = () => {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-              <h4 className="font-medium text-violet-300 mb-3">What you'll unlock:</h4>
-              <ul className="text-sm text-white/70 space-y-2">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                  <span>Publish unlimited flows</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                  <span>Get your own shareable sales page</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                  <span>Accept payments directly to your account</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                  <span>Track participant progress and engagement</span>
-                </li>
-              </ul>
+            <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4">
+              <h4 className="font-medium text-violet-300 mb-2 text-center">What you'll unlock:</h4>
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-white/70">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-violet-400" />
+                  Publish flows
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-violet-400" />
+                  Sales page
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-violet-400" />
+                  Direct payments
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-violet-400" />
+                  Analytics
+                </span>
+              </div>
             </div>
 
-            <div className="flex gap-4">
+            {/* Pricing Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Starter */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
+                <h3 className="text-lg font-bold text-white mb-1">Starter</h3>
+                <div className="flex items-baseline mb-2">
+                  <span className="text-3xl font-bold text-white">$26</span>
+                  <span className="text-white/50 ml-1">/month</span>
+                </div>
+                <p className="text-xs text-violet-400 mb-3">7-day free trial</p>
+                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>1 active Flow</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Up to 60 users</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Sales landing page</span>
+                  </li>
+                </ul>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/subscription/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ 
+                          plan: 'starter',
+                          returnToJourney: journeyData?.id 
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.url) {
+                        window.location.href = data.url;
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
+                    }
+                  }}
+                  className="w-full bg-violet-600 hover:bg-violet-700"
+                  data-testid="button-subscribe-starter"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+
+              {/* Pro - Popular */}
+              <div className="bg-violet-600/20 border-2 border-violet-500 rounded-xl p-5 flex flex-col relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    Most Popular
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-1 mt-2">Pro</h3>
+                <div className="flex items-baseline mb-3">
+                  <span className="text-3xl font-bold text-white">$83</span>
+                  <span className="text-white/50 ml-1">/month</span>
+                </div>
+                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Up to 5 Flows</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Up to 300 users</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Advanced AI Composer</span>
+                  </li>
+                </ul>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/subscription/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ 
+                          plan: 'pro',
+                          returnToJourney: journeyData?.id 
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.url) {
+                        window.location.href = data.url;
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
+                  data-testid="button-subscribe-pro"
+                >
+                  Choose Pro
+                </Button>
+              </div>
+
+              {/* Business */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
+                <h3 className="text-lg font-bold text-white mb-1">Business</h3>
+                <div className="flex items-baseline mb-3">
+                  <span className="text-3xl font-bold text-white">$188</span>
+                  <span className="text-white/50 ml-1">/month</span>
+                </div>
+                <ul className="text-sm text-white/70 space-y-1.5 mb-4 flex-1">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Up to 10 Flows</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>Up to 1000 users</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <span>$0.40/user overage</span>
+                  </li>
+                </ul>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/subscription/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ 
+                          plan: 'business',
+                          returnToJourney: journeyData?.id 
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.url) {
+                        window.location.href = data.url;
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
+                    }
+                  }}
+                  className="w-full bg-violet-600 hover:bg-violet-700"
+                  data-testid="button-subscribe-business"
+                >
+                  Choose Business
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setShowPaywallModal(false)}
-                className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
+                className="text-white/50 hover:text-white hover:bg-white/10"
               >
-                Continue Building
-              </Button>
-              <Button
-                onClick={() => setLocation("/pricing")}
-                className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 h-14 text-base"
-                data-testid="button-choose-plan"
-              >
-                <Rocket className="w-5 h-5 mr-2" />
-                View Plans
+                Continue Building (No Payment)
               </Button>
             </div>
           </div>
