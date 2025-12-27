@@ -39,6 +39,7 @@ export const users = pgTable("users", {
   subscriptionStatus: varchar("subscription_status"), // 'on_trial' | 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused'
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
+  paymentFailedAt: timestamp("payment_failed_at"), // When payment failed - used for 5-day grace period
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

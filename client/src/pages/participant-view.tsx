@@ -45,16 +45,28 @@ export default function ParticipantView() {
 
   const isUuidFormat = tokenFromRoute && isAccessToken(tokenFromRoute);
 
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState("");
+
   // Try to fetch as access token first (for external participants)
   const { data: externalData, isLoading: externalLoading, error: externalError } = useQuery<{
     participant: Participant;
     journey: Journey;
   }>({
     queryKey: ["/api/participant/token", tokenFromRoute],
-    queryFn: () => fetch(`/api/participant/token/${tokenFromRoute}`).then(res => {
-      if (!res.ok) throw new Error("Invalid access token");
+    queryFn: async () => {
+      const res = await fetch(`/api/participant/token/${tokenFromRoute}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.blocked) {
+          setIsBlocked(true);
+          setBlockedMessage(data.message || "This flow is temporarily unavailable.");
+          throw new Error("blocked");
+        }
+        throw new Error("Invalid access token");
+      }
       return res.json();
-    }),
+    },
     enabled: !!isUuidFormat,
     retry: false,
   });
@@ -300,6 +312,23 @@ export default function ParticipantView() {
           <Link href="/dashboard">
             <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBlocked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="max-w-md text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8 text-amber-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Flow Temporarily Unavailable</h1>
+          <p className="text-gray-600 mb-6">{blockedMessage}</p>
+          <p className="text-sm text-gray-500">
+            Please try again later or contact the creator of this flow.
+          </p>
         </div>
       </div>
     );

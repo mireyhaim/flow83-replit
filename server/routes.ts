@@ -1656,6 +1656,21 @@ export async function registerRoutes(
         mentor = await storage.getUser(journey.creatorId);
       }
 
+      // Check if mentor's payment has failed for more than 5 days
+      if (mentor?.paymentFailedAt) {
+        const failedDate = new Date(mentor.paymentFailedAt);
+        const gracePeriodMs = 5 * 24 * 60 * 60 * 1000; // 5 days
+        const gracePeriodEnds = new Date(failedDate.getTime() + gracePeriodMs);
+        
+        if (Date.now() > gracePeriodEnds.getTime()) {
+          return res.status(403).json({ 
+            error: "This flow is temporarily unavailable", 
+            blocked: true,
+            message: "The creator of this flow is updating their account. Please check back soon."
+          });
+        }
+      }
+
       console.log("Returning participant data successfully");
       res.json({ 
         participant, 
@@ -1825,6 +1840,7 @@ export async function registerRoutes(
         status: user.subscriptionStatus || null,
         trialEndsAt: user.trialEndsAt || null,
         subscriptionEndsAt: user.subscriptionEndsAt || null,
+        paymentFailedAt: user.paymentFailedAt || null,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
@@ -2026,11 +2042,14 @@ export async function registerRoutes(
           }
           
           if (user) {
+            // Only set paymentFailedAt if not already set (first failure starts the grace period)
+            const paymentFailedAt = user.paymentFailedAt || new Date();
             await storage.upsertUser({
               id: user.id,
               subscriptionStatus: 'past_due',
+              paymentFailedAt: paymentFailedAt,
             });
-            console.log(`Payment failed for user ${user.id}`);
+            console.log(`Payment failed for user ${user.id}, grace period started at ${paymentFailedAt}`);
           }
           break;
         }
@@ -2046,11 +2065,13 @@ export async function registerRoutes(
           }
           
           if (user) {
+            // Clear paymentFailedAt when payment succeeds - restores full access
             await storage.upsertUser({
               id: user.id,
               subscriptionStatus: 'active',
+              paymentFailedAt: null,
             });
-            console.log(`Payment successful for user ${user.id}`);
+            console.log(`Payment successful for user ${user.id}, grace period cleared`);
           }
           break;
         }

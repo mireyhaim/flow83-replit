@@ -5,7 +5,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -17,6 +17,7 @@ type SubscriptionStatus = {
   status: string | null;
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
+  paymentFailedAt: string | null;
 };
 
 export default function Dashboard() {
@@ -204,6 +205,54 @@ export default function Dashboard() {
           </Button>
         </div>
       )}
+
+      {subscription?.paymentFailedAt && (() => {
+        const failedDate = new Date(subscription.paymentFailedAt);
+        const gracePeriodEnds = new Date(failedDate.getTime() + 5 * 24 * 60 * 60 * 1000); // 5 days
+        const daysLeft = Math.max(0, Math.ceil((gracePeriodEnds.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+        const isExpired = daysLeft === 0;
+        
+        return (
+          <div 
+            className={`mb-8 rounded-2xl p-5 flex items-center justify-between ${
+              isExpired 
+                ? "bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-300" 
+                : "bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300"
+            }`}
+            data-testid="banner-payment-failed"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                isExpired ? "bg-red-100" : "bg-amber-100"
+              }`}>
+                <AlertTriangle className={`h-6 w-6 ${isExpired ? "text-red-600" : "text-amber-600"}`} />
+              </div>
+              <div>
+                <h3 className={`font-semibold ${isExpired ? "text-red-900" : "text-amber-900"}`}>
+                  {isExpired ? "Your flows are now blocked" : "Payment failed - Action required"}
+                </h3>
+                <p className={`text-sm ${isExpired ? "text-red-700" : "text-amber-700"}`}>
+                  {isExpired 
+                    ? "Your participants cannot access your flows. Update your payment to restore access."
+                    : `You have ${daysLeft} day${daysLeft !== 1 ? 's' : ''} to update your payment before your flows are blocked.`
+                  }
+                </p>
+              </div>
+            </div>
+            <Button 
+              className={`rounded-full ${
+                isExpired 
+                  ? "bg-red-600 hover:bg-red-700" 
+                  : "bg-amber-600 hover:bg-amber-700"
+              }`}
+              onClick={() => window.open('https://app.lemonsqueezy.com/my-orders', '_blank')}
+              data-testid="button-fix-payment"
+            >
+              Update Payment
+            </Button>
+          </div>
+        );
+      })()}
 
       {subscriptionDisplay && (
         <div 
