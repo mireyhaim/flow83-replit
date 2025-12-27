@@ -36,19 +36,28 @@ const Header = () => {
         
         <div className="hidden md:flex items-center space-x-4">
           {isAuthenticated ? (
-            <Link href="/dashboard">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-my-flows">My Flows</Button>
-            </Link>
+            <>
+              <a href="/api/logout">
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-sign-out">Sign Out</Button>
+              </a>
+              <Link href="/dashboard">
+                <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-my-flow">
+                  My Flow
+                </Button>
+              </Link>
+            </>
           ) : (
-            <a href="/api/login?returnTo=/dashboard">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
-            </a>
+            <>
+              <a href="/api/login?returnTo=/dashboard">
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
+              </a>
+              <Link href={getStartLink()}>
+                <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
+                  Get Started
+                </Button>
+              </Link>
+            </>
           )}
-          <Link href={getStartLink()}>
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
-              Get Started
-            </Button>
-          </Link>
         </div>
 
         <button 
@@ -69,17 +78,24 @@ const Header = () => {
           <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">Contact</Link>
           <div className="pt-4 space-y-3">
             {isAuthenticated ? (
-              <Link href="/dashboard">
-                <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">My Flows</Button>
-              </Link>
+              <>
+                <Link href="/dashboard">
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">My Flow</Button>
+                </Link>
+                <a href="/api/logout">
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Sign Out</Button>
+                </a>
+              </>
             ) : (
-              <a href="/api/login?returnTo=/dashboard">
-                <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
-              </a>
+              <>
+                <a href="/api/login?returnTo=/dashboard">
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
+                </a>
+                <Link href={getStartLink()}>
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
+                </Link>
+              </>
             )}
-            <Link href={getStartLink()}>
-              <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
-            </Link>
           </div>
         </div>
       )}
