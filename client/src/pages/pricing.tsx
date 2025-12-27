@@ -35,7 +35,7 @@ const pricingPlans = [
     trialText: null,
     description: "For mentors who are already selling and want to grow - with more journeys, more clients, and deeper performance visibility.",
     features: [
-      "Up to 5 active Journeys",
+      "Up to 5 active Flows",
       "Up to 300 users",
       "$0.60 per user above 300",
       "Personal sales landing page for each journey",
@@ -55,7 +55,7 @@ const pricingPlans = [
     trialText: null,
     description: "For established mentors and growing schools who want to offer multiple journeys at scale — with bigger audiences, more products, and true long-term revenue.",
     features: [
-      "Up to 10 active Journeys",
+      "Up to 10 active Flows",
       "Up to 1000 users",
       "$0.40 per user above 1000",
       "Personal sales landing page for each journey",
