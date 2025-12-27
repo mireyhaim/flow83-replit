@@ -1028,24 +1028,10 @@ const JourneyEditorPage = () => {
                   )}
                 </button>
                 <Button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/subscription/checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ 
-                          plan: 'starter',
-                          returnToJourney: journeyData?.id 
-                        }),
-                      });
-                      const data = await res.json();
-                      if (data.url) {
-                        window.location.href = data.url;
-                      }
-                    } catch (error) {
-                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
-                    }
+                  onClick={() => {
+                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
+                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-starter"
@@ -1115,24 +1101,10 @@ const JourneyEditorPage = () => {
                   )}
                 </button>
                 <Button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/subscription/checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ 
-                          plan: 'pro',
-                          returnToJourney: journeyData?.id 
-                        }),
-                      });
-                      const data = await res.json();
-                      if (data.url) {
-                        window.location.href = data.url;
-                      }
-                    } catch (error) {
-                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
-                    }
+                  onClick={() => {
+                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
+                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                   data-testid="button-subscribe-pro"
@@ -1197,24 +1169,10 @@ const JourneyEditorPage = () => {
                   )}
                 </button>
                 <Button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/subscription/checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ 
-                          plan: 'business',
-                          returnToJourney: journeyData?.id 
-                        }),
-                      });
-                      const data = await res.json();
-                      if (data.url) {
-                        window.location.href = data.url;
-                      }
-                    } catch (error) {
-                      toast({ title: "Error", description: "Failed to start checkout", variant: "destructive" });
-                    }
+                  onClick={() => {
+                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
+                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-business"

@@ -147,14 +147,21 @@ const Pricing = () => {
                   </div>
                   
                   <div className="mt-auto">
-                    <Link href={getStartLink()}>
-                      <Button 
-                        className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
-                        data-testid={`button-subscribe-${plan.planId}`}
-                      >
-                        {plan.buttonText}
-                      </Button>
-                    </Link>
+                    <Button 
+                      className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                      data-testid={`button-subscribe-${plan.planId}`}
+                      onClick={() => {
+                        if (isAuthenticated) {
+                          const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                          const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
+                          window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                        } else {
+                          window.location.href = '/start-flow';
+                        }
+                      }}
+                    >
+                      {plan.buttonText}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -238,14 +245,21 @@ const Pricing = () => {
               <p className="text-gray-600 mb-6">
                 Your first journey can be live today. AI builds the process, the site goes live, and payments flow directly to you.
               </p>
-              <Link href={getStartLink()}>
-                <Button 
-                  className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
-                  data-testid="button-cta-free-trial"
-                >
-                  Start Free Trial
-                </Button>
-              </Link>
+              <Button 
+                className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                data-testid="button-cta-free-trial"
+                onClick={() => {
+                  if (isAuthenticated) {
+                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
+                    window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                  } else {
+                    window.location.href = '/start-flow';
+                  }
+                }}
+              >
+                Start Free Trial
+              </Button>
             </div>
           </div>
         </section>
