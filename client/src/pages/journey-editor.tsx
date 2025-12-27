@@ -1077,7 +1077,7 @@ const JourneyEditorPage = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Advanced AI Composer</span>
+                    <span>Extended data dashboard</span>
                   </li>
                   {expandedPlanDetails && (
                     <>

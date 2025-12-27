@@ -41,7 +41,6 @@ const pricingPlans = [
       "Personal sales landing page for each journey",
       "Direct payment integration (money goes to you)",
       "Full cloud hosting",
-      "Advanced AI Flow Composer",
       "Extended data dashboard"
     ],
     bestFor: "Mentors ready to scale their business into consistent monthly revenue.",
