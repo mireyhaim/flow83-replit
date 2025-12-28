@@ -79,6 +79,25 @@ Participants pay mentors directly via mentor's own payment links:
 
 This approach allows mentors from any country to receive payments directly through their preferred payment provider.
 
+### Admin Dashboard
+
+Internal admin dashboard for platform monitoring (accessible at `/admin`):
+
+**Access Control:**
+- Only users with `role = 'super_admin'` can access
+- Protected by `isAdmin` middleware on all `/api/admin/*` routes
+
+**Features:**
+- **Dashboard**: KPI cards showing total users, active users (7d), mentors, active flows, journeys started/completed (30d)
+- **Users**: Table of all participants with status (Active/Stuck/Completed), flow name, current day, last activity
+- **Mentors**: Table of all users showing name, email, role, creation date
+- **Flows**: Table of all journeys with mentor, participant counts, completion rate, drop-off rate
+- **Errors**: System error log showing AI failures, payment errors, runtime issues
+
+**Data Models:**
+- `systemErrors` table stores platform errors for monitoring
+- `role` field on users table (`user` | `super_admin`)
+
 ### Key Architectural Decisions
 
 1. **Shared Schema Pattern**: Database schema and types are defined once in `shared/schema.ts` and used by both frontend and backend, ensuring type safety across the stack.
