@@ -1,0 +1,311 @@
+PRD – Admin Dashboard
+
+Product: Flow83
+Component: Internal Admin Dashboard
+Document Owner: Mirey
+Status: MVP
+Target Environment: Replit (Internal)
+
+1. Background & Context
+
+Flow83 היא פלטפורמה ליצירת תהליכים אישיים מבוססי AI (Journeys / Flows) עבור מנטורים ומשתמשי קצה.
+בשלב ה-MVP נדרש כלי פנימי שיאפשר שליטה, ניטור ולמידה מהשימוש בפועל – ללא תלות בבדיקות ידניות ב-DB או בלוגים.
+
+הדשבורד נועד לשרת את מנהלת המוצר בלבד, ככלי עבודה תפעולי ותודעתי לקבלת החלטות מוצר.
+
+2. Problem Statement
+
+כיום:
+
+אין תמונת מצב אחת ברורה על שימוש במערכת
+
+קשה לדעת מי נתקע, מי נשר, ואיפה
+
+תקלות מתגלות בדיעבד
+
+אין דרך פשוטה להבין אילו Flows עובדים
+
+היעדר כלי ניהול מייצר:
+
+חוסר ודאות
+
+תגובתיות במקום פרואקטיביות
+
+קושי בקבלת החלטות מוצר
+
+3. Goals & Objectives
+Goals
+
+לאפשר שליטה מלאה במצב המערכת
+
+לאתר בעיות בזמן אמת
+
+להבין שימוש אמיתי ו-drop-offs
+
+לתמוך בקבלת החלטות מוצריות
+
+Success Criteria
+
+ניתן לראות תוך פחות מדקה:
+
+כמה משתמשים פעילים
+
+מי נתקע
+
+אילו Flows עובדים
+
+האם יש תקלות פתוחות
+
+אין צורך בגישה ישירה ל-DB ביומיום
+
+4. Non-Goals (מה מחוץ לסקופ)
+
+לא מוצר למשתמשי קצה
+
+לא דשבורד למנטורים
+
+לא BI מתקדם
+
+לא עריכה / שינוי נתונים
+
+לא ניהול תשלומים
+
+לא הרשאות מורכבות
+
+לא עיצוב מתקדם
+
+5. Target User
+
+Primary User:
+
+מנהלת המוצר / מייסדת (SUPER_ADMIN)
+
+Secondary Users:
+
+אין
+
+6. User Permissions & Security
+
+Role יחיד בלבד: SUPER_ADMIN
+
+כל הגישה תחת /admin/*
+
+Middleware שחוסם כל משתמש שאינו SUPER_ADMIN
+
+Read-Only בשלב MVP
+
+7. User Stories
+Core User Stories
+
+כמנהלת מערכת, אני רוצה לראות תמונת מצב כללית כדי להבין מה קורה בפלטפורמה עכשיו.
+
+כמנהלת מערכת, אני רוצה לראות משתמשים תקועים כדי להבין איפה התהליך נשבר.
+
+כמנהלת מערכת, אני רוצה לדעת אילו Flows מצליחים כדי ללמוד מה עובד.
+
+כמנהלת מערכת, אני רוצה לראות תקלות כדי לטפל בהן מוקדם.
+
+כמנהלת מערכת, אני רוצה לזהות מנטורים לא פעילים כדי להבין חסמים.
+
+8. Functional Requirements
+8.1 Admin Overview (/admin/dashboard)
+
+Description:
+מסך פתיחה עם KPI בסיסיים.
+
+Data Points:
+
+Total Users
+
+Active Users (7 ימים אחרונים)
+
+Total Mentors
+
+Active Flows
+
+Journeys Started (30 ימים)
+
+Journeys Completed (30 ימים)
+
+Requirements:
+
+מספרים בלבד
+
+טעינה מהירה
+
+אין גרפים
+
+8.2 Users (/admin/users)
+
+Description:
+טבלת משתמשי קצה.
+
+Fields:
+
+User ID
+
+Email
+
+Signup Date
+
+Flow Name
+
+Current Day
+
+Status (Active / Stuck / Completed)
+
+Last Activity Date
+
+Capabilities:
+
+Search (Email / Flow)
+
+Sort by Last Activity
+
+View Only
+
+8.3 Mentors (/admin/mentors)
+
+Description:
+טבלת מנטורים.
+
+Fields:
+
+Mentor ID
+
+Name / Email
+
+Number of Flows
+
+Users Enrolled
+
+Users Completed
+
+Status (Active / Inactive)
+
+Created At
+
+8.4 Flows (/admin/flows)
+
+Description:
+טבלת Flows / Journeys.
+
+Fields:
+
+Flow ID
+
+Flow Name
+
+Mentor Name
+
+Number of Days
+
+Users Started
+
+Users Completed
+
+Drop-off Day (Calculated)
+
+Status (Active / Draft / Error)
+
+8.5 Errors & Alerts (/admin/errors)
+
+Description:
+ניטור תקלות.
+
+Error Types:
+
+AI Generation Failed
+
+Flow Creation Failed
+
+Payment Callback Failed
+
+Session / Runtime Error
+
+Fields:
+
+Error Type
+
+Related Entity (User / Flow)
+
+Timestamp
+
+Error Message (Raw / Short)
+
+9. UX / UI Requirements
+
+Minimal UI
+
+Tables + numbers בלבד
+
+ללא branding
+
+ללא אנימציות
+
+ללא mobile optimization (Desktop only)
+
+מהירות > יופי
+
+10. Technical Requirements
+
+בנוי כחלק מהמערכת הקיימת ב-Replit
+
+שימוש ב-Existing DB
+
+Queries פשוטות
+
+ללא קריאות ל-AI
+
+ללא תלויות חיצוניות
+
+הפרדה ברורה בין /admin ל־/user
+
+11. Analytics & Internal Metrics
+
+הדשבורד יאפשר ניתוח ידני של:
+
+Completion Rate לפי Flow
+
+Drop-off Day חוזר
+
+מנטורים ללא פעילות
+
+תקלות חוזרות
+
+(ללא ויזואליזציה מתקדמת)
+
+12. Risks & Mitigations
+
+Risk: העמסת יתר מוקדמת
+Mitigation: Read-Only, MVP בלבד
+
+Risk: ערבוב אדמין / משתמש
+Mitigation: Routes + Role נפרדים
+
+13. Rollout Plan
+
+בנייה פנימית
+
+ללא השקה
+
+ללא תקשורת למשתמשים
+
+שימוש מיידי ע"י מנהלת המוצר
+
+14. Future Considerations (Out of Scope)
+
+CSV Export
+
+Advanced Filters
+
+BI Tool
+
+Multi-Admin
+
+Ops Dashboard
+
+15. Final Note
+
+Admin Dashboard הוא כלי חשיבה ושליטה, לא מוצר.
+המטרה שלו היא לעזור ל-Flow83 להתחדד, לא להיראות טוב.
