@@ -24,6 +24,7 @@ export const users = pgTable("users", {
   bio: text("bio"),
   website: varchar("website"),
   specialty: varchar("specialty"),
+  role: varchar("role").default("user"), // 'user' | 'super_admin'
   // Mentor personality fields (from onboarding questionnaire)
   toneOfVoice: text("tone_of_voice"), // e.g., "warm and supportive", "direct and practical"
   methodDescription: text("method_description"), // summary of mentor's approach
@@ -278,3 +279,25 @@ export const insertExternalPaymentSessionSchema = createInsertSchema(externalPay
 
 export type InsertExternalPaymentSession = z.infer<typeof insertExternalPaymentSessionSchema>;
 export type ExternalPaymentSession = typeof externalPaymentSessions.$inferSelect;
+
+// System errors for admin monitoring
+export const systemErrors = pgTable("system_errors", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  errorType: text("error_type").notNull(), // 'ai_generation' | 'flow_creation' | 'payment' | 'runtime'
+  errorMessage: text("error_message").notNull(),
+  errorStack: text("error_stack"),
+  relatedEntityType: text("related_entity_type"), // 'user' | 'journey' | 'participant'
+  relatedEntityId: varchar("related_entity_id"),
+  userId: varchar("user_id"),
+  metadata: jsonb("metadata"),
+  resolved: boolean("resolved").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSystemErrorSchema = createInsertSchema(systemErrors).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSystemError = z.infer<typeof insertSystemErrorSchema>;
+export type SystemError = typeof systemErrors.$inferSelect;

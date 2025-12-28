@@ -48,6 +48,7 @@ import ExternalPaymentSuccessPage from "@/pages/external-payment-success";
 import FeedbackPage from "@/pages/feedback";
 import FlowDemoPage from "@/pages/flow-demo";
 import StartFlowPage from "@/pages/start-flow";
+import AdminPage from "@/pages/admin";
 
 function Router() {
   return (
@@ -85,6 +86,9 @@ function Router() {
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/cookie-policy" component={CookiePolicy} />
       <Route path="/flow-demo/:id" component={FlowDemoPage} />
+      
+      {/* Admin routes */}
+      <Route path="/admin" component={AdminPage} />
       
       <Route component={NotFound} />
     </Switch>

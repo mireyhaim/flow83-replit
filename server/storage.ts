@@ -11,10 +11,11 @@ import {
   type Payment, type InsertPayment,
   type JourneyFeedback, type InsertJourneyFeedback,
   type ExternalPaymentSession, type InsertExternalPaymentSession,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions
+  type SystemError, type InsertSystemError,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, asc, desc, inArray, lt, isNull, or, sum } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, lt, isNull, or, sum, gte, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -94,6 +95,21 @@ export interface IStorage {
   createExternalPaymentSession(session: InsertExternalPaymentSession): Promise<ExternalPaymentSession>;
   getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined>;
   completeExternalPaymentSession(token: string): Promise<ExternalPaymentSession | undefined>;
+
+  // Admin functions
+  getAllUsers(): Promise<User[]>;
+  getAllParticipantsWithDetails(): Promise<(Participant & { journey: Journey | null; user: User | null })[]>;
+  getAllJourneysWithStats(): Promise<(Journey & { mentor: User | null; participantCount: number; completedCount: number })[]>;
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    totalMentors: number;
+    activeFlows: number;
+    journeysStarted30d: number;
+    journeysCompleted30d: number;
+  }>;
+  createSystemError(error: InsertSystemError): Promise<SystemError>;
+  getSystemErrors(limit?: number): Promise<SystemError[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -527,6 +543,124 @@ export class DatabaseStorage implements IStorage {
       .where(eq(externalPaymentSessions.token, token))
       .returning();
     return updated;
+  }
+
+  // Admin functions
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getAllParticipantsWithDetails(): Promise<(Participant & { journey: Journey | null; user: User | null })[]> {
+    const results = await db
+      .select({
+        participant: participants,
+        journey: journeys,
+        user: users,
+      })
+      .from(participants)
+      .leftJoin(journeys, eq(participants.journeyId, journeys.id))
+      .leftJoin(users, eq(participants.userId, users.id))
+      .orderBy(desc(participants.lastActiveAt));
+    
+    return results.map(r => ({
+      ...r.participant,
+      journey: r.journey,
+      user: r.user,
+    }));
+  }
+
+  async getAllJourneysWithStats(): Promise<(Journey & { mentor: User | null; participantCount: number; completedCount: number })[]> {
+    const allJourneys = await db
+      .select({
+        journey: journeys,
+        mentor: users,
+      })
+      .from(journeys)
+      .leftJoin(users, eq(journeys.creatorId, users.id))
+      .orderBy(desc(journeys.id));
+
+    const results = await Promise.all(allJourneys.map(async (r) => {
+      const participantStats = await db
+        .select({
+          total: count(),
+          completed: sql<number>`COUNT(CASE WHEN ${participants.completedAt} IS NOT NULL THEN 1 END)`,
+        })
+        .from(participants)
+        .where(eq(participants.journeyId, r.journey.id));
+
+      return {
+        ...r.journey,
+        mentor: r.mentor,
+        participantCount: Number(participantStats[0]?.total ?? 0),
+        completedCount: Number(participantStats[0]?.completed ?? 0),
+      };
+    }));
+
+    return results;
+  }
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    totalMentors: number;
+    activeFlows: number;
+    journeysStarted30d: number;
+    journeysCompleted30d: number;
+  }> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [userCount] = await db.select({ count: count() }).from(users);
+    
+    const [activeUserCount] = await db
+      .select({ count: count() })
+      .from(participants)
+      .where(gte(participants.lastActiveAt, sevenDaysAgo));
+
+    const mentorIds = await db
+      .selectDistinct({ creatorId: journeys.creatorId })
+      .from(journeys)
+      .where(eq(journeys.status, "published"));
+    
+    const [activeFlowCount] = await db
+      .select({ count: count() })
+      .from(journeys)
+      .where(eq(journeys.status, "published"));
+
+    const [journeysStarted] = await db
+      .select({ count: count() })
+      .from(participants)
+      .where(gte(participants.startedAt, thirtyDaysAgo));
+
+    const [journeysCompleted] = await db
+      .select({ count: count() })
+      .from(participants)
+      .where(and(
+        gte(participants.completedAt, thirtyDaysAgo),
+        sql`${participants.completedAt} IS NOT NULL`
+      ));
+
+    return {
+      totalUsers: Number(userCount?.count ?? 0),
+      activeUsers: Number(activeUserCount?.count ?? 0),
+      totalMentors: mentorIds.length,
+      activeFlows: Number(activeFlowCount?.count ?? 0),
+      journeysStarted30d: Number(journeysStarted?.count ?? 0),
+      journeysCompleted30d: Number(journeysCompleted?.count ?? 0),
+    };
+  }
+
+  async createSystemError(error: InsertSystemError): Promise<SystemError> {
+    const [created] = await db.insert(systemErrors).values(error).returning();
+    return created;
+  }
+
+  async getSystemErrors(limit = 100): Promise<SystemError[]> {
+    return db.select().from(systemErrors)
+      .orderBy(desc(systemErrors.createdAt))
+      .limit(limit);
   }
 }
 

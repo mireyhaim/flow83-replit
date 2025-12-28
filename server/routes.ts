@@ -2153,6 +2153,90 @@ export async function registerRoutes(
     }
   });
 
+  // ============ ADMIN ROUTES ============
+  // Admin middleware - only allow SUPER_ADMIN users
+  const isAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== "super_admin") {
+        return res.status(403).json({ error: "Forbidden - Admin access required" });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  };
+
+  // Admin dashboard stats
+  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  // Admin users list
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      res.json(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Admin participants list with details
+  app.get("/api/admin/participants", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const participants = await storage.getAllParticipantsWithDetails();
+      res.json(participants);
+    } catch (error) {
+      console.error("Error fetching participants:", error);
+      res.status(500).json({ error: "Failed to fetch participants" });
+    }
+  });
+
+  // Admin flows/journeys list with stats
+  app.get("/api/admin/flows", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const flows = await storage.getAllJourneysWithStats();
+      res.json(flows);
+    } catch (error) {
+      console.error("Error fetching flows:", error);
+      res.status(500).json({ error: "Failed to fetch flows" });
+    }
+  });
+
+  // Admin errors list
+  app.get("/api/admin/errors", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const errors = await storage.getSystemErrors(200);
+      res.json(errors);
+    } catch (error) {
+      console.error("Error fetching system errors:", error);
+      res.status(500).json({ error: "Failed to fetch errors" });
+    }
+  });
+
+  // Check if current user is admin
+  app.get("/api/admin/check", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const user = await storage.getUser(userId);
+      res.json({ isAdmin: user?.role === "super_admin" });
+    } catch (error) {
+      res.json({ isAdmin: false });
+    }
+  });
+
   // Legacy Stripe subscription webhook handler (kept for backwards compatibility)
   app.post("/api/subscription/webhook", async (req, res) => {
     try {
