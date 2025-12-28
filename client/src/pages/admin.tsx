@@ -110,8 +110,8 @@ export default function AdminPage() {
 
   if (authLoading || checkLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
       </div>
     );
   }
@@ -123,11 +123,11 @@ export default function AdminPage() {
 
   if (!adminCheck?.isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-500 mb-4">You don't have permission to access this page.</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+          <p className="text-slate-400 mb-4">You don't have permission to access this page.</p>
           <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
         </div>
       </div>
@@ -191,10 +191,10 @@ export default function AdminPage() {
   ) || [];
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-900">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-56 bg-slate-800 min-h-screen p-4 flex flex-col">
+        <aside className="w-56 bg-slate-950 min-h-screen p-4 flex flex-col border-r border-slate-800">
           <div className="mb-8">
             <h1 className="text-white font-bold text-lg">Flow83 Admin</h1>
             <p className="text-slate-400 text-xs">Internal Dashboard</p>
@@ -234,23 +234,23 @@ export default function AdminPage() {
         <main className="flex-1 p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-white">
               {tabs.find(t => t.id === activeTab)?.label}
             </h2>
             <div className="flex items-center gap-3">
               {activeTab !== "dashboard" && (
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <Input
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-64 bg-white"
+                    className="pl-9 w-64 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
                     data-testid="input-search"
                   />
                 </div>
               )}
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <Button variant="outline" size="sm" onClick={handleRefresh} className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Refresh
               </Button>
@@ -295,45 +295,45 @@ export default function AdminPage() {
 
           {/* Users Tab */}
           {activeTab === "users" && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-slate-850 border-b border-slate-700">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Email</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Flow</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Day</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Last Active</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Started</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Email</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Flow</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Day</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Last Active</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Started</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-slate-700">
                   {filteredParticipants.map(p => {
                     const status = getParticipantStatus(p);
                     return (
-                      <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">{p.email || p.name || "-"}</td>
-                        <td className="px-4 py-3">{p.journey?.name || "-"}</td>
-                        <td className="px-4 py-3">{p.currentDay} / {p.journey?.duration || "?"}</td>
+                      <tr key={p.id} className="hover:bg-slate-700/50">
+                        <td className="px-4 py-3 text-slate-200">{p.email || p.name || "-"}</td>
+                        <td className="px-4 py-3 text-slate-200">{p.journey?.name || "-"}</td>
+                        <td className="px-4 py-3 text-slate-200">{p.currentDay} / {p.journey?.duration || "?"}</td>
                         <td className="px-4 py-3">
                           <span className={cn(
                             "px-2 py-0.5 rounded text-xs font-medium",
-                            status === "Completed" && "bg-green-100 text-green-700",
-                            status === "Active" && "bg-blue-100 text-blue-700",
-                            status === "Stuck" && "bg-red-100 text-red-700",
-                            status === "New" && "bg-gray-100 text-gray-700"
+                            status === "Completed" && "bg-green-900/50 text-green-400",
+                            status === "Active" && "bg-blue-900/50 text-blue-400",
+                            status === "Stuck" && "bg-red-900/50 text-red-400",
+                            status === "New" && "bg-slate-700 text-slate-300"
                           )}>
                             {status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500">{formatDate(p.lastActiveAt)}</td>
-                        <td className="px-4 py-3 text-gray-500">{formatDate(p.startedAt)}</td>
+                        <td className="px-4 py-3 text-slate-400">{formatDate(p.lastActiveAt)}</td>
+                        <td className="px-4 py-3 text-slate-400">{formatDate(p.startedAt)}</td>
                       </tr>
                     );
                   })}
                   {filteredParticipants.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                         No participants found
                       </td>
                     </tr>
@@ -345,39 +345,39 @@ export default function AdminPage() {
 
           {/* Mentors Tab */}
           {activeTab === "mentors" && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="border-b border-slate-700">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Name</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Email</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Role</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Created</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Name</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Email</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Role</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Created</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-slate-700">
                   {filteredMentors.map(u => (
-                    <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
+                    <tr key={u.id} className="hover:bg-slate-700/50">
+                      <td className="px-4 py-3 text-slate-200">
                         {u.firstName || u.lastName 
                           ? `${u.firstName || ""} ${u.lastName || ""}`.trim() 
                           : "-"}
                       </td>
-                      <td className="px-4 py-3">{u.email || "-"}</td>
+                      <td className="px-4 py-3 text-slate-200">{u.email || "-"}</td>
                       <td className="px-4 py-3">
                         <span className={cn(
                           "px-2 py-0.5 rounded text-xs font-medium",
-                          u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"
+                          u.role === "super_admin" ? "bg-purple-900/50 text-purple-400" : "bg-slate-700 text-slate-300"
                         )}>
                           {u.role || "user"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{formatDate(u.createdAt)}</td>
+                      <td className="px-4 py-3 text-slate-400">{formatDate(u.createdAt)}</td>
                     </tr>
                   ))}
                   {filteredMentors.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                         No users found
                       </td>
                     </tr>
@@ -389,50 +389,50 @@ export default function AdminPage() {
 
           {/* Flows Tab */}
           {activeTab === "flows" && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="border-b border-slate-700">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Flow Name</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Mentor</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Days</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Started</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Completed</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Drop Rate</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Flow Name</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Days</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Started</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Completed</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Drop Rate</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-slate-700">
                   {filteredFlows.map(f => {
                     const dropRate = f.participantCount > 0 
                       ? Math.round((1 - f.completedCount / f.participantCount) * 100) 
                       : 0;
                     return (
-                      <tr key={f.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium">{f.name}</td>
-                        <td className="px-4 py-3">
+                      <tr key={f.id} className="hover:bg-slate-700/50">
+                        <td className="px-4 py-3 font-medium text-slate-200">{f.name}</td>
+                        <td className="px-4 py-3 text-slate-200">
                           {f.mentor?.firstName || f.mentor?.lastName 
                             ? `${f.mentor.firstName || ""} ${f.mentor.lastName || ""}`.trim()
                             : f.mentor?.email || "-"}
                         </td>
-                        <td className="px-4 py-3">{f.duration || 7}</td>
-                        <td className="px-4 py-3">{f.participantCount}</td>
-                        <td className="px-4 py-3">{f.completedCount}</td>
+                        <td className="px-4 py-3 text-slate-200">{f.duration || 7}</td>
+                        <td className="px-4 py-3 text-slate-200">{f.participantCount}</td>
+                        <td className="px-4 py-3 text-slate-200">{f.completedCount}</td>
                         <td className="px-4 py-3">
                           {f.participantCount > 0 ? (
                             <span className={cn(
-                              dropRate > 70 ? "text-red-600" : dropRate > 40 ? "text-yellow-600" : "text-green-600"
+                              dropRate > 70 ? "text-red-400" : dropRate > 40 ? "text-yellow-400" : "text-green-400"
                             )}>
                               {dropRate}%
                             </span>
-                          ) : "-"}
+                          ) : <span className="text-slate-500">-</span>}
                         </td>
                         <td className="px-4 py-3">
                           <span className={cn(
                             "px-2 py-0.5 rounded text-xs font-medium",
-                            f.status === "published" && "bg-green-100 text-green-700",
-                            f.status === "draft" && "bg-gray-100 text-gray-700",
-                            f.status === "error" && "bg-red-100 text-red-700"
+                            f.status === "published" && "bg-green-900/50 text-green-400",
+                            f.status === "draft" && "bg-slate-700 text-slate-300",
+                            f.status === "error" && "bg-red-900/50 text-red-400"
                           )}>
                             {f.status || "draft"}
                           </span>
@@ -442,7 +442,7 @@ export default function AdminPage() {
                   })}
                   {filteredFlows.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                         No flows found
                       </td>
                     </tr>
@@ -454,47 +454,47 @@ export default function AdminPage() {
 
           {/* Errors Tab */}
           {activeTab === "errors" && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
               {errors && errors.length > 0 ? (
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="border-b border-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Type</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Message</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Entity</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Resolved</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Time</th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-400">Type</th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-400">Message</th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-400">Entity</th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-400">Resolved</th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-400">Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-slate-700">
                     {errors.map(e => (
-                      <tr key={e.id} className="hover:bg-gray-50">
+                      <tr key={e.id} className="hover:bg-slate-700/50">
                         <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-900/50 text-red-400">
                             {e.errorType}
                           </span>
                         </td>
-                        <td className="px-4 py-3 max-w-md truncate" title={e.errorMessage}>
+                        <td className="px-4 py-3 max-w-md truncate text-slate-300" title={e.errorMessage}>
                           {e.errorMessage.slice(0, 100)}{e.errorMessage.length > 100 ? "..." : ""}
                         </td>
-                        <td className="px-4 py-3 text-gray-500">
+                        <td className="px-4 py-3 text-slate-400">
                           {e.relatedEntityType ? `${e.relatedEntityType}: ${e.relatedEntityId?.slice(0, 8)}` : "-"}
                         </td>
                         <td className="px-4 py-3">
                           {e.resolved ? (
-                            <span className="text-green-600">Yes</span>
+                            <span className="text-green-400">Yes</span>
                           ) : (
-                            <span className="text-red-600">No</span>
+                            <span className="text-red-400">No</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-gray-500">{formatDate(e.createdAt)}</td>
+                        <td className="px-4 py-3 text-slate-400">{formatDate(e.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <AlertTriangle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <div className="p-8 text-center text-slate-500">
+                  <AlertTriangle className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                   <p>No errors recorded</p>
                   <p className="text-sm mt-1">Errors will appear here when they occur</p>
                 </div>
@@ -509,12 +509,12 @@ export default function AdminPage() {
 
 function StatCard({ label, value, loading }: { label: string; value: number; loading?: boolean }) {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <p className="text-sm text-gray-500 mb-1">{label}</p>
+    <div className="bg-slate-800 rounded-lg border border-slate-700 p-6">
+      <p className="text-sm text-slate-400 mb-1">{label}</p>
       {loading ? (
-        <div className="h-8 bg-gray-100 rounded animate-pulse" />
+        <div className="h-8 bg-slate-700 rounded animate-pulse" />
       ) : (
-        <p className="text-3xl font-bold text-gray-900">{value.toLocaleString()}</p>
+        <p className="text-3xl font-bold text-white">{value.toLocaleString()}</p>
       )}
     </div>
   );

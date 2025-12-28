@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
 import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,6 +23,19 @@ type SubscriptionStatus = {
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const onboarding = useOnboarding();
+  const [, navigate] = useLocation();
+
+  // Check if user is super_admin and redirect to admin dashboard
+  const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ["/api/admin/check"],
+    enabled: isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (adminCheck?.isAdmin) {
+      navigate("/admin");
+    }
+  }, [adminCheck?.isAdmin, navigate]);
 
   useEffect(() => {
     if (isAuthenticated && !onboarding.hasSeenOnboarding && !onboarding.isActive) {
