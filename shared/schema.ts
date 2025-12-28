@@ -173,11 +173,13 @@ export const userDayState = pgTable("user_day_state", {
   dayNumber: integer("day_number").notNull(),
   startedAt: timestamp("started_at").defaultNow(),
   completedAt: timestamp("completed_at"),
-  // Summary generated at day completion
+  // Summary generated at day completion (internal for AI memory)
   summaryChallenge: text("summary_challenge"), // Main challenge identified
   summaryEmotionalTone: text("summary_emotional_tone"), // User's emotional state
   summaryInsight: text("summary_insight"), // Key insight reached
   summaryResistance: text("summary_resistance"), // Any resistance or blockage detected
+  // Participant-visible summary (shown to user)
+  participantSummary: text("participant_summary"), // Daily summary for the participant to see
 });
 
 export const insertUserDayStateSchema = createInsertSchema(userDayState).omit({

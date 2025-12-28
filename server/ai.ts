@@ -572,6 +572,134 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
   }
 }
 
+// Generate participant-visible summary for a completed day
+interface ParticipantSummaryInput {
+  conversation: ConversationMessage[];
+  dayNumber: number;
+  totalDays: number;
+  dayTitle: string;
+  dayGoal: string;
+  participantName?: string;
+  journeyName: string;
+  mentorName: string;
+}
+
+export async function generateParticipantSummary(input: ParticipantSummaryInput): Promise<string> {
+  const conversationText = input.conversation
+    .filter(m => m.role === "user")
+    .map(m => m.content)
+    .join("\n---\n");
+
+  const isHebrew = isHebrewText(`${input.journeyName} ${input.dayGoal}`);
+  
+  const prompt = `Create a warm, personal summary for a participant who just completed Day ${input.dayNumber} of ${input.totalDays} in "${input.journeyName}".
+
+${input.participantName ? `PARTICIPANT NAME: ${input.participantName}` : ""}
+DAY TITLE: ${input.dayTitle}
+DAY GOAL: ${input.dayGoal}
+
+WHAT THE PARTICIPANT SHARED TODAY:
+${conversationText}
+
+Create a summary that:
+1. Reflects back what they shared in a validating way
+2. Highlights any key insights or realizations they had
+3. Acknowledges their effort and courage
+4. Gives them something to carry forward
+
+REQUIREMENTS:
+- Maximum 150 words
+- Warm, personal tone (like a mentor speaking to them)
+- Use their words back to them when possible
+- ${isHebrew ? "Write in Hebrew" : "Write in English"}
+- NO bullet points - write in flowing paragraphs
+- End with an encouraging note about tomorrow`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: `You are ${input.mentorName}, summarizing a participant's day in a personal growth journey. Be warm, reflective, and encouraging. Speak directly to them.` 
+      },
+      { role: "user", content: prompt }
+    ],
+    max_tokens: 300,
+    temperature: 0.7,
+  });
+
+  const aiContent = response.choices[0].message.content;
+  if (!aiContent) {
+    if (isHebrew) {
+      return `יום ${input.dayNumber} הושלם בהצלחה! עשית עבודה נפלאה היום. קח את התובנות שלך איתך למחר.`;
+    }
+    return `Day ${input.dayNumber} complete! You did wonderful work today. Carry your insights with you into tomorrow.`;
+  }
+  return aiContent;
+}
+
+// Generate full journey summary when participant completes all days
+interface JourneySummaryInput {
+  participantName?: string;
+  journeyName: string;
+  mentorName: string;
+  totalDays: number;
+  dailySummaries: { dayNumber: number; summary: string }[];
+}
+
+export async function generateJourneySummary(input: JourneySummaryInput): Promise<string> {
+  const isHebrew = isHebrewText(input.journeyName);
+  
+  const summariesText = input.dailySummaries
+    .map(d => `Day ${d.dayNumber}: ${d.summary}`)
+    .join("\n\n");
+
+  const prompt = `Create a comprehensive, celebratory summary for a participant who just completed the entire "${input.journeyName}" journey (${input.totalDays} days).
+
+${input.participantName ? `PARTICIPANT NAME: ${input.participantName}` : ""}
+JOURNEY: ${input.journeyName}
+TOTAL DAYS: ${input.totalDays}
+
+DAILY SUMMARIES:
+${summariesText}
+
+Create a final summary that:
+1. Celebrates their complete journey
+2. Weaves together the key themes and growth areas from all days
+3. Highlights their transformation from Day 1 to now
+4. Gives them a powerful takeaway to carry forward in life
+5. Ends with an inspiring closing message
+
+REQUIREMENTS:
+- Maximum 300 words
+- Celebratory and empowering tone
+- Reference specific things from their journey
+- ${isHebrew ? "Write in Hebrew" : "Write in English"}
+- Write in flowing paragraphs, not bullet points`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: `You are ${input.mentorName}, creating a final celebration summary for a participant who completed their transformation journey. Be proud, warm, and inspiring.` 
+      },
+      { role: "user", content: prompt }
+    ],
+    max_tokens: 500,
+    temperature: 0.7,
+  });
+
+  const aiContent = response.choices[0].message.content;
+  if (!aiContent) {
+    if (isHebrew) {
+      return `מזל טוב! השלמת את המסע "${input.journeyName}". ${input.totalDays} ימים של עבודה פנימית, צמיחה ותובנות. אתה לא אותו אדם שהתחיל את המסע הזה - אתה חזק יותר, מודע יותר, ומוכן יותר. קח את כל מה שלמדת איתך קדימה.`;
+    }
+    return `Congratulations! You've completed the "${input.journeyName}" journey. ${input.totalDays} days of inner work, growth, and insights. You're not the same person who started this journey - you're stronger, more aware, and more prepared. Carry everything you've learned forward.`;
+  }
+  return aiContent;
+}
+
 // Landing Page Content Generation
 export interface LandingPageContent {
   hero: {

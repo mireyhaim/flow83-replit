@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateLandingPageContent } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
@@ -672,6 +672,7 @@ export async function registerRoutes(
           }));
           
           if (conversation.length > 0) {
+            // Generate internal summary for AI memory
             const summary = await generateDaySummary({
               conversation,
               dayGoal: currentStep.goal || currentStep.description || "Day goal",
@@ -679,12 +680,25 @@ export async function registerRoutes(
               mentorName,
             });
             
-            // Store the summary in day state
+            // Generate participant-visible summary
+            const participantSummary = await generateParticipantSummary({
+              conversation,
+              dayNumber,
+              totalDays,
+              dayTitle: currentStep.title || `Day ${dayNumber}`,
+              dayGoal: currentStep.goal || currentStep.description || "Day goal",
+              participantName: existingParticipant.name || undefined,
+              journeyName: journey?.name || "Your Journey",
+              mentorName,
+            });
+            
+            // Store both summaries in day state
             await storage.completeDayState(id, dayNumber, {
               summaryChallenge: summary.challenge,
               summaryEmotionalTone: summary.emotionalTone,
               summaryInsight: summary.insight,
               summaryResistance: summary.resistance,
+              participantSummary,
             });
           }
         } catch (summaryError) {
@@ -739,6 +753,19 @@ export async function registerRoutes(
       res.json(participant);
     } catch (error) {
       res.status(500).json({ error: "Failed to complete day" });
+    }
+  });
+
+  // Get all day summaries for a participant
+  app.get("/api/participants/:participantId/summaries", async (req: any, res) => {
+    try {
+      const { participantId } = req.params;
+      
+      const summaries = await storage.getAllDaySummaries(participantId);
+      res.json(summaries);
+    } catch (error) {
+      console.error("Error fetching summaries:", error);
+      res.status(500).json({ error: "Failed to fetch summaries" });
     }
   });
 

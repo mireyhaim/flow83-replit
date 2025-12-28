@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
-import { chatApi } from "@/lib/api";
+import { chatApi, type DaySummary } from "@/lib/api";
 import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage, User } from "@shared/schema";
 
 interface JourneyWithSteps extends Journey {
@@ -41,6 +41,8 @@ export default function ParticipantView() {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [completedDayNumber, setCompletedDayNumber] = useState(0);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [selectedSummaryDay, setSelectedSummaryDay] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isUuidFormat = tokenFromRoute && isAccessToken(tokenFromRoute);
@@ -153,6 +155,32 @@ export default function ParticipantView() {
 
   const messages = chatData?.messages ?? [];
 
+  // Fetch day summaries for displaying in the sidebar
+  // Only fetch for valid participants (not blocked/invalid tokens)
+  const shouldFetchSummaries = !!resolvedParticipant?.id && resolvedJourney && 
+    (isExternalAccess ? externalData?.participant?.id : true);
+  
+  const { data: daySummaries } = useQuery<DaySummary[]>({
+    queryKey: ["summaries", resolvedParticipant?.id],
+    queryFn: async () => {
+      if (!resolvedParticipant?.id) return [];
+      return chatApi.getSummaries(resolvedParticipant.id);
+    },
+    enabled: shouldFetchSummaries,
+  });
+
+  const getSummaryForDay = (dayNumber: number) => {
+    return daySummaries?.find(s => s.dayNumber === dayNumber);
+  };
+
+  const handleViewSummary = (dayNumber: number) => {
+    const summary = getSummaryForDay(dayNumber);
+    if (summary?.participantSummary) {
+      setSelectedSummaryDay(dayNumber);
+      setShowSummaryModal(true);
+    }
+  };
+
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!resolvedParticipant?.id || !currentStep?.id) throw new Error("Missing participant or step");
@@ -192,6 +220,8 @@ export default function ParticipantView() {
         setShowFeedbackModal(true);
         setFeedbackRating(0);
         setFeedbackComment("");
+        // Refresh participant data and summaries
+        queryClient.invalidateQueries({ queryKey: ["summaries", resolvedParticipant?.id] });
         if (isExternalAccess) {
           queryClient.invalidateQueries({ queryKey: ["/api/participant/token", tokenFromRoute] });
         } else {
@@ -402,33 +432,37 @@ export default function ParticipantView() {
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-violet-50 py-8 px-4 overflow-y-auto">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-full max-w-md text-center"
+          className="w-full max-w-2xl mx-auto"
         >
-          <div className="relative mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-yellow-500/30">
-              <Trophy className="w-12 h-12 text-white" />
+          {/* Trophy and Celebration */}
+          <div className="text-center mb-8">
+            <div className="relative mb-6 inline-block">
+              <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-yellow-500/30">
+                <Trophy className="w-12 h-12 text-white" />
+              </div>
+              <motion.div 
+                className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </div>
-            <motion.div 
-              className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mx-auto"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
+            
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Journey Complete!</h1>
+            <p className="text-gray-500">
+              Congratulations on completing "{resolvedJourney?.name}"
+            </p>
           </div>
-          
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Flow Complete!</h1>
-          <p className="text-gray-500 mb-6">
-            Congratulations on completing "{resolvedJourney?.name}"
-          </p>
-          
+
+          {/* Stats */}
           <div className="bg-white rounded-2xl p-6 mb-6 border border-gray-200 shadow-lg">
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-violet-600">{totalDays}</div>
-                <div className="text-xs text-gray-500">Days</div>
+                <div className="text-xs text-gray-500">Days Completed</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-500">{xpPoints + 100}</div>
@@ -436,13 +470,52 @@ export default function ParticipantView() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-500">{totalDays}</div>
-                <div className="text-xs text-gray-500">Streak</div>
+                <div className="text-xs text-gray-500">Day Streak</div>
               </div>
             </div>
           </div>
-          
+
+          {/* Journey Summary */}
+          <div className="bg-white rounded-2xl p-6 mb-6 border border-gray-200 shadow-lg">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-violet-500" />
+              Your Journey Reflections
+            </h2>
+            
+            {daySummaries && daySummaries.length > 0 ? (
+              <div className="space-y-4">
+                {daySummaries
+                  .filter(s => s.participantSummary)
+                  .sort((a, b) => a.dayNumber - b.dayNumber)
+                  .map((summary) => {
+                    const step = sortedSteps.find(s => s.dayNumber === summary.dayNumber);
+                    return (
+                      <div key={summary.id} className="border-l-4 border-violet-300 pl-4 py-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <span className="font-semibold text-gray-900">
+                            Day {summary.dayNumber}: {step?.title || `Day ${summary.dayNumber}`}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
+                          {summary.participantSummary}
+                        </p>
+                      </div>
+                    );
+                  })}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">
+                Your journey reflections will appear here.
+              </p>
+            )}
+          </div>
+
+          {/* Back to Home Button */}
           <Link href="/dashboard">
-            <Button className="w-full bg-violet-600 hover:bg-violet-700">
+            <Button className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-lg">
               Back to Home
             </Button>
           </Link>
@@ -563,6 +636,53 @@ export default function ParticipantView() {
         )}
       </AnimatePresence>
 
+      {/* Summary Modal */}
+      <AnimatePresence>
+        {showSummaryModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[80vh] overflow-y-auto"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  Day {selectedSummaryDay} Summary
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {sortedSteps.find(s => s.dayNumber === selectedSummaryDay)?.title || `Day ${selectedSummaryDay}`}
+                </p>
+              </div>
+
+              {/* Summary Content */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {getSummaryForDay(selectedSummaryDay)?.participantSummary || 
+                    "No summary available for this day yet."}
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setShowSummaryModal(false)}
+                className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                data-testid="button-close-summary"
+              >
+                Close
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <aside 
         className={cn(
@@ -627,14 +747,17 @@ export default function ParticipantView() {
               const isPast = step.dayNumber < currentDay;
               const isCurrent = step.dayNumber === currentDay;
               const isFuture = step.dayNumber > currentDay;
+              const hasSummary = getSummaryForDay(step.dayNumber)?.participantSummary;
               
               return (
                 <div
                   key={step.id}
+                  onClick={isPast && hasSummary ? () => handleViewSummary(step.dayNumber) : undefined}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer",
+                    "flex items-center gap-3 p-3 rounded-xl transition-all",
                     isCurrent && "bg-white/20 backdrop-blur-sm",
-                    isPast && "opacity-80 hover:opacity-100 hover:bg-white/10",
+                    isPast && hasSummary && "cursor-pointer opacity-80 hover:opacity-100 hover:bg-white/10",
+                    isPast && !hasSummary && "opacity-60",
                     isFuture && "opacity-40 cursor-not-allowed"
                   )}
                   data-testid={`sidebar-day-${step.dayNumber}`}
@@ -657,7 +780,10 @@ export default function ParticipantView() {
                     {isCurrent && (
                       <div className="text-xs text-violet-200">In progress</div>
                     )}
-                    {isPast && (
+                    {isPast && hasSummary && (
+                      <div className="text-xs text-emerald-300">Tap to view summary</div>
+                    )}
+                    {isPast && !hasSummary && (
                       <div className="text-xs text-emerald-300">Completed</div>
                     )}
                   </div>

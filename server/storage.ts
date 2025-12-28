@@ -71,6 +71,7 @@ export interface IStorage {
   completeDayState(participantId: string, dayNumber: number, summary: Partial<InsertUserDayState>): Promise<UserDayState | undefined>;
   getLatestDaySummary(participantId: string, maxDayNumber: number): Promise<UserDayState | undefined>;
   getDayState(participantId: string, dayNumber: number): Promise<UserDayState | undefined>;
+  getAllDaySummaries(participantId: string): Promise<UserDayState[]>;
 
   // Payment tracking
   createPayment(payment: InsertPayment): Promise<Payment>;
@@ -393,6 +394,7 @@ export class DatabaseStorage implements IStorage {
         summaryEmotionalTone: summary.summaryEmotionalTone,
         summaryInsight: summary.summaryInsight,
         summaryResistance: summary.summaryResistance,
+        participantSummary: summary.participantSummary,
       })
       .where(and(
         eq(userDayState.participantId, participantId),
@@ -400,6 +402,14 @@ export class DatabaseStorage implements IStorage {
       ))
       .returning();
     return updated;
+  }
+
+  async getAllDaySummaries(participantId: string): Promise<UserDayState[]> {
+    return db
+      .select()
+      .from(userDayState)
+      .where(eq(userDayState.participantId, participantId))
+      .orderBy(userDayState.dayNumber);
   }
 
   async getLatestDaySummary(participantId: string, maxDayNumber: number): Promise<UserDayState | undefined> {

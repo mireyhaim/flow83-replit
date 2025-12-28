@@ -300,6 +300,15 @@ export const feedbackApi = {
   },
 };
 
+export interface DaySummary {
+  id: string;
+  participantId: string;
+  dayNumber: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  participantSummary: string | null;
+}
+
 export const chatApi = {
   getMessages: async (participantId: string, stepId: string): Promise<JourneyMessage[]> => {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`);
@@ -319,6 +328,11 @@ export const chatApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content }),
     });
+    return handleResponse(res);
+  },
+
+  getSummaries: async (participantId: string): Promise<DaySummary[]> => {
+    const res = await fetch(`${API_BASE}/participants/${participantId}/summaries`);
     return handleResponse(res);
   },
 };
