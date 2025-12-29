@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Users, Shield } from "lucide-react";
-import loginImage from "@assets/stock_images/professional_woman_m_5bea3f46.jpg";
+import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_06_36_20_PM_1766994935586.png";
 
 export default function LoginPage() {
   const handleLogin = () => {
@@ -98,11 +98,10 @@ export default function LoginPage() {
           </div>
           
           <div className="relative">
-            <div className="absolute -inset-4 bg-white/20 rounded-3xl blur-xl" />
             <img
               src={loginImage}
-              alt="Mentor using Flow 83"
-              className="relative rounded-2xl w-80 h-auto shadow-2xl"
+              alt="Login to Flow 83"
+              className="relative w-96 h-auto drop-shadow-2xl"
             />
           </div>
 
