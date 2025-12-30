@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import screenshotFlowEditor from "@/assets/screenshot-flow-editor.png";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotParticipant from "@/assets/screenshot-participant.png";
@@ -14,54 +15,6 @@ import screenshotAiJourney2 from "@/assets/screenshot-ai-journey-2.png";
 import screenshotParticipantChat from "@/assets/screenshot-participant-chat.png";
 import screenshotParticipantMobile from "@/assets/screenshot-participant-mobile.png";
 import videoMarketingSite from "@/assets/video-marketing-site.mp4";
-
-const steps = [
-  {
-    icon: Upload,
-    number: "01",
-    title: "Upload Your Content",
-    description: "Share your existing documents, recordings, or notes. Our AI understands your unique methodology and transforms it into structured content.",
-    image: screenshotUploadContent,
-    imageAlt: "Upload content interface"
-  },
-  {
-    icon: Wand2,
-    number: "02", 
-    title: "AI Creates Your Journey",
-    description: "Watch as AI transforms your content into a structured 3 or 7-day transformational experience with daily goals, exercises, and personalized guidance.",
-    image: screenshotAiJourney,
-    imageAlt: "AI generated journey overview",
-    image2: screenshotAiJourney2,
-    image2Alt: "Day content editor with goals and tasks"
-  },
-  {
-    icon: Globe,
-    number: "03",
-    title: "We Create Your Marketing Site",
-    description: "Get a beautiful, ready-to-share landing page for your Flow. Participants can purchase and start their journey immediately. Both the site and the entire experience are fully mobile-friendly.",
-    video: videoMarketingSite,
-    image: screenshotParticipant,
-    imageAlt: "Marketing landing page"
-  },
-  {
-    icon: CreditCard,
-    number: "04",
-    title: "Your Clients, Your Money",
-    description: "Connect your own payment link and you're set. When clients purchase your journey, the payment goes directly to you — no middlemen, no commission, no waiting. You own your business, we just power it.",
-    image: screenshotParticipant,
-    imageAlt: "Direct payment flow"
-  },
-  {
-    icon: Share2,
-    number: "05",
-    title: "Share & Earn",
-    description: "Publish your journey with a shareable link. Participants experience your wisdom through an AI-powered chat that speaks in your voice.",
-    image: screenshotParticipantChat,
-    imageAlt: "Participant chat experience",
-    image2: screenshotParticipantMobile,
-    image2Alt: "Mobile participant chat experience"
-  }
-];
 
 const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,7 +63,56 @@ const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) =
 
 const HowItWorksPage = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('landing');
   const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+
+  const steps = [
+    {
+      icon: Upload,
+      number: "01",
+      title: t('howItWorksPage.step1Title'),
+      description: t('howItWorksPage.step1Desc'),
+      image: screenshotUploadContent,
+      imageAlt: "Upload content interface"
+    },
+    {
+      icon: Wand2,
+      number: "02", 
+      title: t('howItWorksPage.step2Title'),
+      description: t('howItWorksPage.step2Desc'),
+      image: screenshotAiJourney,
+      imageAlt: "AI generated journey overview",
+      image2: screenshotAiJourney2,
+      image2Alt: "Day content editor with goals and tasks"
+    },
+    {
+      icon: Globe,
+      number: "03",
+      title: t('howItWorksPage.step3Title'),
+      description: t('howItWorksPage.step3Desc'),
+      video: videoMarketingSite,
+      image: screenshotParticipant,
+      imageAlt: "Marketing landing page"
+    },
+    {
+      icon: CreditCard,
+      number: "04",
+      title: t('howItWorksPage.step4Title'),
+      description: t('howItWorksPage.step4Desc'),
+      image: screenshotParticipant,
+      imageAlt: "Direct payment flow"
+    },
+    {
+      icon: Share2,
+      number: "05",
+      title: t('howItWorksPage.step5Title'),
+      description: t('howItWorksPage.step5Desc'),
+      image: screenshotParticipantChat,
+      imageAlt: "Participant chat experience",
+      image2: screenshotParticipantMobile,
+      image2Alt: "Mobile participant chat experience"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-[#f8f7ff]">
@@ -120,13 +122,13 @@ const HowItWorksPage = () => {
           <div className="container mx-auto px-6 relative z-10">
             <div className="text-center mb-20">
               <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-                <span className="text-gray-900">How It </span>
+                <span className="text-gray-900">{t('howItWorksPage.title')} </span>
                 <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-                  Works
+                  {t('howItWorksPage.titleHighlight')}
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Transform your expertise into a digital journey in three simple steps
+                {t('howItWorksPage.subtitle')}
               </p>
             </div>
             
@@ -194,7 +196,6 @@ const HowItWorksPage = () => {
               ))}
             </div>
 
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-20">
               <Link href={getStartLink()}>
                 <Button 
@@ -202,7 +203,7 @@ const HowItWorksPage = () => {
                   className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
                   data-testid="button-create-flow"
                 >
-                  Create Your Flow
+                  {t('howItWorksPage.createYourFlow')}
                 </Button>
               </Link>
               <Link href="/community#community-flows">
@@ -212,7 +213,7 @@ const HowItWorksPage = () => {
                   className="text-lg px-8 py-4 h-auto rounded-full border-violet-200 text-violet-600 hover:bg-violet-50"
                   data-testid="button-see-examples"
                 >
-                  See Examples
+                  {t('howItWorksPage.seeExamples')}
                 </Button>
               </Link>
             </div>

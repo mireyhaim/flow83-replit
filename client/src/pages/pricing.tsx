@@ -5,77 +5,88 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-
-const pricingPlans = [
-  {
-    name: "Starter",
-    planId: "starter" as const,
-    price: "$26",
-    period: "/month",
-    trialText: "Includes a 7-day free trial",
-    description: "The simplest, fastest, and most affordable way to launch your first journey and start selling online - without a website, without tech skills, and without risk.",
-    features: [
-      "Create 1 Flow",
-      "Up to 60 users",
-      "$0.60 per user above 60",
-      "Personal sales landing page",
-      "Direct payment integration (money goes to you)",
-      "Full cloud hosting",
-      "Analytics dashboard"
-    ],
-    bestFor: "Mentors who want to start fast, learn the platform, and make their first sales.",
-    buttonText: "Start Free Trial",
-    popular: false
-  },
-  {
-    name: "Pro",
-    planId: "pro" as const,
-    price: "$83",
-    period: "/month",
-    trialText: null,
-    description: "For mentors who are already selling and want to grow - with more journeys, more clients, and deeper performance visibility.",
-    features: [
-      "Up to 5 active Flows",
-      "Up to 300 users",
-      "$0.60 per user above 300",
-      "Personal sales landing page for each journey",
-      "Direct payment integration (money goes to you)",
-      "Full cloud hosting",
-      "Extended data dashboard"
-    ],
-    bestFor: "Mentors ready to scale their business into consistent monthly revenue.",
-    buttonText: "Upgrade to Pro",
-    popular: true
-  },
-  {
-    name: "Business",
-    planId: "business" as const,
-    price: "$188",
-    period: "/month",
-    trialText: null,
-    description: "For established mentors and growing schools who want to offer multiple journeys at scale — with bigger audiences, more products, and true long-term revenue.",
-    features: [
-      "Up to 10 active Flows",
-      "Up to 1000 users",
-      "$0.40 per user above 1000",
-      "Personal sales landing page for each journey",
-      "Direct payment integration (money goes to you)",
-      "Full cloud hosting",
-      "Advanced AI Flow Composer",
-      "Extended data dashboard"
-    ],
-    bestFor: "Mentors and organizations who are ready to scale multiple journeys, build a product portfolio, and earn consistently at volume.",
-    buttonText: "Scale Your Business",
-    popular: false
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const Pricing = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('landing');
 
   const getStartLink = () => {
     return isAuthenticated ? "/dashboard" : "/start-flow";
   };
+
+  const pricingPlans = [
+    {
+      name: t('pricingPage.starter'),
+      planId: "starter" as const,
+      price: "$26",
+      period: t('pricingPage.perMonth'),
+      trialText: t('pricingPage.includes7DayTrial'),
+      description: t('pricingPage.starterDesc'),
+      features: [
+        t('pricingPage.feature1Flow'),
+        t('pricingPage.feature60Users'),
+        t('pricingPage.featureExtra60'),
+        t('pricingPage.featureSalesPage'),
+        t('pricingPage.featureDirectPayment'),
+        t('pricingPage.featureCloudHosting'),
+        t('pricingPage.featureAnalytics')
+      ],
+      bestFor: t('pricingPage.starterBestFor'),
+      buttonText: t('pricingPage.startFreeTrial'),
+      popular: false
+    },
+    {
+      name: t('pricingPage.pro'),
+      planId: "pro" as const,
+      price: "$83",
+      period: t('pricingPage.perMonth'),
+      trialText: null,
+      description: t('pricingPage.proDesc'),
+      features: [
+        t('pricingPage.feature5Flows'),
+        t('pricingPage.feature300Users'),
+        t('pricingPage.featureExtra300'),
+        t('pricingPage.featureSalesPageEach'),
+        t('pricingPage.featureDirectPayment'),
+        t('pricingPage.featureCloudHosting'),
+        t('pricingPage.featureExtendedDashboard')
+      ],
+      bestFor: t('pricingPage.proBestFor'),
+      buttonText: t('pricingPage.upgradeToPro'),
+      popular: true
+    },
+    {
+      name: t('pricingPage.business'),
+      planId: "business" as const,
+      price: "$188",
+      period: t('pricingPage.perMonth'),
+      trialText: null,
+      description: t('pricingPage.businessDesc'),
+      features: [
+        t('pricingPage.feature10Flows'),
+        t('pricingPage.feature1000Users'),
+        t('pricingPage.featureExtra1000'),
+        t('pricingPage.featureSalesPageEach'),
+        t('pricingPage.featureDirectPayment'),
+        t('pricingPage.featureCloudHosting'),
+        t('pricingPage.featureAdvancedAI'),
+        t('pricingPage.featureExtendedDashboard')
+      ],
+      bestFor: t('pricingPage.businessBestFor'),
+      buttonText: t('pricingPage.scaleYourBusiness'),
+      popular: false
+    }
+  ];
+
+  const faqs = [
+    { q: t('pricingPage.faq1Q'), a: t('pricingPage.faq1A') },
+    { q: t('pricingPage.faq2Q'), a: t('pricingPage.faq2A') },
+    { q: t('pricingPage.faq3Q'), a: t('pricingPage.faq3A') },
+    { q: t('pricingPage.faq4Q'), a: t('pricingPage.faq4A') },
+    { q: t('pricingPage.faq5Q'), a: t('pricingPage.faq5A') },
+    { q: t('pricingPage.faq6Q'), a: t('pricingPage.faq6A') }
+  ];
 
   return (
     <div className="min-h-screen bg-[#f8f7ff]">
@@ -83,16 +94,16 @@ const Pricing = () => {
       <main className="pt-20">
         <section className="max-w-7xl mx-auto px-6 py-16 text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-            <span className="text-gray-900">Choose the plan that turns your </span>
+            <span className="text-gray-900">{t('pricingPage.title')} </span>
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-              method into automated income
+              {t('pricingPage.titleHighlight')}
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-4 leading-relaxed">
-            Three levels - start, grow, and scale.
+            {t('pricingPage.subtitle')}
           </p>
           <p className="text-lg text-gray-500 max-w-4xl mx-auto leading-relaxed">
-            All plans include a personal sales landing page, payment integration (funds go directly to you), cloud hosting, and a mentor dashboard.
+            {t('pricingPage.subtitleDetails')}
           </p>
         </section>
 
@@ -108,7 +119,7 @@ const Pricing = () => {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <span className="bg-violet-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
+                      {t('pricingPage.mostPopular')}
                     </span>
                   </div>
                 )}
@@ -130,7 +141,7 @@ const Pricing = () => {
                   </p>
                   
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">What's included:</p>
+                    <p className="text-sm font-semibold text-gray-900 mb-3">{t('pricingPage.whatsIncluded')}</p>
                     <ul className="space-y-2">
                       {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-start">
@@ -142,7 +153,7 @@ const Pricing = () => {
                   </div>
                   
                   <div className="mb-6 p-4 bg-violet-50 rounded-xl">
-                    <p className="text-sm font-semibold text-gray-900 mb-1">Best for:</p>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">{t('pricingPage.bestFor')}</p>
                     <p className="text-gray-600 text-sm">{plan.bestFor}</p>
                   </div>
                   
@@ -171,79 +182,36 @@ const Pricing = () => {
 
         <section className="max-w-4xl mx-auto px-6 py-16">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
-            Frequently Asked Questions
+            {t('pricingPage.faq')}
           </h2>
           
           <div className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                How does the 7-day free trial work?
-              </h3>
-              <p className="text-gray-600">
-                Sign up for the Starter plan and get 7 full days to explore the platform. Build your first journey, preview everything risk-free. After 7 days, automatic billing of $26/month begins. You can cancel anytime before the trial ends.
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                What happens if I exceed my user limit?
-              </h3>
-              <p className="text-gray-600">
-                If you go over your included users, you'll be charged $0.60 per additional user. Usage is calculated monthly and added to your next invoice.
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can I upgrade or downgrade my plan?
-              </h3>
-              <p className="text-gray-600">
-                Yes, you can change your plan at any time. When upgrading, you'll get immediate access to new features. When downgrading, changes take effect at the start of your next billing cycle.
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                How do payments work? Do you take a percentage?
-              </h3>
-              <p className="text-gray-600">
-                No, we never take a percentage of your earnings. Payments from your participants go directly to your connected Stripe account. You keep 100% of what you earn (minus standard Stripe processing fees).
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                What counts as a "user"?
-              </h3>
-              <p className="text-gray-600">
-                A user is anyone who actively participates in your journey. This includes anyone who signs up and engages with your flow content, whether they paid or accessed it for free.
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can I cancel my subscription?
-              </h3>
-              <p className="text-gray-600">
-                Yes, you can cancel anytime. Your access continues until the end of your current billing period. There are no cancellation fees or long-term commitments.
-              </p>
-            </div>
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {faq.q}
+                </h3>
+                <p className="text-gray-600">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
           <div className="bg-white border border-gray-200 rounded-3xl p-12 shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              100% of your revenue - stays yours.
+              {t('pricingPage.revenue100')}
             </h2>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              We don't take percentages, we don't touch your income, and we don't interfere with your client relationships.
+              {t('pricingPage.revenue100Desc')}
             </p>
             
             <div className="border-t border-gray-200 pt-8 mt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Ready to begin?</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">{t('pricingPage.readyToBegin')}</h3>
               <p className="text-gray-600 mb-6">
-                Your first journey can be live today. AI builds the process, the site goes live, and payments flow directly to you.
+                {t('pricingPage.readyToBeginDesc')}
               </p>
               <Button 
                 className="text-lg px-10 py-5 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
@@ -258,7 +226,7 @@ const Pricing = () => {
                   }
                 }}
               >
-                Start Free Trial
+                {t('pricingPage.startFreeTrial')}
               </Button>
             </div>
           </div>

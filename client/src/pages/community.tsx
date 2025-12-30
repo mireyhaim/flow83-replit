@@ -5,19 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Users, Star, Award, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import CommunityFlowsShowcase from "@/components/landing/CommunityFlowsShowcase";
 import communityHero from "@/assets/community-hero.jpg";
 
-const stats = [
-  { icon: Users, label: "Active Creators", value: "2,500+" },
-  { icon: Star, label: "Average Rating", value: "4.8" },
-  { icon: Award, label: "Flows Created", value: "15,000+" },
-  { icon: TrendingUp, label: "Lives Transformed", value: "250,000+" }
-];
-
 const Community = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('landing');
   const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+
+  const stats = [
+    { icon: Users, label: t('communityPage.activeCreators'), value: "2,500+" },
+    { icon: Star, label: t('communityPage.averageRating'), value: "4.8" },
+    { icon: Award, label: t('communityPage.flowsCreated'), value: "15,000+" },
+    { icon: TrendingUp, label: t('communityPage.livesTransformed'), value: "250,000+" }
+  ];
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -35,18 +37,17 @@ const Community = () => {
     <div className="min-h-screen bg-[#f8f7ff]">
       <Header />
       <main className="pt-20">
-        {/* Hero Section */}
         <section className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-                <span className="text-gray-900">Meet Our </span>
+                <span className="text-gray-900">{t('communityPage.title')} </span>
                 <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-                  Creator Community
+                  {t('communityPage.titleHighlight')}
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-                Connect with expert therapists, coaches, and healers who are transforming lives through personalized digital flows
+                {t('communityPage.subtitle')}
               </p>
             </div>
             <div className="relative">
@@ -59,7 +60,6 @@ const Community = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
         <section className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat) => {
@@ -77,23 +77,21 @@ const Community = () => {
           </div>
         </section>
 
-        {/* Community Flows Showcase */}
         <CommunityFlowsShowcase />
 
-        {/* Join Community CTA */}
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight tracking-tight">
-            <span className="text-gray-900">Ready to </span>
+            <span className="text-gray-900">{t('communityPage.readyToJoin')} </span>
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-              Join Our Community?
+              {t('communityPage.joinHighlight')}
             </span>
           </h2>
           <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-            Start creating transformative flows and connect with like-minded professionals
+            {t('communityPage.joinSubtitle')}
           </p>
           <Link href={getStartLink()}>
             <Button size="lg" className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20" data-testid="button-become-creator">
-              Become a Creator
+              {t('communityPage.becomeCreator')}
             </Button>
           </Link>
         </section>
