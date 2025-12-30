@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +28,7 @@ function isAccessToken(token: string): boolean {
 }
 
 export default function ParticipantView() {
+  const { t } = useTranslation('participant');
   const [, params] = useRoute("/p/:token");
   const tokenFromRoute = params?.token;
   const queryClient = useQueryClient();
@@ -300,12 +302,12 @@ export default function ParticipantView() {
   
   if (showInvalidLinkError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4 text-gray-800">קישור לא תקין</h1>
-          <p className="text-gray-600 mb-6">הקישור שלך לא תקין או פג תוקף.</p>
+          <h1 className="text-2xl font-bold mb-4 text-gray-800">{t('invalidToken')}</h1>
+          <p className="text-gray-600 mb-6">{t('tokenExpired')}</p>
           <Link href="/">
-            <Button>חזרה לדף הבית</Button>
+            <Button>{t('backToHome')}</Button>
           </Link>
         </div>
       </div>
@@ -356,14 +358,14 @@ export default function ParticipantView() {
           <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-8 h-8 text-violet-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Flow Available</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('noFlowAvailable')}</h2>
           <p className="text-gray-500 mb-4">
             {!tokenFromRoute 
-              ? "No published flows are available yet. Check back soon!" 
-              : "This flow could not be found."}
+              ? t('noPublishedFlows')
+              : t('flowNotFound')}
           </p>
           <Link href="/dashboard">
-            <Button className="bg-violet-600 hover:bg-violet-700">Go to Dashboard</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700">{t('goToDashboard')}</Button>
           </Link>
         </div>
       </div>
@@ -377,10 +379,10 @@ export default function ParticipantView() {
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Clock className="w-8 h-8 text-amber-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Flow Temporarily Unavailable</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">{t('flowTemporarilyUnavailable')}</h1>
           <p className="text-gray-600 mb-6">{blockedMessage}</p>
           <p className="text-sm text-gray-500">
-            Please try again later or contact the creator of this flow.
+            {t('tryAgainLater')}
           </p>
         </div>
       </div>
@@ -392,7 +394,7 @@ export default function ParticipantView() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
-          <p className="text-gray-500">Loading your journey...</p>
+          <p className="text-gray-500">{t('loadingYourJourney')}</p>
         </div>
       </div>
     );
@@ -404,8 +406,8 @@ export default function ParticipantView() {
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">
           <div className="bg-amber-100 border border-amber-300 rounded-xl p-4 mb-6 text-center">
-            <p className="text-amber-800 font-medium">Preview Mode</p>
-            <p className="text-amber-700 text-sm">This is how participants will see your flow</p>
+            <p className="text-amber-800 font-medium">{t('previewMode')}</p>
+            <p className="text-amber-700 text-sm">{t('previewDescription')}</p>
           </div>
           
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -413,7 +415,7 @@ export default function ParticipantView() {
               <Sparkles className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{resolvedJourney.name}</h1>
-            <p className="text-gray-500 mb-6">{resolvedJourney.duration} Days Journey</p>
+            <p className="text-gray-500 mb-6">{t('daysJourney', { count: resolvedJourney.duration || 0 })}</p>
             
             <div className="space-y-4 text-right mb-8">
               {sortedSteps.map((step, index) => (
@@ -431,7 +433,7 @@ export default function ParticipantView() {
             
             <Link href={`/journeys/${resolvedJourney.id}`}>
               <Button className="w-full bg-violet-600 hover:bg-violet-700">
-                Back to Editor
+                {t('backToEditor')}
               </Button>
             </Link>
           </div>
@@ -444,9 +446,9 @@ export default function ParticipantView() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Flow not found</p>
+          <p className="text-gray-500 mb-4">{t('flowNotFound')}</p>
           <Link href="/">
-            <Button className="bg-violet-600 hover:bg-violet-700">Go Home</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700">{t('goHome')}</Button>
           </Link>
         </div>
       </div>
@@ -474,9 +476,9 @@ export default function ParticipantView() {
               />
             </div>
             
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Journey Complete!</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('journeyComplete')}</h1>
             <p className="text-gray-500">
-              Congratulations on completing "{resolvedJourney?.name}"
+              {t('congratsOnCompleting', { name: resolvedJourney?.name })}
             </p>
           </div>
 
@@ -485,15 +487,15 @@ export default function ParticipantView() {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-violet-600">{totalDays}</div>
-                <div className="text-xs text-gray-500">Days Completed</div>
+                <div className="text-xs text-gray-500">{t('daysCompletedLabel')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-500">{xpPoints + 100}</div>
-                <div className="text-xs text-gray-500">XP Earned</div>
+                <div className="text-xs text-gray-500">{t('xpEarned')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-500">{totalDays}</div>
-                <div className="text-xs text-gray-500">Day Streak</div>
+                <div className="text-xs text-gray-500">{t('dayStreak')}</div>
               </div>
             </div>
           </div>
@@ -502,7 +504,7 @@ export default function ParticipantView() {
           <div className="bg-white rounded-2xl p-6 mb-6 border border-gray-200 shadow-lg">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-violet-500" />
-              Your Journey Reflections
+              {t('yourReflections')}
             </h2>
             
             {daySummaries && daySummaries.length > 0 ? (
@@ -519,7 +521,7 @@ export default function ParticipantView() {
                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                           </div>
                           <span className="font-semibold text-gray-900">
-                            Day {summary.dayNumber}: {step?.title || `Day ${summary.dayNumber}`}
+                            {t('currentDay', { number: summary.dayNumber })}: {step?.title || t('currentDay', { number: summary.dayNumber })}
                           </span>
                         </div>
                         <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
@@ -531,7 +533,7 @@ export default function ParticipantView() {
               </div>
             ) : (
               <p className="text-gray-500 text-center py-4">
-                Your journey reflections will appear here.
+                {t('reflectionsWillAppear')}
               </p>
             )}
           </div>
@@ -539,7 +541,7 @@ export default function ParticipantView() {
           {/* Back to Home Button */}
           <Link href="/dashboard">
             <Button className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-lg">
-              Back to Home
+              {t('backToHome')}
             </Button>
           </Link>
         </motion.div>
@@ -567,8 +569,8 @@ export default function ParticipantView() {
               <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-emerald-500/50">
                 <CheckCircle2 className="w-12 h-12 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Day Complete!</h2>
-              <p className="text-emerald-600 font-semibold">+100 XP</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('dayCompleted')}</h2>
+              <p className="text-emerald-600 font-semibold">{t('xpPlus')}</p>
             </motion.div>
           </motion.div>
         )}
@@ -594,10 +596,10 @@ export default function ParticipantView() {
                   <MessageCircle className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  How was Day {completedDayNumber}?
+                  {t('howWasDay', { number: completedDayNumber })}
                 </h2>
                 <p className="text-gray-500 text-sm">
-                  Your feedback helps {mentorName} improve the experience
+                  {t('feedbackHelps', { mentor: mentorName })}
                 </p>
               </div>
 
@@ -626,7 +628,7 @@ export default function ParticipantView() {
               <textarea
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
-                placeholder="Share your thoughts (optional)"
+                placeholder={t('shareThoughts')}
                 className="w-full p-3 border border-gray-200 rounded-xl resize-none h-24 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 mb-4"
                 data-testid="feedback-comment"
               />
@@ -639,7 +641,7 @@ export default function ParticipantView() {
                   className="flex-1"
                   data-testid="feedback-skip"
                 >
-                  Skip
+                  {t('skip')}
                 </Button>
                 <Button
                   onClick={handleSubmitFeedback}
@@ -650,7 +652,7 @@ export default function ParticipantView() {
                   {feedbackSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Send Feedback"
+                    t('sendFeedback')
                   )}
                 </Button>
               </div>
@@ -679,10 +681,10 @@ export default function ParticipantView() {
                   <CheckCircle2 className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  Day {selectedSummaryDay} Summary
+                  {t('daySummary', { number: selectedSummaryDay })}
                 </h2>
                 <p className="text-gray-500 text-sm">
-                  {sortedSteps.find(s => s.dayNumber === selectedSummaryDay)?.title || `Day ${selectedSummaryDay}`}
+                  {sortedSteps.find(s => s.dayNumber === selectedSummaryDay)?.title || t('currentDay', { number: selectedSummaryDay })}
                 </p>
               </div>
 
@@ -690,7 +692,7 @@ export default function ParticipantView() {
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {getSummaryForDay(selectedSummaryDay)?.participantSummary || 
-                    "No summary available for this day yet."}
+                    t('noSummaryAvailable')}
                 </p>
               </div>
 
@@ -699,7 +701,7 @@ export default function ParticipantView() {
                 className="w-full bg-violet-600 hover:bg-violet-700 text-white"
                 data-testid="button-close-summary"
               >
-                Close
+                {t('close')}
               </Button>
             </motion.div>
           </motion.div>
@@ -729,7 +731,7 @@ export default function ParticipantView() {
                 </div>
               )}
               <div>
-                <p className="text-xs text-violet-200 font-medium">Your Guide</p>
+                <p className="text-xs text-violet-200 font-medium">{t('yourGuide')}</p>
                 <h1 className="font-bold text-white text-sm">{mentorName}</h1>
               </div>
             </div>
@@ -745,13 +747,13 @@ export default function ParticipantView() {
         {/* Journey name */}
         <div className="p-4 border-b border-white/10">
           <h2 className="font-semibold text-white text-sm">{resolvedJourney?.name}</h2>
-          <p className="text-xs text-violet-200 mt-1">Day {currentDay} of {totalDays}</p>
+          <p className="text-xs text-violet-200 mt-1">{t('dayProgress', { current: currentDay, total: totalDays })}</p>
         </div>
 
         {/* Progress */}
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-violet-200">Your Progress</span>
+            <span className="text-xs text-violet-200">{t('yourProgress')}</span>
             <span className="text-xs font-bold text-white">{progressPercent}%</span>
           </div>
           <div className="h-2 bg-white/20 rounded-full overflow-hidden">
@@ -764,7 +766,7 @@ export default function ParticipantView() {
 
         {/* Days navigation */}
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-xs text-violet-300 uppercase tracking-wider mb-3 px-2">Your Journey</div>
+          <div className="text-xs text-violet-300 uppercase tracking-wider mb-3 px-2">{t('yourJourney')}</div>
           <div className="space-y-1">
             {sortedSteps.map((step) => {
               const isPast = step.dayNumber < currentDay;
@@ -798,16 +800,16 @@ export default function ParticipantView() {
                       "text-sm font-medium truncate",
                       isCurrent ? "text-white" : "text-white/80"
                     )}>
-                      {step.title || `Day ${step.dayNumber}`}
+                      {step.title || t('currentDay', { number: step.dayNumber })}
                     </div>
                     {isCurrent && (
-                      <div className="text-xs text-violet-200">In progress</div>
+                      <div className="text-xs text-violet-200">{t('inProgress')}</div>
                     )}
                     {isPast && hasSummary && (
-                      <div className="text-xs text-emerald-300">Tap to view summary</div>
+                      <div className="text-xs text-emerald-300">{t('tapToViewSummary')}</div>
                     )}
                     {isPast && !hasSummary && (
-                      <div className="text-xs text-emerald-300">Completed</div>
+                      <div className="text-xs text-emerald-300">{t('completed')}</div>
                     )}
                   </div>
                   {isCurrent && (
@@ -832,7 +834,7 @@ export default function ParticipantView() {
             data-testid="button-open-feedback"
           >
             <MessageCircle className="w-4 h-4" />
-            Share Feedback
+            {t('shareFeedback')}
           </button>
         </div>
       </aside>
@@ -873,7 +875,7 @@ export default function ParticipantView() {
                   {mentorName}
                 </h2>
                 <p className="text-xs text-gray-500" data-testid="text-day-progress">
-                  Day {currentDay} of {totalDays}
+                  {t('dayProgress', { current: currentDay, total: totalDays })}
                 </p>
               </div>
             </div>
@@ -881,7 +883,7 @@ export default function ParticipantView() {
 
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-xs text-gray-500">Online</span>
+            <span className="text-xs text-gray-500">{t('online')}</span>
           </div>
         </header>
 
@@ -990,7 +992,7 @@ export default function ParticipantView() {
                   <Input 
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder={t('typeMessage')}
                     className="w-full rounded-full bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
                     disabled={isSending}
                     data-testid="input-chat"
@@ -1017,8 +1019,8 @@ export default function ParticipantView() {
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle2 className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Day {currentDay} Complete!</h3>
-                  <p className="text-sm text-gray-600 mb-4">Great work today. Ready for the next step?</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{t('dayComplete', { number: currentDay })}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{t('readyForNext')}</p>
                   <Button
                     onClick={handleCompleteDay}
                     disabled={completeDayMutation.isPending}
@@ -1030,7 +1032,7 @@ export default function ParticipantView() {
                     ) : (
                       <ChevronRight className="w-5 h-5 mr-2" />
                     )}
-                    {currentDay < totalDays ? `Take me to Day ${currentDay + 1}` : "Complete Journey"}
+                    {currentDay < totalDays ? t('takeMeToDay', { number: currentDay + 1 }) : t('completeJourney')}
                   </Button>
                 </div>
               </motion.div>

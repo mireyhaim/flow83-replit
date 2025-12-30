@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const Hero = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('landing');
   const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
 
   return (
@@ -18,20 +20,19 @@ const Hero = () => {
       <div className="container mx-auto px-6 text-center relative z-10">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
-            <span className="text-gray-900">Share Your </span>
+            <span className="text-gray-900">{t('shareYour')} </span>
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-              Wisdom
+              {t('wisdom')}
             </span>
             <br />
-            <span className="text-gray-900">Through </span>
+            <span className="text-gray-900">{t('through')} </span>
             <span className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-              Flow
+              {t('flow')}
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Empower teachers, coaches, and healers to create personalized digital journeys for their clients - 
-            powered by AI and your unique expertise.
+            {t('heroDescription')}
           </p>
           
           <div className="flex justify-center">
@@ -41,7 +42,7 @@ const Hero = () => {
                 className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                 data-testid="button-hero-get-started"
               >
-                Create Your Flow
+                {t('createYourFlow')}
               </Button>
             </Link>
           </div>
@@ -49,11 +50,11 @@ const Hero = () => {
           <div className="mt-16 flex flex-wrap justify-center gap-8 text-gray-500">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-violet-500" />
-              <span className="text-sm">AI-powered content creation</span>
+              <span className="text-sm">{t('aiPoweredContent')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-fuchsia-500" />
-              <span className="text-sm">Launch in minutes</span>
+              <span className="text-sm">{t('launchInMinutes')}</span>
             </div>
           </div>
         </div>

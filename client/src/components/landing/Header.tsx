@@ -3,10 +3,13 @@ import { Link } from "wouter";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
+import { LanguageToggle } from "@/components/language-toggle";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation(['landing', 'common', 'dashboard']);
   const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
 
   return (
@@ -16,44 +19,45 @@ const Header = () => {
           Flow 83
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center gap-8 rtl:flex-row-reverse">
           <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            Home
+            {t('common:home')}
           </Link>
           <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            How It Works
+            {t('howItWorks')}
           </Link>
           <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            Pricing
+            {t('pricing')}
           </Link>
           <Link href="/community" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            Community
+            {t('community')}
           </Link>
           <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-            Contact
+            {t('contact')}
           </Link>
         </nav>
         
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center gap-4 rtl:flex-row-reverse">
+          <LanguageToggle />
           {isAuthenticated ? (
             <>
               <a href="/api/logout">
-                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-sign-out">Sign Out</Button>
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-sign-out">{t('common:logout')}</Button>
               </a>
               <Link href="/dashboard">
                 <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-my-flow">
-                  My Flow
+                  {t('dashboard:title')}
                 </Button>
               </Link>
             </>
           ) : (
             <>
               <a href="/api/login?returnTo=/dashboard">
-                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">Login</Button>
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">{t('common:login')}</Button>
               </a>
               <Link href={getStartLink()}>
                 <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 rounded-full" data-testid="button-header-get-started">
-                  Get Started
+                  {t('getStarted')}
                 </Button>
               </Link>
             </>
@@ -71,28 +75,31 @@ const Header = () => {
 
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 space-y-4">
-          <Link href="/" className="block text-gray-600 hover:text-gray-900 py-2">Home</Link>
-          <Link href="/how-it-works" className="block text-gray-600 hover:text-gray-900 py-2">How It Works</Link>
-          <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">Pricing</Link>
-          <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">Community</Link>
-          <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">Contact</Link>
+          <div className="pb-2 border-b border-gray-200">
+            <LanguageToggle />
+          </div>
+          <Link href="/" className="block text-gray-600 hover:text-gray-900 py-2">{t('common:home')}</Link>
+          <Link href="/how-it-works" className="block text-gray-600 hover:text-gray-900 py-2">{t('howItWorks')}</Link>
+          <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">{t('pricing')}</Link>
+          <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">{t('community')}</Link>
+          <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">{t('contact')}</Link>
           <div className="pt-4 space-y-3">
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard">
-                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">My Flow</Button>
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">{t('dashboard:title')}</Button>
                 </Link>
                 <a href="/api/logout">
-                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Sign Out</Button>
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">{t('common:logout')}</Button>
                 </a>
               </>
             ) : (
               <>
                 <a href="/api/login?returnTo=/dashboard">
-                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">Login</Button>
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">{t('common:login')}</Button>
                 </a>
                 <Link href={getStartLink()}>
-                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">Get Started</Button>
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">{t('getStarted')}</Button>
                 </Link>
               </>
             )}

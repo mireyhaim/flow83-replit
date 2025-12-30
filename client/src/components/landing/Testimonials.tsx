@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 const testimonials = [
   {
@@ -48,6 +49,8 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+  const { t } = useTranslation('landing');
+
   return (
     <section className="py-32 bg-white relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -58,13 +61,13 @@ const Testimonials = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
           <span className="text-violet-600 text-sm font-medium tracking-wider uppercase mb-4 block">
-            Trusted by Guides
+            {t('trustedByGuides')}
           </span>
           <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-            What Our Mentors Say
+            {t('whatMentorsSay')}
           </h2>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Join thousands of coaches, therapists, and healers who are scaling their impact
+            {t('joinThousands')}
           </p>
           
           {/* Overall Rating */}
@@ -75,7 +78,7 @@ const Testimonials = () => {
               ))}
             </div>
             <span className="text-2xl font-bold text-gray-900" data-testid="text-rating-score">4.9</span>
-            <span className="text-gray-500" data-testid="text-review-count">from 500+ reviews</span>
+            <span className="text-gray-500" data-testid="text-review-count">{t('fromReviews')}</span>
           </div>
         </div>
         
@@ -120,7 +123,7 @@ const Testimonials = () => {
               className="text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
               data-testid="button-see-flow-examples"
             >
-              See Examples Created with Flow
+              {t('seeFlowExamples')}
             </Button>
           </Link>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -21,6 +22,7 @@ type SubscriptionStatus = {
 };
 
 export default function Dashboard() {
+  const { t } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const onboarding = useOnboarding();
   const [, navigate] = useLocation();
@@ -129,11 +131,11 @@ export default function Dashboard() {
   const getActivityText = (event: ActivityEvent) => {
     const data = event.eventData as { userName?: string; journeyName?: string; dayNumber?: number } | null;
     switch (event.eventType) {
-      case 'joined': return `${data?.userName || 'Someone'} joined "${data?.journeyName || 'a flow'}"`;
-      case 'completed_day': return `${data?.userName || 'Someone'} completed day ${data?.dayNumber || '?'}`;
-      case 'completed_journey': return `${data?.userName || 'Someone'} finished "${data?.journeyName || 'a flow'}"`;
-      case 'feedback': return `New feedback on "${data?.journeyName || 'a flow'}"`;
-      default: return 'Activity recorded';
+      case 'joined': return t('activityJoined', { name: data?.userName || t('someone'), ns: 'dashboard' });
+      case 'completed_day': return t('activityCompleted', { name: data?.userName || t('someone'), day: data?.dayNumber || '?', ns: 'dashboard' });
+      case 'completed_journey': return t('activityFinished', { name: data?.userName || t('someone'), ns: 'dashboard' });
+      case 'feedback': return t('activityFeedback', { name: data?.journeyName || t('aFlow'), ns: 'dashboard' });
+      default: return t('activityRecorded', { ns: 'dashboard' });
     }
   };
 
@@ -181,10 +183,10 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-dashboard-title">
-              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
+              {t('welcomeBack', { name: user?.firstName || '', ns: 'auth' })}
             </h1>
             <p className="text-slate-500 text-sm mt-1" data-testid="text-welcome-message">
-              Here's what's happening with your flows
+              {t('hereIsWhatsHappening')}
             </p>
           </div>
           {onboarding.hasSeenOnboarding && (
@@ -196,7 +198,7 @@ export default function Dashboard() {
               data-testid="button-start-tutorial"
             >
               <HelpCircle className="h-4 w-4 mr-2" />
-              Tutorial
+              {t('tutorial')}
             </Button>
           )}
         </div>
@@ -209,12 +211,12 @@ export default function Dashboard() {
               <Sparkles className="h-6 w-6 text-violet-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900">Start your 7-day free trial</h3>
-              <p className="text-sm text-slate-600">Get access to all features and start creating flows today.</p>
+              <h3 className="font-semibold text-slate-900">{t('startFreeTrial')}</h3>
+              <p className="text-sm text-slate-600">{t('getAccessToAllFeatures')}</p>
             </div>
           </div>
           <Button asChild className="bg-violet-600 hover:bg-violet-700 rounded-full" data-testid="button-start-trial">
-            <Link href="/pricing">View Plans</Link>
+            <Link href="/pricing">{t('viewPlans')}</Link>
           </Button>
         </div>
       )}
@@ -242,12 +244,12 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className={`font-semibold ${isExpired ? "text-red-900" : "text-amber-900"}`}>
-                  {isExpired ? "Your flows are now blocked" : "Payment failed - Action required"}
+                  {isExpired ? t('flowsBlocked') : t('paymentFailed')}
                 </h3>
                 <p className={`text-sm ${isExpired ? "text-red-700" : "text-amber-700"}`}>
                   {isExpired 
-                    ? "Your participants cannot access your flows. Update your payment to restore access."
-                    : `You have ${daysLeft} day${daysLeft !== 1 ? 's' : ''} to update your payment before your flows are blocked.`
+                    ? t('flowsBlockedDescription')
+                    : t('paymentFailedDescription', { days: daysLeft })
                   }
                 </p>
               </div>
@@ -261,7 +263,7 @@ export default function Dashboard() {
               onClick={() => window.open('https://app.lemonsqueezy.com/my-orders', '_blank')}
               data-testid="button-fix-payment"
             >
-              Update Payment
+              {t('updatePayment')}
             </Button>
           </div>
         );
@@ -312,7 +314,7 @@ export default function Dashboard() {
             data-testid="button-manage-subscription"
           >
             <ExternalLink className="h-4 w-4 mr-2" />
-            Manage Billing
+            {t('manageBilling')}
           </Button>
         </div>
       )}
@@ -331,7 +333,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-total-journeys">{stats?.totalJourneys ?? 0}</div>
-              <p className="text-sm text-slate-500">Flows</p>
+              <p className="text-sm text-slate-500">{t('myFlows')}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-sky-200 transition-all" data-testid="card-total-participants">
@@ -341,7 +343,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-total-participants">{stats?.totalParticipants ?? 0}</div>
-              <p className="text-sm text-slate-500">Participants</p>
+              <p className="text-sm text-slate-500">{t('participants')}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-emerald-200 transition-all" data-testid="card-active-participants">
@@ -351,7 +353,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-active-participants">{stats?.activeParticipants ?? 0}</div>
-              <p className="text-sm text-slate-500">Active Now</p>
+              <p className="text-sm text-slate-500">{t('activeParticipants')}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-amber-200 transition-all" data-testid="card-completion-rate">
@@ -361,7 +363,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-completion-rate">{stats?.completionRate ?? 0}%</div>
-              <p className="text-sm text-slate-500">Completion</p>
+              <p className="text-sm text-slate-500">{t('completedParticipants')}</p>
             </div>
           </div>
 
@@ -373,21 +375,21 @@ export default function Dashboard() {
                     <DollarSign className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Earnings</h3>
-                    <p className="text-xs text-slate-400">Total revenue</p>
+                    <h3 className="text-lg font-semibold text-slate-900">{t('earnings')}</h3>
+                    <p className="text-xs text-slate-400">{t('totalRevenue')}</p>
                   </div>
                 </div>
                 <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">
-                  {(earnings?.paymentCount ?? 0) > 0 ? `${earnings?.paymentCount} sales` : 'No sales yet'}
+                  {(earnings?.paymentCount ?? 0) > 0 ? t('salesCount', { count: earnings?.paymentCount }) : t('noSalesYet')}
                 </span>
               </div>
               <div className="text-4xl font-bold text-slate-900 mb-2" data-testid="text-earnings">
                 ${(earnings?.totalEarnings ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p className="text-sm text-slate-400 mb-6">Total earnings from all flows</p>
+              <p className="text-sm text-slate-400 mb-6">{t('totalEarningsFromFlows')}</p>
               {(earnings?.recentPayments?.length ?? 0) > 0 ? (
                 <div className="space-y-2">
-                  <p className="text-xs text-slate-400 mb-2">Recent sales</p>
+                  <p className="text-xs text-slate-400 mb-2">{t('recentSales')}</p>
                   {earnings?.recentPayments.slice(0, 3).map((payment) => (
                     <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                       <div>
@@ -401,7 +403,7 @@ export default function Dashboard() {
               ) : (
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                   <p className="text-sm text-slate-600">
-                    Set a price for your flows and start collecting payments. Your earnings will appear here automatically.
+                    {t('noEarningsYet')}
                   </p>
                 </div>
               )}
@@ -412,12 +414,12 @@ export default function Dashboard() {
                 <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
                   <Clock className="h-5 w-5 text-violet-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                <h3 className="text-lg font-semibold text-slate-900">{t('recentActivity')}</h3>
               </div>
               {recentActivity.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-slate-400">No activity yet</p>
-                  <p className="text-xs text-slate-300 mt-1">Activity will appear when participants join</p>
+                  <p className="text-sm text-slate-400">{t('noActivity')}</p>
+                  <p className="text-xs text-slate-300 mt-1">{t('activityWillAppear')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">

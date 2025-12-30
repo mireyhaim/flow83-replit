@@ -1,45 +1,48 @@
 import { Sparkles, Users, Wallet, Palette, BarChart3, Settings2 } from "lucide-react";
-
-const benefits = [
-  {
-    icon: Sparkles,
-    title: "AI-Powered Creation",
-    description: "Save hours of work with automatic journey generation from your existing content.",
-    gradient: "from-violet-400 to-violet-500"
-  },
-  {
-    icon: Users,
-    title: "Reach More People",
-    description: "Scale from 1:1 sessions to dozens or hundreds of clients simultaneously.",
-    gradient: "from-cyan-400 to-cyan-500"
-  },
-  {
-    icon: Wallet,
-    title: "Your Money, Directly",
-    description: "Connect your own payment link and get paid instantly. Your clients, your brand, your earnings — we never take a cut.",
-    gradient: "from-emerald-400 to-emerald-500"
-  },
-  {
-    icon: Palette,
-    title: "Professional Look",
-    description: "Beautiful, designed pages without needing a designer or developer.",
-    gradient: "from-violet-400 to-fuchsia-400"
-  },
-  {
-    icon: BarChart3,
-    title: "Track Progress",
-    description: "Monitor every participant's journey and engagement in real-time.",
-    gradient: "from-fuchsia-400 to-cyan-400"
-  },
-  {
-    icon: Settings2,
-    title: "Full Control",
-    description: "Edit and adjust at any moment, with no tech dependencies.",
-    gradient: "from-cyan-400 to-violet-400"
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const Features = () => {
+  const { t } = useTranslation('landing');
+
+  const benefits = [
+    {
+      icon: Sparkles,
+      title: t('featureAICreation'),
+      description: t('featureAICreationDesc'),
+      gradient: "from-violet-400 to-violet-500"
+    },
+    {
+      icon: Users,
+      title: t('featureReachMore'),
+      description: t('featureReachMoreDesc'),
+      gradient: "from-cyan-400 to-cyan-500"
+    },
+    {
+      icon: Wallet,
+      title: t('featureYourMoney'),
+      description: t('featureYourMoneyDesc'),
+      gradient: "from-emerald-400 to-emerald-500"
+    },
+    {
+      icon: Palette,
+      title: t('featureProfessional'),
+      description: t('featureProfessionalDesc'),
+      gradient: "from-violet-400 to-fuchsia-400"
+    },
+    {
+      icon: BarChart3,
+      title: t('featureTrackProgress'),
+      description: t('featureTrackProgressDesc'),
+      gradient: "from-fuchsia-400 to-cyan-400"
+    },
+    {
+      icon: Settings2,
+      title: t('featureFullControl'),
+      description: t('featureFullControlDesc'),
+      gradient: "from-cyan-400 to-violet-400"
+    }
+  ];
+
   return (
     <section className="py-32 bg-gray-50 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none opacity-50">
@@ -50,13 +53,13 @@ const Features = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-20">
           <span className="text-fuchsia-600 text-sm font-medium tracking-wider uppercase mb-4 block">
-            Why Choose Us
+            {t('whyChooseUs')}
           </span>
           <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-            Why Flow 83?
+            {t('whyFlow83')}
           </h2>
           <p className="text-xl text-gray-500 max-w-3xl mx-auto">
-            Everything you need to transform your expertise into a scalable digital business.
+            {t('whyFlow83Desc')}
           </p>
         </div>
         

@@ -125,3 +125,44 @@ Internal admin dashboard for platform monitoring (accessible at `/admin`):
 - **Vite**: Development server and build tool
 - **Drizzle Kit**: Database migration and schema management
 - **esbuild**: Server-side bundling for production
+
+### Internationalization (i18n)
+
+The application supports Hebrew and English languages with RTL layout:
+
+**Library**: react-i18next with i18next
+
+**Configuration**: `client/src/lib/i18n.ts`
+
+**Translation Files Location**: `client/src/locales/`
+- `en/` - English translations
+- `he/` - Hebrew translations
+
+**Namespaces**:
+- `common` - Shared UI elements (buttons, labels, errors)
+- `dashboard` - Mentor dashboard and journey management
+- `participant` - Participant experience and chat
+- `landing` - Landing pages and marketing
+- `auth` - Login and registration
+
+**Language Toggle**: Available in navigation header and dashboard sidebar
+- Persists choice in localStorage
+- Automatically sets `document.dir` to 'rtl' for Hebrew
+
+**RTL Support**: CSS rules in `client/src/index.css` handle:
+- Text direction and alignment
+- Margin/padding direction swap
+- Border and positioning adjustments
+- Input text alignment
+
+**Usage in Components**:
+```typescript
+import { useTranslation } from 'react-i18next';
+
+// Load multiple namespaces
+const { t } = useTranslation(['dashboard', 'common']);
+
+// Use with namespace prefix
+{t('dashboard:title')}
+{t('common:save')}
+```

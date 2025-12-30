@@ -1,6 +1,7 @@
 import { useRoute, Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function JourneyLandingPage() {
+  const { t } = useTranslation('participant');
   const [, params] = useRoute("/j/:id");
   const [, navigate] = useLocation();
   const journeyId = params?.id;
@@ -122,7 +124,7 @@ export default function JourneyLandingPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
-        <div className="animate-pulse lp-text-sage lp-font-body">Loading...</div>
+        <div className="animate-pulse lp-text-sage lp-font-body">{t('loading')}</div>
       </div>
     );
   }
@@ -131,10 +133,10 @@ export default function JourneyLandingPage() {
     return (
       <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">Flow Not Found</h1>
-          <p className="lp-text-muted lp-font-body mb-6">This flow doesn't exist or has been removed.</p>
+          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">{t('flowNotFound')}</h1>
+          <p className="lp-text-muted lp-font-body mb-6">{t('flowNotFoundDesc')}</p>
           <Link href="/">
-            <Button className="lp-bg-sage text-white hover:opacity-90">Return Home</Button>
+            <Button className="lp-bg-sage text-white hover:opacity-90">{t('returnHome')}</Button>
           </Link>
         </div>
       </div>
@@ -145,10 +147,10 @@ export default function JourneyLandingPage() {
     return (
       <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">Flow Not Available</h1>
-          <p className="lp-text-muted lp-font-body mb-6">This flow hasn't been published yet.</p>
+          <h1 className="text-2xl lp-font-heading font-bold mb-4 lp-text-earth">{t('flowNotAvailable')}</h1>
+          <p className="lp-text-muted lp-font-body mb-6">{t('flowNotPublished')}</p>
           <Link href="/">
-            <Button className="lp-bg-sage text-white hover:opacity-90">Return Home</Button>
+            <Button className="lp-bg-sage text-white hover:opacity-90">{t('returnHome')}</Button>
           </Link>
         </div>
       </div>
@@ -173,7 +175,7 @@ export default function JourneyLandingPage() {
   const totalDays = journey.steps?.length || journey.duration || 7;
   const mentorName = journey.mentor 
     ? `${journey.mentor.firstName || ""} ${journey.mentor.lastName || ""}`.trim() 
-    : "Your Guide";
+    : t('yourGuide');
   const price = journey.price || 0;
   const isFree = price <= 0;
   const currencySymbol = "$";
@@ -316,7 +318,7 @@ export default function JourneyLandingPage() {
                 onClick={handleStartJourney}
                 data-testid="button-start-journey"
               >
-                {isFree ? "Begin Your Journey" : `Join Now - ${currencySymbol}${price}`}
+                {isFree ? t('beginYourJourney') : t('joinNowPrice', { price: `${currencySymbol}${price}` })}
               </Button>
               <Button 
                 size="lg"
@@ -325,13 +327,13 @@ export default function JourneyLandingPage() {
                 style={{ backgroundColor: 'white', color: 'hsl(25 20% 20%)', borderColor: '#e5e7eb' }}
                 onClick={() => document.getElementById("audience")?.scrollIntoView({ behavior: "smooth" })}
               >
-                Learn More
+                {t('learnMore')}
               </Button>
             </div>
 
             <div className="mt-8 flex items-center justify-center gap-2 lp-text-muted opacity-0 lp-animate-fade-up lp-animation-delay-800">
               <Calendar className="w-5 h-5" />
-              <span className="lp-font-body">{totalDays} days with {mentorName}</span>
+              <span className="lp-font-body">{t('daysWithMentor', { days: totalDays, mentor: mentorName })}</span>
             </div>
           </div>
         </div>
@@ -349,7 +351,7 @@ export default function JourneyLandingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <span className="inline-block lp-text-terracotta lp-font-body text-sm tracking-widest uppercase mb-4">
-              Is This For You?
+              {t('isThisForYou')}
             </span>
             <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-6">
               {content.audience.sectionTitle.includes("you") ? (
@@ -406,7 +408,7 @@ export default function JourneyLandingPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-4">
-                We Understand
+                {t('weUnderstand')}
               </span>
               <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight">
                 {content.painPoints.sectionTitle}
@@ -448,7 +450,7 @@ export default function JourneyLandingPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <span className="inline-block lp-text-terracotta lp-font-body text-sm tracking-widest uppercase mb-4">
-                The Transformation
+                {t('theTransformation')}
               </span>
               <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-6">
                 {content.transformation.sectionTitle.includes("other side") ? (
@@ -490,7 +492,7 @@ export default function JourneyLandingPage() {
                   style={{ backgroundColor: 'hsl(25 85% 55%)', color: 'white', border: '1px solid hsl(25 85% 50%)' }}
                   onClick={handleStartJourney}
                 >
-                  Start Your Transformation
+                  {t('startYourTransformation')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
@@ -507,11 +509,10 @@ export default function JourneyLandingPage() {
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
             <span className="inline-block lp-text-sage lp-font-body text-sm tracking-widest uppercase mb-4">
-              Voices of Transformation
+              {t('voicesOfTransformation')}
             </span>
             <h2 className="lp-font-heading text-3xl md:text-4xl lg:text-5xl lp-text-earth leading-tight mb-8">
-              What others have{" "}
-              <span className="lp-text-terracotta italic">experienced</span>
+              {t('whatOthersExperienced')}
             </h2>
             
             {/* Stats Row - Participant Count & Star Rating */}
@@ -523,7 +524,7 @@ export default function JourneyLandingPage() {
                 </div>
                 <div className="text-left">
                   <p className="lp-font-heading text-2xl lp-text-earth font-semibold">250+</p>
-                  <p className="lp-font-body text-sm lp-text-muted">Completed this journey</p>
+                  <p className="lp-font-body text-sm lp-text-muted">{t('completedThisJourney')}</p>
                 </div>
               </div>
               
@@ -536,7 +537,7 @@ export default function JourneyLandingPage() {
                 </div>
                 <div className="text-left">
                   <p className="lp-font-heading text-2xl lp-text-earth font-semibold">5.0</p>
-                  <p className="lp-font-body text-sm lp-text-muted">Average rating</p>
+                  <p className="lp-font-body text-sm lp-text-muted">{t('averageRating')}</p>
                 </div>
               </div>
             </div>
@@ -606,7 +607,7 @@ export default function JourneyLandingPage() {
                     onClick={handleStartJourney}
                     data-testid="button-start-journey-bottom"
                   >
-                    {isFree ? "Begin Your Journey" : `Join Now - ${currencySymbol}${price}`}
+                    {isFree ? t('beginYourJourney') : t('joinNowPrice', { price: `${currencySymbol}${price}` })}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
@@ -616,7 +617,7 @@ export default function JourneyLandingPage() {
                     style={{ backgroundColor: 'white', color: 'hsl(25 20% 20%)', borderColor: '#e5e7eb' }}
                     onClick={() => window.location.href = `mailto:?subject=Question about ${journey.name}`}
                   >
-                    Ask a Question
+                    {t('askAQuestion')}
                   </Button>
                 </div>
                 
@@ -627,14 +628,14 @@ export default function JourneyLandingPage() {
             ) : (
               <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm lp-shadow-card border-0">
                 <CardContent className="p-8">
-                  <h3 className="text-xl lp-font-heading font-semibold mb-6 text-center lp-text-earth">Join This Journey</h3>
+                  <h3 className="text-xl lp-font-heading font-semibold mb-6 text-center lp-text-earth">{t('joinThisJourney')}</h3>
                   <div className="space-y-4">
                     <div className="text-left">
-                      <Label htmlFor="name" className="lp-text-earth lp-font-body">Your Name</Label>
+                      <Label htmlFor="name" className="lp-text-earth lp-font-body">{t('yourName')}</Label>
                       <Input
                         id="name"
                         type="text"
-                        placeholder="Enter your name"
+                        placeholder={t('enterYourName')}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="mt-1 lp-font-body"
@@ -642,11 +643,11 @@ export default function JourneyLandingPage() {
                       />
                     </div>
                     <div className="text-left">
-                      <Label htmlFor="email" className="lp-text-earth lp-font-body">Email *</Label>
+                      <Label htmlFor="email" className="lp-text-earth lp-font-body">{t('emailRequired')}</Label>
                       <Input
                         id="email"
                         type="email"
-                        placeholder="your@email.com"
+                        placeholder={t('emailPlaceholder')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="mt-1 lp-font-body"
@@ -664,19 +665,18 @@ export default function JourneyLandingPage() {
                       disabled={!email || joinMutation.isPending}
                       data-testid="button-join"
                     >
-                      {joinMutation.isPending ? "Processing..." : (isFree ? "Start Now" : `Continue to Payment - ${currencySymbol}${price}`)}
+                      {joinMutation.isPending ? t('processing') : (isFree ? t('startNow') : t('continueToPayment', { price: `${currencySymbol}${price}` }))}
                     </Button>
                     {!isFree && (
                       <p className="text-xs lp-text-muted text-center mt-2">
-                        Payment is processed directly by the mentor through their Stripe account. 
-                        Flow 83 does not handle or store payment information.
+                        {t('paymentDisclaimer')}
                       </p>
                     )}
                     <button 
                       className="text-sm lp-text-muted hover:lp-text-earth w-full text-center lp-font-body"
                       onClick={() => setShowForm(false)}
                     >
-                      Go back
+                      {t('goBack')}
                     </button>
                   </div>
                 </CardContent>
@@ -688,9 +688,9 @@ export default function JourneyLandingPage() {
 
       {/* Footer */}
       <footer className="py-8 text-center" style={{ backgroundColor: 'hsl(25 20% 20%)' }}>
-        <p className="text-white/60 text-sm lp-font-body">Created with Flow 83</p>
+        <p className="text-white/60 text-sm lp-font-body">{t('createdWithFlow')}</p>
         {journey.mentor && (
-          <p className="text-white/40 text-xs mt-2 lp-font-body">By {mentorName}</p>
+          <p className="text-white/40 text-xs mt-2 lp-font-body">{t('byMentor', { name: mentorName })}</p>
         )}
       </footer>
     </div>

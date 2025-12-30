@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageToggle } from "@/components/language-toggle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,12 +19,13 @@ import {
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation(['dashboard', 'common', 'participant']);
 
   const navItems = [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
-    { icon: PenTool, label: "Flows", href: "/journeys" },
-    { icon: MessageCircle, label: "Feedback", href: "/feedback" },
-    { icon: User, label: "My Profile", href: "/profile" },
+    { icon: LayoutGrid, label: t('dashboard:title'), href: "/dashboard" },
+    { icon: PenTool, label: t('dashboard:myFlows'), href: "/journeys" },
+    { icon: MessageCircle, label: t('participant:feedback'), href: "/feedback" },
+    { icon: User, label: t('common:profile'), href: "/profile" },
   ];
 
   const NavContent = () => (
@@ -63,13 +66,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="p-4 space-y-2">
+        <div className="px-4 py-2">
+          <LanguageToggle />
+        </div>
         <Link 
           href="/journeys/new"
           onClick={() => setMobileMenuOpen(false)}
           className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-all w-full justify-center shadow-sm"
         >
           <Plus size={18} />
-          New Flow
+          {t('dashboard:createFlow')}
         </Link>
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -78,24 +84,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               data-testid="button-sign-out"
             >
               <LogOut size={18} />
-              Sign Out
+              {t('common:logout')}
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>{t('dashboard:confirmDelete')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to sign out?
+                {t('dashboard:confirmDelete')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   window.location.href = "/api/logout";
                 }}
               >
-                Sign Out
+                {t('common:logout')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

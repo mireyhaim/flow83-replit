@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ type StepWithBlocks = JourneyStepType & { blocks: JourneyBlock[] };
 type JourneyWithSteps = Journey & { steps: StepWithBlocks[] };
 
 const JourneyEditorPage = () => {
+  const { t } = useTranslation('dashboard');
   const [match, params] = useRoute("/journey/:id/edit");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -58,8 +60,8 @@ const JourneyEditorPage = () => {
       
       // Show success toast
       toast({
-        title: "Subscription activated!",
-        description: "You can now publish your flow.",
+        title: t('subscriptionActivated'),
+        description: t('canNowPublishFlow'),
       });
       
       // Auto-open the publish modal
@@ -90,8 +92,8 @@ const JourneyEditorPage = () => {
             }
           } catch (error) {
             toast({
-              title: "Generation failed",
-              description: "Could not generate flow content. Please try again.",
+              title: t('generationFailed'),
+              description: t('couldNotGenerateContent'),
               variant: "destructive",
             });
           } finally {
@@ -102,8 +104,8 @@ const JourneyEditorPage = () => {
         }
       } catch (error) {
         toast({
-          title: "Error",
-          description: "Failed to load flow",
+          title: t('error'),
+          description: t('failedToLoadFlow'),
           variant: "destructive",
         });
       } finally {
@@ -147,13 +149,13 @@ const JourneyEditorPage = () => {
       }
       
       toast({
-        title: "Saved!",
-        description: "Your flow has been saved successfully.",
+        title: t('saved'),
+        description: t('flowSavedSuccessfully'),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save flow",
+        title: t('error'),
+        description: t('failedToSaveFlow'),
         variant: "destructive",
       });
     } finally {
@@ -192,13 +194,13 @@ const JourneyEditorPage = () => {
       await journeyApi.update(journeyData.id, { status: "draft" });
       setJourneyData(prev => prev ? { ...prev, status: "draft" } : null);
       toast({
-        title: "Unpublished",
-        description: "Your flow is now in draft mode.",
+        title: t('unpublished'),
+        description: t('flowNowDraft'),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to unpublish flow",
+        title: t('error'),
+        description: t('failedToUnpublishFlow'),
         variant: "destructive",
       });
     } finally {
@@ -229,8 +231,8 @@ const JourneyEditorPage = () => {
         setShowPaywallModal(true);
       } else {
         toast({
-          title: "Error",
-          description: "Failed to publish flow",
+          title: t('error'),
+          description: t('failedToPublishFlow'),
           variant: "destructive",
         });
       }
@@ -255,8 +257,8 @@ const JourneyEditorPage = () => {
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to copy link",
+        title: t('error'),
+        description: t('failedToCopyLink'),
         variant: "destructive",
       });
     }
@@ -291,7 +293,7 @@ const JourneyEditorPage = () => {
       <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-violet-500 mx-auto mb-4" />
-          <p className="text-white/60">Loading your flow...</p>
+          <p className="text-white/60">{t('loadingFlow')}</p>
         </div>
       </div>
     );
@@ -307,9 +309,9 @@ const JourneyEditorPage = () => {
             </div>
             <div className="absolute inset-0 w-20 h-20 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 mx-auto animate-ping opacity-20" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Creating Your Flow</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('creatingYourFlow')}</h2>
           <p className="text-white/60">
-            AI is generating personalized content for each day based on your goals and audience...
+            {t('aiGeneratingContent')}
           </p>
         </div>
       </div>
@@ -320,9 +322,9 @@ const JourneyEditorPage = () => {
     return (
       <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Flow not found</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('flowNotFound')}</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-back">
-            Back to Flows
+            {t('backToFlows')}
           </Button>
         </div>
       </div>
@@ -337,7 +339,7 @@ const JourneyEditorPage = () => {
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors shrink-0" data-testid="link-my-flows">
                 <LayoutGrid className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">My Flows</span>
+                <span className="text-sm font-medium hidden sm:inline">{t('myFlows')}</span>
               </Link>
               <div className="h-5 w-px bg-white/10 hidden sm:block" />
               <div className="min-w-0">
@@ -348,7 +350,7 @@ const JourneyEditorPage = () => {
               {journeyData.status === "published" && (
                 <span className="flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium shrink-0">
                   <Globe className="w-3 h-3" />
-                  <span className="hidden sm:inline">Live</span>
+                  <span className="hidden sm:inline">{t('live')}</span>
                 </span>
               )}
             </div>
@@ -361,7 +363,7 @@ const JourneyEditorPage = () => {
                 className="text-white/60 hover:text-white hover:bg-white/10 px-2 md:px-3"
                 data-testid="button-settings"
               >
-                <span className="hidden sm:inline">Settings</span>
+                <span className="hidden sm:inline">{t('settings')}</span>
                 <Target className="w-4 h-4 sm:hidden" />
               </Button>
               <Button 
@@ -372,7 +374,7 @@ const JourneyEditorPage = () => {
                 data-testid="button-preview"
               >
                 <Eye className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Preview</span>
+                <span className="hidden sm:inline">{t('preview')}</span>
               </Button>
               <Button 
                 onClick={handleSave} 
@@ -387,7 +389,7 @@ const JourneyEditorPage = () => {
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                Save
+                {t('save')}
               </Button>
               <Button 
                 onClick={handlePublishClick} 
@@ -405,7 +407,7 @@ const JourneyEditorPage = () => {
                 ) : (
                   <Globe className="w-4 h-4 mr-2" />
                 )}
-                {journeyData.status === "published" ? "Unpublish" : "Publish"}
+                {journeyData.status === "published" ? t('unpublishFlow') : t('publishFlow')}
               </Button>
             </div>
           </div>
@@ -416,15 +418,15 @@ const JourneyEditorPage = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Target className="w-5 h-5 text-violet-400" />
-            <h2 className="text-xl font-semibold text-white">Flow Goal</h2>
+            <h2 className="text-xl font-semibold text-white">{t('flowGoal')}</h2>
           </div>
           <p className="text-white/60 text-sm mb-4">
-            {journeyData.goal || "No goal set yet"}
+            {journeyData.goal || t('noGoalSetYet')}
           </p>
           <div className="flex items-center gap-4 text-sm text-white/40">
-            <span>{journeyData.duration || 7} days</span>
+            <span>{t('days', { count: journeyData.duration || 7 })}</span>
             <span>•</span>
-            <span>For: {journeyData.audience || "Not specified"}</span>
+            <span>{t('for')}: {journeyData.audience || t('notSpecified')}</span>
           </div>
         </div>
 
@@ -479,7 +481,7 @@ const JourneyEditorPage = () => {
                         </h3>
                         {!isExpanded && (
                           <p className="text-sm text-white/40 line-clamp-1 mt-1">
-                            {step.goal || "Click to edit this day"}
+                            {step.goal || t('clickToEditDay')}
                           </p>
                         )}
                       </div>
@@ -506,7 +508,7 @@ const JourneyEditorPage = () => {
                                 value={step.title}
                                 onChange={(e) => updateStepField(step.id, "title", e.target.value)}
                                 className="bg-transparent border-0 border-b border-white/10 rounded-none text-white text-lg font-medium placeholder:text-white/30 focus-visible:ring-0 focus-visible:border-violet-500 px-0"
-                                placeholder="Day title..."
+                                placeholder={t('dayTitlePlaceholder')}
                                 data-testid={`input-title-${step.dayNumber}`}
                               />
                             </div>
@@ -514,12 +516,12 @@ const JourneyEditorPage = () => {
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                                <span className="text-sm font-medium text-violet-400">Goal</span>
+                                <span className="text-sm font-medium text-violet-400">{t('goal')}</span>
                               </div>
                               <Textarea
                                 value={step.goal || ""}
                                 onChange={(e) => updateStepField(step.id, "goal", e.target.value)}
-                                placeholder="What will the participant achieve today?"
+                                placeholder={t('goalPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[60px]"
                                 data-testid={`textarea-goal-${step.dayNumber}`}
                               />
@@ -530,12 +532,12 @@ const JourneyEditorPage = () => {
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400" />
-                                <span className="text-sm font-medium text-fuchsia-400">Explanation</span>
+                                <span className="text-sm font-medium text-fuchsia-400">{t('explanation')}</span>
                               </div>
                               <Textarea
                                 value={step.explanation || ""}
                                 onChange={(e) => updateStepField(step.id, "explanation", e.target.value)}
-                                placeholder="Teaching content, insights, or guidance..."
+                                placeholder={t('explanationPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[120px]"
                                 data-testid={`textarea-explanation-${step.dayNumber}`}
                               />
@@ -546,12 +548,12 @@ const JourneyEditorPage = () => {
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                <span className="text-sm font-medium text-emerald-400">Task</span>
+                                <span className="text-sm font-medium text-emerald-400">{t('task')}</span>
                               </div>
                               <Textarea
                                 value={step.task || ""}
                                 onChange={(e) => updateStepField(step.id, "task", e.target.value)}
-                                placeholder="Practical exercise or action for the participant..."
+                                placeholder={t('taskPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[80px]"
                                 data-testid={`textarea-task-${step.dayNumber}`}
                               />
@@ -572,13 +574,13 @@ const JourneyEditorPage = () => {
             <div className="w-16 h-16 rounded-full bg-white/5 mx-auto flex items-center justify-center mb-4">
               <Sparkles className="w-8 h-8 text-violet-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No days yet</h3>
-            <p className="text-white/50 mb-6">Content generation may have failed. Try refreshing the page.</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t('noDaysYet')}</h3>
+            <p className="text-white/50 mb-6">{t('contentGenerationFailed')}</p>
             <Button 
               onClick={() => window.location.reload()}
               className="bg-violet-600 hover:bg-violet-700"
             >
-              Refresh Page
+              {t('refreshPage')}
             </Button>
           </div>
         )}

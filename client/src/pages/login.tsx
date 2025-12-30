@@ -1,9 +1,12 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Users, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_06_36_20_PM_1766994935586.png";
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth');
+  
   const handleLogin = () => {
     const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/dashboard";
     window.location.href = `/api/login?returnTo=${encodeURIComponent(returnTo)}`;
@@ -21,10 +24,10 @@ export default function LoginPage() {
               </h1>
             </Link>
             <h2 className="mt-6 text-2xl font-semibold text-gray-900">
-              Welcome to Flow 83
+              {t('welcomeToFlow83')}
             </h2>
             <p className="mt-2 text-gray-600">
-              Sign in to continue creating transformative journeys
+              {t('signInToContinue')}
             </p>
           </div>
 
@@ -34,12 +37,12 @@ export default function LoginPage() {
               className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-medium text-lg"
               data-testid="button-login"
             >
-              Continue with Replit
+              {t('continueWithReplit')}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
 
             <p className="text-center text-sm text-gray-500">
-              Sign in with your Replit account to access all features. We support Google, GitHub, and email login.
+              {t('replitLoginDescription')}
             </p>
 
             <div className="border-t border-gray-200 pt-6">
@@ -49,8 +52,8 @@ export default function LoginPage() {
                     <Shield className="w-4 h-4 text-violet-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Secure & Private</p>
-                    <p className="text-sm text-gray-500">Your data is encrypted and never shared</p>
+                    <p className="font-medium text-gray-900">{t('securePrivate')}</p>
+                    <p className="text-sm text-gray-500">{t('securePrivateDesc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -58,8 +61,8 @@ export default function LoginPage() {
                     <Sparkles className="w-4 h-4 text-violet-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">AI-Powered Journeys</p>
-                    <p className="text-sm text-gray-500">Create personalized experiences for your clients</p>
+                    <p className="font-medium text-gray-900">{t('aiPoweredJourneys')}</p>
+                    <p className="text-sm text-gray-500">{t('aiPoweredJourneysDesc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -67,8 +70,8 @@ export default function LoginPage() {
                     <Users className="w-4 h-4 text-violet-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Join Thousands of Mentors</p>
-                    <p className="text-sm text-gray-500">Build your community and scale your impact</p>
+                    <p className="font-medium text-gray-900">{t('joinThousandsMentors')}</p>
+                    <p className="text-sm text-gray-500">{t('joinThousandsMentorsDesc')}</p>
                   </div>
                 </div>
               </div>
@@ -77,7 +80,7 @@ export default function LoginPage() {
 
           <div className="text-center">
             <Link href="/" className="text-sm text-gray-500 hover:text-violet-600" data-testid="link-back-home">
-              Back to home
+              {t('backToHome')}
             </Link>
           </div>
         </div>
@@ -90,17 +93,17 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
           <div className="max-w-md text-center mb-8">
             <h3 className="text-3xl font-bold mb-4">
-              Transform Your Expertise Into Impact
+              {t('transformExpertise')}
             </h3>
             <p className="text-white/80 text-lg">
-              Join thousands of mentors creating personalized AI-powered journeys for their clients.
+              {t('transformExpertiseDesc')}
             </p>
           </div>
           
           <div className="relative">
             <img
               src={loginImage}
-              alt="Login to Flow 83"
+              alt={t('loginImageAlt')}
               className="relative w-96 h-auto drop-shadow-2xl"
             />
           </div>
@@ -108,15 +111,15 @@ export default function LoginPage() {
           <div className="mt-8 flex gap-8 text-center">
             <div>
               <div className="text-3xl font-bold">10k+</div>
-              <div className="text-white/70">Active Mentors</div>
+              <div className="text-white/70">{t('activeMentors')}</div>
             </div>
             <div>
               <div className="text-3xl font-bold">50k+</div>
-              <div className="text-white/70">Journeys Created</div>
+              <div className="text-white/70">{t('journeysCreated')}</div>
             </div>
             <div>
               <div className="text-3xl font-bold">98%</div>
-              <div className="text-white/70">Satisfaction</div>
+              <div className="text-white/70">{t('satisfaction')}</div>
             </div>
           </div>
         </div>
