@@ -138,7 +138,7 @@ const HowItWorksPage = () => {
                   key={step.number}
                   className={`flex flex-col ${index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-12 items-center`}
                 >
-                  <div className="flex-1 text-center lg:text-left">
+                  <div className="flex-1 text-center lg:text-start">
                     <div className="inline-flex items-center gap-3 mb-6">
                       <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
                         <step.icon className="w-7 h-7 text-violet-600" />
@@ -151,7 +151,7 @@ const HowItWorksPage = () => {
                     <h3 className="text-3xl font-bold text-gray-900 mb-4">
                       {step.title}
                     </h3>
-                    <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto lg:mx-0">
+                    <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto lg:mx-0 lg:me-auto">
                       {step.description}
                     </p>
                   </div>
