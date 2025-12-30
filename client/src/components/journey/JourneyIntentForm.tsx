@@ -3,34 +3,10 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const professionOptions = [
-  { value: "therapist", label: "Therapist" },
-  { value: "coach", label: "Coach" },
-  { value: "healer", label: "Healer" },
-  { value: "mentor", label: "Mentor" },
-  { value: "counselor", label: "Counselor" },
-  { value: "other", label: "Other" },
-];
-
-const toneOptions = [
-  { value: "warm", label: "Warm & Personal" },
-  { value: "professional", label: "Professional" },
-  { value: "direct", label: "Direct & Clear" },
-  { value: "gentle", label: "Gentle & Soft" },
-  { value: "motivating", label: "Motivating & Energetic" },
-  { value: "spiritual", label: "Spiritual & Deep" },
-];
-
-const durationOptions = [
-  { value: "3", label: "3 Days", description: "Quick transformation" },
-  { value: "7", label: "7 Days", description: "Deep journey" },
-];
+import { useTranslation } from "react-i18next";
 
 interface JourneyIntentFormProps {
   onComplete: (data: any) => void;
@@ -41,6 +17,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState("");
+  const { t, i18n } = useTranslation('dashboard');
   const [formData, setFormData] = useState({
     profession: initialData?.profession || "",
     journeyName: initialData?.journeyName || "",
@@ -53,11 +30,41 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     additionalNotes: initialData?.additionalNotes || "",
   });
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'he' ? 'en' : 'he';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('language', newLang);
+    document.documentElement.dir = newLang === 'he' ? 'rtl' : 'ltr';
+  };
+
+  const professionOptions = [
+    { value: "therapist", label: t('journeyCreate.professionTherapist') },
+    { value: "coach", label: t('journeyCreate.professionCoach') },
+    { value: "healer", label: t('journeyCreate.professionHealer') },
+    { value: "mentor", label: t('journeyCreate.professionMentor') },
+    { value: "counselor", label: t('journeyCreate.professionCounselor') },
+    { value: "other", label: t('journeyCreate.professionOther') },
+  ];
+
+  const toneOptions = [
+    { value: "warm", label: t('journeyCreate.toneWarm') },
+    { value: "professional", label: t('journeyCreate.toneProfessional') },
+    { value: "direct", label: t('journeyCreate.toneDirect') },
+    { value: "gentle", label: t('journeyCreate.toneGentle') },
+    { value: "motivating", label: t('journeyCreate.toneMotivating') },
+    { value: "spiritual", label: t('journeyCreate.toneSpiritual') },
+  ];
+
+  const durationOptions = [
+    { value: "3", label: t('journeyCreate.duration3Days'), description: t('journeyCreate.duration3DaysDesc') },
+    { value: "7", label: t('journeyCreate.duration7Days'), description: t('journeyCreate.duration7DaysDesc') },
+  ];
+
   const steps = [
     {
       id: "profession",
-      title: "What is your profession?",
-      subtitle: "Help us understand your background",
+      title: t('journeyCreate.professionTitle'),
+      subtitle: t('journeyCreate.professionSubtitle'),
       type: "select",
       field: "profession",
       options: professionOptions,
@@ -65,46 +72,46 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     },
     {
       id: "journeyName",
-      title: "What's the name of your flow?",
-      subtitle: "Give your transformation a memorable name",
+      title: t('journeyCreate.journeyNameTitle'),
+      subtitle: t('journeyCreate.journeyNameSubtitle'),
       type: "text",
       field: "journeyName",
-      placeholder: 'e.g., "Healing the Heart"',
+      placeholder: t('journeyCreate.journeyNamePlaceholder'),
       required: true,
     },
     {
       id: "targetAudience",
-      title: "Who is this flow for?",
-      subtitle: "Describe your ideal participant",
+      title: t('journeyCreate.targetAudienceTitle'),
+      subtitle: t('journeyCreate.targetAudienceSubtitle'),
       type: "text",
       field: "targetAudience",
-      placeholder: 'e.g., "Women post-breakup", "Teens dealing with anxiety"',
+      placeholder: t('journeyCreate.targetAudiencePlaceholder'),
       required: true,
     },
     {
       id: "clientChallenges",
-      title: "What challenges do your clients face?",
-      subtitle: "Describe their main pain points and struggles",
+      title: t('journeyCreate.clientChallengesTitle'),
+      subtitle: t('journeyCreate.clientChallengesSubtitle'),
       type: "textarea",
       field: "clientChallenges",
-      placeholder: 'e.g., "Anxiety after breakups, difficulty letting go, fear of being alone"',
+      placeholder: t('journeyCreate.clientChallengesPlaceholder'),
       required: false,
     },
     {
       id: "mainGoal",
-      title: "What is the main goal of this flow?",
-      subtitle: "What transformation do you want to create?",
+      title: t('journeyCreate.mainGoalTitle'),
+      subtitle: t('journeyCreate.mainGoalSubtitle'),
       type: "textarea",
       field: "mainGoal",
-      placeholder: 'e.g., "To help people release emotional pain and find inner peace"',
+      placeholder: t('journeyCreate.mainGoalPlaceholder'),
       required: true,
       minLength: 10,
-      errorMessage: "Please provide a detailed goal (minimum 10 characters)",
+      errorMessage: t('journeyCreate.mainGoalError'),
     },
     {
       id: "duration",
-      title: "How many days?",
-      subtitle: "Choose the length of the journey",
+      title: t('journeyCreate.durationTitle'),
+      subtitle: t('journeyCreate.durationSubtitle'),
       type: "cards",
       field: "duration",
       options: durationOptions,
@@ -112,8 +119,8 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     },
     {
       id: "tone",
-      title: "What tone fits your clients?",
-      subtitle: "How should the content feel?",
+      title: t('journeyCreate.toneTitle'),
+      subtitle: t('journeyCreate.toneSubtitle'),
       type: "select",
       field: "tone",
       options: toneOptions,
@@ -121,20 +128,20 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     },
     {
       id: "desiredFeeling",
-      title: "How should users feel at the end?",
-      subtitle: "Describe the emotional transformation",
+      title: t('journeyCreate.desiredFeelingTitle'),
+      subtitle: t('journeyCreate.desiredFeelingSubtitle'),
       type: "textarea",
       field: "desiredFeeling",
-      placeholder: 'e.g., "Clear, safe, grounded, empowered"',
+      placeholder: t('journeyCreate.desiredFeelingPlaceholder'),
       required: false,
     },
     {
       id: "additionalNotes",
-      title: "Anything else to share?",
-      subtitle: "Share your vision, energy, or special intentions",
+      title: t('journeyCreate.additionalNotesTitle'),
+      subtitle: t('journeyCreate.additionalNotesSubtitle'),
       type: "textarea",
       field: "additionalNotes",
-      placeholder: 'e.g., "I want it to feel like entering a sacred temple"',
+      placeholder: t('journeyCreate.additionalNotesPlaceholder'),
       required: false,
     },
   ];
@@ -153,11 +160,11 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     const value = formData[step.field as keyof typeof formData];
     
     if (step.required && (!value || value.length === 0)) {
-      return "This field is required";
+      return t('journeyCreate.thisFieldRequired');
     }
     
     if (step.minLength && value.length < step.minLength) {
-      return step.errorMessage || `Minimum ${step.minLength} characters required`;
+      return step.errorMessage || t('journeyCreate.minimumCharsRequired', { count: step.minLength });
     }
     
     return null;
@@ -271,8 +278,20 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     <div className="max-w-xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-white/50 text-sm">Step {currentStep + 1} of {totalSteps}</span>
-          <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
+          <span className="text-white/50 text-sm">
+            {t('journeyCreate.stepOf', { current: currentStep + 1, total: totalSteps })}
+          </span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 text-white/50 hover:text-white transition-colors text-sm"
+              data-testid="button-toggle-language"
+            >
+              <Globe className="w-4 h-4" />
+              <span>{i18n.language === 'he' ? 'EN' : 'עב'}</span>
+            </button>
+            <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
+          </div>
         </div>
         <Progress value={progress} className="h-2 bg-white/10" />
       </div>
@@ -324,8 +343,8 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           className="text-white/60 hover:text-white hover:bg-white/10"
           data-testid="button-back"
         >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back
+          <ChevronLeft className="w-4 h-4 me-2" />
+          {t('journeyCreate.back')}
         </Button>
 
         <Button
@@ -336,13 +355,13 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
         >
           {currentStep === totalSteps - 1 ? (
             <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Continue
+              <Sparkles className="w-4 h-4 me-2" />
+              {t('journeyCreate.continue')}
             </>
           ) : (
             <>
-              Next
-              <ChevronRight className="w-4 h-4 ml-2" />
+              {t('journeyCreate.next')}
+              <ChevronRight className="w-4 h-4 ms-2" />
             </>
           )}
         </Button>
