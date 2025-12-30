@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { journeyApi } from "@/lib/api";
 import { Loader2, Sparkles, ArrowRight, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_07_05_52_PM_1766771570678.png";
 
 export default function StartFlowPage() {
@@ -11,6 +12,7 @@ export default function StartFlowPage() {
   const [, setLocation] = useLocation();
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (authLoading) return;
@@ -56,10 +58,10 @@ export default function StartFlowPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-900">
-              Creating your workspace...
+              {t('creatingWorkspace')}
             </h1>
             <p className="text-gray-600">
-              Setting up your Flow Builder
+              {t('settingUp')}
             </p>
           </div>
           <Loader2 className="w-8 h-8 mx-auto text-violet-600 animate-spin" />
@@ -72,9 +74,9 @@ export default function StartFlowPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <h1 className="text-xl font-bold text-gray-900">Something went wrong</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t('somethingWentWrong')}</h1>
           <p className="text-gray-600">{error}</p>
-          <p className="text-sm text-gray-500">Redirecting to your flows...</p>
+          <p className="text-sm text-gray-500">{t('redirecting')}</p>
         </div>
       </div>
     );
@@ -83,7 +85,6 @@ export default function StartFlowPage() {
   if (!isAuthenticated) {
     return (
       <div className="h-screen flex overflow-hidden">
-        {/* Left side - Form */}
         <div className="flex-1 flex items-center justify-center p-8 bg-white">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center">
@@ -93,10 +94,10 @@ export default function StartFlowPage() {
                 </h1>
               </Link>
               <h2 className="mt-6 text-2xl font-semibold text-gray-900">
-                Start Building Your Flow
+                {t('startBuilding')}
               </h2>
               <p className="mt-2 text-gray-600">
-                Sign in to create your first transformative journey
+                {t('signInToCreate')}
               </p>
             </div>
 
@@ -106,12 +107,12 @@ export default function StartFlowPage() {
                 className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-medium text-lg"
                 data-testid="button-start-free"
               >
-                Get Started
-                <ArrowRight className="w-5 h-5 ml-2" />
+                {t('getStarted')}
+                <ArrowRight className="w-5 h-5 ms-2" />
               </Button>
 
               <p className="text-center text-sm text-gray-500">
-                Sign in to start building your first Flow
+                {t('signInToStart')}
               </p>
 
               <div className="border-t border-gray-200 pt-6">
@@ -121,8 +122,8 @@ export default function StartFlowPage() {
                       <Sparkles className="w-4 h-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">AI-Powered Journeys</p>
-                      <p className="text-sm text-gray-500">Turn your method into personalized daily experiences</p>
+                      <p className="font-medium text-gray-900">{t('aiPoweredJourneys')}</p>
+                      <p className="text-sm text-gray-500">{t('aiPoweredJourneysDesc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -130,8 +131,8 @@ export default function StartFlowPage() {
                       <Users className="w-4 h-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Scale Your Practice</p>
-                      <p className="text-sm text-gray-500">Help more people with your unique expertise</p>
+                      <p className="font-medium text-gray-900">{t('scaleYourPractice')}</p>
+                      <p className="text-sm text-gray-500">{t('scaleYourPracticeDesc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -139,8 +140,8 @@ export default function StartFlowPage() {
                       <Shield className="w-4 h-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Your Method, Your Way</p>
-                      <p className="text-sm text-gray-500">Full control over your content and pricing</p>
+                      <p className="font-medium text-gray-900">{t('yourMethodYourWay')}</p>
+                      <p className="text-sm text-gray-500">{t('yourMethodDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -149,13 +150,12 @@ export default function StartFlowPage() {
 
             <div className="text-center">
               <Link href="/" className="text-sm text-gray-500 hover:text-violet-600" data-testid="link-back-home">
-                Back to home
+                {t('backToHome')}
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Right side - Image only */}
         <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-500 via-violet-600 to-fuchsia-600 items-center justify-center overflow-hidden">
           <img
             src={loginImage}
