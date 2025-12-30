@@ -76,6 +76,34 @@
     "readyToBeginDesc": "המסע הראשון שלך יכול להיות באוויר היום. AI בונה את התהליך, האתר עולה לאוויר והתשלומים זורמים ישירות אליך."
   },
 
+  "contactPage": {
+    "title": "צרו",
+    "titleHighlight": "קשר",
+    "subtitle": "יש לכם שאלות על Flow 83? אנחנו כאן לעזור לכם ליצור תהליכים טרנספורמטיביים ולהגדיל את הפרקטיקה שלכם.",
+    "sendMessage": "שלחו לנו הודעה",
+    "formDescription": "מלאו את הטופס למטה ונחזור אליכם תוך 24 שעות.",
+    "firstName": "שם פרטי",
+    "firstNamePlaceholder": "הזינו את שמכם הפרטי",
+    "lastName": "שם משפחה",
+    "lastNamePlaceholder": "הזינו את שם המשפחה",
+    "email": "כתובת אימייל",
+    "emailPlaceholder": "הזינו את כתובת האימייל",
+    "subject": "נושא",
+    "subjectPlaceholder": "בחרו נושא",
+    "subjectGeneral": "שאלה כללית",
+    "subjectTechnical": "תמיכה טכנית",
+    "subjectBilling": "חיוב ומחירים",
+    "subjectPartnership": "הזדמנויות שותפות",
+    "subjectFeedback": "משוב על תכונות",
+    "subjectBug": "דיווח על באג",
+    "message": "הודעה",
+    "messagePlaceholder": "ספרו לנו איך נוכל לעזור לכם...",
+    "sendButton": "שלח הודעה",
+    "sending": "שולח...",
+    "successTitle": "ההודעה נשלחה בהצלחה!",
+    "successDescription": "נחזור אליכם תוך 24 שעות."
+  },
+
   "communityPage": {
     "title": "הכירו את",
     "titleHighlight": "קהילת היוצרים שלנו",

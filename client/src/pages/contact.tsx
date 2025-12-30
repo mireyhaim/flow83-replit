@@ -6,23 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation('landing');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
     setTimeout(() => {
       toast({
-        title: "Message sent successfully!",
-        description: "We'll get back to you within 24 hours.",
+        title: t('contactPage.successTitle'),
+        description: t('contactPage.successDescription'),
       });
       setIsSubmitting(false);
     }, 1000);
@@ -33,87 +34,89 @@ const ContactUs = () => {
       <Header />
       <main className="container mx-auto px-6 py-16 pt-24">
         <div className="max-w-6xl mx-auto">
-          {/* Header Section */}
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-              <span className="text-gray-900">Get in </span>
+              <span className="text-gray-900">{t('contactPage.title')} </span>
               <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-                Touch
+                {t('contactPage.titleHighlight')}
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Have questions about Flow 83? We're here to help you create transformative journeys and grow your practice.
+              {t('contactPage.subtitle')}
             </p>
           </div>
 
           <div className="flex justify-center">
-            {/* Contact Form */}
             <div className="w-full max-w-2xl">
               <Card className="bg-white border border-gray-200 shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                     <MessageCircle className="w-6 h-6 text-violet-600" />
-                    Send us a Message
+                    {t('contactPage.sendMessage')}
                   </CardTitle>
                   <CardDescription className="text-gray-500">
-                    Fill out the form below and we'll respond within 24 hours.
+                    {t('contactPage.formDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
+                        <Label htmlFor="firstName">{t('contactPage.firstName')}</Label>
                         <Input
                           id="firstName"
-                          placeholder="Enter your first name"
+                          placeholder={t('contactPage.firstNamePlaceholder')}
                           required
+                          data-testid="input-first-name"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
+                        <Label htmlFor="lastName">{t('contactPage.lastName')}</Label>
                         <Input
                           id="lastName"
-                          placeholder="Enter your last name"
+                          placeholder={t('contactPage.lastNamePlaceholder')}
                           required
+                          data-testid="input-last-name"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email">{t('contactPage.email')}</Label>
                       <Input
                         id="email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder={t('contactPage.emailPlaceholder')}
                         required
+                        data-testid="input-email"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Subject</Label>
+                      <Label htmlFor="subject">{t('contactPage.subject')}</Label>
                       <Select required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a topic" />
+                        <SelectTrigger data-testid="select-subject">
+                          <SelectValue placeholder={t('contactPage.subjectPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="general">General Inquiry</SelectItem>
-                          <SelectItem value="technical">Technical Support</SelectItem>
-                          <SelectItem value="billing">Billing & Pricing</SelectItem>
-                          <SelectItem value="partnership">Partnership Opportunities</SelectItem>
-                          <SelectItem value="feedback">Feature Feedback</SelectItem>
-                          <SelectItem value="bug">Report a Bug</SelectItem>
+                          <SelectItem value="general">{t('contactPage.subjectGeneral')}</SelectItem>
+                          <SelectItem value="technical">{t('contactPage.subjectTechnical')}</SelectItem>
+                          <SelectItem value="billing">{t('contactPage.subjectBilling')}</SelectItem>
+                          <SelectItem value="partnership">{t('contactPage.subjectPartnership')}</SelectItem>
+                          <SelectItem value="feedback">{t('contactPage.subjectFeedback')}</SelectItem>
+                          <SelectItem value="bug">{t('contactPage.subjectBug')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
+                      <Label htmlFor="message">{t('contactPage.message')}</Label>
                       <Textarea
                         id="message"
-                        placeholder="Tell us how we can help you..."
+                        placeholder={t('contactPage.messagePlaceholder')}
                         className="min-h-[120px]"
                         required
+                        data-testid="input-message"
                       />
                     </div>
 
@@ -122,8 +125,9 @@ const ContactUs = () => {
                       className="w-full text-lg px-8 py-4 h-auto rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                       size="lg"
                       disabled={isSubmitting}
+                      data-testid="button-send-message"
                     >
-                      {isSubmitting ? "Sending..." : "Send Message"}
+                      {isSubmitting ? t('contactPage.sending') : t('contactPage.sendButton')}
                     </Button>
                   </form>
                 </CardContent>
