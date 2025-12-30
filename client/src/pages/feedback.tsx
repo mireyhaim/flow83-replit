@@ -4,9 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { feedbackApi, type FeedbackItem } from "@/lib/api";
 import { MessageCircle, Star, Loader2, User, Calendar, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function FeedbackPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useTranslation('dashboard');
 
   const { data: feedbackList = [], isLoading } = useQuery<FeedbackItem[]>({
     queryKey: ["/api/feedback"],
@@ -30,10 +32,10 @@ export default function FeedbackPage() {
     <DashboardLayout>
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-feedback-title">
-          Feedback
+          {t('feedbackPage.title')}
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          See what your participants are saying about your flows
+          {t('feedbackPage.subtitle')}
         </p>
       </header>
 
@@ -43,7 +45,7 @@ export default function FeedbackPage() {
             <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
               <MessageCircle className="h-5 w-5 text-rose-500" />
             </div>
-            <span className="text-sm text-slate-500">Total Feedback</span>
+            <span className="text-sm text-slate-500">{t('feedbackPage.totalFeedback')}</span>
           </div>
           <div className="text-3xl font-bold text-slate-900" data-testid="text-total-feedback">
             {feedbackList.length}
@@ -55,7 +57,7 @@ export default function FeedbackPage() {
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
               <Star className="h-5 w-5 text-amber-500" />
             </div>
-            <span className="text-sm text-slate-500">Average Rating</span>
+            <span className="text-sm text-slate-500">{t('feedbackPage.averageRating')}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-3xl font-bold text-slate-900" data-testid="text-avg-rating">{averageRating}</span>
@@ -75,7 +77,7 @@ export default function FeedbackPage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Star className="h-5 w-5 text-emerald-500 fill-emerald-500" />
             </div>
-            <span className="text-sm text-slate-500">5-Star Reviews</span>
+            <span className="text-sm text-slate-500">{t('feedbackPage.fiveStarReviews')}</span>
           </div>
           <div className="text-3xl font-bold text-slate-900" data-testid="text-5star-count">
             {feedbackList.filter(f => f.rating === 5).length}
@@ -84,7 +86,7 @@ export default function FeedbackPage() {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-6">All Feedback</h2>
+        <h2 className="text-lg font-semibold text-slate-900 mb-6">{t('feedbackPage.allFeedback')}</h2>
         
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -95,8 +97,8 @@ export default function FeedbackPage() {
             <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="h-8 w-8 text-slate-400" />
             </div>
-            <p className="text-slate-500 mb-2">No feedback yet</p>
-            <p className="text-slate-400 text-sm">When participants leave feedback, it will appear here</p>
+            <p className="text-slate-500 mb-2">{t('feedbackPage.noFeedbackYet')}</p>
+            <p className="text-slate-400 text-sm">{t('feedbackPage.whenParticipantsLeaveFeedback')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -119,7 +121,7 @@ export default function FeedbackPage() {
                         {feedback.dayNumber && (
                           <>
                             <span>•</span>
-                            <span>Day {feedback.dayNumber}</span>
+                            <span>{t('feedbackPage.day')} {feedback.dayNumber}</span>
                           </>
                         )}
                       </div>

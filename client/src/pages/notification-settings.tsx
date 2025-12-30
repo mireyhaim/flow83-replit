@@ -10,12 +10,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useTranslation } from "react-i18next";
 import type { NotificationSettings } from "@shared/schema";
 
 type NotifyOption = "email" | "none";
 
 const NotificationSettingsPage = () => {
   const { toast } = useToast();
+  const { t } = useTranslation('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -45,8 +47,8 @@ const NotificationSettingsPage = () => {
         });
       } catch (error) {
         toast({
-          title: "Error",
-          description: "Failed to load notification settings",
+          title: t('error'),
+          description: t('notificationSettings.failedToLoad'),
           variant: "destructive",
         });
       } finally {
@@ -61,13 +63,13 @@ const NotificationSettingsPage = () => {
     try {
       await apiRequest("PUT", "/api/notification-settings", settings);
       toast({
-        title: "Saved!",
-        description: "Your notification preferences have been updated.",
+        title: t('notificationSettings.saved'),
+        description: t('notificationSettings.savedDescription'),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save notification settings",
+        title: t('error'),
+        description: t('notificationSettings.failedToSave'),
         variant: "destructive",
       });
     } finally {
@@ -98,8 +100,8 @@ const NotificationSettingsPage = () => {
               <Bell className="w-5 h-5 text-violet-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Notification Settings</h1>
-              <p className="text-sm text-white/50">Customize when you receive alerts</p>
+              <h1 className="text-2xl font-bold text-white">{t('notificationSettings.title')}</h1>
+              <p className="text-sm text-white/50">{t('notificationSettings.subtitle')}</p>
             </div>
           </div>
           <Button 
@@ -109,11 +111,11 @@ const NotificationSettingsPage = () => {
             data-testid="button-save-notifications"
           >
             {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <Loader2 className="w-4 h-4 animate-spin me-2" />
             ) : (
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 me-2" />
             )}
-            Save Changes
+            {t('notificationSettings.saveChanges')}
           </Button>
         </div>
 
@@ -124,8 +126,8 @@ const NotificationSettingsPage = () => {
                 <Users className="w-5 h-5 text-violet-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Participant Milestones</h2>
-                <p className="text-sm text-white/50">Get notified when participants reach key milestones</p>
+                <h2 className="text-lg font-semibold text-white">{t('notificationSettings.participantMilestones')}</h2>
+                <p className="text-sm text-white/50">{t('notificationSettings.participantMilestonesDesc')}</p>
               </div>
             </div>
 
@@ -136,8 +138,8 @@ const NotificationSettingsPage = () => {
                     <Users className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div>
-                    <Label className="text-white font-medium">New Participant Joined</Label>
-                    <p className="text-xs text-white/40">When someone starts your flow</p>
+                    <Label className="text-white font-medium">{t('notificationSettings.newParticipantJoined')}</Label>
+                    <p className="text-xs text-white/40">{t('notificationSettings.newParticipantJoinedDesc')}</p>
                   </div>
                 </div>
                 <Switch 
@@ -153,8 +155,8 @@ const NotificationSettingsPage = () => {
                     <Calendar className="w-4 h-4 text-blue-400" />
                   </div>
                   <div>
-                    <Label className="text-white font-medium">Day Completed</Label>
-                    <p className="text-xs text-white/40">When a participant completes a day</p>
+                    <Label className="text-white font-medium">{t('notificationSettings.dayCompleted')}</Label>
+                    <p className="text-xs text-white/40">{t('notificationSettings.dayCompletedDesc')}</p>
                   </div>
                 </div>
                 <Switch 
@@ -170,8 +172,8 @@ const NotificationSettingsPage = () => {
                     <Trophy className="w-4 h-4 text-yellow-400" />
                   </div>
                   <div>
-                    <Label className="text-white font-medium">Flow Completed</Label>
-                    <p className="text-xs text-white/40">When a participant finishes the entire flow</p>
+                    <Label className="text-white font-medium">{t('notificationSettings.flowCompleted')}</Label>
+                    <p className="text-xs text-white/40">{t('notificationSettings.flowCompletedDesc')}</p>
                   </div>
                 </div>
                 <Switch 
@@ -189,8 +191,8 @@ const NotificationSettingsPage = () => {
                 <AlertTriangle className="w-5 h-5 text-orange-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Inactivity Alerts</h2>
-                <p className="text-sm text-white/50">Get notified when participants need attention</p>
+                <h2 className="text-lg font-semibold text-white">{t('notificationSettings.inactivityAlerts')}</h2>
+                <p className="text-sm text-white/50">{t('notificationSettings.inactivityAlertsDesc')}</p>
               </div>
             </div>
 
@@ -201,8 +203,8 @@ const NotificationSettingsPage = () => {
                     <Clock className="w-4 h-4 text-red-400" />
                   </div>
                   <div>
-                    <Label className="text-white font-medium">Inactive Participant Alert</Label>
-                    <p className="text-xs text-white/40">When someone hasn't engaged for a while</p>
+                    <Label className="text-white font-medium">{t('notificationSettings.inactiveParticipantAlert')}</Label>
+                    <p className="text-xs text-white/40">{t('notificationSettings.inactiveParticipantAlertDesc')}</p>
                   </div>
                 </div>
                 <Switch 
@@ -213,9 +215,9 @@ const NotificationSettingsPage = () => {
               </div>
 
               {settings.notifyOnInactivity === "email" && (
-                <div className="py-3 pl-11">
+                <div className="py-3 ps-11">
                   <Label className="text-white/80 text-sm mb-4 block">
-                    Alert me after <span className="font-bold text-violet-400">{settings.inactivityThresholdDays} days</span> of inactivity
+                    {t('notificationSettings.alertMeAfter')} <span className="font-bold text-violet-400">{settings.inactivityThresholdDays} {settings.inactivityThresholdDays === 1 ? t('notificationSettings.day') : t('notificationSettings.days')}</span> {t('notificationSettings.daysOfInactivity')}
                   </Label>
                   <Slider
                     value={[settings.inactivityThresholdDays]}
@@ -227,8 +229,8 @@ const NotificationSettingsPage = () => {
                     data-testid="slider-inactivity-days"
                   />
                   <div className="flex justify-between text-xs text-white/30 mt-2 max-w-xs">
-                    <span>1 day</span>
-                    <span>7 days</span>
+                    <span>1 {t('notificationSettings.day')}</span>
+                    <span>7 {t('notificationSettings.days')}</span>
                   </div>
                 </div>
               )}
@@ -237,7 +239,7 @@ const NotificationSettingsPage = () => {
 
           <div className="text-center pt-4">
             <p className="text-sm text-white/30">
-              All notifications will be sent to your registered email address.
+              {t('notificationSettings.allNotificationsSentTo')}
             </p>
           </div>
         </div>

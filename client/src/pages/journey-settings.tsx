@@ -8,12 +8,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChevronLeft, Loader2, Save, Pencil, LayoutGrid } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi } from "@/lib/api";
+import { useTranslation } from "react-i18next";
 import type { Journey } from "@shared/schema";
 
 const JourneySettingsPage = () => {
   const [match, params] = useRoute("/journey/:id/settings");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation('dashboard');
   const [journey, setJourney] = useState<Journey | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,8 +43,8 @@ const JourneySettingsPage = () => {
         });
       } catch (error) {
         toast({
-          title: "Error",
-          description: "Failed to load journey",
+          title: t('error'),
+          description: t('journeySettings.failedToLoad'),
           variant: "destructive",
         });
       } finally {
@@ -66,8 +68,8 @@ const JourneySettingsPage = () => {
       setLocation(`/journey/${journey.id}/edit`);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save flow settings",
+        title: t('error'),
+        description: t('journeySettings.failedToSave'),
         variant: "destructive",
       });
     } finally {
@@ -87,9 +89,9 @@ const JourneySettingsPage = () => {
     return (
       <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Flow not found</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('journeySettings.flowNotFound')}</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-go-journeys">
-            Go to Flows
+            {t('journeySettings.goToFlows')}
           </Button>
         </div>
       </div>
@@ -104,10 +106,10 @@ const JourneySettingsPage = () => {
             <div className="flex items-center gap-4">
               <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
                 <LayoutGrid className="w-4 h-4" />
-                <span className="text-sm font-medium">My Flows</span>
+                <span className="text-sm font-medium">{t('journeyCreate.myFlows')}</span>
               </Link>
               <div className="h-5 w-px bg-white/10" />
-              <h1 className="text-lg font-semibold text-white">Flow Settings</h1>
+              <h1 className="text-lg font-semibold text-white">{t('journeySettings.title')}</h1>
             </div>
             <Button 
               variant="ghost" 
@@ -116,8 +118,8 @@ const JourneySettingsPage = () => {
               className="text-white/60 hover:text-white hover:bg-white/10"
               data-testid="button-back-to-editor"
             >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back to Editor
+              <ChevronLeft className="w-4 h-4 me-1" />
+              {t('journeySettings.backToEditor')}
             </Button>
           </div>
         </div>
@@ -127,71 +129,71 @@ const JourneySettingsPage = () => {
         <div className="bg-[#1a1a2e]/60 backdrop-blur-sm border border-white/10 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-6">
             <Pencil className="w-5 h-5 text-violet-400" />
-            <h2 className="text-xl font-semibold text-white">Edit Flow Details</h2>
+            <h2 className="text-xl font-semibold text-white">{t('journeySettings.editFlowDetails')}</h2>
           </div>
           <div className="space-y-6">
               <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium text-white">Flow Name *</Label>
+              <Label htmlFor="name" className="text-sm font-medium text-white">{t('journeySettings.flowName')} *</Label>
               <Input 
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder='e.g., "Healing the Heart"'
+                placeholder={t('journeySettings.flowNamePlaceholder')}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
                 data-testid="input-journey-name"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="goal" className="text-sm font-medium text-white">Main Goal *</Label>
+              <Label htmlFor="goal" className="text-sm font-medium text-white">{t('journeySettings.mainGoal')} *</Label>
               <Textarea 
                 id="goal"
                 value={formData.goal}
                 onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                placeholder='e.g., "To help people release emotional pain from past relationships and find inner peace."'
+                placeholder={t('journeySettings.mainGoalPlaceholder')}
                 className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/30"
                 data-testid="textarea-journey-goal"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="audience" className="text-sm font-medium text-white">Target Audience *</Label>
+              <Label htmlFor="audience" className="text-sm font-medium text-white">{t('journeySettings.targetAudience')} *</Label>
               <Input 
                 id="audience"
                 value={formData.audience}
                 onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
-                placeholder='e.g., "Women post-breakup", "Teens dealing with anxiety"'
+                placeholder={t('journeySettings.targetAudiencePlaceholder')}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
                 data-testid="input-journey-audience"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-white">Duration *</Label>
+              <Label className="text-sm font-medium text-white">{t('journeySettings.duration')} *</Label>
               <RadioGroup 
                 value={formData.duration} 
                 onValueChange={(value) => setFormData({ ...formData, duration: value })}
-                className="flex flex-col space-y-2"
+                className="flex flex-col gap-2"
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value="3" id="duration-3" data-testid="radio-duration-3" className="border-white/30 text-violet-500" />
-                  <Label htmlFor="duration-3" className="text-white/80">3 days - Quick transformation</Label>
+                  <Label htmlFor="duration-3" className="text-white/80">{t('journeySettings.days3')}</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value="7" id="duration-7" data-testid="radio-duration-7" className="border-white/30 text-violet-500" />
-                  <Label htmlFor="duration-7" className="text-white/80">7 days - Deep flow</Label>
+                  <Label htmlFor="duration-7" className="text-white/80">{t('journeySettings.days7')}</Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-white">Description</Label>
-              <p className="text-xs text-white/40">Optional - Additional notes or vision for this flow</p>
+              <Label htmlFor="description" className="text-sm font-medium text-white">{t('journeySettings.description')}</Label>
+              <p className="text-xs text-white/40">{t('journeySettings.descriptionOptional')}</p>
               <Textarea 
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder='e.g., "I want it to feel like entering a sacred temple"'
+                placeholder={t('journeySettings.descriptionPlaceholder')}
                 className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/30"
                 data-testid="textarea-journey-description"
               />
@@ -205,11 +207,11 @@ const JourneySettingsPage = () => {
               data-testid="button-save-settings"
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Loader2 className="w-4 h-4 animate-spin me-2" />
               ) : (
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-4 h-4 me-2" />
               )}
-              Save & Return to Editor
+              {t('journeySettings.saveAndReturn')}
             </Button>
           </div>
         </div>

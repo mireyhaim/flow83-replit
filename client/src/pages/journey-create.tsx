@@ -3,10 +3,12 @@ import { Link } from "wouter";
 import JourneyIntentForm from "@/components/journey/JourneyIntentForm";
 import ContentUploadSection from "@/components/journey/ContentUploadSection";
 import { LayoutGrid } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const JourneyCreatePage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [journeyData, setJourneyData] = useState({});
+  const { t } = useTranslation('dashboard');
 
   const handleIntentComplete = (data: any) => {
     setJourneyData(data);
@@ -24,10 +26,10 @@ const JourneyCreatePage = () => {
           <div className="flex items-center h-16">
             <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
               <LayoutGrid className="w-4 h-4" />
-              <span className="text-sm font-medium">My Flows</span>
+              <span className="text-sm font-medium">{t('journeyCreate.myFlows')}</span>
             </Link>
             <div className="h-5 w-px bg-white/10 mx-4" />
-            <h1 className="text-lg font-semibold text-white">Create New Flow</h1>
+            <h1 className="text-lg font-semibold text-white">{t('journeyCreate.createNewFlow')}</h1>
           </div>
         </div>
       </header>
@@ -39,10 +41,10 @@ const JourneyCreatePage = () => {
           <div className="space-y-6">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                Upload Your Content
+                {t('journeyCreate.uploadYourContent')}
               </h2>
               <p className="text-white/60">
-                Share your teachings, exercises, and materials
+                {t('journeyCreate.shareYourTeachings')}
               </p>
             </div>
             <ContentUploadSection journeyData={journeyData} onBack={handleBack} />
