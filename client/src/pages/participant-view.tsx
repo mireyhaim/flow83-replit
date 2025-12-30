@@ -94,6 +94,11 @@ export default function ParticipantView() {
   const publishedJourneys = allJourneys?.filter(j => j.status === "published") || [];
   
   // For mentor preview: if access token lookup failed but we have a UUID, treat it as journey ID
+  // externalLookupDone = true when we've tried to fetch external data and it either succeeded or failed
+  // If we're not in UUID format, we don't need to wait for external lookup
+  // If external lookup finished loading (success or error), we're done
+  const externalLookupDone = !isUuidFormat || (!externalLoading && (!!externalData || !!externalError));
+  
   const journeyId = isExternalAccess 
     ? externalData?.journey?.id 
     : (tokenFromRoute || publishedJourneys[0]?.id);
@@ -101,7 +106,7 @@ export default function ParticipantView() {
   const { data: journey, isLoading: journeyLoading } = useQuery<JourneyWithSteps>({
     queryKey: ["/api/journeys", journeyId, "full"],
     queryFn: () => fetch(`/api/journeys/${journeyId}/full`).then(res => res.json()),
-    enabled: !!journeyId && !isExternalAccess,
+    enabled: !!journeyId && !isExternalAccess && externalLookupDone,
   });
 
   const { data: participant, isLoading: participantLoading, error: participantError } = useQuery<Participant>({
@@ -110,12 +115,14 @@ export default function ParticipantView() {
       const res = await apiRequest("GET", `/api/participants/journey/${journeyId}`);
       return res.json();
     },
-    enabled: !!journeyId && !isExternalAccess && !!currentUser,
+    enabled: !!journeyId && !isExternalAccess && externalLookupDone && !!currentUser,
   });
 
   const resolvedJourney = isExternalAccess ? externalData?.journey as JourneyWithSteps | undefined : journey;
   const resolvedParticipant = isExternalAccess ? externalData?.participant : participant;
-  const resolvedLoading = isExternalAccess ? externalLoading : (journeyLoading || (!!currentUser && participantLoading));
+  const resolvedLoading = isExternalAccess 
+    ? externalLoading 
+    : (externalLoading || journeyLoading || (!!currentUser && participantLoading));
 
   // Helper to get mentor display name
   const mentorName = resolvedJourney?.mentor?.firstName 
@@ -157,8 +164,8 @@ export default function ParticipantView() {
 
   // Fetch day summaries for displaying in the sidebar
   // Only fetch for valid participants (not blocked/invalid tokens)
-  const shouldFetchSummaries = !!resolvedParticipant?.id && resolvedJourney && 
-    (isExternalAccess ? externalData?.participant?.id : true);
+  const shouldFetchSummaries = !!resolvedParticipant?.id && !!resolvedJourney && 
+    (isExternalAccess ? !!externalData?.participant?.id : true);
   
   const { data: daySummaries } = useQuery<DaySummary[]>({
     queryKey: ["summaries", resolvedParticipant?.id],
@@ -203,10 +210,26 @@ export default function ParticipantView() {
   const completeDayMutation = useMutation({
     mutationFn: async () => {
       if (!resolvedParticipant || !resolvedJourney) return;
-      const res = await apiRequest("POST", `/api/participants/${resolvedParticipant.id}/complete-day`, {
-        dayNumber: resolvedParticipant.currentDay,
-        journeyId: resolvedJourney.id,
+      
+      // Use different endpoints for external vs authenticated participants
+      // For external access, use the token from the URL (tokenFromRoute)
+      const endpoint = isExternalAccess && tokenFromRoute
+        ? `/api/participant/token/${tokenFromRoute}/complete-day`
+        : `/api/participants/${resolvedParticipant.id}/complete-day`;
+      
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          dayNumber: resolvedParticipant.currentDay,
+          journeyId: resolvedJourney.id,
+        }),
       });
+      
+      if (!res.ok) {
+        throw new Error("Failed to complete day");
+      }
       return res.json();
     },
     onSuccess: () => {

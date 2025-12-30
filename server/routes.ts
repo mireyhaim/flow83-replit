@@ -756,6 +756,126 @@ export async function registerRoutes(
     }
   });
 
+  // External participant complete day - uses access token instead of auth
+  app.post("/api/participant/token/:accessToken/complete-day", async (req: any, res) => {
+    try {
+      const { accessToken } = req.params;
+      const { dayNumber, journeyId } = req.body;
+      
+      const existingParticipant = await storage.getParticipantByAccessToken(accessToken);
+      if (!existingParticipant || existingParticipant.journeyId !== journeyId) {
+        return res.status(403).json({ error: "Not authorized to complete this day" });
+      }
+      
+      const id = existingParticipant.id;
+      
+      const steps = await storage.getJourneySteps(journeyId);
+      const totalDays = steps.length || 7;
+      const currentStep = steps.find(s => s.dayNumber === dayNumber);
+      
+      const nextDay = Math.min(dayNumber + 1, totalDays + 1);
+      const isJourneyComplete = nextDay > totalDays;
+      
+      // PRD 7.2 - Generate user summary at day completion
+      if (currentStep) {
+        try {
+          const allMessages = await storage.getMessages(id, currentStep.id);
+          const messages = allMessages.filter(m => !m.isSummary);
+          
+          const journey = await storage.getJourney(journeyId);
+          const mentor = journey?.creatorId ? await storage.getUser(journey.creatorId) : null;
+          
+          const mentorName = mentor?.firstName 
+            ? `${mentor.firstName}${mentor.lastName ? ' ' + mentor.lastName : ''}`
+            : journey?.name || "Guide";
+          
+          const conversation = messages.map(m => ({
+            role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+            content: m.content,
+          }));
+          
+          if (conversation.length > 0) {
+            const summary = await generateDaySummary({
+              conversation,
+              dayGoal: currentStep.goal || currentStep.description || "Day goal",
+              dayTask: currentStep.task || "Day task",
+              mentorName,
+            });
+            
+            const participantSummary = await generateParticipantSummary({
+              conversation,
+              dayNumber,
+              totalDays,
+              dayTitle: currentStep.title || `Day ${dayNumber}`,
+              dayGoal: currentStep.goal || currentStep.description || "Day goal",
+              participantName: existingParticipant.name || undefined,
+              journeyName: journey?.name || "Your Journey",
+              mentorName,
+            });
+            
+            await storage.completeDayState(id, dayNumber, {
+              summaryChallenge: summary.challenge,
+              summaryEmotionalTone: summary.emotionalTone,
+              summaryInsight: summary.insight,
+              summaryResistance: summary.resistance,
+              participantSummary,
+            });
+          }
+        } catch (summaryError) {
+          console.error("Failed to generate day summary:", summaryError);
+        }
+      }
+      
+      const participant = await storage.updateParticipant(id, {
+        currentDay: nextDay,
+        lastActiveAt: new Date(),
+        ...(isJourneyComplete ? { completedAt: new Date() } : {}),
+      });
+      
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      
+      // Create activity events for external participants
+      const journey = await storage.getJourney(journeyId);
+      if (journey?.creatorId && participant) {
+        try {
+          if (isJourneyComplete) {
+            await storage.createActivityEvent({
+              creatorId: journey.creatorId,
+              participantId: participant.id,
+              journeyId,
+              eventType: 'completed_journey',
+              eventData: {
+                userName: existingParticipant.name || existingParticipant.email || 'Someone',
+                journeyName: journey.name,
+              },
+            });
+          } else {
+            await storage.createActivityEvent({
+              creatorId: journey.creatorId,
+              participantId: participant.id,
+              journeyId,
+              eventType: 'completed_day',
+              eventData: {
+                userName: existingParticipant.name || existingParticipant.email || 'Someone',
+                journeyName: journey.name,
+                dayNumber,
+              },
+            });
+          }
+        } catch (activityError) {
+          console.error("Failed to create activity event:", activityError);
+        }
+      }
+      
+      res.json(participant);
+    } catch (error) {
+      console.error("Error completing day for external participant:", error);
+      res.status(500).json({ error: "Failed to complete day" });
+    }
+  });
+
   // Get all day summaries for a participant
   app.get("/api/participants/:participantId/summaries", async (req: any, res) => {
     try {
