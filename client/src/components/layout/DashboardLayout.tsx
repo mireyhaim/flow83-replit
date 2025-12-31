@@ -136,18 +136,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Sidebar */}
       <aside className={cn(
-        "md:hidden fixed top-0 left-0 h-full w-72 bg-white z-40 flex flex-col transform transition-transform duration-300 ease-in-out shadow-xl",
-        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        "md:hidden fixed top-0 start-0 h-full w-72 bg-white z-40 flex flex-col transform transition-transform duration-300 ease-in-out shadow-xl",
+        mobileMenuOpen ? "translate-x-0 rtl:-translate-x-0" : "-translate-x-full rtl:translate-x-full"
       )}>
         <NavContent />
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-60 bg-white border-r border-slate-200 flex-col fixed h-full z-10">
+      <aside className="hidden md:flex w-60 bg-white border-e border-slate-200 flex-col fixed h-full z-10 start-0">
         <NavContent />
       </aside>
 
-      <main className="flex-1 md:ml-60 min-h-screen bg-slate-50 pt-14 md:pt-0">
+      <main className="flex-1 md:ms-60 min-h-screen bg-slate-50 pt-14 md:pt-0">
         <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-300">
           {children}
         </div>
