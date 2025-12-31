@@ -931,13 +931,13 @@ const JourneyEditorPage = () => {
       {/* Paywall Modal - Inline Pricing */}
       <Dialog open={showPaywallModal} onOpenChange={setShowPaywallModal}>
         <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
-          {/* Back button at top left */}
+          {/* Back button at top */}
           <button
             onClick={() => setShowPaywallModal(false)}
-            className="absolute left-4 top-4 flex items-center gap-1.5 text-white/60 hover:text-white transition-colors text-sm"
+            className="absolute start-4 top-4 flex items-center gap-1.5 text-white/60 hover:text-white transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {t('back')}
           </button>
 
           <DialogHeader className="space-y-4 pt-4">
@@ -945,32 +945,32 @@ const JourneyEditorPage = () => {
               <Crown className="w-8 h-8 text-white" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center">
-              Choose a Plan to Activate Your Flow
+              {t('subscription.choosePlanTitle')}
             </DialogTitle>
             <DialogDescription className="text-white/60 text-center text-base">
-              You've created something amazing! To publish your flow and start sharing it with clients, choose a plan that fits your needs.
+              {t('subscription.choosePlanDescription')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
             <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4">
-              <h4 className="font-medium text-violet-300 mb-2 text-center">What you'll unlock:</h4>
+              <h4 className="font-medium text-violet-300 mb-2 text-center">{t('subscription.whatYoullUnlock')}</h4>
               <div className="flex flex-wrap justify-center gap-4 text-sm text-white/70">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-violet-400" />
-                  Publish flows
+                  {t('subscription.publishFlows')}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-violet-400" />
-                  Sales page
+                  {t('subscription.salesPage')}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-violet-400" />
-                  Direct payments
+                  {t('subscription.directPayments')}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-violet-400" />
-                  Analytics
+                  {t('subscription.analytics')}
                 </span>
               </div>
             </div>
@@ -979,42 +979,42 @@ const JourneyEditorPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Starter */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-1">Starter</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('subscription.starter')}</h3>
                 <div className="flex items-baseline mb-2">
                   <span className="text-3xl font-bold text-white">$26</span>
-                  <span className="text-white/50 ml-1">/month</span>
+                  <span className="text-white/50 ms-1">{t('subscription.perMonth')}</span>
                 </div>
-                <p className="text-xs text-violet-400 mb-3">7-day free trial</p>
+                <p className="text-xs text-violet-400 mb-3">{t('subscription.freeTrial')}</p>
                 <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Create 1 Flow</span>
+                    <span>{t('subscription.create1Flow')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Up to 60 users</span>
+                    <span>{t('subscription.upTo60Users')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Sales landing page</span>
+                    <span>{t('subscription.salesLandingPage')}</span>
                   </li>
                   {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>$0.60 per user above 60</span>
+                        <span>{t('subscription.userOverage060')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Direct payment integration</span>
+                        <span>{t('subscription.directPaymentIntegration')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Full cloud hosting</span>
+                        <span>{t('subscription.fullCloudHosting')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Analytics dashboard</span>
+                        <span>{t('subscription.analyticsDashboard')}</span>
                       </li>
                     </>
                   )}
@@ -1024,9 +1024,9 @@ const JourneyEditorPage = () => {
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
                   {expandedPlanDetails ? (
-                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                    <>{t('subscription.showLess')} <ChevronUp className="w-3 h-3" /></>
                   ) : (
-                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                    <>{t('subscription.readMore')} <ChevronDown className="w-3 h-3" /></>
                   )}
                 </button>
                 <Button
@@ -1038,56 +1038,56 @@ const JourneyEditorPage = () => {
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-starter"
                 >
-                  Start Free Trial
+                  {t('subscription.startFreeTrial')}
                 </Button>
               </div>
 
               {/* Pro - Popular */}
               <div className="bg-violet-600/20 border-2 border-violet-500 rounded-xl p-5 flex flex-col relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -top-3 start-1/2 transform -translate-x-1/2 rtl:translate-x-1/2">
                   <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    Most Popular
+                    {t('subscription.mostPopular')}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1 mt-2">Pro</h3>
+                <h3 className="text-lg font-bold text-white mb-1 mt-2">{t('subscription.pro')}</h3>
                 <div className="flex items-baseline mb-3">
                   <span className="text-3xl font-bold text-white">$83</span>
-                  <span className="text-white/50 ml-1">/month</span>
+                  <span className="text-white/50 ms-1">{t('subscription.perMonth')}</span>
                 </div>
                 <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Create up to 5 Flows</span>
+                    <span>{t('subscription.createUpTo5Flows')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Up to 300 users</span>
+                    <span>{t('subscription.upTo300Users')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Extended data dashboard</span>
+                    <span>{t('subscription.extendedDataDashboard')}</span>
                   </li>
                   {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>$0.60 per user above 300</span>
+                        <span>{t('subscription.userOverage060Pro')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Personal sales landing page for each journey</span>
+                        <span>{t('subscription.personalSalesLandingPage')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Direct payment integration</span>
+                        <span>{t('subscription.directPaymentIntegration')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Full cloud hosting</span>
+                        <span>{t('subscription.fullCloudHosting')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Extended data dashboard</span>
+                        <span>{t('subscription.extendedDataDashboard')}</span>
                       </li>
                     </>
                   )}
@@ -1097,9 +1097,9 @@ const JourneyEditorPage = () => {
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
                   {expandedPlanDetails ? (
-                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                    <>{t('subscription.showLess')} <ChevronUp className="w-3 h-3" /></>
                   ) : (
-                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                    <>{t('subscription.readMore')} <ChevronDown className="w-3 h-3" /></>
                   )}
                 </button>
                 <Button
@@ -1111,51 +1111,51 @@ const JourneyEditorPage = () => {
                   className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                   data-testid="button-subscribe-pro"
                 >
-                  Choose Pro
+                  {t('subscription.choosePro')}
                 </Button>
               </div>
 
               {/* Business */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-1">Business</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('subscription.business')}</h3>
                 <div className="flex items-baseline mb-3">
                   <span className="text-3xl font-bold text-white">$188</span>
-                  <span className="text-white/50 ml-1">/month</span>
+                  <span className="text-white/50 ms-1">{t('subscription.perMonth')}</span>
                 </div>
                 <ul className="text-sm text-white/70 space-y-1.5 mb-2 flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Create up to 10 Flows</span>
+                    <span>{t('subscription.createUpTo10Flows')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>Up to 1000 users</span>
+                    <span>{t('subscription.upTo1000Users')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                    <span>$0.40/user overage</span>
+                    <span>{t('subscription.userOverage040')}</span>
                   </li>
                   {expandedPlanDetails && (
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Personal sales landing page for each journey</span>
+                        <span>{t('subscription.personalSalesLandingPage')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Direct payment integration</span>
+                        <span>{t('subscription.directPaymentIntegration')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Full cloud hosting</span>
+                        <span>{t('subscription.fullCloudHosting')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Advanced AI Flow Composer</span>
+                        <span>{t('subscription.advancedAIFlowComposer')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>Extended data dashboard</span>
+                        <span>{t('subscription.extendedDataDashboard')}</span>
                       </li>
                     </>
                   )}
@@ -1165,9 +1165,9 @@ const JourneyEditorPage = () => {
                   className="text-xs text-violet-400 hover:text-violet-300 mb-3 flex items-center gap-1"
                 >
                   {expandedPlanDetails ? (
-                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                    <>{t('subscription.showLess')} <ChevronUp className="w-3 h-3" /></>
                   ) : (
-                    <>Read more <ChevronDown className="w-3 h-3" /></>
+                    <>{t('subscription.readMore')} <ChevronDown className="w-3 h-3" /></>
                   )}
                 </button>
                 <Button
@@ -1179,7 +1179,7 @@ const JourneyEditorPage = () => {
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-business"
                 >
-                  Choose Business
+                  {t('subscription.chooseBusiness')}
                 </Button>
               </div>
             </div>
