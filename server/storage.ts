@@ -39,6 +39,7 @@ export interface IStorage {
   deleteJourneyStep(id: string): Promise<void>;
 
   getJourneyBlocks(stepId: string): Promise<JourneyBlock[]>;
+  getAllBlocksForJourney(journeyId: string): Promise<JourneyBlock[]>;
   getJourneyBlock(id: string): Promise<JourneyBlock | undefined>;
   createJourneyBlock(block: InsertJourneyBlock): Promise<JourneyBlock>;
   createJourneyBlocks(blocks: InsertJourneyBlock[]): Promise<JourneyBlock[]>;
@@ -214,6 +215,13 @@ export class DatabaseStorage implements IStorage {
 
   async getJourneyBlocks(stepId: string): Promise<JourneyBlock[]> {
     return db.select().from(journeyBlocks).where(eq(journeyBlocks.stepId, stepId));
+  }
+
+  async getAllBlocksForJourney(journeyId: string): Promise<JourneyBlock[]> {
+    const steps = await db.select({ id: journeySteps.id }).from(journeySteps).where(eq(journeySteps.journeyId, journeyId));
+    if (steps.length === 0) return [];
+    const stepIds = steps.map(s => s.id);
+    return db.select().from(journeyBlocks).where(inArray(journeyBlocks.stepId, stepIds));
   }
 
   async getJourneyBlock(id: string): Promise<JourneyBlock | undefined> {

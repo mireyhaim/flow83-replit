@@ -448,26 +448,37 @@ export async function registerRoutes(
     }
   });
 
-  // Journey with full details (steps + blocks)
+  // Journey with full details (steps + blocks) - optimized with parallel queries
   app.get("/api/journeys/:id/full", async (req, res) => {
     try {
-      const journey = await storage.getJourney(req.params.id);
+      const journeyId = req.params.id;
+      
+      // Run all queries in parallel for better performance
+      const [journey, steps, allBlocks] = await Promise.all([
+        storage.getJourney(journeyId),
+        storage.getJourneySteps(journeyId),
+        storage.getAllBlocksForJourney(journeyId),
+      ]);
+      
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
-      const steps = await storage.getJourneySteps(req.params.id);
-      const stepsWithBlocks = await Promise.all(
-        steps.map(async (step) => ({
-          ...step,
-          blocks: await storage.getJourneyBlocks(step.id),
-        }))
-      );
       
-      // Get creator (mentor) info
-      let mentor = null;
-      if (journey.creatorId) {
-        mentor = await storage.getUser(journey.creatorId);
+      // Get mentor in parallel if needed
+      const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
+      
+      // Group blocks by stepId in memory (much faster than N queries)
+      const blocksByStep = new Map<string, typeof allBlocks>();
+      for (const block of allBlocks) {
+        const existing = blocksByStep.get(block.stepId) || [];
+        existing.push(block);
+        blocksByStep.set(block.stepId, existing);
       }
+      
+      const stepsWithBlocks = steps.map(step => ({
+        ...step,
+        blocks: blocksByStep.get(step.id) || [],
+      }));
       
       res.json({ ...journey, steps: stepsWithBlocks, mentor });
     } catch (error) {
