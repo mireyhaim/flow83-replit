@@ -432,7 +432,7 @@ const JourneyEditorPage = () => {
 
         <div className="relative">
           {/* Timeline spine */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-600/50 via-fuchsia-600/50 to-violet-600/30" />
+          <div className="absolute start-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-600/50 via-fuchsia-600/50 to-violet-600/30" />
           
           <div className="space-y-8">
             {journeyData.steps.map((step, index) => {
@@ -445,12 +445,12 @@ const JourneyEditorPage = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="relative pl-16"
+                  className="relative ps-16"
                 >
                   {/* Timeline node */}
                   <button
                     onClick={() => toggleDay(step.id)}
-                    className="absolute left-0 top-0 z-10 group"
+                    className="absolute start-0 top-0 z-10 group"
                     data-testid={`toggle-day-${step.dayNumber}`}
                   >
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -463,7 +463,7 @@ const JourneyEditorPage = () => {
                       </span>
                     </div>
                     {isComplete && (
-                      <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <div className="absolute -end-1 -bottom-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
                         <CheckCircle className="w-3 h-3 text-white" />
                       </div>
                     )}
