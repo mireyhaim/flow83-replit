@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Sparkles, Globe } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -17,7 +17,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState("");
-  const { t, i18n } = useTranslation('dashboard');
+  const { t } = useTranslation('dashboard');
   const [formData, setFormData] = useState({
     profession: initialData?.profession || "",
     journeyName: initialData?.journeyName || "",
@@ -29,13 +29,6 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     desiredFeeling: initialData?.desiredFeeling || "",
     additionalNotes: initialData?.additionalNotes || "",
   });
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'he' ? 'en' : 'he';
-    i18n.changeLanguage(newLang);
-    localStorage.setItem('language', newLang);
-    document.documentElement.dir = newLang === 'he' ? 'rtl' : 'ltr';
-  };
 
   const professionOptions = [
     { value: "therapist", label: t('journeyCreate.professionTherapist') },
@@ -281,17 +274,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           <span className="text-white/50 text-sm">
             {t('journeyCreate.stepOf', { current: currentStep + 1, total: totalSteps })}
           </span>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 text-white/50 hover:text-white transition-colors text-sm"
-              data-testid="button-toggle-language"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{i18n.language === 'he' ? 'EN' : 'עב'}</span>
-            </button>
-            <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
-          </div>
+          <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
         </div>
         <Progress value={progress} className="h-2 bg-white/10" />
       </div>
