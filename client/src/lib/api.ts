@@ -53,6 +53,7 @@ export const journeyApi = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+      credentials: "include",
     });
     return handleResponse(res);
   },
@@ -101,6 +102,7 @@ export const journeyApi = {
           "Accept": "text/event-stream"
         },
         body: JSON.stringify({ content }),
+        credentials: "include",
       }).then(async response => {
         if (!response.ok) {
           reject(new Error("Failed to generate content"));
@@ -174,6 +176,7 @@ export const fileApi = {
     const res = await fetch(`${API_BASE}/parse-files`, {
       method: "POST",
       body: formData,
+      credentials: "include",
     });
     return handleResponse(res);
   },
