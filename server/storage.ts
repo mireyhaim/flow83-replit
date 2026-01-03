@@ -21,8 +21,14 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUser(userId: string, updates: Partial<UpsertUser>): Promise<User>;
   updateUserProfileImage(userId: string, imageUrl: string): Promise<User>;
   migrateUserData(oldUserId: string, newUserId: string): Promise<void>;
+  
+  // Trial management (21-day internal trial)
+  startUserTrial(userId: string): Promise<User>;
+  getUserTrialStatus(userId: string): Promise<{ isActive: boolean; daysRemaining: number; status: string | null; trialEndsAt: Date | null }>;
+  expireUserTrial(userId: string): Promise<User>;
 
   getJourneys(): Promise<Journey[]>;
   getJourneysByCreator(creatorId: string): Promise<Journey[]>;
@@ -155,6 +161,86 @@ export class DatabaseStorage implements IStorage {
       .set({ profileImageUrl: imageUrl, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
+    return user;
+  }
+
+  async updateUser(userId: string, updates: Partial<UpsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  // Trial management (21-day internal trial)
+  async startUserTrial(userId: string): Promise<User> {
+    const now = new Date();
+    const trialEndsAt = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000); // 21 days from now
+    
+    const [user] = await db
+      .update(users)
+      .set({
+        trialStartedAt: now,
+        trialEndsAt: trialEndsAt,
+        subscriptionStatus: 'on_trial',
+        updatedAt: now,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getUserTrialStatus(userId: string): Promise<{ isActive: boolean; daysRemaining: number; status: string | null; trialEndsAt: Date | null }> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      return { isActive: false, daysRemaining: 0, status: null, trialEndsAt: null };
+    }
+
+    const now = new Date();
+    const status = user.subscriptionStatus;
+    
+    // If user has an active paid subscription, they're good
+    if (status === 'active') {
+      return { isActive: true, daysRemaining: -1, status, trialEndsAt: user.trialEndsAt };
+    }
+    
+    // If user is on trial, check if it's still valid
+    if (status === 'on_trial' && user.trialEndsAt) {
+      const daysRemaining = Math.ceil((user.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+      if (daysRemaining > 0) {
+        return { isActive: true, daysRemaining, status, trialEndsAt: user.trialEndsAt };
+      } else {
+        // Trial has expired - persist the expiration status
+        await this.expireUserTrial(userId);
+        return { isActive: false, daysRemaining: 0, status: 'trial_expired', trialEndsAt: user.trialEndsAt };
+      }
+    }
+    
+    // If trial_expired, expired, past_due, or no subscription
+    return { isActive: false, daysRemaining: 0, status, trialEndsAt: user.trialEndsAt };
+  }
+
+  async expireUserTrial(userId: string): Promise<User> {
+    // Update user's subscription status to trial_expired
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionStatus: 'trial_expired',
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    // Unpublish all mentor's published journeys (freeze them)
+    await db
+      .update(journeys)
+      .set({ status: 'draft' })
+      .where(and(
+        eq(journeys.creatorId, userId),
+        eq(journeys.status, 'published')
+      ));
+    
     return user;
   }
 

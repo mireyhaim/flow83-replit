@@ -85,13 +85,31 @@ export async function registerRoutes(
     }
   });
   
-  // Journey routes - public read returns only published flows
+  // Journey routes - public read returns only published flows from active mentors
   app.get("/api/journeys", async (req, res) => {
     try {
       const journeys = await storage.getJourneys();
       // Only return published journeys for public access (security)
       const publishedJourneys = journeys.filter(j => j.status === "published");
-      res.json(publishedJourneys);
+      
+      // Filter out journeys from expired mentors
+      // This also triggers expireUserTrial() for any expired mentors on first access
+      const activeJourneys = [];
+      for (const journey of publishedJourneys) {
+        if (journey.creatorId) {
+          const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
+          if (mentorTrialStatus.isActive) {
+            activeJourneys.push(journey);
+          }
+          // If trial expired, getUserTrialStatus already called expireUserTrial
+          // which set this journey to draft, so it won't appear next time
+        } else {
+          // No creator - include it (system journey)
+          activeJourneys.push(journey);
+        }
+      }
+      
+      res.json(activeJourneys);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flows" });
     }
@@ -105,6 +123,21 @@ export async function registerRoutes(
       res.json(journeys);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch your flows" });
+    }
+  });
+
+  // Get trial/subscription status for current user
+  app.get("/api/trial-status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const trialStatus = await storage.getUserTrialStatus(userId);
+      res.json(trialStatus);
+    } catch (error) {
+      console.error("Error fetching trial status:", error);
+      res.status(500).json({ error: "Failed to fetch trial status" });
     }
   });
 
@@ -311,6 +344,26 @@ export async function registerRoutes(
   app.post("/api/journeys", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
+      
+      // Check if this is user's first journey - start 21-day trial if so
+      if (userId) {
+        const user = await storage.getUser(userId);
+        if (user && !user.trialStartedAt && !user.subscriptionStatus) {
+          // Start the 21-day trial for new users creating their first flow
+          await storage.startUserTrial(userId);
+        } else {
+          // Check trial status for existing users
+          const trialStatus = await storage.getUserTrialStatus(userId);
+          if (!trialStatus.isActive) {
+            return res.status(402).json({ 
+              error: "trial_expired", 
+              message: "Your trial has expired. Please subscribe to create new flows.",
+              trialStatus: trialStatus.status
+            });
+          }
+        }
+      }
+      
       const data = { ...req.body, creatorId: userId };
       const parsed = insertJourneySchema.safeParse(data);
       if (!parsed.success) {
@@ -330,17 +383,16 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      // Check subscription when publishing
-      if (req.body.status === "published" && existingJourney.status !== "published") {
-        const userId = req.user?.claims?.sub;
-        if (userId) {
-          const user = await storage.getUser(userId);
-          // Support both old Stripe values (trialing) and new LemonSqueezy values (on_trial)
-          const status = user?.subscriptionStatus;
-          const hasActiveSubscription = status === "active" || status === "trialing" || status === "on_trial";
-          if (!hasActiveSubscription) {
-            return res.status(402).json({ error: "subscription_required", message: "An active subscription is required to publish flows" });
-          }
+      // Check trial status for all edits
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ 
+            error: "trial_expired", 
+            message: "Your trial has expired. Please subscribe to edit flows.",
+            trialStatus: trialStatus.status
+          });
         }
       }
 
@@ -387,8 +439,16 @@ export async function registerRoutes(
   });
 
   // Regenerate landing page content on demand
-  app.post("/api/journeys/:id/regenerate-landing", isAuthenticated, async (req, res) => {
+  app.post("/api/journeys/:id/regenerate-landing", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to regenerate content." });
+        }
+      }
+      
       const journey = await storage.getJourney(req.params.id);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
@@ -433,14 +493,33 @@ export async function registerRoutes(
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
+      
+      // Always check mentor's trial status on public access
+      // This ensures expiration is triggered even without authenticated calls
+      if (journey.creatorId) {
+        const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
+        if (!mentorTrialStatus.isActive) {
+          // Trial expired - this triggers expireUserTrial which sets flows to draft
+          // Return 404 to hide the flow from public access
+          return res.status(404).json({ error: "Flow not found" });
+        }
+      }
+      
       res.json(journey);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flow" });
     }
   });
 
-  app.delete("/api/journeys/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/journeys/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete flows." });
+        }
+      }
       await storage.deleteJourney(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -462,6 +541,17 @@ export async function registerRoutes(
       
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
+      }
+      
+      // Always check mentor's trial status on public access
+      // This ensures expiration is triggered even without authenticated calls
+      if (journey.creatorId) {
+        const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
+        if (!mentorTrialStatus.isActive) {
+          // Trial expired - this triggers expireUserTrial which sets flows to draft
+          // Return 404 to hide the flow from public access
+          return res.status(404).json({ error: "Flow not found" });
+        }
       }
       
       // Get mentor in parallel if needed
@@ -496,8 +586,15 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/journeys/:journeyId/steps", isAuthenticated, async (req, res) => {
+  app.post("/api/journeys/:journeyId/steps", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to add content." });
+        }
+      }
       const data = { ...req.body, journeyId: req.params.journeyId };
       const parsed = insertJourneyStepSchema.safeParse(data);
       if (!parsed.success) {
@@ -510,8 +607,15 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/steps/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/steps/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to edit content." });
+        }
+      }
       const step = await storage.updateJourneyStep(req.params.id, req.body);
       if (!step) {
         return res.status(404).json({ error: "Step not found" });
@@ -522,8 +626,15 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/steps/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/steps/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete content." });
+        }
+      }
       await storage.deleteJourneyStep(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -541,8 +652,15 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/steps/:stepId/blocks", isAuthenticated, async (req, res) => {
+  app.post("/api/steps/:stepId/blocks", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to add content." });
+        }
+      }
       const data = { ...req.body, stepId: req.params.stepId };
       const parsed = insertJourneyBlockSchema.safeParse(data);
       if (!parsed.success) {
@@ -555,8 +673,15 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/blocks/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/blocks/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to edit content." });
+        }
+      }
       const block = await storage.updateJourneyBlock(req.params.id, req.body);
       if (!block) {
         return res.status(404).json({ error: "Block not found" });
@@ -567,8 +692,15 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/blocks/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/blocks/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete content." });
+        }
+      }
       await storage.deleteJourneyBlock(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -585,6 +717,18 @@ export async function registerRoutes(
       let participant = await storage.getParticipant(userId, journeyId);
       
       if (!participant) {
+        // Check if the mentor's trial is still active before allowing new participants
+        const journey = await storage.getJourney(journeyId);
+        if (journey?.creatorId) {
+          const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
+          if (!mentorTrialStatus.isActive) {
+            return res.status(402).json({ 
+              error: "mentor_trial_expired", 
+              message: "This flow is currently unavailable. Please try again later." 
+            });
+          }
+        }
+        
         const parsed = insertParticipantSchema.safeParse({
           userId,
           journeyId,
@@ -596,8 +740,7 @@ export async function registerRoutes(
         }
         participant = await storage.createParticipant(parsed.data);
         
-        // Create activity event for joining
-        const journey = await storage.getJourney(journeyId);
+        // Create activity event for joining (reuse journey from above)
         const user = await storage.getUser(userId);
         if (journey?.creatorId) {
           await storage.createActivityEvent({
@@ -938,6 +1081,15 @@ export async function registerRoutes(
     const { content } = req.body;
     const useSSE = req.headers.accept === "text/event-stream";
     
+    // Check trial status before any processing
+    const userId = req.user?.claims?.sub;
+    if (userId) {
+      const trialStatus = await storage.getUserTrialStatus(userId);
+      if (!trialStatus.isActive) {
+        return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to generate content." });
+      }
+    }
+    
     const sendProgress = (stage: string, progress: number, message: string) => {
       if (useSSE) {
         res.write(`data: ${JSON.stringify({ stage, progress, message })}\n\n`);
@@ -1036,6 +1188,15 @@ export async function registerRoutes(
     const journeyId = req.params.id;
     
     try {
+      // Check trial status
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const trialStatus = await storage.getUserTrialStatus(userId);
+        if (!trialStatus.isActive) {
+          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to generate content." });
+        }
+      }
+      
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });

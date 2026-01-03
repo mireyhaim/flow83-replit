@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle, Crown, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "@/components/language-toggle";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,27 @@ import {
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
   const { t } = useTranslation(['dashboard', 'common', 'participant']);
+  const { isTrialExpired, isOnTrial, daysRemaining, isLoading: trialLoading } = useTrialStatus();
+
+  useEffect(() => {
+    if (isTrialExpired) {
+      setShowExpiredModal(true);
+    }
+  }, [isTrialExpired]);
+
+  const getTrialBannerText = () => {
+    if (daysRemaining === 0) return t('dashboard:trialBanner.lastDay');
+    if (daysRemaining === 1) return t('dashboard:trialBanner.oneDayRemaining');
+    return t('dashboard:trialBanner.daysRemaining', { days: daysRemaining });
+  };
+
+  const handleSubscribe = () => {
+    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
+    window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+  };
 
   const navItems = [
     { icon: LayoutGrid, label: t('dashboard:title'), href: "/dashboard" },
@@ -66,6 +88,36 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="p-4 space-y-2">
+        {isOnTrial && !trialLoading && (
+          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 mb-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Crown size={16} className="text-violet-500" />
+              <span className="text-violet-700 font-medium">{getTrialBannerText()}</span>
+            </div>
+            <button
+              onClick={handleSubscribe}
+              className="mt-2 text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2"
+              data-testid="link-subscribe-sidebar"
+            >
+              {t('dashboard:trialBanner.subscribeNow')}
+            </button>
+          </div>
+        )}
+        {isTrialExpired && !trialLoading && (
+          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-200/50 mb-2">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertCircle size={16} className="text-orange-500" />
+              <span className="text-orange-700 font-medium">{t('dashboard:trialExpired.title')}</span>
+            </div>
+            <button
+              onClick={handleSubscribe}
+              className="mt-2 text-xs text-orange-600 hover:text-orange-800 underline underline-offset-2"
+              data-testid="link-subscribe-expired-sidebar"
+            >
+              {t('dashboard:trialExpired.subscribeNow')}
+            </button>
+          </div>
+        )}
         <div className="px-4 py-2">
           <LanguageToggle />
         </div>
@@ -152,6 +204,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      <TrialExpiredModal 
+        isOpen={showExpiredModal} 
+        onClose={() => setShowExpiredModal(false)} 
+      />
     </div>
   );
 }

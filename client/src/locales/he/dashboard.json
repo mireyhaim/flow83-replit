@@ -13,7 +13,7 @@
   "completedParticipants": "השלמה",
   "hereIsWhatsHappening": "הנה מה שקורה עם התהליכים שלך",
   "tutorial": "מדריך",
-  "startFreeTrial": "התחל את תקופת הניסיון החינמית של 7 ימים",
+  "startFreeTrial": "התחל את תקופת הניסיון החינמית של 21 ימים",
   "getAccessToAllFeatures": "קבל גישה לכל התכונות והתחל ליצור תהליכים היום.",
   "viewPlans": "צפה בתוכניות",
   "paymentFailed": "התשלום נכשל - נדרשת פעולה",
@@ -331,6 +331,24 @@
     "allNotificationsSentTo": "כל ההתראות יישלחו לכתובת האימייל הרשומה שלך."
   },
 
+  "trialExpired": {
+    "title": "תקופת הניסיון הסתיימה",
+    "description": "תקופת הניסיון החינמית של 21 יום הסתיימה. הירשם עכשיו כדי להמשיך להשתמש ב-Flow83 ולשמור על ה-Flows שלך פעילים.",
+    "whatsAffected": "מה מושפע:",
+    "flowsUnpublished": "ה-Flows המפורסמים שלך כעת מוסתרים",
+    "cantEdit": "אי אפשר לערוך או ליצור Flows חדשים",
+    "participantsCantJoin": "משתתפים חדשים לא יכולים להצטרף",
+    "subscribeToRestore": "הירשם כדי לשחזר את כל ה-Flows שלך ולהמשיך לפתח את העסק שלך.",
+    "subscribeNow": "הירשם עכשיו"
+  },
+
+  "trialBanner": {
+    "daysRemaining": "נשארו {{days}} ימים בניסיון",
+    "oneDayRemaining": "נשאר יום אחד בניסיון",
+    "lastDay": "יום אחרון בניסיון!",
+    "subscribeNow": "הירשם עכשיו"
+  },
+
   "subscription": {
     "choosePlanTitle": "בחרו מסלול להפעלת ה-Flow שלכם",
     "choosePlanDescription": "יצרתם משהו מדהים! כדי לפרסם את ה-Flow ולהתחיל לשתף אותו עם לקוחות, בחרו מסלול שמתאים לצרכים שלכם.",
@@ -344,7 +362,7 @@
     "pro": "Pro",
     "business": "Business",
     "perMonth": "/חודש",
-    "freeTrial": "7 ימי ניסיון חינם",
+    "freeTrial": "21 ימי ניסיון חינם",
     "startFreeTrial": "התחל ניסיון חינם",
     "choosePro": "בחר Pro",
     "chooseBusiness": "בחר Business",

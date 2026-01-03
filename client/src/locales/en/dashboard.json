@@ -13,7 +13,7 @@
   "completedParticipants": "Completion",
   "hereIsWhatsHappening": "Here's what's happening with your flows",
   "tutorial": "Tutorial",
-  "startFreeTrial": "Start your 7-day free trial",
+  "startFreeTrial": "Start your 21-day free trial",
   "getAccessToAllFeatures": "Get access to all features and start creating flows today.",
   "viewPlans": "View Plans",
   "paymentFailed": "Payment failed - Action required",
@@ -331,6 +331,24 @@
     "allNotificationsSentTo": "All notifications will be sent to your registered email address."
   },
 
+  "trialExpired": {
+    "title": "Trial Period Ended",
+    "description": "Your 21-day free trial has ended. Subscribe now to continue using Flow83 and keep your flows active.",
+    "whatsAffected": "What's affected:",
+    "flowsUnpublished": "Your published flows are now hidden",
+    "cantEdit": "You can't edit or create new flows",
+    "participantsCantJoin": "New participants can't join",
+    "subscribeToRestore": "Subscribe to restore all your flows and continue growing your business.",
+    "subscribeNow": "Subscribe Now"
+  },
+
+  "trialBanner": {
+    "daysRemaining": "{{days}} days left in your trial",
+    "oneDayRemaining": "1 day left in your trial",
+    "lastDay": "Last day of trial!",
+    "subscribeNow": "Subscribe Now"
+  },
+
   "subscription": {
     "choosePlanTitle": "Choose a Plan to Activate Your Flow",
     "choosePlanDescription": "You've created something amazing! To publish your flow and start sharing it with clients, choose a plan that fits your needs.",
@@ -344,7 +362,7 @@
     "pro": "Pro",
     "business": "Business",
     "perMonth": "/month",
-    "freeTrial": "7-day free trial",
+    "freeTrial": "21-day free trial",
     "startFreeTrial": "Start Free Trial",
     "choosePro": "Choose Pro",
     "chooseBusiness": "Choose Business",

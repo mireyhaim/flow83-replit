@@ -55,7 +55,7 @@ Flow 83 has a dual payment structure:
 
 **1. Platform Subscriptions (LemonSqueezy)**
 Mentors pay Flow 83 platform fees via LemonSqueezy:
-- Starter: $26/mo (7-day trial, 1 Flow, 60 users)
+- Starter: $26/mo (21-day trial, 1 Flow, 60 users)
 - Pro: $83/mo (5 Flows, 300 users)
 - Business: $188/mo (10 Flows, 1000 users)
 

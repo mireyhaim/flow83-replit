@@ -37,7 +37,8 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"), // Legacy - kept for backwards compatibility
   subscriptionId: varchar("subscription_id"),
   subscriptionPlan: varchar("subscription_plan"), // 'starter' | 'pro' | 'business'
-  subscriptionStatus: varchar("subscription_status"), // 'on_trial' | 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused'
+  subscriptionStatus: varchar("subscription_status"), // 'on_trial' | 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused' | 'trial_expired'
+  trialStartedAt: timestamp("trial_started_at"), // When internal 21-day trial started
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
   paymentFailedAt: timestamp("payment_failed_at"), // When payment failed - used for 5-day grace period
