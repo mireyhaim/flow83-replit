@@ -39,6 +39,11 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const hasContent = textContent.trim().length > 0 || uploadedFiles.length > 0;
 
   const handleGenerateJourney = async () => {
+    console.log("[ContentUpload] Starting handleGenerateJourney");
+    console.log("[ContentUpload] hasContent:", hasContent);
+    console.log("[ContentUpload] uploadedFiles:", uploadedFiles.length);
+    console.log("[ContentUpload] textContent length:", textContent.length);
+    
     if (!hasContent) {
       toast({
         title: t('journeyCreate.noContentProvided'),
@@ -56,14 +61,18 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
       let content = textContent;
       
       if (uploadedFiles.length > 0) {
+        console.log("[ContentUpload] Parsing files...");
         setProgressMessage(t('journeyCreate.readingFiles'));
         const parsed = await fileApi.parseFiles(uploadedFiles);
+        console.log("[ContentUpload] Parsed text length:", parsed.text?.length || 0);
         content = content + "\n\n" + parsed.text;
       }
       
       content = content.trim();
+      console.log("[ContentUpload] Final content length:", content.length);
       
       if (!content) {
+        console.log("[ContentUpload] No content after parsing!");
         toast({
           title: t('journeyCreate.couldNotExtractText'),
           description: t('journeyCreate.couldNotExtractDescription'),
@@ -76,6 +85,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
       setProgressMessage(t('journeyCreate.creatingFlow'));
       setProgress(2);
 
+      console.log("[ContentUpload] Creating journey...");
       const journey = await journeyApi.create({
         name: journeyData.journeyName,
         goal: journeyData.mainGoal,
@@ -84,14 +94,19 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         status: "draft",
         description: journeyData.additionalNotes || "",
       });
+      console.log("[ContentUpload] Journey created:", journey.id);
 
+      console.log("[ContentUpload] Starting AI generation...");
       await journeyApi.generateContentWithProgress(journey.id, content, (prog, msg) => {
+        console.log("[ContentUpload] Progress:", prog, msg);
         setProgress(prog);
         setProgressMessage(msg);
       });
+      console.log("[ContentUpload] AI generation complete!");
 
       setLocation(`/journey/${journey.id}/edit`);
     } catch (error) {
+      console.error("[ContentUpload] Error:", error);
       toast({
         title: t('error'),
         description: t('journeyCreate.generationError'),
