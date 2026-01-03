@@ -84,21 +84,26 @@ export default function Dashboard() {
   };
 
   const getSubscriptionDisplay = () => {
-    if (!subscription?.plan) {
-      return null;
-    }
+    const isTrialing = subscription?.status === "trialing" || subscription?.status === "on_trial";
+    const isCanceling = subscription?.status === "canceling" || subscription?.status === "canceled";
+    const planName = subscription?.plan 
+      ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) 
+      : "Starter";
 
-    const planName = subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1);
-    const isTrialing = subscription.status === "trialing";
-    const isCanceling = subscription.status === "canceling" || subscription.status === "canceled";
-
-    if (isTrialing && subscription.trialEndsAt) {
+    if (isTrialing && subscription?.trialEndsAt) {
       const daysLeft = differenceInDays(new Date(subscription.trialEndsAt), new Date());
       return {
         label: `${planName} Trial`,
-        sublabel: `${Math.max(0, daysLeft)} days left`,
+        sublabel: daysLeft <= 1 
+          ? t('trialBanner.lastDay')
+          : t('trialBanner.daysRemaining', { days: Math.max(0, daysLeft) }),
         variant: "trial" as const,
+        daysLeft: Math.max(0, daysLeft),
       };
+    }
+
+    if (!subscription?.plan) {
+      return null;
     }
 
     if (isCanceling && subscription.subscriptionEndsAt) {
@@ -204,8 +209,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {!subscription?.plan && (
-        <div className="mb-8 bg-gradient-to-r from-violet-50 to-fuchsia-50 border border-violet-200 rounded-2xl p-5 flex items-center justify-between" data-testid="banner-no-subscription">
+      {!subscription?.plan && !subscriptionDisplay && (
+        <div className="mb-8 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-2 border-violet-300 rounded-2xl p-5 flex items-center justify-between" data-testid="banner-no-subscription">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
               <Sparkles className="h-6 w-6 text-violet-600" />
@@ -215,8 +220,13 @@ export default function Dashboard() {
               <p className="text-sm text-slate-600">{t('getAccessToAllFeatures')}</p>
             </div>
           </div>
-          <Button asChild className="bg-violet-600 hover:bg-violet-700 rounded-full" data-testid="button-start-trial">
-            <Link href="/pricing">{t('viewPlans')}</Link>
+          <Button 
+            className="bg-violet-600 hover:bg-violet-700 rounded-full text-white" 
+            data-testid="button-start-trial"
+            onClick={() => window.open('https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ', '_blank')}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            {t('upgradeNow')}
           </Button>
         </div>
       )}
@@ -273,7 +283,7 @@ export default function Dashboard() {
         <div 
           className={`mb-8 rounded-2xl p-5 flex items-center justify-between ${
             subscriptionDisplay.variant === "trial" 
-              ? "bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200" 
+              ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300" 
               : subscriptionDisplay.variant === "canceling"
               ? "bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200"
               : "bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-200"
@@ -307,15 +317,26 @@ export default function Dashboard() {
               }`}>{subscriptionDisplay.sublabel}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            className="rounded-full border-slate-300 hover:border-slate-400"
-            onClick={handleManageSubscription}
-            data-testid="button-manage-subscription"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            {t('manageBilling')}
-          </Button>
+          {subscriptionDisplay.variant === "trial" ? (
+            <Button 
+              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => window.open('https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ', '_blank')}
+              data-testid="button-upgrade-grow"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              {t('upgradeNow')}
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              className="rounded-full border-slate-300 hover:border-slate-400"
+              onClick={handleManageSubscription}
+              data-testid="button-manage-subscription"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              {t('manageBilling')}
+            </Button>
+          )}
         </div>
       )}
 

@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
 
 const CallToAction = () => {
   const { t } = useTranslation('landing');
+  const { isAuthenticated } = useAuth();
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
 
   return (
     <section className="py-32 bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 relative overflow-hidden">
@@ -31,7 +34,7 @@ const CallToAction = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/start-flow">
+            <Link href={getStartLink()}>
               <Button 
                 size="lg"
                 className="text-lg px-8 py-4 h-auto rounded-full bg-white text-violet-700 hover:bg-gray-100 shadow-lg"

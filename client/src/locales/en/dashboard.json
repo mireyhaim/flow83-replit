@@ -22,6 +22,7 @@
   "flowsBlockedDescription": "Your participants cannot access your flows. Update your payment to restore access.",
   "updatePayment": "Update Payment",
   "manageBilling": "Manage Billing",
+  "upgradeNow": "Upgrade Now",
   "earnings": "Earnings",
   "totalRevenue": "Total revenue",
   "salesCount": "{{count}} sales",

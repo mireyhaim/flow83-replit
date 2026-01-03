@@ -170,27 +170,7 @@ const Pricing = () => {
                       data-testid={`button-subscribe-${plan.planId}`}
                       onClick={() => {
                         if (isAuthenticated) {
-                          // Route Hebrew users to Grow, English users to LemonSqueezy
-                          const lemonSqueezyUrls: Record<string, string> = {
-                            starter: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
-                            pro: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
-                            business: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
-                          };
-                          const growUrls: Record<string, string> = {
-                            starter: 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ',
-                            pro: '',
-                            business: '',
-                          };
-                          const checkoutUrls = isHebrew ? growUrls : lemonSqueezyUrls;
-                          const baseUrl = checkoutUrls[plan.planId] || lemonSqueezyUrls[plan.planId];
-                          
-                          if (!baseUrl) {
-                            alert(t('pricingPage.paymentNotConfigured', 'Payment link not configured yet. Please contact support.'));
-                            return;
-                          }
-                          
-                          const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
-                          window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                          window.location.href = '/dashboard';
                         } else {
                           window.location.href = '/start-flow';
                         }
@@ -243,18 +223,7 @@ const Pricing = () => {
                 data-testid="button-cta-free-trial"
                 onClick={() => {
                   if (isAuthenticated) {
-                    // Route Hebrew users to Grow, English users to LemonSqueezy
-                    const baseUrl = isHebrew 
-                      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
-                      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
-                    
-                    if (!baseUrl) {
-                      alert(t('pricingPage.paymentNotConfigured', 'Payment link not configured yet. Please contact support.'));
-                      return;
-                    }
-                    
-                    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
-                    window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                    window.location.href = '/dashboard';
                   } else {
                     window.location.href = '/start-flow';
                   }
