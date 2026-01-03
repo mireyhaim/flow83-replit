@@ -339,7 +339,8 @@
     "cantEdit": "אי אפשר לערוך או ליצור Flows חדשים",
     "participantsCantJoin": "משתתפים חדשים לא יכולים להצטרף",
     "subscribeToRestore": "הירשם כדי לשחזר את כל ה-Flows שלך ולהמשיך לפתח את העסק שלך.",
-    "subscribeNow": "הירשם עכשיו"
+    "subscribeNow": "הירשם עכשיו",
+    "viewFullPricing": "צפה בפרטי המחירים המלאים"
   },
 
   "trialBanner": {
@@ -358,10 +359,13 @@
     "directPayments": "תשלומים ישירים",
     "analytics": "אנליטיקה",
     "mostPopular": "הכי פופולרי",
+    "popular": "הכי פופולרי",
     "starter": "Starter",
     "pro": "Pro",
     "business": "Business",
     "perMonth": "/חודש",
+    "flows": "Flow(ים)",
+    "users": "משתמשים",
     "freeTrial": "21 ימי ניסיון חינם",
     "startFreeTrial": "התחל ניסיון חינם",
     "choosePro": "בחר Pro",

@@ -15,7 +15,7 @@ const Pricing = () => {
     return isAuthenticated ? "/dashboard" : "/start-flow";
   };
 
-  const SHOW_ALL_PLANS = false;
+  const SHOW_ALL_PLANS = true;
 
   const pricingPlans = [
     {

@@ -339,7 +339,8 @@
     "cantEdit": "You can't edit or create new flows",
     "participantsCantJoin": "New participants can't join",
     "subscribeToRestore": "Subscribe to restore all your flows and continue growing your business.",
-    "subscribeNow": "Subscribe Now"
+    "subscribeNow": "Subscribe Now",
+    "viewFullPricing": "View full pricing details"
   },
 
   "trialBanner": {
@@ -358,10 +359,13 @@
     "directPayments": "Direct payments",
     "analytics": "Analytics",
     "mostPopular": "Most Popular",
+    "popular": "Most Popular",
     "starter": "Starter",
     "pro": "Pro",
     "business": "Business",
     "perMonth": "/month",
+    "flows": "Flow(s)",
+    "users": "users",
     "freeTrial": "21-day free trial",
     "startFreeTrial": "Start Free Trial",
     "choosePro": "Choose Pro",
