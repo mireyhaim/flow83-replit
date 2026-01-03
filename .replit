@@ -46,5 +46,3 @@ integrations = ["javascript_openai_ai_integrations:1.0.0", "stripe:2.0.0", "java
 [userenv]
 
 [userenv.shared]
-VITE_SUPABASE_URL = "https://nlwqtgkodoaclyxntaws.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sd3F0Z2tvZG9hY2x5eG50YXdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzA5ODYsImV4cCI6MjA3MzM0Njk4Nn0.IpO3d-6dLqMk-UlRGwPXXmhRjuzgbF4sK9GeqHIzgq0"
