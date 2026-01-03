@@ -95,26 +95,45 @@ export async function generateJourneyContent(
 ): Promise<GeneratedDay[]> {
   const totalDays = intent.duration || 7;
   
-  // Split into parallel batches for faster generation
-  if (totalDays <= 3) {
-    // Small journeys: single request
-    return generateDaysBatch(intent, mentorContent, 1, totalDays, totalDays);
-  } else if (totalDays <= 5) {
-    // Medium journeys: 2 parallel requests
-    const [batch1, batch2] = await Promise.all([
-      generateDaysBatch(intent, mentorContent, 1, 3, totalDays),
-      generateDaysBatch(intent, mentorContent, 4, totalDays, totalDays)
-    ]);
-    return [...batch1, ...batch2].sort((a, b) => a.dayNumber - b.dayNumber);
-  } else {
-    // 7-day journeys: 3 parallel requests
-    const midPoint = Math.ceil(totalDays / 3);
-    const [batch1, batch2, batch3] = await Promise.all([
-      generateDaysBatch(intent, mentorContent, 1, midPoint, totalDays),
-      generateDaysBatch(intent, mentorContent, midPoint + 1, midPoint * 2, totalDays),
-      generateDaysBatch(intent, mentorContent, midPoint * 2 + 1, totalDays, totalDays)
-    ]);
-    return [...batch1, ...batch2, ...batch3].sort((a, b) => a.dayNumber - b.dayNumber);
+  console.log("[AI] Starting journey content generation for", totalDays, "days");
+  console.log("[AI] Journey name:", intent.journeyName);
+  console.log("[AI] Content length:", mentorContent?.length || 0, "characters");
+  
+  try {
+    let result: GeneratedDay[];
+    
+    // Split into parallel batches for faster generation
+    if (totalDays <= 3) {
+      // Small journeys: single request
+      result = await generateDaysBatch(intent, mentorContent, 1, totalDays, totalDays);
+    } else if (totalDays <= 5) {
+      // Medium journeys: 2 parallel requests
+      const [batch1, batch2] = await Promise.all([
+        generateDaysBatch(intent, mentorContent, 1, 3, totalDays),
+        generateDaysBatch(intent, mentorContent, 4, totalDays, totalDays)
+      ]);
+      result = [...batch1, ...batch2].sort((a, b) => a.dayNumber - b.dayNumber);
+    } else {
+      // 7-day journeys: 3 parallel requests
+      const midPoint = Math.ceil(totalDays / 3);
+      const [batch1, batch2, batch3] = await Promise.all([
+        generateDaysBatch(intent, mentorContent, 1, midPoint, totalDays),
+        generateDaysBatch(intent, mentorContent, midPoint + 1, midPoint * 2, totalDays),
+        generateDaysBatch(intent, mentorContent, midPoint * 2 + 1, totalDays, totalDays)
+      ]);
+      result = [...batch1, ...batch2, ...batch3].sort((a, b) => a.dayNumber - b.dayNumber);
+    }
+    
+    console.log("[AI] Generated", result.length, "days successfully");
+    
+    if (!result || result.length === 0) {
+      throw new Error("AI returned empty content - no days generated");
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("[AI] Error generating journey content:", error);
+    throw error;
   }
 }
 
