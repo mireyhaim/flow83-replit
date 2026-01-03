@@ -34,8 +34,8 @@ i18n
         auth: heAuth,
       },
     },
-    lng: savedLanguage || 'en',
-    fallbackLng: 'en',
+    lng: savedLanguage || 'he',
+    fallbackLng: 'he',
     ns: ['common', 'dashboard', 'participant', 'landing', 'auth'],
     defaultNS: 'common',
     interpolation: {
@@ -52,8 +52,8 @@ i18n.on('languageChanged', (lng) => {
 });
 
 if (typeof window !== 'undefined') {
-  document.documentElement.dir = (savedLanguage || 'en') === 'he' ? 'rtl' : 'ltr';
-  document.documentElement.lang = savedLanguage || 'en';
+  document.documentElement.dir = (savedLanguage || 'he') === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.lang = savedLanguage || 'he';
 }
 
 export default i18n;
