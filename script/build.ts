@@ -50,15 +50,23 @@ async function buildAll() {
     entryPoints: ["server/index.ts"],
     platform: "node",
     bundle: true,
-    format: "cjs",
-    outfile: "dist/index.cjs",
+    format: "esm",
+    outfile: "dist/index.mjs",
     define: {
       "process.env.NODE_ENV": '"production"',
     },
     minify: true,
     external: externals,
     logLevel: "info",
+    banner: {
+      js: `import { createRequire } from 'module'; import { fileURLToPath } from 'url'; import { dirname } from 'path'; const require = createRequire(import.meta.url); const __filename = fileURLToPath(import.meta.url); const __dirname = dirname(__filename);`,
+    },
   });
+  
+  // Create a wrapper for the npm start command that expects dist/index.cjs
+  const fs = await import('fs/promises');
+  await fs.writeFile('dist/index.cjs', 'import("./index.mjs");');
+
 }
 
 buildAll().catch((err) => {
