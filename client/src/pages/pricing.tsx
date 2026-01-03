@@ -113,11 +113,11 @@ const Pricing = () => {
         </section>
 
         <section className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex justify-center gap-8">
             {pricingPlans.map((plan) => (
               <Card 
                 key={plan.name} 
-                className={`relative bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col ${
+                className={`relative bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col max-w-md w-full ${
                   plan.popular ? 'ring-2 ring-violet-600 scale-105' : ''
                 }`}
               >
