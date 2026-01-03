@@ -342,8 +342,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/journeys", isAuthenticated, async (req: any, res) => {
+    console.log("[journey] POST /api/journeys - Creating new journey");
     try {
       const userId = (req.user as any)?.claims?.sub;
+      console.log("[journey] User ID:", userId);
       
       // Check if this is user's first journey - start 21-day trial if so
       if (userId) {
@@ -1045,9 +1047,12 @@ export async function registerRoutes(
 
   // Parse uploaded files (PDF, TXT)
   app.post("/api/parse-files", isAuthenticated, upload.array("files", 10), async (req: any, res) => {
+    console.log("[parse-files] POST /api/parse-files - Parsing uploaded files");
     try {
       const files = req.files as Express.Multer.File[];
+      console.log("[parse-files] Files received:", files?.length || 0);
       if (!files || files.length === 0) {
+        console.log("[parse-files] No files uploaded");
         return res.status(400).json({ error: "No files uploaded" });
       }
 
