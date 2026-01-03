@@ -16,7 +16,7 @@ const Pricing = () => {
     return isAuthenticated ? "/dashboard" : "/start-flow";
   };
 
-  const SHOW_ALL_PLANS = true;
+  const SHOW_ALL_PLANS = false;
 
   const prices = isHebrew 
     ? { starter: "₪83", pro: "₪183", business: "₪283" }
@@ -118,13 +118,11 @@ const Pricing = () => {
         </section>
 
         <section className="max-w-7xl mx-auto px-6 py-16">
-          <div className="flex justify-center gap-8">
+          <div className="flex justify-center">
             {pricingPlans.map((plan) => (
               <Card 
                 key={plan.name} 
-                className={`relative bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col max-w-md w-full ${
-                  plan.popular ? 'ring-2 ring-violet-600 scale-105' : ''
-                }`}
+                className="relative bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col max-w-md w-full"
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
