@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle, Crown, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { LanguageToggle } from "@/components/language-toggle";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import {
@@ -118,9 +117,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         )}
-        <div className="px-4 py-2">
-          <LanguageToggle />
-        </div>
         <Link 
           href="/journeys/new"
           onClick={() => setMobileMenuOpen(false)}

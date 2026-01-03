@@ -4,7 +4,6 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
-import { LanguageToggle } from "@/components/language-toggle";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,7 +37,6 @@ const Header = () => {
         </nav>
         
         <div className="hidden md:flex items-center gap-4 rtl:flex-row-reverse">
-          <LanguageToggle />
           {isAuthenticated ? (
             <>
               <a href="/api/logout">
@@ -75,9 +73,6 @@ const Header = () => {
 
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 space-y-4">
-          <div className="pb-2 border-b border-gray-200">
-            <LanguageToggle />
-          </div>
           <Link href="/" className="block text-gray-600 hover:text-gray-900 py-2">{t('common:home')}</Link>
           <Link href="/how-it-works" className="block text-gray-600 hover:text-gray-900 py-2">{t('howItWorks')}</Link>
           <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">{t('pricing')}</Link>
