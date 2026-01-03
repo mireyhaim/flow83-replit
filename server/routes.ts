@@ -1157,6 +1157,9 @@ export async function registerRoutes(
           dayNumber: day.dayNumber,
           title: day.title,
           description: day.description,
+          goal: day.goal || "",
+          explanation: day.explanation || "",
+          task: day.task || "",
         });
 
         const blocksToInsert = day.blocks.map((block: any, i: number) => ({
