@@ -180,7 +180,7 @@ const Pricing = () => {
                             business: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
                           };
                           const growUrls: Record<string, string> = {
-                            starter: '', // Will be set when user provides Grow links
+                            starter: 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ',
                             pro: '',
                             business: '',
                           };
@@ -248,7 +248,7 @@ const Pricing = () => {
                   if (isAuthenticated) {
                     // Route Hebrew users to Grow, English users to LemonSqueezy
                     const baseUrl = isHebrew 
-                      ? '' // Grow starter URL - will be set when user provides
+                      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
                       : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
                     
                     if (!baseUrl) {

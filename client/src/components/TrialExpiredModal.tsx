@@ -24,7 +24,7 @@ export function TrialExpiredModal({ isOpen, onClose, daysOverdue = 0 }: TrialExp
     };
     // Grow URLs will be configured when provided by user
     const growUrls: Record<string, string> = {
-      starter: '', // Will be set when user provides Grow links
+      starter: 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ',
       pro: '',
       business: '',
     };
