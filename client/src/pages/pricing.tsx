@@ -15,6 +15,8 @@ const Pricing = () => {
     return isAuthenticated ? "/dashboard" : "/start-flow";
   };
 
+  const SHOW_ALL_PLANS = false;
+
   const pricingPlans = [
     {
       name: t('pricingPage.starter'),
@@ -34,7 +36,8 @@ const Pricing = () => {
       ],
       bestFor: t('pricingPage.starterBestFor'),
       buttonText: t('pricingPage.startFreeTrial'),
-      popular: false
+      popular: false,
+      visible: true
     },
     {
       name: t('pricingPage.pro'),
@@ -54,7 +57,8 @@ const Pricing = () => {
       ],
       bestFor: t('pricingPage.proBestFor'),
       buttonText: t('pricingPage.upgradeToPro'),
-      popular: true
+      popular: true,
+      visible: SHOW_ALL_PLANS
     },
     {
       name: t('pricingPage.business'),
@@ -75,9 +79,10 @@ const Pricing = () => {
       ],
       bestFor: t('pricingPage.businessBestFor'),
       buttonText: t('pricingPage.scaleYourBusiness'),
-      popular: false
+      popular: false,
+      visible: SHOW_ALL_PLANS
     }
-  ];
+  ].filter(plan => plan.visible);
 
   const faqs = [
     { q: t('pricingPage.faq1Q'), a: t('pricingPage.faq1A') },

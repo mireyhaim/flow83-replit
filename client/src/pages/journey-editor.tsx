@@ -1042,8 +1042,8 @@ const JourneyEditorPage = () => {
                 </Button>
               </div>
 
-              {/* Pro - Popular */}
-              <div className="bg-violet-600/20 border-2 border-violet-500 rounded-xl p-5 flex flex-col relative">
+              {/* Pro - Popular - Hidden during testing phase */}
+              {false && <div className="bg-violet-600/20 border-2 border-violet-500 rounded-xl p-5 flex flex-col relative">
                 <div className="absolute -top-3 start-1/2 transform -translate-x-1/2 rtl:translate-x-1/2">
                   <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-xs font-medium">
                     {t('subscription.mostPopular')}
@@ -1113,10 +1113,10 @@ const JourneyEditorPage = () => {
                 >
                   {t('subscription.choosePro')}
                 </Button>
-              </div>
+              </div>}
 
-              {/* Business */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
+              {/* Business - Hidden during testing phase */}
+              {false && <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col">
                 <h3 className="text-lg font-bold text-white mb-1">{t('subscription.business')}</h3>
                 <div className="flex items-baseline mb-3">
                   <span className="text-3xl font-bold text-white">$188</span>
@@ -1181,7 +1181,7 @@ const JourneyEditorPage = () => {
                 >
                   {t('subscription.chooseBusiness')}
                 </Button>
-              </div>
+              </div>}
             </div>
           </div>
         </DialogContent>
