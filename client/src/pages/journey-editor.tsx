@@ -1002,10 +1002,6 @@ const JourneyEditorPage = () => {
                     <>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                        <span>{t('subscription.userOverage060')}</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                         <span>{t('subscription.directPaymentIntegration')}</span>
                       </li>
                       <li className="flex items-start gap-2">

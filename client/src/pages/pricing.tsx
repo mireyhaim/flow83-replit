@@ -33,7 +33,6 @@ const Pricing = () => {
       features: [
         t('pricingPage.feature1Flow'),
         t('pricingPage.feature60Users'),
-        t('pricingPage.featureExtra60'),
         t('pricingPage.featureSalesPage'),
         t('pricingPage.featureDirectPayment'),
         t('pricingPage.featureCloudHosting'),
