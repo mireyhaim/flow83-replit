@@ -1939,7 +1939,6 @@ export async function registerRoutes(
   app.get("/api/participant/token/:accessToken", async (req, res) => {
     try {
       const { accessToken } = req.params;
-      console.log("Looking up participant by token:", accessToken);
       
       const participant = await storage.getParticipantByAccessToken(accessToken);
       console.log("Participant found:", participant?.id);
