@@ -11,24 +11,45 @@ interface TrialExpiredModalProps {
 }
 
 export function TrialExpiredModal({ isOpen, onClose, daysOverdue = 0 }: TrialExpiredModalProps) {
-  const { t } = useTranslation(['dashboard', 'landing']);
+  const { t, i18n } = useTranslation(['dashboard', 'landing']);
+  const isHebrew = i18n.language === 'he';
 
   const handleSubscribe = (planId: string) => {
-    // Different checkout URLs for different plans
-    const checkoutUrls: Record<string, string> = {
+    // Different checkout URLs based on language
+    // Hebrew users go to Grow, English users go to LemonSqueezy
+    const lemonSqueezyUrls: Record<string, string> = {
       starter: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
-      pro: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0', // Replace with actual Pro URL
-      business: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0', // Replace with actual Business URL
+      pro: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
+      business: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
     };
-    const baseUrl = checkoutUrls[planId] || checkoutUrls.starter;
+    // Grow URLs will be configured when provided by user
+    const growUrls: Record<string, string> = {
+      starter: '', // Will be set when user provides Grow links
+      pro: '',
+      business: '',
+    };
+    
+    const checkoutUrls = isHebrew ? growUrls : lemonSqueezyUrls;
+    const baseUrl = checkoutUrls[planId] || lemonSqueezyUrls[planId];
+    
+    if (!baseUrl) {
+      // If Grow URL not configured yet, show message
+      alert(t('subscription.paymentNotConfigured', 'Payment link not configured yet. Please contact support.'));
+      return;
+    }
+    
     const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
     window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
   };
 
+  const prices = isHebrew 
+    ? { starter: '₪83', pro: '₪183', business: '₪283' }
+    : { starter: '$26', pro: '$83', business: '$188' };
+
   const plans = [
-    { id: 'starter', name: t('subscription.starter', 'Starter'), price: '$26', flows: '1', users: '60' },
-    { id: 'pro', name: t('subscription.pro', 'Pro'), price: '$83', flows: '5', users: '300', popular: true },
-    { id: 'business', name: t('subscription.business', 'Business'), price: '$188', flows: '10', users: '1000' },
+    { id: 'starter', name: t('subscription.starter', 'Starter'), price: prices.starter, flows: '1', users: '60' },
+    { id: 'pro', name: t('subscription.pro', 'Pro'), price: prices.pro, flows: '5', users: '300', popular: true },
+    { id: 'business', name: t('subscription.business', 'Business'), price: prices.business, flows: '10', users: '1000' },
   ];
 
   return (

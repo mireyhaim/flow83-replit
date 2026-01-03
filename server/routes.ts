@@ -2445,6 +2445,148 @@ export async function registerRoutes(
     }
   });
 
+  // Grow (Israeli payment provider) webhook endpoint
+  app.post("/api/webhooks/grow", async (req, res) => {
+    try {
+      const crypto = await import('crypto');
+      const secret = process.env.GROW_WEBHOOK_SECRET;
+      
+      if (!secret) {
+        console.error("Missing GROW_WEBHOOK_SECRET");
+        return res.status(500).json({ error: "Webhook not configured" });
+      }
+
+      // Get signature from header (Grow may use different header name - adjust as needed)
+      const signatureHeader = req.headers['x-grow-signature'] || req.headers['x-signature'];
+      const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+      
+      // Verify signature using raw body
+      const rawBody = (req as any).rawBody;
+      if (!rawBody || !Buffer.isBuffer(rawBody)) {
+        console.error("Missing raw body for Grow webhook verification");
+        return res.status(400).json({ error: "Missing raw body" });
+      }
+      
+      // Require signature header for security
+      if (!signature) {
+        console.error("Missing Grow webhook signature header");
+        return res.status(403).json({ error: "Missing signature" });
+      }
+      
+      // Verify HMAC signature (adjust algorithm if Grow uses different method)
+      const hmac = crypto.createHmac('sha256', secret);
+      const digest = hmac.update(rawBody).digest('hex');
+      
+      const digestBuffer = Buffer.from(digest.toLowerCase(), 'utf8');
+      const signatureBuffer = Buffer.from(signature.toLowerCase(), 'utf8');
+      
+      if (digestBuffer.length !== signatureBuffer.length || !crypto.timingSafeEqual(digestBuffer, signatureBuffer)) {
+        console.error("Invalid Grow webhook signature");
+        return res.status(403).json({ error: "Invalid signature" });
+      }
+
+      // Parse the webhook payload
+      const payload = req.body;
+      console.log("Grow webhook received:", JSON.stringify(payload, null, 2));
+
+      // Extract event info - adjust field names based on actual Grow webhook format
+      const eventType = payload.type || payload.event || payload.eventType;
+      const customerEmail = payload.customer?.email || payload.email || payload.buyer_email;
+      const productId = payload.product?.id || payload.productId;
+      const orderId = payload.order?.id || payload.orderId || payload.transaction_id;
+
+      // Determine plan from product ID or name
+      let plan = 'starter';
+      const productName = (payload.product?.name || payload.productName || '').toLowerCase();
+      if (productName.includes('pro') || productId?.includes('pro')) {
+        plan = 'pro';
+      } else if (productName.includes('business') || productId?.includes('business')) {
+        plan = 'business';
+      }
+
+      // Handle different event types
+      switch (eventType) {
+        case 'payment.completed':
+        case 'order.completed':
+        case 'subscription.created':
+        case 'subscription.activated':
+        case 'charge.succeeded': {
+          // Find user by email
+          if (!customerEmail) {
+            console.log("No customer email in Grow webhook");
+            return res.json({ received: true, warning: "No customer email" });
+          }
+
+          const user = await storage.getUserByEmail(customerEmail);
+          
+          if (!user) {
+            console.log(`User not found for Grow payment: ${customerEmail}`);
+            // Store event for later reconciliation
+            return res.json({ received: true, warning: "User not found" });
+          }
+
+          // Activate subscription
+          await storage.upsertUser({
+            id: user.id,
+            subscriptionPlan: plan,
+            subscriptionStatus: 'active',
+            subscriptionProvider: 'grow',
+            paymentFailedAt: null,
+            trialEndsAt: null, // Clear trial since they've paid
+          });
+          
+          console.log(`Grow payment successful for user ${user.id}: ${plan}`);
+          break;
+        }
+
+        case 'subscription.cancelled':
+        case 'subscription.expired':
+        case 'order.refunded': {
+          if (!customerEmail) {
+            return res.json({ received: true });
+          }
+
+          const user = await storage.getUserByEmail(customerEmail);
+          if (user) {
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: eventType === 'order.refunded' ? 'cancelled' : 'expired',
+            });
+            console.log(`Grow subscription ${eventType} for user ${user.id}`);
+          }
+          break;
+        }
+
+        case 'payment.failed':
+        case 'subscription.payment_failed': {
+          if (!customerEmail) {
+            return res.json({ received: true });
+          }
+
+          const user = await storage.getUserByEmail(customerEmail);
+          if (user) {
+            const paymentFailedAt = user.paymentFailedAt || new Date();
+            await storage.upsertUser({
+              id: user.id,
+              subscriptionStatus: 'past_due',
+              paymentFailedAt: paymentFailedAt,
+            });
+            console.log(`Grow payment failed for user ${user.id}`);
+          }
+          break;
+        }
+
+        default:
+          console.log(`Unhandled Grow event: ${eventType}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Grow webhook error:", error);
+      res.status(500).json({ error: "Webhook processing failed" });
+    }
+  });
+
   // ============ ADMIN ROUTES ============
   // Admin middleware - only allow SUPER_ADMIN users
   const isAdmin = async (req: any, res: any, next: any) => {

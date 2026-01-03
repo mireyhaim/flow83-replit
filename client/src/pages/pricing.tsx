@@ -9,7 +9,8 @@ import { useTranslation } from "react-i18next";
 
 const Pricing = () => {
   const { isAuthenticated } = useAuth();
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
+  const isHebrew = i18n.language === 'he';
 
   const getStartLink = () => {
     return isAuthenticated ? "/dashboard" : "/start-flow";
@@ -17,11 +18,15 @@ const Pricing = () => {
 
   const SHOW_ALL_PLANS = true;
 
+  const prices = isHebrew 
+    ? { starter: "₪83", pro: "₪183", business: "₪283" }
+    : { starter: "$26", pro: "$83", business: "$188" };
+
   const pricingPlans = [
     {
       name: t('pricingPage.starter'),
       planId: "starter" as const,
-      price: "$26",
+      price: prices.starter,
       period: t('pricingPage.perMonth'),
       trialText: t('pricingPage.includes7DayTrial'),
       description: t('pricingPage.starterDesc'),
@@ -42,7 +47,7 @@ const Pricing = () => {
     {
       name: t('pricingPage.pro'),
       planId: "pro" as const,
-      price: "$83",
+      price: prices.pro,
       period: t('pricingPage.perMonth'),
       trialText: null,
       description: t('pricingPage.proDesc'),
@@ -63,7 +68,7 @@ const Pricing = () => {
     {
       name: t('pricingPage.business'),
       planId: "business" as const,
-      price: "$188",
+      price: prices.business,
       period: t('pricingPage.perMonth'),
       trialText: null,
       description: t('pricingPage.businessDesc'),
@@ -168,7 +173,25 @@ const Pricing = () => {
                       data-testid={`button-subscribe-${plan.planId}`}
                       onClick={() => {
                         if (isAuthenticated) {
-                          const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                          // Route Hebrew users to Grow, English users to LemonSqueezy
+                          const lemonSqueezyUrls: Record<string, string> = {
+                            starter: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
+                            pro: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
+                            business: 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0',
+                          };
+                          const growUrls: Record<string, string> = {
+                            starter: '', // Will be set when user provides Grow links
+                            pro: '',
+                            business: '',
+                          };
+                          const checkoutUrls = isHebrew ? growUrls : lemonSqueezyUrls;
+                          const baseUrl = checkoutUrls[plan.planId] || lemonSqueezyUrls[plan.planId];
+                          
+                          if (!baseUrl) {
+                            alert(t('pricingPage.paymentNotConfigured', 'Payment link not configured yet. Please contact support.'));
+                            return;
+                          }
+                          
                           const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
                           window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
                         } else {
@@ -223,7 +246,16 @@ const Pricing = () => {
                 data-testid="button-cta-free-trial"
                 onClick={() => {
                   if (isAuthenticated) {
-                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    // Route Hebrew users to Grow, English users to LemonSqueezy
+                    const baseUrl = isHebrew 
+                      ? '' // Grow starter URL - will be set when user provides
+                      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    
+                    if (!baseUrl) {
+                      alert(t('pricingPage.paymentNotConfigured', 'Payment link not configured yet. Please contact support.'));
+                      return;
+                    }
+                    
                     const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
                     window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   } else {
