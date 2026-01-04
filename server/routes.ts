@@ -1195,10 +1195,22 @@ export async function registerRoutes(
           task: day.task || "",
         });
 
-        const blocksToInsert = day.blocks.map((block: any, i: number) => ({
+        // Filter and validate blocks - only insert blocks that have required fields
+        const validBlocks = (day.blocks || []).filter((block: any) => 
+          block && block.type && typeof block.type === 'string'
+        );
+        
+        // If no valid blocks, create default blocks from day content
+        const blocksToUse = validBlocks.length > 0 ? validBlocks : [
+          { type: "text", content: { text: day.explanation || "" } },
+          { type: "reflection", content: { question: journey.language === 'he' ? "מה מהדברים שלמדת היום מהדהד אצלך ביותר?" : "What resonates with you most from today's lesson?" } },
+          { type: "task", content: { task: day.task || "" } },
+        ];
+        
+        const blocksToInsert = blocksToUse.map((block: any, i: number) => ({
           stepId: step.id,
           type: block.type,
-          content: block.content,
+          content: block.content || {},
           orderIndex: i,
         }));
 
