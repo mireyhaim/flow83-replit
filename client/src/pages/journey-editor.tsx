@@ -45,7 +45,7 @@ const JourneyEditorPage = () => {
     retry: false,
   });
 
-  const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing";
+  const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing" || subscriptionStatus?.status === "on_trial";
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
 
