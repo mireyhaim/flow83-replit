@@ -128,9 +128,10 @@ export default function JourneyLandingPage() {
   });
 
   // Use explicit language field if available, otherwise fall back to auto-detection
+  // Also detect Hebrew content for legacy journeys that may have wrong language setting
+  const hasHebrewContent = journey ? (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")) : false;
   const isHebrew = journey ? (
-    journey.language === 'he' || 
-    (!journey.language && (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")))
+    journey.language === 'he' || hasHebrewContent
   ) : false;
   const currencySymbol = isHebrew ? "₪" : "$";
   

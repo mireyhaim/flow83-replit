@@ -6,7 +6,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -165,8 +165,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {subscription?.paymentFailedAt && (() => {
-        const failedDate = new Date(subscription.paymentFailedAt);
+      {user?.paymentFailedAt && (() => {
+        const failedDate = new Date(user.paymentFailedAt);
         const gracePeriodEnds = new Date(failedDate.getTime() + 5 * 24 * 60 * 60 * 1000); // 5 days
         const daysLeft = Math.max(0, Math.ceil((gracePeriodEnds.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
         const isExpired = daysLeft === 0;
