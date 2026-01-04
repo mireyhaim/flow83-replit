@@ -6,7 +6,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -14,7 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
   const { t } = useTranslation('dashboard');
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, isProfileComplete } = useAuth();
   const onboarding = useOnboarding();
   const [, navigate] = useLocation();
 
@@ -190,6 +190,34 @@ export default function Dashboard() {
           </div>
         );
       })()}
+
+      {!isProfileComplete && (
+        <div 
+          className="mb-8 rounded-2xl p-5 flex items-center justify-between bg-gradient-to-r from-violet-50 to-indigo-50 border-2 border-violet-200"
+          data-testid="banner-profile-incomplete"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
+              <User className="h-6 w-6 text-violet-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-violet-900">
+                {t('profileCompletion.bannerTitle')}
+              </h3>
+              <p className="text-sm text-violet-700">
+                {t('profileCompletion.bannerDescription')}
+              </p>
+            </div>
+          </div>
+          <Button 
+            className="rounded-full bg-violet-600 hover:bg-violet-700"
+            asChild
+            data-testid="button-complete-profile"
+          >
+            <Link href="/profile">{t('profileCompletion.completeNow')}</Link>
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">

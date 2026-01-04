@@ -253,6 +253,15 @@
     "failedToSave": "Failed to save flow settings"
   },
 
+  "profileCompletion": {
+    "bannerTitle": "Complete Your Profile",
+    "bannerDescription": "Add your expertise and methods to get better AI-generated content for your flows.",
+    "completeNow": "Complete Now",
+    "gateTitle": "Profile Required",
+    "gateDescription": "Before creating a flow, please complete your mentor profile. This helps the AI create content that truly reflects your unique style.",
+    "gateButton": "Complete Profile"
+  },
+
   "profilePage": {
     "title": "My Profile",
     "profileImageAlt": "Profile",

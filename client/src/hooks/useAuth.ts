@@ -1,6 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 
+// Check if mentor profile has required fields for AI personalization
+function checkProfileComplete(user: User | null | undefined): boolean {
+  if (!user) return false;
+  // Required fields for generating personalized AI content
+  return !!(user.specialty && user.methodology && user.uniqueApproach);
+}
+
+// Get list of missing profile fields
+function getMissingProfileFields(user: User | null | undefined): string[] {
+  if (!user) return ['specialty', 'methodology', 'uniqueApproach'];
+  const missing: string[] = [];
+  if (!user.specialty) missing.push('specialty');
+  if (!user.methodology) missing.push('methodology');
+  if (!user.uniqueApproach) missing.push('uniqueApproach');
+  return missing;
+}
+
 async function fetchUser(): Promise<User | null> {
   const response = await fetch("/api/auth/user", {
     credentials: "include",
@@ -43,5 +60,7 @@ export function useAuth() {
     isAuthenticated: !!user,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
+    isProfileComplete: checkProfileComplete(user),
+    missingProfileFields: getMissingProfileFields(user),
   };
 }

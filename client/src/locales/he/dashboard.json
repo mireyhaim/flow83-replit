@@ -253,6 +253,15 @@
     "failedToSave": "שמירת הגדרות ה-Flow נכשלה"
   },
 
+  "profileCompletion": {
+    "bannerTitle": "השלם את הפרופיל שלך",
+    "bannerDescription": "הוסף את ההתמחות והשיטות שלך כדי לקבל תוכן AI מותאם יותר לפלואו שלך.",
+    "completeNow": "השלם עכשיו",
+    "gateTitle": "נדרש להשלים פרופיל",
+    "gateDescription": "לפני יצירת פלואו, אנא השלם את פרופיל המנטור שלך. זה עוזר ל-AI ליצור תוכן שמשקף את הסגנון הייחודי שלך.",
+    "gateButton": "להשלמת הפרופיל"
+  },
+
   "profilePage": {
     "title": "הפרופיל שלי",
     "profileImageAlt": "פרופיל",
