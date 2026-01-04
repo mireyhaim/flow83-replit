@@ -143,28 +143,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {(
-        <div className="mb-8 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-2 border-violet-300 rounded-2xl p-5 flex items-center justify-between" data-testid="banner-no-subscription">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-violet-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-900">{t('startFreeTrial')}</h3>
-              <p className="text-sm text-slate-600">{t('getAccessToAllFeatures')}</p>
-            </div>
-          </div>
-          <Button 
-            className="bg-violet-600 hover:bg-violet-700 rounded-full text-white" 
-            data-testid="button-start-trial"
-            onClick={() => window.open('https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ', '_blank')}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            {t('upgradeNow')}
-          </Button>
-        </div>
-      )}
-
       {user?.paymentFailedAt && (() => {
         const failedDate = new Date(user.paymentFailedAt);
         const gracePeriodEnds = new Date(failedDate.getTime() + 5 * 24 * 60 * 60 * 1000); // 5 days
