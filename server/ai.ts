@@ -47,6 +47,104 @@ interface GeneratedDaySimple {
   task: string;
 }
 
+// Helper function to parse client challenges from various formats
+function parseClientChallenges(challengeText: string): string[] {
+  if (!challengeText || challengeText.trim().length < 3) return [];
+  
+  const challenges: string[] = [];
+  const seen = new Set<string>();
+  
+  // Normalize text - replace multiple spaces with single space
+  let normalized = challengeText.replace(/\s+/g, ' ').trim();
+  
+  // Check if text contains conjunction patterns that need splitting
+  const hasConjunctions = /\s+(וגם|ועם|ו[א-ת]|and|&)\s+/i.test(normalized) || /,\s+[a-zA-Zא-ת]/.test(normalized);
+  
+  // For short inputs with NO conjunctions, return as-is
+  if (normalized.length < 30 && !normalized.includes('\n') && !hasConjunctions) {
+    return [normalized];
+  }
+  
+  // Pre-process: Insert SEPARATOR marker at conjunction points
+  // We'll just mark the split point - the words after split are preserved
+  const SEP = '||SEP||';
+  normalized = normalized
+    // Hebrew patterns - mark split point
+    .replace(/\s+וגם\s+עם\s+/g, SEP)   // " וגם עם X" -> SEP + X (strips conjunction)
+    .replace(/\s+וגם\s+/g, SEP)        // " וגם X" -> SEP + X
+    .replace(/\s+ועם\s+/g, SEP)        // " ועם X" -> SEP + X
+    .replace(/\s+ו(?=[א-ת]{3,})/g, SEP) // " וX" -> SEP + X
+    // English patterns
+    .replace(/\s+and also\s+/gi, SEP)   // " and also X" -> SEP + X
+    .replace(/,\s+and\s+/gi, SEP)       // ", and X" -> SEP + X
+    .replace(/\s+and\s+(?=[a-z]{3,})/gi, SEP)  // " and X" -> SEP + X
+    .replace(/\s+&\s+/g, SEP)           // " & " -> SEP
+    // Comma-separated lists (comma followed by space and word)
+    .replace(/,\s+(?=[a-zA-Zא-ת]{3,})/g, SEP);  // ", X" -> SEP + X
+  
+  // Split by separator or other patterns: newlines, numbered patterns, semicolons
+  const splitPattern = /\|\|SEP\|\||\n+|(?<=[^\d])[;，]\s*|\s*\d+[.)]\s+|\s*[-•]\s+/;
+  const segments = normalized.split(splitPattern).filter(s => s.trim().length >= 3);
+  
+  // Helper to clean ONLY leading punctuation, NOT Hebrew/English words
+  const cleanSegment = (text: string): string => {
+    return text.replace(/^[\d.\-\*\•;\,，]+\s*/, '').trim();
+  };
+  
+  for (const segment of segments) {
+    // Clean up the segment - remove only leading punctuation
+    let cleaned = cleanSegment(segment);
+    
+    // If segment is still too long (>150 chars), try to split further
+    if (cleaned.length > 150) {
+      // Try splitting by sentence boundaries, or challenge keywords
+      const subPattern = /[.!?]\s+|;\s*|\s+אתגר\s+|\s+challenge\s+/i;
+      const subChallenges = cleaned.split(subPattern).filter(s => s.trim().length >= 3);
+      if (subChallenges.length > 1) {
+        for (const sub of subChallenges.slice(0, 7)) {
+          const core = sub.trim().length > 100 ? sub.substring(0, 100).trim() : sub.trim();
+          const key = core.toLowerCase();
+          if (core.length >= 3 && !seen.has(key)) {
+            seen.add(key);
+            challenges.push(core);
+          }
+        }
+        continue;
+      }
+    }
+    
+    // Extract the core challenge - first sentence or first 100 chars
+    const coreChallenge = cleaned.length > 100 
+      ? (cleaned.split(/[.!?:]\s/)[0] || cleaned.substring(0, 100)).trim()
+      : cleaned;
+    
+    const key = coreChallenge.toLowerCase();
+    if (coreChallenge.length >= 3 && !seen.has(key)) {
+      seen.add(key);
+      challenges.push(coreChallenge);
+    }
+  }
+  
+  // Fallback: if still no challenges, try splitting by sentences
+  if (challenges.length === 0 && challengeText.length >= 3) {
+    const sentences = challengeText.split(/[.!?]\s+/).filter(s => s.trim().length >= 3);
+    for (const sentence of sentences.slice(0, 7)) {
+      const core = sentence.trim().length > 100 ? sentence.substring(0, 100).trim() : sentence.trim();
+      if (core.length >= 3) {
+        challenges.push(core);
+      }
+    }
+  }
+  
+  // Ultimate fallback - take first 150 chars as one challenge
+  if (challenges.length === 0 && challengeText.trim().length >= 3) {
+    challenges.push(challengeText.substring(0, 150).trim());
+  }
+  
+  console.log(`[AI] Parsed ${challenges.length} challenges from text: ${challenges.map(c => c.substring(0, 30) + '...').join(', ')}`);
+  return challenges;
+}
+
 // Mentor methodology map - comprehensive extraction from uploaded content
 export interface MentorMethodologyMap {
   // Core pillars of the mentor's method (3-7 main concepts)
@@ -514,12 +612,24 @@ JOURNEY DETAILS:
 - Goal: ${intent.mainGoal}
 - Target Audience: ${intent.targetAudience}
 - Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
-${intent.clientChallenges ? `- Client Challenges: ${intent.clientChallenges}` : ""}
 ${intent.profession ? `- Mentor Profession: ${intent.profession}` : ""}
 ${intent.tone ? `- Desired Tone: ${intent.tone}` : ""}
 ${methodologySection}${contentExcerpts}
+${intent.clientChallenges ? `
+=== CLIENT CHALLENGES TO ADDRESS (MANDATORY) ===
+${intent.clientChallenges}
 
-CRITICAL: The content MUST directly address the client challenges described above. Each day should help the participant work through these specific challenges using the mentor's methodology.
+CRITICAL REQUIREMENT - YOU MUST:
+1. Each day MUST explicitly name and address one or more of these specific challenges in the title, goal, or explanation
+2. Use the EXACT language the mentor used to describe these challenges (e.g., "בחירה מתוך פחד", "חוסר בהירות פנימית")
+3. The explanation MUST include a sentence like: "היום נתמקד באתגר של..." or "Today we address the challenge of..."
+4. Connect the methodology to solving THIS SPECIFIC challenge, not just general growth
+5. The task/practice MUST help the participant work through this specific challenge
+
+EXAMPLE for Day 1 addressing "בחירה מתוך פחד ולא מתוך רצון":
+- Goal: "היום נתמקד באתגר הראשון - 'בחירה מתוך פחד ולא מתוך רצון'. נלמד לזהות מתי את פועלת מפחד..."
+- Explanation should open with: "אחד האתגרים המרכזיים שזיהינו הוא בחירה מתוך פחד..."
+` : ""}
 
 CREATE DAYS ${startDay}-${endDay}:
 ${startDay === 1 ? "Day 1: Introduction and foundation - set the context using the mentor's worldview." : ""}
@@ -720,10 +830,59 @@ Respond in JSON:
       }
     }
     
+    // CRITICAL: Check and enrich with client challenges
+    // Parse client challenges using the helper function
+    const mainChallenges = parseClientChallenges(intent.clientChallenges || "");
+    
+    if (mainChallenges.length > 0) {
+        // Assign challenge to this day (cycle through challenges)
+        const challengeIndex = (day.dayNumber - 1) % mainChallenges.length;
+        const assignedChallenge = mainChallenges[challengeIndex];
+        
+        // Check if the challenge is referenced
+        const challengeKeywords = assignedChallenge.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const hasChallengeRef = challengeKeywords.some(keyword => dayContent.includes(keyword));
+        
+        console.log(`[AI] Day ${day.dayNumber} challenge: "${assignedChallenge}" (found: ${hasChallengeRef})`);
+        
+        if (!hasChallengeRef && assignedChallenge.length > 5) {
+          // Add challenge context to the goal
+          const challengePrefix = isHebrew
+            ? `היום נתמקד באתגר: "${assignedChallenge}"\n\n`
+            : `Today we address the challenge: "${assignedChallenge}"\n\n`;
+          day.goal = challengePrefix + day.goal;
+          
+          // Add challenge opener to explanation
+          const challengeOpener = isHebrew
+            ? `אחד האתגרים המרכזיים שזיהינו הוא "${assignedChallenge}". בואי נבין איך זה מתחבר לתהליך שלך.\n\n`
+            : `One of the key challenges we identified is "${assignedChallenge}". Let's understand how this connects to your process.\n\n`;
+          day.explanation = challengeOpener + day.explanation;
+          
+          console.log(`[AI] Enhanced day ${day.dayNumber} with client challenge: ${assignedChallenge}`);
+        }
+    }
+    
     // CRITICAL: Synchronize blocks with the enriched content
-    // Rebuild blocks to ensure they contain the pillar, stage, practice, and signature phrase
+    // Rebuild blocks to ensure they contain the pillar, stage, practice, challenge, and signature phrase
     if (day.blocks && day.blocks.length > 0 && map) {
       const enrichedBlocks: typeof day.blocks = [];
+      
+      // Add challenge context block at the very top if we have challenges
+      const blockChallenges = parseClientChallenges(intent.clientChallenges || "");
+      if (blockChallenges.length > 0) {
+        const challengeIndex = (day.dayNumber - 1) % blockChallenges.length;
+        const assignedChallenge = blockChallenges[challengeIndex];
+        if (assignedChallenge.length > 5) {
+          enrichedBlocks.push({
+            type: "text",
+            content: {
+              text: isHebrew
+                ? `🎯 האתגר של היום: "${assignedChallenge}"\n\nהיום נעבוד על אתגר זה באמצעות הכלים והתרגילים שנלמד.`
+                : `🎯 Today's Challenge: "${assignedChallenge}"\n\nToday we'll work on this challenge using the tools and practices we'll learn.`
+            }
+          });
+        }
+      }
       
       // Add stage context block if we have a stage
       if (stage) {
@@ -1075,13 +1234,24 @@ IMPORTANT: Write ALL content as if you ARE this mentor. Use their voice, their p
 FLOW: ${intent.journeyName}
 GOAL: ${intent.mainGoal}
 AUDIENCE: ${intent.targetAudience}
-${intent.clientChallenges ? `CLIENT CHALLENGES: ${intent.clientChallenges}` : ""}
 ${intent.profession ? `MENTOR PROFESSION: ${intent.profession}` : ""}
 ${intent.tone ? `TONE: ${intent.tone}` : ""}
 ${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
 ${mentorStyleSection}
+${intent.clientChallenges ? `
+=== CLIENT CHALLENGES TO ADDRESS (MANDATORY) ===
+${intent.clientChallenges}
 
-CRITICAL: Each day MUST directly address the client challenges. The content should help participants work through their specific struggles using the mentor's approach and the requested tone.
+CRITICAL REQUIREMENT - YOU MUST:
+1. Each day MUST explicitly name and address one or more of these specific challenges in the title, goal, or explanation
+2. Use the EXACT language from the challenges (e.g., "בחירה מתוך פחד", "חוסר בהירות פנימית")
+3. The explanation MUST include a sentence like: "היום נתמקד באתגר של..." or "Today we address the challenge of..."
+4. Connect the methodology to solving THIS SPECIFIC challenge
+5. The task MUST help the participant work through this specific challenge
+
+For example, if challenge is "בחירה מתוך פחד ולא מתוך רצון", the goal should say:
+"היום נתמקד באתגר 'בחירה מתוך פחד ולא מתוך רצון'. נלמד לזהות מתי אנחנו פועלים מפחד..."
+` : ""}
 
 ${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
 ${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
