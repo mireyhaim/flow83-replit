@@ -620,13 +620,15 @@ const JourneyEditorPage = () => {
             </div>
           </div>
 
-          {/* Intro Message */}
-          <div className="bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 rounded-xl p-4 mb-4">
-            <p className="text-center text-white/90">
-              <Sparkles className="w-4 h-4 inline-block mx-2 text-violet-400" />
-              {t('publishModal.introMessage')}
-            </p>
-          </div>
+          {/* Intro Message - only show on steps 1-3, not on final step */}
+          {publishStep < 4 && (
+            <div className="bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 rounded-xl p-4 mb-4">
+              <p className="text-center text-white/90">
+                <Sparkles className="w-4 h-4 inline-block mx-2 text-violet-400" />
+                {t('publishModal.introMessage')}
+              </p>
+            </div>
+          )}
 
           {publishStep === 1 ? (
             <>
