@@ -76,7 +76,7 @@ Respond in JSON:
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: "Expert course designer. Respond with valid JSON only." },
+      { role: "system", content: "Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -86,7 +86,42 @@ Respond in JSON:
   const content = response.choices[0].message.content;
   if (!content) throw new Error("No content generated");
   
-  return JSON.parse(content).days as GeneratedDay[];
+  const parsed = JSON.parse(content);
+  const days = parsed.days as GeneratedDay[];
+  
+  // Validate and ensure all fields are filled with meaningful content
+  const isHebrew = isHebrewText(`${intent.journeyName} ${intent.mainGoal}`);
+  for (const day of days) {
+    if (!day.title || day.title.length < 5) {
+      day.title = isHebrew ? `יום ${day.dayNumber}: התחלה והתעוררות` : `Day ${day.dayNumber}: Awakening and Beginning`;
+    }
+    if (!day.goal || day.goal.length < 20) {
+      day.goal = isHebrew 
+        ? `ביום זה המשתתף ילמד ליישם את העקרונות הבסיסיים של התהליך ולהתחיל את המסע שלו לקראת שינוי.`
+        : `Today the participant will learn to apply the core principles of this journey and begin their path toward transformation.`;
+    }
+    if (!day.explanation || day.explanation.length < 100) {
+      day.explanation = isHebrew
+        ? `ביום זה אנחנו מתמקדים בבניית הבסיס לתהליך השינוי. זהו השלב שבו אנחנו מתחילים להבין את העקרונות המרכזיים ולהכין את עצמנו למסע שלפנינו.\n\nהשינוי האמיתי מתחיל מבפנים. כאשר אנחנו לומדים להקשיב לעצמנו ולהבין את הצרכים האמיתיים שלנו, אנחנו פותחים דלת לאפשרויות חדשות.`
+        : `Today we focus on building the foundation for your transformation journey. This is the stage where we begin to understand the core principles and prepare ourselves for the path ahead.\n\nReal change starts from within. When we learn to listen to ourselves and understand our true needs, we open the door to new possibilities.`;
+    }
+    if (!day.task || day.task.length < 30) {
+      day.task = isHebrew
+        ? `קח 10 דקות לכתוב ביומן על המטרות שלך מהתהליך הזה. מה אתה מקווה להשיג? איזה שינוי אתה רוצה לראות בחייך?`
+        : `Take 10 minutes to journal about your goals for this journey. What do you hope to achieve? What change do you want to see in your life?`;
+    }
+    // Ensure blocks array exists with proper content
+    if (!day.blocks || day.blocks.length === 0) {
+      day.blocks = [
+        { type: "text", content: { text: day.explanation } },
+        { type: "reflection", content: { question: isHebrew ? `מה מהדברים שלמדת היום מהדהד אצלך ביותר?` : `What resonates with you most from today's lesson?` } },
+        { type: "task", content: { task: day.task } },
+      ];
+    }
+  }
+  
+  console.log(`[AI] generateDaysBatch: Generated ${days.length} days, first day goal length: ${days[0]?.goal?.length || 0}`);
+  return days;
 }
 
 export async function generateJourneyContent(

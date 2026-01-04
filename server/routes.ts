@@ -1138,7 +1138,24 @@ export async function registerRoutes(
         additionalNotes: journey.description || "",
       };
 
+      console.log("[generate-content] Intent:", JSON.stringify(intent));
+      console.log("[generate-content] Content length:", content.length);
+      
       const generatedDays = await generateJourneyContent(intent, content);
+      console.log("[generate-content] Generated days count:", generatedDays.length);
+      
+      // Log sample day to verify AI response
+      if (generatedDays.length > 0) {
+        const sampleDay = generatedDays[0];
+        console.log("[generate-content] Sample day:", {
+          dayNumber: sampleDay.dayNumber,
+          title: sampleDay.title,
+          goalLength: sampleDay.goal?.length || 0,
+          explanationLength: sampleDay.explanation?.length || 0,
+          taskLength: sampleDay.task?.length || 0,
+          blocksCount: sampleDay.blocks?.length || 0,
+        });
+      }
 
       sendProgress("cleanup", 60, "Cleaning up old content...");
 
@@ -1152,6 +1169,7 @@ export async function registerRoutes(
         const dayProgress = 70 + Math.round((dayIndex / totalDays) * 25);
         sendProgress("saving", dayProgress, `Saving day ${day.dayNumber} of ${totalDays}...`);
 
+        console.log(`[generate-content] Saving day ${day.dayNumber}: goal=${day.goal?.length || 0} chars, explanation=${day.explanation?.length || 0} chars, task=${day.task?.length || 0} chars`);
         const step = await storage.createJourneyStep({
           journeyId,
           dayNumber: day.dayNumber,
@@ -1226,11 +1244,27 @@ export async function registerRoutes(
         additionalNotes: journey.description || "",
       };
 
+      console.log("[auto-generate] Intent:", JSON.stringify(intent));
       const generatedDays = await generateFlowDays(intent);
+      console.log("[auto-generate] Generated days count:", generatedDays.length);
+      
+      // Log sample day data to verify AI response
+      if (generatedDays.length > 0) {
+        const sampleDay = generatedDays[0];
+        console.log("[auto-generate] Sample day:", {
+          dayNumber: sampleDay.dayNumber,
+          title: sampleDay.title,
+          goalLength: sampleDay.goal?.length || 0,
+          explanationLength: sampleDay.explanation?.length || 0,
+          taskLength: sampleDay.task?.length || 0,
+          goalPreview: sampleDay.goal?.substring(0, 100) || "EMPTY",
+        });
+      }
 
       // Save generated days to database with blocks for chat compatibility
       const createdSteps = [];
       for (const day of generatedDays) {
+        console.log(`[auto-generate] Saving day ${day.dayNumber}: goal=${day.goal?.length || 0} chars, explanation=${day.explanation?.length || 0} chars, task=${day.task?.length || 0} chars`);
         const step = await storage.createJourneyStep({
           journeyId,
           dayNumber: day.dayNumber,
