@@ -1,7 +1,13 @@
 import { useRoute, Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+
+function isHebrewText(text: string): boolean {
+  if (!text) return false;
+  const hebrewRegex = /[\u0590-\u05FF]/;
+  return hebrewRegex.test(text);
+}
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -73,7 +79,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function JourneyLandingPage() {
-  const { t } = useTranslation('participant');
+  const { t, i18n } = useTranslation('participant');
   const [, params] = useRoute("/j/:id");
   const [, navigate] = useLocation();
   const journeyId = params?.id;
@@ -178,9 +184,84 @@ export default function JourneyLandingPage() {
     : t('yourGuide');
   const price = journey.price || 0;
   const isFree = price <= 0;
-  const currencySymbol = "$";
+  
+  const isHebrew = isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "");
+  const currencySymbol = isHebrew ? "₪" : "$";
+  
+  useEffect(() => {
+    const previousLang = i18n.language;
+    if (isHebrew) {
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "he";
+      i18n.changeLanguage("he");
+    } else {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+      i18n.changeLanguage("en");
+    }
+    return () => {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+      i18n.changeLanguage(previousLang);
+    };
+  }, [isHebrew, i18n]);
 
-  const fallbackContent: LandingPageContent = {
+  const hebrewFallbackContent: LandingPageContent = {
+    hero: {
+      tagline: "מסע אל עצמך",
+      headline: "דרך עדינה לבהירות פנימית",
+      description: "זהו תהליך של גילוי עדין—מרחב שבו תוכלו לעצור, לנשום, ולהתחבר מחדש למה שבאמת חשוב לכם. דרך הנחיה ושאילת שאלות מלאות אמפתיה, נצעד יחד לקראת הבנה ברורה יותר של מי שאתם ולאן אתם רוצים להגיע.",
+      ctaText: isFree ? "התחילו את המסע" : `הצטרפו עכשיו - ${currencySymbol}${price}`,
+    },
+    audience: {
+      sectionTitle: "המסע הזה נועד בשבילכם",
+      description: "לא צריך שהכל יהיה מסודר. למעשה, התהליך הזה הכי משמעותי למי שעדיין מחפש, עדיין שואל, עדיין פתוח לגלות משהו חדש על עצמו.",
+      profiles: [
+        { icon: "Heart", title: "מחפשי הבנה עצמית", description: "אתם מרגישים שיש משהו מתחת לפני השטח, ואתם מוכנים לחקור אותו בעדינות." },
+        { icon: "Compass", title: "אלו שבצומת דרכים", description: "אתם עומדים מול החלטה או מעבר וצריכים בהירות כדי להתקדם בביטחון." },
+        { icon: "Sparkles", title: "נשמות יצירתיות", description: "אתם רוצים להתחבר מחדש לקול האותנטי שלכם ולפתוח את הפוטנציאל היצירתי." },
+        { icon: "Moon", title: "מי שמחפש שקט", description: "אתם מחפשים רגע של שלווה בעולם שמרגיש מהיר מדי." },
+      ],
+      disclaimer: "זה אולי לא מתאים לכם אם אתם מחפשים פתרונות מהירים או אישור חיצוני. זו עבודה פנימית—עדינה, אבל אמיתית.",
+    },
+    painPoints: {
+      sectionTitle: "אולי אתם מרגישים...",
+      points: [
+        { label: "תקועים", description: "כאילו אתם עוברים את התנועות אבל לא באמת מתקדמים. כל יום מרגיש אותו דבר, ובעומק הלב, אתם יודעים שיש משהו יותר שמחכה לכם." },
+        { label: "מוצפים", description: "מהרעש—גם החיצוני וגם הפנימי. יש כל כך הרבה קולות שאומרים לכם מי אתם צריכים להיות, מה אתם צריכים לרצות, איך אתם צריכים להרגיש. ואיפשהו בכל הרעש הזה, הקול שלכם הלך לאיבוד." },
+        { label: "מנותקים", description: "מעצמכם, מהמטרה שלכם, אולי אפילו מהדברים שפעם הביאו לכם שמחה. אתם מוצאים את עצמכם תוהים: \"זה באמת הכל?\"" },
+        { label: "משתוקקים", description: "למשהו שאי אפשר בדיוק לתת לו שם. תחושה של משמעות. הרגשה של להיות נראים באמת. רשות להיות בדיוק מי שאתם." },
+      ],
+      closingMessage: "אם משהו מזה מהדהד בכם, אתם במקום הנכון. אתם לא שבורים. אתם מתעוררים.",
+    },
+    transformation: {
+      sectionTitle: "מה מחכה לכם בצד השני",
+      description: "זה לא עניין של להפוך למישהו חדש. זה עניין של לגלות מי שתמיד הייתם, מתחת לשכבות הציפיות והספקות.",
+      outcomes: [
+        "הבנה עמוקה יותר של הערכים שלכם ומה באמת חשוב לכם",
+        "בהירות לגבי הצעדים הבאים שלכם, גם אם אתם לא רואים את כל הדרך",
+        "תחושה מחודשת של חיבור—לעצמכם ולמטרת החיים שלכם",
+        "כלים להתבוננות עצמית שתוכלו לשאת איתכם תמיד",
+        "רשות להיות בדיוק היכן שאתם, תוך כדי התקדמות עדינה קדימה",
+        "תחושה של קלילות, כאילו משקל שלא ידעתם שאתם נושאים הורם מעליכם",
+      ],
+      quote: "אני לא יכול להבטיח לכם חיים מושלמים. אבל אני יכול להבטיח לכם מערכת יחסים יותר כנה עם החיים שיש לכם.",
+    },
+    testimonials: [
+      { name: "מיכל", text: "הגעתי עם תחושה של פיזור ויצאתי עם תחושה של שלמות. לראשונה מזה שנים, אני יכולה לשמוע את המחשבות שלי בבהירות.", feeling: "מצאה בהירות אחרי שנים של בלבול" },
+      { name: "דוד", text: "זה לא היה טיפול, זה לא היה אימון—זה היה משהו עדין יותר. כמו שיחה עם החלק הכי חכם של עצמי.", feeling: "התחבר מחדש לחוכמה הפנימית" },
+      { name: "שרה", text: "סוף סוף נתתי לעצמי רשות לרצות את מה שאני רוצה. זה אולי נשמע פשוט, אבל בשבילי, זה היה מהפכני.", feeling: "אימצה את הרצונות האותנטיים שלה" },
+    ],
+    cta: {
+      tagline: "הצעד הבא שלכם",
+      headline: "מוכנים להתחיל את המסע העדין שלכם?",
+      description: "אין פה לחץ. אין דחיפות. רק הזמנה פתוחה לחקור מה אפשרי כשאתם נותנים לעצמכם רשות לעצור, להתבונן, ולהתחבר מחדש.",
+      buttonText: isFree ? "התחילו את המסע" : `הצטרפו עכשיו - ${currencySymbol}${price}`,
+      note: "יש שאלות? פנו אלינו בכל עת. זהו מרחב ללא שיפוטיות.",
+    },
+  };
+
+  const englishFallbackContent: LandingPageContent = {
     hero: {
       tagline: "A Journey Towards You",
       headline: "A Gentle Path to Inner Clarity",
@@ -234,6 +315,8 @@ export default function JourneyLandingPage() {
       note: "Have questions? Reach out anytime. This is a judgment-free space.",
     },
   };
+
+  const fallbackContent = isHebrew ? hebrewFallbackContent : englishFallbackContent;
 
   const content: LandingPageContent = rawContent || fallbackContent;
 
