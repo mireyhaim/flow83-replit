@@ -127,6 +127,29 @@ export default function JourneyLandingPage() {
     },
   });
 
+  const isHebrew = journey ? (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")) : false;
+  const currencySymbol = isHebrew ? "₪" : "$";
+  
+  useEffect(() => {
+    if (!journey) return;
+    
+    const previousLang = i18n.language;
+    if (isHebrew) {
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "he";
+      i18n.changeLanguage("he");
+    } else {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+      i18n.changeLanguage("en");
+    }
+    return () => {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+      i18n.changeLanguage(previousLang);
+    };
+  }, [journey, isHebrew, i18n]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen lp-gradient-sunset flex items-center justify-center">
@@ -184,27 +207,6 @@ export default function JourneyLandingPage() {
     : t('yourGuide');
   const price = journey.price || 0;
   const isFree = price <= 0;
-  
-  const isHebrew = isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "");
-  const currencySymbol = isHebrew ? "₪" : "$";
-  
-  useEffect(() => {
-    const previousLang = i18n.language;
-    if (isHebrew) {
-      document.documentElement.dir = "rtl";
-      document.documentElement.lang = "he";
-      i18n.changeLanguage("he");
-    } else {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-      i18n.changeLanguage("en");
-    }
-    return () => {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-      i18n.changeLanguage(previousLang);
-    };
-  }, [isHebrew, i18n]);
 
   const hebrewFallbackContent: LandingPageContent = {
     hero: {
