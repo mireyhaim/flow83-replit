@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
@@ -1129,7 +1129,18 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      sendProgress("ai", 10, "Creating content with AI...");
+      sendProgress("ai", 10, "Analyzing your teaching style...");
+
+      // Analyze ALL uploaded content to extract mentor's unique style
+      console.log("[generate-content] Analyzing mentor content, length:", content.length);
+      const mentorStyle = await analyzeMentorContent(content);
+      console.log("[generate-content] Mentor style extracted:", {
+        tone: mentorStyle.toneOfVoice?.substring(0, 100),
+        phrases: mentorStyle.keyPhrases?.length,
+        summaryLength: mentorStyle.contentSummary?.length
+      });
+
+      sendProgress("ai", 30, "Creating content in your voice...");
 
       const intent = {
         journeyName: journey.name,
@@ -1139,9 +1150,10 @@ export async function registerRoutes(
         desiredFeeling: "",
         additionalNotes: journey.description || "",
         language: journey.language || undefined,
+        mentorStyle, // Include extracted style profile
       };
 
-      console.log("[generate-content] Intent:", JSON.stringify(intent));
+      console.log("[generate-content] Intent:", JSON.stringify({ ...intent, mentorStyle: { ...mentorStyle, contentSummary: `${mentorStyle.contentSummary?.length || 0} chars` } }));
       console.log("[generate-content] Content length:", content.length);
       
       const generatedDays = await generateJourneyContent(intent, content);

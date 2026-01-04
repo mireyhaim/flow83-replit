@@ -13,6 +13,8 @@ interface JourneyIntent {
   desiredFeeling?: string;
   additionalNotes?: string;
   language?: string; // 'he' for Hebrew, 'en' for English
+  // Mentor style profile (extracted from uploaded content)
+  mentorStyle?: MentorStyleProfile;
 }
 
 interface GeneratedDay {
@@ -41,6 +43,182 @@ interface GeneratedDaySimple {
   task: string;
 }
 
+// Mentor style profile extracted from uploaded content
+export interface MentorStyleProfile {
+  toneOfVoice: string;        // e.g., "warm and encouraging", "direct and practical"
+  keyPhrases: string[];       // Signature phrases the mentor uses
+  teachingStyle: string;      // How they explain concepts
+  corePhilosophy: string;     // Their main beliefs/approach
+  contentSummary: string;     // Summary of the full uploaded content
+  language: string;           // Detected primary language
+}
+
+// Analyze a chunk of mentor content
+async function analyzeContentChunk(content: string, chunkNumber: number, totalChunks: number): Promise<{
+  concepts: string[];
+  phrases: string[];
+  style: string;
+}> {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: "You are an expert at analyzing writing style and extracting key teaching concepts. Respond with valid JSON only." 
+      },
+      { 
+        role: "user", 
+        content: `Analyze this content (chunk ${chunkNumber}/${totalChunks}) and extract:
+1. key_concepts: Main ideas and teachings (list of 3-5 items)
+2. signature_phrases: Unique expressions or phrases the author uses (list of 2-4 items)
+3. style_notes: Brief notes about writing style and tone (1-2 sentences)
+
+Content:
+${content}
+
+Respond in JSON: {"key_concepts": [...], "signature_phrases": [...], "style_notes": "..."}` 
+      }
+    ],
+    response_format: { type: "json_object" },
+    max_completion_tokens: 500,
+  });
+
+  const result = response.choices[0].message.content;
+  if (!result) {
+    return { concepts: [], phrases: [], style: "" };
+  }
+  
+  try {
+    const parsed = JSON.parse(result);
+    return {
+      concepts: parsed.key_concepts || [],
+      phrases: parsed.signature_phrases || [],
+      style: parsed.style_notes || ""
+    };
+  } catch {
+    return { concepts: [], phrases: [], style: "" };
+  }
+}
+
+// Analyze full mentor content and create a style profile
+export async function analyzeMentorContent(content: string, language?: string): Promise<MentorStyleProfile> {
+  if (!content || content.trim().length < 100) {
+    // Not enough content to analyze
+    return {
+      toneOfVoice: "",
+      keyPhrases: [],
+      teachingStyle: "",
+      corePhilosophy: "",
+      contentSummary: "",
+      language: language || "en"
+    };
+  }
+
+  // Detect language from content
+  const detectedLanguage = language || (isHebrewText(content) ? "he" : "en");
+  const languageName = detectedLanguage === "he" ? "Hebrew" : "English";
+
+  // Split content into chunks (each ~8000 chars to stay within token limits)
+  const chunkSize = 8000;
+  const chunks: string[] = [];
+  for (let i = 0; i < content.length; i += chunkSize) {
+    chunks.push(content.substring(i, i + chunkSize));
+  }
+
+  console.log(`[AI] Analyzing mentor content: ${content.length} chars in ${chunks.length} chunks`);
+
+  // Analyze chunks in parallel (max 3 at a time to avoid rate limits)
+  const allConcepts: string[] = [];
+  const allPhrases: string[] = [];
+  const allStyleNotes: string[] = [];
+
+  for (let i = 0; i < chunks.length; i += 3) {
+    const batch = chunks.slice(i, i + 3);
+    const results = await Promise.all(
+      batch.map((chunk, idx) => analyzeContentChunk(chunk, i + idx + 1, chunks.length))
+    );
+    
+    for (const result of results) {
+      allConcepts.push(...result.concepts);
+      allPhrases.push(...result.phrases);
+      if (result.style) allStyleNotes.push(result.style);
+    }
+  }
+
+  // Synthesize the final style profile
+  const synthesisPrompt = `Based on these extracted elements from a mentor's content, create a comprehensive style profile.
+
+KEY CONCEPTS FOUND:
+${Array.from(new Set(allConcepts)).slice(0, 15).join("\n- ")}
+
+SIGNATURE PHRASES:
+${Array.from(new Set(allPhrases)).slice(0, 10).join("\n- ")}
+
+STYLE OBSERVATIONS:
+${allStyleNotes.slice(0, 5).join("\n")}
+
+ORIGINAL CONTENT SAMPLE:
+${content.substring(0, 3000)}
+
+Create a profile in ${languageName} with:
+1. tone_of_voice: How they speak/write (2-3 sentences describing their voice)
+2. teaching_style: How they explain and teach (2-3 sentences)
+3. core_philosophy: Their main beliefs and approach (2-3 sentences)
+4. key_phrases: Their 5 most distinctive phrases or expressions
+5. content_summary: A comprehensive summary of their method and teachings (3-4 paragraphs, capture ALL main ideas)
+
+Respond in JSON.`;
+
+  const synthesisResponse = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: `Expert at synthesizing teaching styles and creating mentor profiles. Write all output in ${languageName}. Respond with valid JSON only.` 
+      },
+      { role: "user", content: synthesisPrompt }
+    ],
+    response_format: { type: "json_object" },
+    max_completion_tokens: 2000,
+  });
+
+  const synthesisResult = synthesisResponse.choices[0].message.content;
+  if (!synthesisResult) {
+    return {
+      toneOfVoice: "",
+      keyPhrases: [],
+      teachingStyle: "",
+      corePhilosophy: "",
+      contentSummary: content.substring(0, 5000),
+      language: detectedLanguage
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(synthesisResult);
+    console.log("[AI] Mentor style profile created successfully");
+    
+    return {
+      toneOfVoice: parsed.tone_of_voice || "",
+      keyPhrases: parsed.key_phrases || [],
+      teachingStyle: parsed.teaching_style || "",
+      corePhilosophy: parsed.core_philosophy || "",
+      contentSummary: parsed.content_summary || "",
+      language: detectedLanguage
+    };
+  } catch (error) {
+    console.error("[AI] Error parsing synthesis result:", error);
+    return {
+      toneOfVoice: "",
+      keyPhrases: [],
+      teachingStyle: "",
+      corePhilosophy: "",
+      contentSummary: content.substring(0, 5000),
+      language: detectedLanguage
+    };
+  }
+}
+
 async function generateDaysBatch(
   intent: JourneyIntent,
   mentorContent: string,
@@ -52,6 +230,46 @@ async function generateDaysBatch(
   const useHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
   const language = useHebrew ? "Hebrew" : "English";
   
+  // Build mentor style section if available (from pre-analyzed content)
+  let mentorStyleSection = "";
+  if (intent.mentorStyle) {
+    const style = intent.mentorStyle;
+    mentorStyleSection = `
+=== MENTOR'S UNIQUE VOICE AND METHOD ===
+${style.toneOfVoice ? `TONE OF VOICE: ${style.toneOfVoice}` : ""}
+${style.teachingStyle ? `TEACHING STYLE: ${style.teachingStyle}` : ""}
+${style.corePhilosophy ? `CORE PHILOSOPHY: ${style.corePhilosophy}` : ""}
+${style.keyPhrases?.length > 0 ? `SIGNATURE PHRASES TO USE: ${style.keyPhrases.join(", ")}` : ""}
+
+=== MENTOR'S COMPLETE CONTENT AND METHODOLOGY ===
+${style.contentSummary || ""}
+
+CRITICAL: You ARE this mentor. Write ALL content in their exact voice, using their phrases, their approach, their philosophy. Every sentence should sound like it came directly from them.
+`;
+  }
+  
+  // Include excerpts from the original content to ground the AI in actual material
+  // Take beginning, middle, and end sections to cover the full content
+  const contentLength = mentorContent.length;
+  let contentExcerpts = "";
+  if (contentLength > 0) {
+    const excerptSize = 4000;
+    const beginning = mentorContent.substring(0, excerptSize);
+    const middle = contentLength > excerptSize * 2 
+      ? mentorContent.substring(Math.floor(contentLength / 2) - excerptSize / 2, Math.floor(contentLength / 2) + excerptSize / 2)
+      : "";
+    const end = contentLength > excerptSize 
+      ? mentorContent.substring(contentLength - excerptSize)
+      : "";
+    
+    contentExcerpts = `
+=== MENTOR'S ORIGINAL CONTENT (key excerpts) ===
+${beginning}
+${middle ? `\n[...middle section...]\n${middle}` : ""}
+${end && contentLength > excerptSize * 2 ? `\n[...final section...]\n${end}` : ""}
+`;
+  }
+  
   const prompt = `You are an expert in creating transformational journeys. Create days ${startDay} to ${endDay} of a ${totalDays}-day journey.
 
 IMPORTANT: Generate ALL content in ${language}. This journey is for ${language}-speaking participants.
@@ -61,9 +279,7 @@ JOURNEY DETAILS:
 - Goal: ${intent.mainGoal}
 - Target Audience: ${intent.targetAudience}
 - Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
-
-MENTOR'S CONTENT:
-${mentorContent.substring(0, 15000)}
+${mentorStyleSection}${contentExcerpts}
 
 Create days ${startDay}-${endDay} that progressively build toward the goal.
 ${startDay === 1 ? "Day 1 should be an introduction and foundation." : `Days ${startDay}-${endDay} should deepen and expand on earlier concepts.`}
@@ -73,19 +289,23 @@ For each day create:
 - title: compelling name
 - description: what they'll learn
 - goal: main objective
-- explanation: teaching content (2-3 paragraphs)
+- explanation: teaching content (2-3 paragraphs)${intent.mentorStyle ? " - MUST reflect the mentor's unique voice" : ""}
 - task: practical exercise
 - blocks: array with text, reflection, and task blocks
 
-CRITICAL: All content must be written in ${language}. Do not mix languages.
+CRITICAL: All content must be written in ${language}.${intent.mentorStyle ? " Use the mentor's exact voice and teaching style throughout." : ""} Do not mix languages.
 
 Respond in JSON:
 {"days": [{"dayNumber": ${startDay}, "title": "...", "description": "...", "goal": "...", "explanation": "...", "task": "...", "blocks": [...]}]}`;
 
+  const systemPrompt = intent.mentorStyle 
+    ? `You are embodying this mentor's voice and teaching style. Create course content that sounds exactly like them - use their phrases, their approach, their philosophy. Fill ALL fields with complete, meaningful content in ${language}. Respond with valid JSON only.`
+    : `Expert course designer. You MUST fill in ALL fields with complete, meaningful content in ${language}. Never leave any field empty or with placeholder text. Respond with valid JSON only.`;
+
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: `Expert course designer. You MUST fill in ALL fields with complete, meaningful content in ${language}. Never leave any field empty or with placeholder text. Respond with valid JSON only.` },
+      { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -408,7 +628,26 @@ async function generateSimpleDaysBatch(
   endDay: number,
   totalDays: number
 ): Promise<GeneratedDaySimple[]> {
-  const isHebrew = isHebrewText(`${intent.journeyName} ${intent.mainGoal}`);
+  const isHebrew = intent.language === 'he' || isHebrewText(`${intent.journeyName} ${intent.mainGoal}`);
+  const language = isHebrew ? "Hebrew" : "English";
+  
+  // Build mentor style section if available
+  let mentorStyleSection = "";
+  if (intent.mentorStyle) {
+    const style = intent.mentorStyle;
+    mentorStyleSection = `
+=== MENTOR'S STYLE AND METHOD ===
+${style.toneOfVoice ? `TONE OF VOICE: ${style.toneOfVoice}` : ""}
+${style.teachingStyle ? `TEACHING STYLE: ${style.teachingStyle}` : ""}
+${style.corePhilosophy ? `CORE PHILOSOPHY: ${style.corePhilosophy}` : ""}
+${style.keyPhrases?.length > 0 ? `KEY PHRASES TO USE: ${style.keyPhrases.join(", ")}` : ""}
+
+=== MENTOR'S FULL CONTENT AND METHOD ===
+${style.contentSummary || ""}
+
+IMPORTANT: Write ALL content as if you ARE this mentor. Use their voice, their phrases, their teaching approach. The content should feel like it came directly from them.
+`;
+  }
   
   const prompt = `Create days ${startDay}-${endDay} of a ${totalDays}-day transformation journey.
 
@@ -416,6 +655,7 @@ FLOW: ${intent.journeyName}
 GOAL: ${intent.mainGoal}
 AUDIENCE: ${intent.targetAudience}
 ${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
+${mentorStyleSection}
 
 ${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
 ${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
@@ -423,18 +663,22 @@ ${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
 CRITICAL REQUIREMENTS - ALL FIELDS MUST BE FILLED:
 - title: A compelling, specific title for this day (5-10 words)
 - goal: What the participant will achieve today (2-3 complete sentences, NOT placeholders)
-- explanation: Teaching content with insights and guidance (2-3 full paragraphs, minimum 150 words)
+- explanation: Teaching content with insights and guidance (2-3 full paragraphs, minimum 150 words)${intent.mentorStyle ? " - MUST reflect the mentor's voice and method" : ""}
 - task: A specific, actionable exercise the participant must complete (2-4 sentences describing exactly what to do)
 
 IMPORTANT: Every field must contain REAL, meaningful content. Do not use placeholder text like "..." or empty strings.
-${isHebrew ? "Write all content in Hebrew." : "Write all content in English."}
+Write ALL content in ${language}.${intent.mentorStyle ? " Use the mentor's unique voice and teaching style throughout." : ""}
 
 JSON: {"days": [{"dayNumber": ${startDay}, "title": "Full title here", "goal": "Complete goal description here", "explanation": "Full explanation paragraphs here", "task": "Specific task description here"}]}`;
+
+  const systemPrompt = intent.mentorStyle 
+    ? `You are embodying this mentor's voice and teaching style. Create course content that sounds exactly like them - use their phrases, their approach, their philosophy. Fill ALL fields with complete, meaningful content in ${language}. Respond with valid JSON only.`
+    : `Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: "Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only." },
+      { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
