@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   bio: text("bio"),
   website: varchar("website"),
   specialty: varchar("specialty"),
+  methodology: text("methodology"), // Names of the mentor's methods/approaches (e.g., "שיטת הנשימה המודעת, CBT, NLP")
+  uniqueApproach: text("unique_approach"), // Description of what makes the mentor's approach unique
   role: varchar("role").default("user"), // 'user' | 'super_admin'
   // Mentor personality fields (from onboarding questionnaire)
   toneOfVoice: text("tone_of_voice"), // e.g., "warm and supportive", "direct and practical"

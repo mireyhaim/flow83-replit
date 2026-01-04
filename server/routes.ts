@@ -36,7 +36,7 @@ export async function registerRoutes(
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      const { firstName, lastName, email, bio, website, specialty } = req.body;
+      const { firstName, lastName, email, bio, website, specialty, methodology, uniqueApproach } = req.body;
       
       const user = await storage.upsertUser({
         id: userId,
@@ -46,6 +46,8 @@ export async function registerRoutes(
         bio,
         website,
         specialty,
+        methodology,
+        uniqueApproach,
       });
       
       res.json(user);
@@ -1265,6 +1267,9 @@ export async function registerRoutes(
         return res.json({ success: true, stepsExist: true, steps: existingSteps });
       }
 
+      // Fetch mentor profile for richer AI context
+      const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
+      
       // Generate new days using AI
       const intent = {
         journeyName: journey.name,
@@ -1278,6 +1283,11 @@ export async function registerRoutes(
         clientChallenges: journey.clientChallenges || "",
         profession: journey.profession || "",
         tone: journey.tone || "",
+        // Mentor profile data for authentic content
+        mentorName: mentor ? `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() : undefined,
+        mentorSpecialty: mentor?.specialty || undefined,
+        mentorMethodology: mentor?.methodology || undefined,
+        mentorUniqueApproach: mentor?.uniqueApproach || undefined,
       };
 
       console.log("[auto-generate] Intent:", JSON.stringify(intent));

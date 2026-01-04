@@ -38,6 +38,8 @@ export default function ProfilePage() {
     bio: "",
     website: "",
     specialty: "",
+    methodology: "",
+    uniqueApproach: "",
   });
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function ProfilePage() {
         bio: (user as any).bio || "",
         website: (user as any).website || "",
         specialty: (user as any).specialty || "",
+        methodology: (user as any).methodology || "",
+        uniqueApproach: (user as any).uniqueApproach || "",
       });
       setProfileImage((user as any).profileImageUrl || null);
     }
@@ -271,6 +275,31 @@ export default function ProfilePage() {
                   placeholder={t('profilePage.specialtyPlaceholder')}
                   className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl"
                   data-testid="input-specialty"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="methodology" className="text-xs text-slate-500">{t('profilePage.methodology')}</Label>
+                <Input
+                  id="methodology"
+                  value={formData.methodology}
+                  onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
+                  placeholder={t('profilePage.methodologyPlaceholder')}
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl"
+                  data-testid="input-methodology"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="uniqueApproach" className="text-xs text-slate-500">{t('profilePage.uniqueApproach')}</Label>
+                <Textarea
+                  id="uniqueApproach"
+                  value={formData.uniqueApproach}
+                  onChange={(e) => setFormData({ ...formData, uniqueApproach: e.target.value })}
+                  placeholder={t('profilePage.uniqueApproachPlaceholder')}
+                  rows={2}
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 rounded-xl resize-none"
+                  data-testid="input-unique-approach"
                 />
               </div>
               

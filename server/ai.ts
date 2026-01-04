@@ -19,6 +19,11 @@ interface JourneyIntent {
   tone?: string; // warm, professional, direct, gentle, motivating, spiritual
   // Mentor style profile (extracted from uploaded content)
   mentorStyle?: MentorStyleProfile;
+  // Mentor profile data (from user profile)
+  mentorName?: string;
+  mentorSpecialty?: string;
+  mentorMethodology?: string;
+  mentorUniqueApproach?: string;
 }
 
 interface GeneratedDay {
@@ -625,6 +630,23 @@ CRITICAL: Do not paraphrase or genericize. Copy actual phrases, examples, and te
 `;
   }
   
+  // Build mentor profile section from profile data
+  let mentorProfileSection = "";
+  if (intent.mentorName || intent.mentorSpecialty || intent.mentorMethodology || intent.mentorUniqueApproach) {
+    mentorProfileSection = `
+=== MENTOR PROFILE ===
+${intent.mentorName ? `Name: ${intent.mentorName}` : ""}
+${intent.mentorSpecialty ? `Specialty: ${intent.mentorSpecialty}` : ""}
+${intent.mentorMethodology ? `Methods/Approaches: ${intent.mentorMethodology}` : ""}
+${intent.mentorUniqueApproach ? `Unique Approach: ${intent.mentorUniqueApproach}` : ""}
+
+Use this mentor information to:
+1. Reference the mentor by name when appropriate (e.g., "As ${intent.mentorName || 'the mentor'} teaches...")
+2. Incorporate their specific methods and approaches into the content
+3. Reflect their unique perspective in the explanations
+`;
+  }
+  
   const prompt = `You are creating a deep, transformational ${totalDays}-day journey using the mentor's ACTUAL methodology.
 
 IMPORTANT: Generate ALL content in ${language}.
@@ -636,7 +658,7 @@ JOURNEY DETAILS:
 - Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
 ${intent.profession ? `- Mentor Profession: ${intent.profession}` : ""}
 ${intent.tone ? `- Desired Tone: ${intent.tone}` : ""}
-${methodologySection}${contentExcerpts}
+${mentorProfileSection}${methodologySection}${contentExcerpts}
 ${intent.clientChallenges ? `
 === CLIENT CHALLENGES TO ADDRESS (MANDATORY) ===
 ${intent.clientChallenges}
@@ -1278,6 +1300,20 @@ IMPORTANT: Write ALL content as if you ARE this mentor. Use their voice, their p
 `;
   }
   
+  // Build mentor profile section from profile data
+  let mentorProfileSection = "";
+  if (intent.mentorName || intent.mentorSpecialty || intent.mentorMethodology || intent.mentorUniqueApproach) {
+    mentorProfileSection = `
+=== MENTOR PROFILE ===
+${intent.mentorName ? `Name: ${intent.mentorName}` : ""}
+${intent.mentorSpecialty ? `Specialty: ${intent.mentorSpecialty}` : ""}
+${intent.mentorMethodology ? `Methods/Approaches: ${intent.mentorMethodology}` : ""}
+${intent.mentorUniqueApproach ? `Unique Approach: ${intent.mentorUniqueApproach}` : ""}
+
+Use this mentor information to personalize the content and reference their specific methods.
+`;
+  }
+  
   const prompt = `Create days ${startDay}-${endDay} of a ${totalDays}-day transformation journey.
 
 FLOW: ${intent.journeyName}
@@ -1286,7 +1322,7 @@ AUDIENCE: ${intent.targetAudience}
 ${intent.profession ? `MENTOR PROFESSION: ${intent.profession}` : ""}
 ${intent.tone ? `TONE: ${intent.tone}` : ""}
 ${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
-${mentorStyleSection}
+${mentorProfileSection}${mentorStyleSection}
 ${intent.clientChallenges ? `
 === CLIENT CHALLENGES TO ADDRESS (MANDATORY) ===
 ${intent.clientChallenges}
