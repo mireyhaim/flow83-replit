@@ -93,6 +93,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         duration: journeyData.duration?.[0] || 7,
         status: "draft",
         description: journeyData.additionalNotes || "",
+        language: journeyData.language || "en",
       });
       console.log("[ContentUpload] Journey created:", journey.id);
 

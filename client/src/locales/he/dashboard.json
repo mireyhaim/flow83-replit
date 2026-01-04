@@ -141,6 +141,11 @@
   "journeyCreate": {
     "myFlows": "ה-Flows שלי",
     "createNewFlow": "צור Flow חדש",
+    "languageTitle": "באיזו שפה לבנות את ה-Flow?",
+    "languageSubtitle": "התוכן והמיני-אתר ייווצרו בשפה שתבחרו",
+    "languageHebrew": "עברית 🇮🇱",
+    "languageEnglish": "English 🇺🇸",
+    "languageTip": "לתוצאות הטובות ביותר, העלו תוכן בשפה שבחרתם",
     "uploadYourContent": "העלה את התוכן שלך",
     "shareYourTeachings": "שתף את ההוראות, התרגילים והחומרים שלך",
     "stepOf": "שלב {{current}} מתוך {{total}}",

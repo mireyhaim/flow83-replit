@@ -12,6 +12,7 @@ interface JourneyIntent {
   duration: number;
   desiredFeeling?: string;
   additionalNotes?: string;
+  language?: string; // 'he' for Hebrew, 'en' for English
 }
 
 interface GeneratedDay {
@@ -47,7 +48,13 @@ async function generateDaysBatch(
   endDay: number,
   totalDays: number
 ): Promise<GeneratedDay[]> {
+  // Determine language: explicit setting or auto-detect from content
+  const useHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
+  const language = useHebrew ? "Hebrew" : "English";
+  
   const prompt = `You are an expert in creating transformational journeys. Create days ${startDay} to ${endDay} of a ${totalDays}-day journey.
+
+IMPORTANT: Generate ALL content in ${language}. This journey is for ${language}-speaking participants.
 
 JOURNEY DETAILS:
 - Name: ${intent.journeyName}
@@ -70,13 +77,15 @@ For each day create:
 - task: practical exercise
 - blocks: array with text, reflection, and task blocks
 
+CRITICAL: All content must be written in ${language}. Do not mix languages.
+
 Respond in JSON:
 {"days": [{"dayNumber": ${startDay}, "title": "...", "description": "...", "goal": "...", "explanation": "...", "task": "...", "blocks": [...]}]}`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: "Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only." },
+      { role: "system", content: `Expert course designer. You MUST fill in ALL fields with complete, meaningful content in ${language}. Never leave any field empty or with placeholder text. Respond with valid JSON only.` },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -90,7 +99,8 @@ Respond in JSON:
   const days = parsed.days as GeneratedDay[];
   
   // Validate and ensure all fields are filled with meaningful content
-  const isHebrew = isHebrewText(`${intent.journeyName} ${intent.mainGoal}`);
+  // Use explicit language if provided, otherwise fall back to auto-detection
+  const isHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
   for (const day of days) {
     if (!day.title || day.title.length < 5) {
       day.title = isHebrew ? `יום ${day.dayNumber}: התחלה והתעוררות` : `Day ${day.dayNumber}: Awakening and Beginning`;
@@ -204,6 +214,8 @@ interface ChatContext {
     insight?: string;
     resistance?: string;
   };
+  // Explicit language setting ('he' for Hebrew, 'en' for English)
+  language?: string;
 }
 
 // Flow83 Journey Guide - Master System Prompt (constant for all API calls)
@@ -286,6 +298,10 @@ export async function generateChatResponse(
   context: ChatContext,
   userMessage: string
 ): Promise<string> {
+  // Determine language: explicit setting or auto-detect from content
+  const useHebrew = context.language === 'he' || (!context.language && isHebrewText(`${context.journeyName} ${context.dayGoal}`));
+  const languageName = useHebrew ? "Hebrew" : "English";
+  
   // Context Prompt (dynamic from DB) - Flow83 way
   let contextPrompt = `
 === CONTEXT ===
@@ -300,7 +316,9 @@ Current day: ${context.dayNumber} of ${context.totalDays}
 Day objective: ${context.dayGoal}
 Day explanation: ${context.dayExplanation || ""}
 Today's task: ${context.dayTask}
-${context.dayClosingMessage ? `Closing message: ${context.dayClosingMessage}` : ""}`;
+${context.dayClosingMessage ? `Closing message: ${context.dayClosingMessage}` : ""}
+
+LANGUAGE REQUIREMENT: You MUST respond in ${languageName}. This is a ${languageName}-language journey.`;
 
   // Add user summary if exists (long-term memory)
   if (context.userSummary && Object.values(context.userSummary).some(v => v)) {
@@ -489,9 +507,10 @@ export async function generateDayOpeningMessage(context: Omit<ChatContext, "rece
   const isFirstDay = context.dayNumber === 1;
   const participantGreeting = context.participantName ? context.participantName : "";
   
-  // Detect language from journey content (name, goal, day title)
+  // Use explicit language if provided, otherwise fall back to auto-detection
   const contentToCheck = `${context.journeyName} ${context.dayGoal || ""} ${context.dayTitle || ""}`;
-  const isHebrew = isHebrewText(contentToCheck);
+  const isHebrew = context.language === 'he' || (!context.language && isHebrewText(contentToCheck));
+  const languageName = isHebrew ? "Hebrew" : "English";
   
   if (isFirstDay) {
     // Day 1: Generate introduction in the journey's language
@@ -525,7 +544,7 @@ Write a warm, personal opening for today. The message should:
 - Ask ONE question that invites them into today's work
 - Maximum 70 words
 - Sound human, warm, conversational
-- CRITICAL: Write in the same language as the goal above`;
+- CRITICAL: Write the entire response in ${languageName}. This is a ${languageName}-language journey.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -807,6 +826,7 @@ interface JourneyDataForLanding {
   duration: number;
   description?: string;
   mentorName?: string;
+  language?: string; // 'he' for Hebrew, 'en' for English
   steps: Array<{
     title: string;
     goal: string;
@@ -827,7 +847,8 @@ export async function generateLandingPageContent(
     .map(s => `Day: ${s.title}\nGoal: ${s.goal}\n${s.explanation}`)
     .join("\n\n");
 
-  const isHebrew = detectHebrewContent(journey.name) || detectHebrewContent(journey.goal) || detectHebrewContent(journey.audience);
+  // Use explicit language if provided, otherwise fall back to auto-detection
+  const isHebrew = journey.language === 'he' || (!journey.language && (detectHebrewContent(journey.name) || detectHebrewContent(journey.goal) || detectHebrewContent(journey.audience)));
   const language = isHebrew ? "Hebrew" : "English";
   const testimonialNames = isHebrew ? "Hebrew names like מיכל, דוד, שרה, יעל, אורי" : "English names";
 

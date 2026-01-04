@@ -127,7 +127,11 @@ export default function JourneyLandingPage() {
     },
   });
 
-  const isHebrew = journey ? (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")) : false;
+  // Use explicit language field if available, otherwise fall back to auto-detection
+  const isHebrew = journey ? (
+    journey.language === 'he' || 
+    (!journey.language && (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")))
+  ) : false;
   const currencySymbol = isHebrew ? "₪" : "$";
   
   useEffect(() => {

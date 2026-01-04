@@ -141,6 +141,11 @@
   "journeyCreate": {
     "myFlows": "My Flows",
     "createNewFlow": "Create New Flow",
+    "languageTitle": "What language should this Flow be in?",
+    "languageSubtitle": "All content and the landing page will be created in this language",
+    "languageHebrew": "עברית 🇮🇱",
+    "languageEnglish": "English 🇺🇸",
+    "languageTip": "For best results, upload content in your chosen language",
     "uploadYourContent": "Upload Your Content",
     "shareYourTeachings": "Share your teachings, exercises, and materials",
     "stepOf": "Step {{current}} of {{total}}",

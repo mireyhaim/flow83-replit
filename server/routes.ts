@@ -421,6 +421,7 @@ export async function registerRoutes(
             duration: existingJourney.duration || 7,
             description: existingJourney.description || "",
             mentorName,
+            language: existingJourney.language || undefined,
             steps: steps.map(s => ({
               title: s.title,
               goal: s.goal || "",
@@ -470,6 +471,7 @@ export async function registerRoutes(
         duration: journey.duration || 7,
         description: journey.description || "",
         mentorName,
+        language: journey.language || undefined,
         steps: steps.map(s => ({
           title: s.title,
           goal: s.goal || "",
@@ -1136,6 +1138,7 @@ export async function registerRoutes(
         duration: journey.duration || 7,
         desiredFeeling: "",
         additionalNotes: journey.description || "",
+        language: journey.language || undefined,
       };
 
       console.log("[generate-content] Intent:", JSON.stringify(intent));
@@ -1242,6 +1245,7 @@ export async function registerRoutes(
         duration: journey.duration || 7,
         desiredFeeling: "",
         additionalNotes: journey.description || "",
+        language: journey.language || undefined,
       };
 
       console.log("[auto-generate] Intent:", JSON.stringify(intent));
@@ -1382,6 +1386,7 @@ export async function registerRoutes(
         mentorMethodDescription: mentor?.methodDescription || undefined,
         mentorBehavioralRules: mentor?.behavioralRules || undefined,
         participantName,
+        language: journey.language || undefined,
       });
 
       const message = await storage.createMessage({
@@ -1511,6 +1516,7 @@ export async function registerRoutes(
             insight: previousDaySummary.summaryInsight || undefined,
             resistance: previousDaySummary.summaryResistance || undefined,
           } : undefined,
+          language: journey.language || undefined,
         },
         content.trim()
       );

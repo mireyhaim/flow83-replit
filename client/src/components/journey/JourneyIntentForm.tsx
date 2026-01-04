@@ -19,6 +19,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   const [error, setError] = useState("");
   const { t } = useTranslation('dashboard');
   const [formData, setFormData] = useState({
+    language: initialData?.language || "",
     profession: initialData?.profession || "",
     journeyName: initialData?.journeyName || "",
     targetAudience: initialData?.targetAudience || "",
@@ -29,6 +30,11 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     desiredFeeling: initialData?.desiredFeeling || "",
     additionalNotes: initialData?.additionalNotes || "",
   });
+
+  const languageOptions = [
+    { value: "he", label: t('journeyCreate.languageHebrew') },
+    { value: "en", label: t('journeyCreate.languageEnglish') },
+  ];
 
   const professionOptions = [
     { value: "therapist", label: t('journeyCreate.professionTherapist') },
@@ -54,6 +60,16 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   ];
 
   const steps = [
+    {
+      id: "language",
+      title: t('journeyCreate.languageTitle'),
+      subtitle: t('journeyCreate.languageSubtitle'),
+      type: "language",
+      field: "language",
+      options: languageOptions,
+      required: true,
+      tip: t('journeyCreate.languageTip'),
+    },
     {
       id: "profession",
       title: t('journeyCreate.professionTitle'),
@@ -195,6 +211,34 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     const value = formData[step.field as keyof typeof formData];
 
     switch (step.type) {
+      case "language":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {step.options?.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateField(step.field, option.value)}
+                  className={`p-6 rounded-xl border-2 transition-all text-center ${
+                    value === option.value
+                      ? "border-violet-500 bg-violet-500/20"
+                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                  }`}
+                  data-testid={`option-${step.field}-${option.value}`}
+                >
+                  <span className="text-white font-bold text-xl">{option.label}</span>
+                </button>
+              ))}
+            </div>
+            {"tip" in step && step.tip && (
+              <p className="text-center text-amber-400/80 text-sm mt-4">
+                💡 {step.tip}
+              </p>
+            )}
+          </div>
+        );
+
       case "select":
         return (
           <div className="grid grid-cols-2 gap-3">
