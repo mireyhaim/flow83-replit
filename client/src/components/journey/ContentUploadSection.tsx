@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { t } = useTranslation('dashboard');
+  const queryClient = useQueryClient();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -96,6 +98,9 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         language: journeyData.language || "en",
       });
       console.log("[ContentUpload] Journey created:", journey.id);
+
+      // Refresh user data to get updated trial status (trial starts when first journey is created)
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
       console.log("[ContentUpload] Starting AI generation...");
       await journeyApi.generateContentWithProgress(journey.id, content, (prog, msg) => {

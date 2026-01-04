@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -48,6 +48,15 @@ const JourneyEditorPage = () => {
   const isLoadingSubscription = isLoadingUser;
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
+
+  // Force refresh user data when entering the editor (once on mount) to get fresh subscription status
+  const hasRefreshedUser = useRef(false);
+  useEffect(() => {
+    if (!hasRefreshedUser.current) {
+      hasRefreshedUser.current = true;
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    }
+  }, [queryClient]);
 
   // Check for subscription success return and auto-open publish modal
   useEffect(() => {
