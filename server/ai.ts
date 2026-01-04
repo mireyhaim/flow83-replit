@@ -814,12 +814,22 @@ interface JourneyDataForLanding {
   }>;
 }
 
+function detectHebrewContent(text: string): boolean {
+  if (!text) return false;
+  const hebrewRegex = /[\u0590-\u05FF]/;
+  return hebrewRegex.test(text);
+}
+
 export async function generateLandingPageContent(
   journey: JourneyDataForLanding
 ): Promise<LandingPageContent> {
   const stepsContent = journey.steps
     .map(s => `Day: ${s.title}\nGoal: ${s.goal}\n${s.explanation}`)
     .join("\n\n");
+
+  const isHebrew = detectHebrewContent(journey.name) || detectHebrewContent(journey.goal) || detectHebrewContent(journey.audience);
+  const language = isHebrew ? "Hebrew" : "English";
+  const testimonialNames = isHebrew ? "Hebrew names like מיכל, דוד, שרה, יעל, אורי" : "English names";
 
   const prompt = `Generate landing page content for a ${journey.duration}-day transformational journey.
 
@@ -839,10 +849,10 @@ Generate compelling, conversion-focused landing page content with these sections
 - tagline: Short uppercase tagline (3-5 words)
 - headline: Main headline with emotional hook
 - description: 2-3 sentences describing the journey
-- ctaText: Button text (e.g., "Begin Your Journey")
+- ctaText: Button text (e.g., "${isHebrew ? "התחילו את המסע" : "Begin Your Journey"}")
 
 2. AUDIENCE SECTION (who this is for):
-- sectionTitle: "Is This For You?"
+- sectionTitle: "${isHebrew ? "האם זה מתאים לך?" : "Is This For You?"}"
 - description: Who would benefit most
 - profiles: 4 audience profiles, each with:
   - icon: one of "Heart", "Compass", "Sparkles", "Moon", "Sun", "Star"
@@ -851,33 +861,33 @@ Generate compelling, conversion-focused landing page content with these sections
 - disclaimer: One sentence about who this is NOT for
 
 3. PAIN POINTS SECTION (what they're feeling):
-- sectionTitle: "You might be feeling..."
+- sectionTitle: "${isHebrew ? "אולי את/ה מרגיש/ה..." : "You might be feeling..."}"
 - points: 4 pain points, each with:
-  - label: One word (e.g., "Stuck", "Overwhelmed", "Disconnected", "Longing")
+  - label: One word (e.g., "${isHebrew ? "תקועים, מוצפים, מנותקים, משתוקקים" : "Stuck, Overwhelmed, Disconnected, Longing"}")
   - description: 2-3 sentences describing this feeling
 - closingMessage: Encouraging message that validates their feelings
 
 4. TRANSFORMATION SECTION (what they'll achieve):
-- sectionTitle: "What awaits you"
+- sectionTitle: "${isHebrew ? "מה מחכה לך בצד השני" : "What awaits you"}"
 - description: What transformation looks like
 - outcomes: 6 specific outcomes they'll achieve
 - quote: Inspiring quote from the mentor perspective
 
 5. TESTIMONIALS (generate exactly 3 realistic fake testimonials):
 Each with:
-- name: First name only (use English names)
+- name: First name only (use ${testimonialNames})
 - text: 2-3 sentence testimonial about their transformation
-- feeling: Short phrase describing their experience (e.g., "Found clarity", "Reconnected with purpose")
+- feeling: Short phrase describing their experience (e.g., "${isHebrew ? "מצאתי בהירות, התחברתי מחדש למטרה" : "Found clarity, Reconnected with purpose"}")
 
 6. CTA SECTION:
-- tagline: "Your Next Step"
+- tagline: "${isHebrew ? "הצעד הבא שלך" : "Your Next Step"}"
 - headline: Final call to action headline
 - description: Encouraging final message
 - buttonText: Primary button text
 - note: Reassuring note
 
 Make all content feel warm, authentic, human. Avoid corporate language.
-IMPORTANT: Always write ALL content in English, regardless of the input language.
+IMPORTANT: Write ALL content in ${language}. The journey content is in ${language}, so all generated content must also be in ${language}.
 
 Return valid JSON matching this structure exactly.`;
 
@@ -886,7 +896,7 @@ Return valid JSON matching this structure exactly.`;
     messages: [
       { 
         role: "system", 
-        content: "You are an expert copywriter who creates warm, authentic landing page content for transformational journeys. ALWAYS write in English regardless of the input language. Respond with valid JSON only." 
+        content: `You are an expert copywriter who creates warm, authentic landing page content for transformational journeys. Write all content in ${language}. Respond with valid JSON only.` 
       },
       { role: "user", content: prompt }
     ],
