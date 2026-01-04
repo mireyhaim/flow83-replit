@@ -23,7 +23,8 @@ type StepWithBlocks = JourneyStepType & { blocks: JourneyBlock[] };
 type JourneyWithSteps = Journey & { steps: StepWithBlocks[] };
 
 const JourneyEditorPage = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
+  const isHebrew = i18n.language === 'he';
   const [match, params] = useRoute("/journey/:id/edit");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -1029,9 +1030,11 @@ const JourneyEditorPage = () => {
                 </button>
                 <Button
                   onClick={() => {
-                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const baseUrl = isHebrew 
+                      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
+                      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
                     const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
-                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                    window.open(`${baseUrl}${baseUrl.includes('?') ? '&' : '?'}checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-starter"
@@ -1102,9 +1105,11 @@ const JourneyEditorPage = () => {
                 </button>
                 <Button
                   onClick={() => {
-                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const baseUrl = isHebrew 
+                      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
+                      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
                     const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
-                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                    window.open(`${baseUrl}${baseUrl.includes('?') ? '&' : '?'}checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                   data-testid="button-subscribe-pro"
@@ -1170,9 +1175,11 @@ const JourneyEditorPage = () => {
                 </button>
                 <Button
                   onClick={() => {
-                    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+                    const baseUrl = isHebrew 
+                      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
+                      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
                     const returnUrl = encodeURIComponent(`${window.location.origin}/journey/${journeyData?.id}/edit?subscription=success`);
-                    window.open(`${baseUrl}&checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
+                    window.open(`${baseUrl}${baseUrl.includes('?') ? '&' : '?'}checkout[custom][journey_id]=${journeyData?.id}&checkout[redirect_url]=${returnUrl}`, '_blank');
                   }}
                   className="w-full bg-violet-600 hover:bg-violet-700"
                   data-testid="button-subscribe-business"

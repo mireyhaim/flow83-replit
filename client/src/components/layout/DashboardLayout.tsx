@@ -21,8 +21,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
-  const { t } = useTranslation(['dashboard', 'common', 'participant']);
+  const { t, i18n } = useTranslation(['dashboard', 'common', 'participant']);
   const { isTrialExpired, isOnTrial, daysRemaining, isLoading: trialLoading } = useTrialStatus();
+  const isHebrew = i18n.language === 'he';
 
   useEffect(() => {
     if (isTrialExpired) {
@@ -37,9 +38,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   const handleSubscribe = () => {
-    const baseUrl = 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
+    // Hebrew users go to Grow, English users go to LemonSqueezy
+    const baseUrl = isHebrew 
+      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
+      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
     const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
-    window.open(`${baseUrl}&checkout[redirect_url]=${returnUrl}`, '_blank');
+    window.open(`${baseUrl}${baseUrl.includes('?') ? '&' : '?'}checkout[redirect_url]=${returnUrl}`, '_blank');
   };
 
   const navItems = [
