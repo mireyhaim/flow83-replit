@@ -591,15 +591,37 @@ Write ALL content in this mentor's voice.
 `;
   }
   
-  // Include content excerpts for additional grounding
+  // Include content excerpts for DIRECT QUOTING - not just style reference
   const contentLength = mentorContent.length;
   let contentExcerpts = "";
-  if (contentLength > 3000) {
-    const excerptSize = 3000;
+  if (contentLength > 100) {
+    // Take meaningful excerpts from different parts of the content
+    const excerptSize = Math.min(2500, contentLength);
     const beginning = mentorContent.substring(0, excerptSize);
+    const hasMiddle = contentLength > 5000;
+    const middle = hasMiddle ? mentorContent.substring(Math.floor(contentLength / 2) - 1000, Math.floor(contentLength / 2) + 1000) : "";
+    
+    // Adjust quote requirements based on content length
+    const quoteRequirement = contentLength > 1000 
+      ? "Include at least 2-3 direct quotes per day from this content"
+      : "Include at least 1 direct quote per day from this content";
+    
     contentExcerpts = `
-=== MENTOR'S ORIGINAL CONTENT (excerpt for voice reference) ===
+=== MENTOR'S ORIGINAL CONTENT - USE DIRECTLY! ===
+The following is ACTUAL content from the mentor. You MUST:
+1. Quote directly from this content (use "..." for direct quotes)
+2. Reference specific concepts, examples, and stories mentioned here
+3. Use the exact terminology and phrasing the mentor uses
+4. ${quoteRequirement}
+
+BEGINNING OF MENTOR'S CONTENT:
 ${beginning}
+${hasMiddle ? `
+MORE FROM MENTOR'S CONTENT:
+${middle}
+` : ""}
+
+CRITICAL: Do not paraphrase or genericize. Copy actual phrases, examples, and teachings from the above content into your output.
 `;
   }
   
@@ -632,18 +654,45 @@ EXAMPLE for Day 1 addressing "בחירה מתוך פחד ולא מתוך רצו�
 ` : ""}
 
 CREATE DAYS ${startDay}-${endDay}:
-${startDay === 1 ? "Day 1: Introduction and foundation - set the context using the mentor's worldview." : ""}
-${endDay === totalDays ? `Day ${endDay}: Powerful conclusion that fulfills the transformation promise.` : ""}
+
+=== TRANSFORMATION ARC - CRITICAL FOR REAL GROWTH ===
+This is NOT a series of independent lessons. This is ONE continuous journey where each day builds on the previous.
+
+DAY STRUCTURE BASED ON JOURNEY LENGTH:
+${totalDays === 7 ? `
+- Day 1: OPENING - Set intention, introduce the journey topic "${intent.mainGoal}", create safety and trust
+- Days 2-3: AWARENESS - Deepen understanding, identify patterns, explore resistance  
+- Days 4-5: BREAKTHROUGH - Challenge old beliefs, practice new ways, take action
+- Days 6-7: INTEGRATION - Embody changes, celebrate progress, plan forward
+` : `
+- Day 1: OPENING - Set intention, introduce "${intent.mainGoal}", identify what needs to change
+- Day 2: DEEP WORK - Core transformation, breakthrough moment, new perspective
+- Day 3: INTEGRATION - Embody the change, create lasting habits, close the journey
+`}
+
+MANDATORY DAY-TO-DAY CONNECTIONS:
+${startDay > 1 ? `- Days ${startDay}-${endDay} MUST reference what happened in previous days
+- Start each day with: "אתמול/בימים הקודמים גילינו ש..." or "Yesterday/In previous days we discovered..."
+- Build on previous insights - don't start fresh each day` : ""}
+- End each day with a hint about tomorrow (except the last day): "מחר נמשיך לחקור..." or "Tomorrow we'll continue..."
+- Create a sense of continuous journey, like weekly sessions with a real mentor
+
+TOPIC ANCHORING - KEEP "${intent.journeyName}" CENTRAL:
+- Every day must explicitly connect back to the main goal: "${intent.mainGoal}"
+- The topic should appear in each day's goal and explanation
+- Participants should feel they're making progress on THIS specific issue, not generic growth
 
 For each day you MUST include:
 - title: compelling name that reflects the pillar/stage focus
 - description: what they'll experience (1-2 sentences)
 - goal: specific objective tied to the pillar
 - explanation: 3-4 paragraphs of teaching content that:
-  * Explains the day's pillar using the mentor's language
-  * Includes at least one of the mentor's signature phrases
-  * References the mentor's beliefs and philosophy
-  * Prepares them for the practice
+  * Opens by connecting to yesterday's work (except Day 1)
+  * Explains the day's pillar using the mentor's EXACT language and quotes
+  * Includes 2-3 direct quotes from the mentor's original content (use "..." marks)
+  * References specific examples, stories, or concepts from the mentor's materials
+  * Anchors everything back to the flow topic: "${intent.mainGoal}"
+  * Ends with a bridge to tomorrow's work (except last day)
 - task: the specific practice assigned for this day (from the blueprint)
 - blocks: array with these block types:
   * type "text" with content.text for teaching content
@@ -1253,13 +1302,45 @@ For example, if challenge is "בחירה מתוך פחד ולא מתוך רצו�
 "היום נתמקד באתגר 'בחירה מתוך פחד ולא מתוך רצון'. נלמד לזהות מתי אנחנו פועלים מפחד..."
 ` : ""}
 
-${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
-${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}
+=== TRANSFORMATION ARC - CRITICAL FOR REAL GROWTH ===
+This is NOT a series of independent lessons. This is ONE continuous journey where each day builds on the previous.
+
+DAY STRUCTURE BASED ON JOURNEY LENGTH:
+${totalDays === 7 ? `
+- Day 1: OPENING - Set intention, introduce the journey topic "${intent.mainGoal}", create safety
+- Days 2-3: AWARENESS - Deepen understanding, identify patterns, explore resistance  
+- Days 4-5: BREAKTHROUGH - Challenge old beliefs, practice new ways, take action
+- Days 6-7: INTEGRATION - Embody changes, celebrate progress, plan forward
+` : `
+- Day 1: OPENING - Set intention, introduce "${intent.mainGoal}", identify what needs to change
+- Day 2: DEEP WORK - Core transformation, breakthrough moment, new perspective
+- Day 3: INTEGRATION - Embody the change, create lasting habits, close the journey
+`}
+
+MANDATORY DAY-TO-DAY CONNECTIONS:
+${startDay > 1 ? `- Days ${startDay}-${endDay} MUST reference what happened in previous days
+- Start each day with: "אתמול/בימים הקודמים גילינו ש..." or "Yesterday/In previous days we discovered..."
+- Build on previous insights - don't start fresh each day` : ""}
+- End each day with a hint about tomorrow (except last day): "מחר נמשיך לחקור..." or "Tomorrow we'll continue..."
+- Create a sense of continuous journey, like weekly sessions with a real mentor
+
+TOPIC ANCHORING - KEEP THE FLOW TOPIC CENTRAL:
+- Every day must explicitly connect back to the main goal: "${intent.mainGoal}"
+- The topic should appear in each day's goal and explanation
+- Participants should feel they're making progress on THIS specific issue
+
+${startDay === 1 ? "Day 1 = foundation/introduction - set intention and introduce the topic." : ""}
+${endDay === totalDays ? `Day ${endDay} = powerful conclusion - integrate everything and close with hope.` : ""}
 
 CRITICAL REQUIREMENTS - ALL FIELDS MUST BE FILLED:
 - title: A compelling, specific title for this day (5-10 words)
 - goal: What the participant will achieve today (2-3 complete sentences, NOT placeholders)
-- explanation: Teaching content with insights and guidance (2-3 full paragraphs, minimum 150 words)${intent.mentorStyle ? " - MUST reflect the mentor's voice and method" : ""}
+- explanation: Teaching content with insights and guidance (2-3 full paragraphs, minimum 150 words)${intent.mentorStyle ? ` - MUST:
+  * Open by connecting to yesterday's work (except Day 1)
+  * Use the mentor's EXACT language and include direct quotes
+  * Reference specific examples from the mentor's teachings
+  * Anchor back to the flow topic: "${intent.mainGoal}"
+  * End with a bridge to tomorrow (except last day)` : ""}
 - task: A specific, actionable exercise the participant must complete (2-4 sentences describing exactly what to do)
 
 IMPORTANT: Every field must contain REAL, meaningful content. Do not use placeholder text like "..." or empty strings.
