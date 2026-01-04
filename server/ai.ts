@@ -43,67 +43,123 @@ interface GeneratedDaySimple {
   task: string;
 }
 
-// Mentor style profile extracted from uploaded content
-export interface MentorStyleProfile {
-  toneOfVoice: string;        // e.g., "warm and encouraging", "direct and practical"
-  keyPhrases: string[];       // Signature phrases the mentor uses
-  teachingStyle: string;      // How they explain concepts
-  corePhilosophy: string;     // Their main beliefs/approach
-  contentSummary: string;     // Summary of the full uploaded content
-  language: string;           // Detected primary language
+// Mentor methodology map - comprehensive extraction from uploaded content
+export interface MentorMethodologyMap {
+  // Core pillars of the mentor's method (3-7 main concepts)
+  pillars: {
+    name: string;
+    description: string;
+    keyTeachings: string[];
+  }[];
+  // Transformation stages the mentor guides through
+  transformationStages: {
+    stage: number;
+    name: string;
+    focus: string;
+    expectedShift: string;
+  }[];
+  // Specific practices/exercises from the content
+  practices: {
+    name: string;
+    type: string; // 'meditation', 'journaling', 'reflection', 'action', 'visualization'
+    instructions: string;
+    purpose: string;
+  }[];
+  // Mentor's voice characteristics
+  voice: {
+    toneOfVoice: string;
+    signaturePhrases: string[];
+    teachingApproach: string;
+  };
+  // Core philosophy
+  philosophy: {
+    mainBeliefs: string[];
+    worldview: string;
+    transformationPromise: string;
+  };
+  // Language
+  language: string;
 }
 
-// Analyze a chunk of mentor content
-async function analyzeContentChunk(content: string, chunkNumber: number, totalChunks: number): Promise<{
-  concepts: string[];
+// Legacy interface for backward compatibility
+export interface MentorStyleProfile {
+  toneOfVoice: string;
+  keyPhrases: string[];
+  teachingStyle: string;
+  corePhilosophy: string;
+  contentSummary: string;
+  language: string;
+  // New: full methodology map
+  methodologyMap?: MentorMethodologyMap;
+}
+
+// Analyze a chunk of mentor content - extract pillars, practices, and teachings
+async function analyzeContentChunkDeep(content: string, chunkNumber: number, totalChunks: number, languageName: string): Promise<{
+  pillars: { name: string; keyTeachings: string[] }[];
+  practices: { name: string; type: string; instructions: string }[];
   phrases: string[];
-  style: string;
+  beliefs: string[];
 }> {
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       { 
         role: "system", 
-        content: "You are an expert at analyzing writing style and extracting key teaching concepts. Respond with valid JSON only." 
+        content: `You are an expert at extracting methodology and teaching structures from educational content. Write all output in ${languageName}. Respond with valid JSON only.` 
       },
       { 
         role: "user", 
-        content: `Analyze this content (chunk ${chunkNumber}/${totalChunks}) and extract:
-1. key_concepts: Main ideas and teachings (list of 3-5 items)
-2. signature_phrases: Unique expressions or phrases the author uses (list of 2-4 items)
-3. style_notes: Brief notes about writing style and tone (1-2 sentences)
+        content: `Analyze this mentor's content (part ${chunkNumber}/${totalChunks}) and extract:
 
-Content:
+1. pillars: Core concepts/pillars of their methodology. For each, give the concept name and 2-3 key teachings.
+2. practices: Any specific exercises, meditations, journaling prompts, or activities they describe. Include name, type (meditation/journaling/reflection/action/visualization), and brief instructions.
+3. phrases: Unique expressions, quotes, or phrases the mentor uses (exact quotes when possible).
+4. beliefs: Core beliefs or worldview statements the mentor expresses.
+
+Content to analyze:
 ${content}
 
-Respond in JSON: {"key_concepts": [...], "signature_phrases": [...], "style_notes": "..."}` 
+Respond in JSON:
+{
+  "pillars": [{"name": "concept name", "key_teachings": ["teaching 1", "teaching 2"]}],
+  "practices": [{"name": "practice name", "type": "meditation|journaling|reflection|action|visualization", "instructions": "brief instructions"}],
+  "phrases": ["exact phrase 1", "exact phrase 2"],
+  "beliefs": ["belief 1", "belief 2"]
+}` 
       }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 500,
+    max_completion_tokens: 1500,
   });
 
   const result = response.choices[0].message.content;
   if (!result) {
-    return { concepts: [], phrases: [], style: "" };
+    return { pillars: [], practices: [], phrases: [], beliefs: [] };
   }
   
   try {
     const parsed = JSON.parse(result);
     return {
-      concepts: parsed.key_concepts || [],
-      phrases: parsed.signature_phrases || [],
-      style: parsed.style_notes || ""
+      pillars: (parsed.pillars || []).map((p: any) => ({
+        name: p.name || "",
+        keyTeachings: p.key_teachings || []
+      })),
+      practices: (parsed.practices || []).map((p: any) => ({
+        name: p.name || "",
+        type: p.type || "reflection",
+        instructions: p.instructions || ""
+      })),
+      phrases: parsed.phrases || [],
+      beliefs: parsed.beliefs || []
     };
   } catch {
-    return { concepts: [], phrases: [], style: "" };
+    return { pillars: [], practices: [], phrases: [], beliefs: [] };
   }
 }
 
-// Analyze full mentor content and create a style profile
+// Analyze full mentor content and create a comprehensive methodology map
 export async function analyzeMentorContent(content: string, language?: string): Promise<MentorStyleProfile> {
   if (!content || content.trim().length < 100) {
-    // Not enough content to analyze
     return {
       toneOfVoice: "",
       keyPhrases: [],
@@ -114,109 +170,255 @@ export async function analyzeMentorContent(content: string, language?: string): 
     };
   }
 
-  // Detect language from content
   const detectedLanguage = language || (isHebrewText(content) ? "he" : "en");
   const languageName = detectedLanguage === "he" ? "Hebrew" : "English";
 
-  // Split content into chunks (each ~8000 chars to stay within token limits)
-  const chunkSize = 8000;
+  // Split content into larger chunks for deeper analysis
+  const chunkSize = 12000;
   const chunks: string[] = [];
   for (let i = 0; i < content.length; i += chunkSize) {
     chunks.push(content.substring(i, i + chunkSize));
   }
 
-  console.log(`[AI] Analyzing mentor content: ${content.length} chars in ${chunks.length} chunks`);
+  console.log(`[AI] Deep analyzing mentor content: ${content.length} chars in ${chunks.length} chunks`);
 
-  // Analyze chunks in parallel (max 3 at a time to avoid rate limits)
-  const allConcepts: string[] = [];
+  // Collect all extracted elements from chunks
+  const allPillars: { name: string; keyTeachings: string[] }[] = [];
+  const allPractices: { name: string; type: string; instructions: string }[] = [];
   const allPhrases: string[] = [];
-  const allStyleNotes: string[] = [];
+  const allBeliefs: string[] = [];
 
+  // Analyze chunks in parallel batches
   for (let i = 0; i < chunks.length; i += 3) {
     const batch = chunks.slice(i, i + 3);
     const results = await Promise.all(
-      batch.map((chunk, idx) => analyzeContentChunk(chunk, i + idx + 1, chunks.length))
+      batch.map((chunk, idx) => analyzeContentChunkDeep(chunk, i + idx + 1, chunks.length, languageName))
     );
     
     for (const result of results) {
-      allConcepts.push(...result.concepts);
+      allPillars.push(...result.pillars);
+      allPractices.push(...result.practices);
       allPhrases.push(...result.phrases);
-      if (result.style) allStyleNotes.push(result.style);
+      allBeliefs.push(...result.beliefs);
     }
   }
 
-  // Synthesize the final style profile
-  const synthesisPrompt = `Based on these extracted elements from a mentor's content, create a comprehensive style profile.
+  // Deduplicate and consolidate pillars
+  const pillarMap = new Map<string, string[]>();
+  for (const pillar of allPillars) {
+    const existing = pillarMap.get(pillar.name) || [];
+    pillarMap.set(pillar.name, [...existing, ...pillar.keyTeachings]);
+  }
+  const consolidatedPillars = Array.from(pillarMap.entries())
+    .map(([name, teachings]) => ({
+      name,
+      keyTeachings: Array.from(new Set(teachings)).slice(0, 5)
+    }))
+    .slice(0, 7);
 
-KEY CONCEPTS FOUND:
-${Array.from(new Set(allConcepts)).slice(0, 15).join("\n- ")}
+  // Deduplicate practices
+  const practiceMap = new Map<string, { type: string; instructions: string }>();
+  for (const practice of allPractices) {
+    if (practice.name && !practiceMap.has(practice.name)) {
+      practiceMap.set(practice.name, { type: practice.type, instructions: practice.instructions });
+    }
+  }
+  const consolidatedPractices = Array.from(practiceMap.entries())
+    .map(([name, data]) => ({ name, ...data }))
+    .slice(0, 10);
 
-SIGNATURE PHRASES:
-${Array.from(new Set(allPhrases)).slice(0, 10).join("\n- ")}
+  const uniquePhrases = Array.from(new Set(allPhrases)).slice(0, 15);
+  const uniqueBeliefs = Array.from(new Set(allBeliefs)).slice(0, 10);
 
-STYLE OBSERVATIONS:
-${allStyleNotes.slice(0, 5).join("\n")}
+  console.log(`[AI] Extracted: ${consolidatedPillars.length} pillars, ${consolidatedPractices.length} practices, ${uniquePhrases.length} phrases`);
 
-ORIGINAL CONTENT SAMPLE:
-${content.substring(0, 3000)}
+  // Create final synthesis with transformation stages
+  const synthesisPrompt = `Based on the following extracted elements from a mentor's educational content, create a comprehensive methodology synthesis.
 
-Create a profile in ${languageName} with:
-1. tone_of_voice: How they speak/write (2-3 sentences describing their voice)
-2. teaching_style: How they explain and teach (2-3 sentences)
-3. core_philosophy: Their main beliefs and approach (2-3 sentences)
-4. key_phrases: Their 5 most distinctive phrases or expressions
-5. content_summary: A comprehensive summary of their method and teachings (3-4 paragraphs, capture ALL main ideas)
+=== CORE PILLARS/CONCEPTS ===
+${consolidatedPillars.map(p => `• ${p.name}: ${p.keyTeachings.join(", ")}`).join("\n")}
+
+=== PRACTICES & EXERCISES ===
+${consolidatedPractices.map(p => `• ${p.name} (${p.type}): ${p.instructions}`).join("\n")}
+
+=== SIGNATURE PHRASES ===
+${uniquePhrases.join("\n")}
+
+=== CORE BELIEFS ===
+${uniqueBeliefs.join("\n")}
+
+=== ORIGINAL CONTENT EXCERPTS ===
+${content.substring(0, 4000)}
+
+---
+
+Create a comprehensive methodology profile in ${languageName}:
+
+1. pillars: List the 5-7 main pillars of this methodology. Each with name, description, and key teachings.
+2. transformation_stages: Design 4-7 stages of transformation that a participant would go through. Each with stage number, name, focus area, and expected internal shift.
+3. practices: List 5-8 specific practices/exercises with name, type, detailed instructions, and purpose.
+4. voice: Describe the mentor's tone, list 5-10 signature phrases, and describe their teaching approach.
+5. philosophy: List 3-5 main beliefs, describe their worldview, and articulate the transformation promise.
+
+Make this detailed and specific to THIS mentor's actual methodology, not generic coaching concepts.
 
 Respond in JSON.`;
 
   const synthesisResponse = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
-        content: `Expert at synthesizing teaching styles and creating mentor profiles. Write all output in ${languageName}. Respond with valid JSON only.` 
+        content: `You are an expert at analyzing and synthesizing educational methodologies. You create detailed, specific profiles that capture a mentor's unique approach. Write all output in ${languageName}. Respond with valid JSON only.` 
       },
       { role: "user", content: synthesisPrompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 2000,
+    max_completion_tokens: 4000,
   });
 
   const synthesisResult = synthesisResponse.choices[0].message.content;
   if (!synthesisResult) {
-    return {
-      toneOfVoice: "",
-      keyPhrases: [],
-      teachingStyle: "",
-      corePhilosophy: "",
-      contentSummary: content.substring(0, 5000),
-      language: detectedLanguage
-    };
+    return createFallbackProfile(content, detectedLanguage, uniquePhrases, uniqueBeliefs);
   }
 
   try {
     const parsed = JSON.parse(synthesisResult);
-    console.log("[AI] Mentor style profile created successfully");
+    console.log("[AI] Full methodology map created successfully");
     
-    return {
-      toneOfVoice: parsed.tone_of_voice || "",
-      keyPhrases: parsed.key_phrases || [],
-      teachingStyle: parsed.teaching_style || "",
-      corePhilosophy: parsed.core_philosophy || "",
-      contentSummary: parsed.content_summary || "",
+    // Build the methodology map
+    const methodologyMap: MentorMethodologyMap = {
+      pillars: (parsed.pillars || []).map((p: any) => ({
+        name: p.name || "",
+        description: p.description || "",
+        keyTeachings: p.key_teachings || p.keyTeachings || []
+      })),
+      transformationStages: (parsed.transformation_stages || []).map((s: any) => ({
+        stage: s.stage || s.stage_number || 0,
+        name: s.name || "",
+        focus: s.focus || s.focus_area || "",
+        expectedShift: s.expected_shift || s.expectedShift || ""
+      })),
+      practices: (parsed.practices || []).map((p: any) => ({
+        name: p.name || "",
+        type: p.type || "reflection",
+        instructions: p.instructions || p.detailed_instructions || "",
+        purpose: p.purpose || ""
+      })),
+      voice: {
+        toneOfVoice: parsed.voice?.tone || parsed.voice?.tone_of_voice || "",
+        signaturePhrases: parsed.voice?.signature_phrases || parsed.voice?.phrases || uniquePhrases,
+        teachingApproach: parsed.voice?.teaching_approach || ""
+      },
+      philosophy: {
+        mainBeliefs: parsed.philosophy?.main_beliefs || parsed.philosophy?.beliefs || uniqueBeliefs,
+        worldview: parsed.philosophy?.worldview || "",
+        transformationPromise: parsed.philosophy?.transformation_promise || ""
+      },
       language: detectedLanguage
+    };
+
+    // Return profile with methodology map
+    return {
+      toneOfVoice: methodologyMap.voice.toneOfVoice,
+      keyPhrases: methodologyMap.voice.signaturePhrases,
+      teachingStyle: methodologyMap.voice.teachingApproach,
+      corePhilosophy: methodologyMap.philosophy.worldview,
+      contentSummary: buildContentSummary(methodologyMap),
+      language: detectedLanguage,
+      methodologyMap
     };
   } catch (error) {
     console.error("[AI] Error parsing synthesis result:", error);
-    return {
-      toneOfVoice: "",
-      keyPhrases: [],
-      teachingStyle: "",
-      corePhilosophy: "",
-      contentSummary: content.substring(0, 5000),
-      language: detectedLanguage
-    };
+    return createFallbackProfile(content, detectedLanguage, uniquePhrases, uniqueBeliefs);
   }
+}
+
+function buildContentSummary(map: MentorMethodologyMap): string {
+  const pillarsSection = map.pillars.length > 0 
+    ? `עמודי התווך: ${map.pillars.map(p => `${p.name} - ${p.description}`).join("; ")}`
+    : "";
+  
+  const stagesSection = map.transformationStages.length > 0
+    ? `שלבי טרנספורמציה: ${map.transformationStages.map(s => `${s.stage}. ${s.name} (${s.focus})`).join("; ")}`
+    : "";
+    
+  const practicesSection = map.practices.length > 0
+    ? `תרגילים: ${map.practices.map(p => `${p.name} (${p.type})`).join(", ")}`
+    : "";
+    
+  return [pillarsSection, stagesSection, practicesSection, map.philosophy.transformationPromise].filter(Boolean).join("\n\n");
+}
+
+function createFallbackProfile(content: string, language: string, phrases: string[], beliefs: string[]): MentorStyleProfile {
+  return {
+    toneOfVoice: "",
+    keyPhrases: phrases,
+    teachingStyle: "",
+    corePhilosophy: beliefs.join(". "),
+    contentSummary: content.substring(0, 8000),
+    language
+  };
+}
+
+// Calculate consistent day-to-pillar/stage/practice mapping
+function getDayAssignments(
+  map: MentorMethodologyMap,
+  dayNumber: number,
+  totalDays: number
+): { pillar: MentorMethodologyMap['pillars'][0] | null, stage: MentorMethodologyMap['transformationStages'][0] | null, practice: MentorMethodologyMap['practices'][0] | null } {
+  const daysPerPillar = map.pillars.length > 0 ? Math.max(1, Math.ceil(totalDays / map.pillars.length)) : 1;
+  const daysPerStage = map.transformationStages.length > 0 ? Math.max(1, Math.ceil(totalDays / map.transformationStages.length)) : 1;
+  
+  const pillarIndex = map.pillars.length > 0 
+    ? Math.min(Math.floor((dayNumber - 1) / daysPerPillar), map.pillars.length - 1)
+    : -1;
+  const pillar = pillarIndex >= 0 ? map.pillars[pillarIndex] : null;
+  
+  const stageIndex = map.transformationStages.length > 0
+    ? Math.min(Math.floor((dayNumber - 1) / daysPerStage), map.transformationStages.length - 1)
+    : -1;
+  const stage = stageIndex >= 0 ? map.transformationStages[stageIndex] : null;
+  
+  const practiceIndex = map.practices.length > 0
+    ? (dayNumber - 1) % map.practices.length
+    : -1;
+  const practice = practiceIndex >= 0 ? map.practices[practiceIndex] : null;
+  
+  return { pillar, stage, practice };
+}
+
+// Build journey blueprint that allocates days to pillars and practices
+function buildJourneyBlueprint(
+  methodologyMap: MentorMethodologyMap,
+  totalDays: number,
+  startDay: number,
+  endDay: number
+): string {
+  if (methodologyMap.pillars.length === 0) return "";
+  
+  let blueprint = `=== JOURNEY BLUEPRINT (Days ${startDay}-${endDay}) ===\n`;
+  
+  for (let day = startDay; day <= endDay; day++) {
+    const { pillar, stage, practice } = getDayAssignments(methodologyMap, day, totalDays);
+    
+    blueprint += `\nDAY ${day}:\n`;
+    if (pillar) {
+      blueprint += `- Focus Pillar: "${pillar.name}" - ${pillar.description}\n`;
+      blueprint += `- Key Teachings: ${pillar.keyTeachings.slice(0, 3).join("; ")}\n`;
+    }
+    if (stage) {
+      blueprint += `- Transformation Stage: "${stage.name}" - ${stage.focus}\n`;
+      blueprint += `- Expected Shift: ${stage.expectedShift}\n`;
+    }
+    if (practice) {
+      blueprint += `- REQUIRED Practice: "${practice.name}" (${practice.type})\n`;
+      blueprint += `- Practice Instructions: ${practice.instructions}\n`;
+      blueprint += `- Practice Purpose: ${practice.purpose}\n`;
+    }
+  }
+  
+  return blueprint;
 }
 
 async function generateDaysBatch(
@@ -226,90 +428,128 @@ async function generateDaysBatch(
   endDay: number,
   totalDays: number
 ): Promise<GeneratedDay[]> {
-  // Determine language: explicit setting or auto-detect from content
   const useHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
   const language = useHebrew ? "Hebrew" : "English";
   
-  // Build mentor style section if available (from pre-analyzed content)
-  let mentorStyleSection = "";
-  if (intent.mentorStyle) {
+  // Build rich methodology section if available
+  let methodologySection = "";
+  let journeyBlueprint = "";
+  
+  if (intent.mentorStyle?.methodologyMap) {
+    const map = intent.mentorStyle.methodologyMap;
+    
+    // Build the journey blueprint for these specific days
+    journeyBlueprint = buildJourneyBlueprint(map, totalDays, startDay, endDay);
+    
+    methodologySection = `
+=== MENTOR'S METHODOLOGY MAP ===
+
+CORE PILLARS OF THE METHOD:
+${map.pillars.map((p, i) => `${i + 1}. ${p.name}: ${p.description}\n   Key Teachings: ${p.keyTeachings.join("; ")}`).join("\n")}
+
+TRANSFORMATION STAGES:
+${map.transformationStages.map(s => `Stage ${s.stage}: ${s.name} - ${s.focus}\n   Expected Shift: ${s.expectedShift}`).join("\n")}
+
+SPECIFIC PRACTICES TO INCLUDE:
+${map.practices.map(p => `• ${p.name} (${p.type}): ${p.instructions}\n  Purpose: ${p.purpose}`).join("\n")}
+
+MENTOR'S VOICE:
+- Tone: ${map.voice.toneOfVoice}
+- Teaching Approach: ${map.voice.teachingApproach}
+- SIGNATURE PHRASES (use these exact phrases in the content):
+${map.voice.signaturePhrases.map(p => `  "${p}"`).join("\n")}
+
+CORE PHILOSOPHY:
+- Worldview: ${map.philosophy.worldview}
+- Main Beliefs: ${map.philosophy.mainBeliefs.join("; ")}
+- Transformation Promise: ${map.philosophy.transformationPromise}
+
+${journeyBlueprint}
+
+CRITICAL INSTRUCTIONS:
+1. You ARE this mentor. Write in their exact voice and use their signature phrases.
+2. Each day MUST focus on the assigned pillar and include the assigned practice.
+3. The explanation MUST teach from the mentor's actual methodology, not generic coaching.
+4. Include specific exercises and reflections from the mentor's practices list.
+5. Reference the mentor's beliefs and philosophy throughout.
+6. Never generate generic content - everything must come from this methodology.
+`;
+  } else if (intent.mentorStyle) {
+    // Fallback to old style if no methodology map
     const style = intent.mentorStyle;
-    mentorStyleSection = `
-=== MENTOR'S UNIQUE VOICE AND METHOD ===
-${style.toneOfVoice ? `TONE OF VOICE: ${style.toneOfVoice}` : ""}
-${style.teachingStyle ? `TEACHING STYLE: ${style.teachingStyle}` : ""}
-${style.corePhilosophy ? `CORE PHILOSOPHY: ${style.corePhilosophy}` : ""}
-${style.keyPhrases?.length > 0 ? `SIGNATURE PHRASES TO USE: ${style.keyPhrases.join(", ")}` : ""}
+    methodologySection = `
+=== MENTOR'S STYLE ===
+Tone: ${style.toneOfVoice}
+Teaching Style: ${style.teachingStyle}
+Philosophy: ${style.corePhilosophy}
+Key Phrases: ${style.keyPhrases?.join(", ")}
+Content Summary: ${style.contentSummary}
 
-=== MENTOR'S COMPLETE CONTENT AND METHODOLOGY ===
-${style.contentSummary || ""}
-
-CRITICAL: You ARE this mentor. Write ALL content in their exact voice, using their phrases, their approach, their philosophy. Every sentence should sound like it came directly from them.
+Write ALL content in this mentor's voice.
 `;
   }
   
-  // Include excerpts from the original content to ground the AI in actual material
-  // Take beginning, middle, and end sections to cover the full content
+  // Include content excerpts for additional grounding
   const contentLength = mentorContent.length;
   let contentExcerpts = "";
-  if (contentLength > 0) {
-    const excerptSize = 4000;
+  if (contentLength > 3000) {
+    const excerptSize = 3000;
     const beginning = mentorContent.substring(0, excerptSize);
-    const middle = contentLength > excerptSize * 2 
-      ? mentorContent.substring(Math.floor(contentLength / 2) - excerptSize / 2, Math.floor(contentLength / 2) + excerptSize / 2)
-      : "";
-    const end = contentLength > excerptSize 
-      ? mentorContent.substring(contentLength - excerptSize)
-      : "";
-    
     contentExcerpts = `
-=== MENTOR'S ORIGINAL CONTENT (key excerpts) ===
+=== MENTOR'S ORIGINAL CONTENT (excerpt for voice reference) ===
 ${beginning}
-${middle ? `\n[...middle section...]\n${middle}` : ""}
-${end && contentLength > excerptSize * 2 ? `\n[...final section...]\n${end}` : ""}
 `;
   }
   
-  const prompt = `You are an expert in creating transformational journeys. Create days ${startDay} to ${endDay} of a ${totalDays}-day journey.
+  const prompt = `You are creating a deep, transformational ${totalDays}-day journey using the mentor's ACTUAL methodology.
 
-IMPORTANT: Generate ALL content in ${language}. This journey is for ${language}-speaking participants.
+IMPORTANT: Generate ALL content in ${language}.
 
 JOURNEY DETAILS:
 - Name: ${intent.journeyName}
 - Goal: ${intent.mainGoal}
 - Target Audience: ${intent.targetAudience}
 - Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
-${mentorStyleSection}${contentExcerpts}
+${methodologySection}${contentExcerpts}
 
-Create days ${startDay}-${endDay} that progressively build toward the goal.
-${startDay === 1 ? "Day 1 should be an introduction and foundation." : `Days ${startDay}-${endDay} should deepen and expand on earlier concepts.`}
-${endDay === totalDays ? `Day ${endDay} should be a powerful conclusion.` : ""}
+CREATE DAYS ${startDay}-${endDay}:
+${startDay === 1 ? "Day 1: Introduction and foundation - set the context using the mentor's worldview." : ""}
+${endDay === totalDays ? `Day ${endDay}: Powerful conclusion that fulfills the transformation promise.` : ""}
 
-For each day create:
-- title: compelling name
-- description: what they'll learn
-- goal: main objective
-- explanation: teaching content (2-3 paragraphs)${intent.mentorStyle ? " - MUST reflect the mentor's unique voice" : ""}
-- task: practical exercise
-- blocks: array with text, reflection, and task blocks
+For each day you MUST include:
+- title: compelling name that reflects the pillar/stage focus
+- description: what they'll experience (1-2 sentences)
+- goal: specific objective tied to the pillar
+- explanation: 3-4 paragraphs of teaching content that:
+  * Explains the day's pillar using the mentor's language
+  * Includes at least one of the mentor's signature phrases
+  * References the mentor's beliefs and philosophy
+  * Prepares them for the practice
+- task: the specific practice assigned for this day (from the blueprint)
+- blocks: array with these block types:
+  * type "text" with content.text for teaching content
+  * type "reflection" with content.question for self-inquiry
+  * type "task" with content.task for the practice
 
-CRITICAL: All content must be written in ${language}.${intent.mentorStyle ? " Use the mentor's exact voice and teaching style throughout." : ""} Do not mix languages.
+All blocks MUST have a "type" field. Valid types: text, reflection, task, meditation, journaling.
+
+CRITICAL: All content in ${language}. Use the mentor's exact voice, phrases, and methodology. NO generic coaching content.
 
 Respond in JSON:
-{"days": [{"dayNumber": ${startDay}, "title": "...", "description": "...", "goal": "...", "explanation": "...", "task": "...", "blocks": [...]}]}`;
+{"days": [{"dayNumber": ${startDay}, "title": "...", "description": "...", "goal": "...", "explanation": "...", "task": "...", "blocks": [{"type": "text", "content": {"text": "..."}}, ...]}]}`;
 
-  const systemPrompt = intent.mentorStyle 
-    ? `You are embodying this mentor's voice and teaching style. Create course content that sounds exactly like them - use their phrases, their approach, their philosophy. Fill ALL fields with complete, meaningful content in ${language}. Respond with valid JSON only.`
-    : `Expert course designer. You MUST fill in ALL fields with complete, meaningful content in ${language}. Never leave any field empty or with placeholder text. Respond with valid JSON only.`;
+  const systemPrompt = intent.mentorStyle?.methodologyMap 
+    ? `You embody this specific mentor's voice and methodology. Create transformational content using ONLY their pillars, practices, phrases, and philosophy. Every sentence should sound like it came from their actual teachings. Fill ALL fields with rich, meaningful content in ${language}. Each block MUST have a "type" field. Respond with valid JSON only.`
+    : `Expert transformational course designer. Fill ALL fields with meaningful content in ${language}. Each block MUST have a "type" field. Respond with valid JSON only.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 4096,
+    max_completion_tokens: 6000,
   });
 
   const content = response.choices[0].message.content;
@@ -318,35 +558,207 @@ Respond in JSON:
   const parsed = JSON.parse(content);
   const days = parsed.days as GeneratedDay[];
   
-  // Validate and ensure all fields are filled with meaningful content
   // Use explicit language if provided, otherwise fall back to auto-detection
   const isHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
+  const map = intent.mentorStyle?.methodologyMap;
+  
+  // Validate and enrich each day using methodology map
   for (const day of days) {
+    // Get assigned pillar, stage, and practice using the consistent mapping function
+    const { pillar, stage, practice } = map 
+      ? getDayAssignments(map, day.dayNumber, totalDays)
+      : { pillar: null, stage: null, practice: null };
+    
+    // Generate methodology-based fallback content if fields are missing
     if (!day.title || day.title.length < 5) {
-      day.title = isHebrew ? `יום ${day.dayNumber}: התחלה והתעוררות` : `Day ${day.dayNumber}: Awakening and Beginning`;
+      if (pillar) {
+        day.title = isHebrew ? `יום ${day.dayNumber}: ${pillar.name}` : `Day ${day.dayNumber}: ${pillar.name}`;
+      } else {
+        day.title = isHebrew ? `יום ${day.dayNumber}` : `Day ${day.dayNumber}`;
+      }
     }
+    
     if (!day.goal || day.goal.length < 20) {
-      day.goal = isHebrew 
-        ? `ביום זה המשתתף ילמד ליישם את העקרונות הבסיסיים של התהליך ולהתחיל את המסע שלו לקראת שינוי.`
-        : `Today the participant will learn to apply the core principles of this journey and begin their path toward transformation.`;
+      if (pillar && stage) {
+        day.goal = isHebrew 
+          ? `ביום זה נתמקד ב"${pillar.name}" - ${pillar.description}. נעבוד בשלב "${stage.name}" ונחווה ${stage.expectedShift}.`
+          : `Today we focus on "${pillar.name}" - ${pillar.description}. We'll work on the "${stage.name}" stage and experience ${stage.expectedShift}.`;
+      } else if (pillar) {
+        day.goal = isHebrew 
+          ? `ביום זה נלמד על "${pillar.name}" - ${pillar.description}. נתרגל את ${pillar.keyTeachings.slice(0, 2).join(" ו")}.`
+          : `Today we explore "${pillar.name}" - ${pillar.description}. We'll practice ${pillar.keyTeachings.slice(0, 2).join(" and ")}.`;
+      } else {
+        day.goal = isHebrew 
+          ? `יום ${day.dayNumber} במסע - להתקדם לעבר ${intent.mainGoal}.`
+          : `Day ${day.dayNumber} of the journey - progressing toward ${intent.mainGoal}.`;
+      }
     }
+    
     if (!day.explanation || day.explanation.length < 100) {
-      day.explanation = isHebrew
-        ? `ביום זה אנחנו מתמקדים בבניית הבסיס לתהליך השינוי. זהו השלב שבו אנחנו מתחילים להבין את העקרונות המרכזיים ולהכין את עצמנו למסע שלפנינו.\n\nהשינוי האמיתי מתחיל מבפנים. כאשר אנחנו לומדים להקשיב לעצמנו ולהבין את הצרכים האמיתיים שלנו, אנחנו פותחים דלת לאפשרויות חדשות.`
-        : `Today we focus on building the foundation for your transformation journey. This is the stage where we begin to understand the core principles and prepare ourselves for the path ahead.\n\nReal change starts from within. When we learn to listen to ourselves and understand our true needs, we open the door to new possibilities.`;
+      const parts: string[] = [];
+      
+      if (pillar) {
+        parts.push(isHebrew
+          ? `היום נתמקד בעקרון "${pillar.name}" - ${pillar.description}.\n\nזהו אחד מעמודי התווך המרכזיים של הגישה הזו. ${pillar.keyTeachings.map(t => `• ${t}`).join("\n")}`
+          : `Today we focus on the principle of "${pillar.name}" - ${pillar.description}.\n\nThis is one of the core pillars of this approach. ${pillar.keyTeachings.map(t => `• ${t}`).join("\n")}`
+        );
+      }
+      
+      if (stage) {
+        parts.push(isHebrew
+          ? `אנחנו נמצאים בשלב "${stage.name}" - ${stage.focus}. המטרה היא ${stage.expectedShift}.`
+          : `We are in the "${stage.name}" stage - ${stage.focus}. The goal is ${stage.expectedShift}.`
+        );
+      }
+      
+      if (map?.philosophy.worldview) {
+        parts.push(map.philosophy.worldview);
+      }
+      
+      day.explanation = parts.join("\n\n") || day.goal;
     }
+    
     if (!day.task || day.task.length < 30) {
-      day.task = isHebrew
-        ? `קח 10 דקות לכתוב ביומן על המטרות שלך מהתהליך הזה. מה אתה מקווה להשיג? איזה שינוי אתה רוצה לראות בחייך?`
-        : `Take 10 minutes to journal about your goals for this journey. What do you hope to achieve? What change do you want to see in your life?`;
+      if (practice) {
+        day.task = isHebrew
+          ? `התרגיל של היום: "${practice.name}" (${practice.type})\n\n${practice.instructions}\n\nמטרת התרגיל: ${practice.purpose}`
+          : `Today's practice: "${practice.name}" (${practice.type})\n\n${practice.instructions}\n\nPurpose: ${practice.purpose}`;
+      } else if (pillar) {
+        day.task = isHebrew
+          ? `התבונן על "${pillar.name}" בחייך. איפה אתה רואה את העיקרון הזה? כתוב 3 דוגמאות קונקרטיות.`
+          : `Reflect on "${pillar.name}" in your life. Where do you see this principle? Write 3 concrete examples.`;
+      } else {
+        day.task = isHebrew
+          ? `קח 10 דקות להתבוננות פנימית. מה עולה לך מהתוכן של היום?`
+          : `Take 10 minutes for inner reflection. What comes up for you from today's content?`;
+      }
     }
-    // Ensure blocks array exists with proper content
+    
+    // Ensure blocks array exists with methodology-based content
     if (!day.blocks || day.blocks.length === 0) {
-      day.blocks = [
-        { type: "text", content: { text: day.explanation } },
-        { type: "reflection", content: { question: isHebrew ? `מה מהדברים שלמדת היום מהדהד אצלך ביותר?` : `What resonates with you most from today's lesson?` } },
-        { type: "task", content: { task: day.task } },
+      const blocks: any[] = [
+        { type: "text", content: { text: day.explanation } }
       ];
+      
+      if (practice) {
+        blocks.push({ 
+          type: practice.type as string, 
+          content: { 
+            text: `${practice.name}: ${practice.instructions}`,
+            task: practice.instructions 
+          } 
+        });
+      }
+      
+      blocks.push({ 
+        type: "reflection", 
+        content: { 
+          question: pillar 
+            ? (isHebrew ? `איך "${pillar.name}" מתבטא בחייך? מה אתה מגלה?` : `How does "${pillar.name}" show up in your life? What are you discovering?`)
+            : (isHebrew ? `מה מהדהד אצלך מהתוכן של היום?` : `What resonates with you from today's content?`)
+        } 
+      });
+      
+      blocks.push({ type: "task", content: { task: day.task } });
+      
+      day.blocks = blocks;
+    }
+    
+    // Validate and enhance: ensure pillar, stage, practice, and signature phrase are referenced
+    let dayContent = `${day.title} ${day.goal} ${day.explanation} ${day.task}`.toLowerCase();
+    
+    const hasPillarReference = pillar ? dayContent.includes(pillar.name.toLowerCase().substring(0, Math.min(10, pillar.name.length))) : true;
+    const hasStageReference = stage ? dayContent.includes(stage.name.toLowerCase().substring(0, Math.min(10, stage.name.length))) : true;
+    const hasPracticeReference = practice ? dayContent.includes(practice.name.toLowerCase().substring(0, Math.min(10, practice.name.length))) : true;
+    
+    console.log(`[AI] Day ${day.dayNumber} validation: pillar=${pillar?.name || 'none'}, stage=${stage?.name || 'none'}, practice=${practice?.name || 'none'}, pillar_ref=${hasPillarReference}, stage_ref=${hasStageReference}, practice_ref=${hasPracticeReference}`);
+    
+    // Enrich with missing pillar reference
+    if (!hasPillarReference && pillar) {
+      const pillarPrefix = isHebrew 
+        ? `היום נתמקד ב"${pillar.name}" - ${pillar.description}. ${pillar.keyTeachings[0] || ""}\n\n`
+        : `Today we focus on "${pillar.name}" - ${pillar.description}. ${pillar.keyTeachings[0] || ""}\n\n`;
+      day.explanation = pillarPrefix + day.explanation;
+      console.log(`[AI] Enhanced day ${day.dayNumber} with pillar: ${pillar.name}`);
+    }
+    
+    // Enrich with missing stage reference
+    if (!hasStageReference && stage) {
+      const stagePrefix = isHebrew
+        ? `אנחנו בשלב "${stage.name}" - ${stage.focus}. המטרה בשלב זה: ${stage.expectedShift}.\n\n`
+        : `We are in the "${stage.name}" stage - ${stage.focus}. The goal at this stage: ${stage.expectedShift}.\n\n`;
+      day.goal = stagePrefix + day.goal;
+      console.log(`[AI] Enhanced day ${day.dayNumber} with stage: ${stage.name}`);
+    }
+    
+    // Enrich with missing practice reference
+    if (!hasPracticeReference && practice) {
+      const practiceAddition = isHebrew
+        ? `\n\nהתרגיל המרכזי: "${practice.name}" - ${practice.instructions}`
+        : `\n\nCore practice: "${practice.name}" - ${practice.instructions}`;
+      day.task = day.task + practiceAddition;
+      console.log(`[AI] Enhanced day ${day.dayNumber} with practice: ${practice.name}`);
+    }
+    
+    // Add signature phrase if available and not already present
+    let signaturePhrase: string | null = null;
+    if (map && map.voice.signaturePhrases.length > 0) {
+      const phraseIndex = (day.dayNumber - 1) % map.voice.signaturePhrases.length;
+      signaturePhrase = map.voice.signaturePhrases[phraseIndex] || null;
+      if (signaturePhrase && !dayContent.includes(signaturePhrase.toLowerCase().substring(0, Math.min(15, signaturePhrase.length)))) {
+        day.explanation = day.explanation + `\n\n"${signaturePhrase}"`;
+        console.log(`[AI] Added signature phrase to day ${day.dayNumber}`);
+      }
+    }
+    
+    // CRITICAL: Synchronize blocks with the enriched content
+    // Rebuild blocks to ensure they contain the pillar, stage, practice, and signature phrase
+    if (day.blocks && day.blocks.length > 0 && map) {
+      const enrichedBlocks: typeof day.blocks = [];
+      
+      // Add stage context block if we have a stage
+      if (stage) {
+        enrichedBlocks.push({
+          type: "text",
+          content: {
+            text: isHebrew
+              ? `📍 שלב במסע: "${stage.name}"\n${stage.focus}\n\nהשינוי הצפוי: ${stage.expectedShift}`
+              : `📍 Journey Stage: "${stage.name}"\n${stage.focus}\n\nExpected Shift: ${stage.expectedShift}`
+          }
+        });
+      }
+      
+      // Main content block: use the (now enriched) explanation
+      enrichedBlocks.push({ type: "text", content: { text: day.explanation } });
+      
+      // Add practice block if we have an assigned practice
+      if (practice) {
+        enrichedBlocks.push({
+          type: practice.type || "task",
+          content: {
+            text: `${practice.name}: ${practice.instructions}`,
+            task: `${practice.name}\n\n${practice.instructions}\n\n${isHebrew ? 'מטרה' : 'Purpose'}: ${practice.purpose}`
+          }
+        });
+      }
+      
+      // Add reflection block with pillar and stage reference
+      enrichedBlocks.push({
+        type: "reflection",
+        content: {
+          question: pillar && stage
+            ? (isHebrew ? `בשלב "${stage.name}", איך "${pillar.name}" מתבטא בחייך? מה אתה מגלה?` : `In the "${stage.name}" stage, how does "${pillar.name}" show up in your life? What are you discovering?`)
+            : pillar
+            ? (isHebrew ? `איך "${pillar.name}" מתבטא בחייך כרגע? מה אתה מגלה?` : `How does "${pillar.name}" show up in your life right now? What are you discovering?`)
+            : (isHebrew ? `מה מהדהד אצלך מהתוכן של היום?` : `What resonates with you from today's content?`)
+        }
+      });
+      
+      // Add task block with (now enriched) task
+      enrichedBlocks.push({ type: "task", content: { task: day.task } });
+      
+      day.blocks = enrichedBlocks;
+      console.log(`[AI] Rebuilt blocks for day ${day.dayNumber} with ${enrichedBlocks.length} methodology-based blocks (stage: ${stage?.name || 'none'})`);
     }
   }
   
