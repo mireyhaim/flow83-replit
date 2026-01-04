@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation, Link } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,7 @@ import {
   Edit3, CheckCircle, Copy, Check, ExternalLink, ArrowRight, Rocket, Lock, Crown, CreditCard, ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
 import type { Journey, JourneyStep as JourneyStepType, JourneyBlock } from "@shared/schema";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +27,8 @@ const JourneyEditorPage = () => {
   const [match, params] = useRoute("/journey/:id/edit");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user, isLoading: isLoadingUser } = useAuth();
   const [journeyData, setJourneyData] = useState<JourneyWithSteps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -39,21 +42,10 @@ const JourneyEditorPage = () => {
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [expandedPlanDetails, setExpandedPlanDetails] = useState(false);
 
-  const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
-    queryKey: ["/api/subscription/status"],
-    queryFn: async () => {
-      const res = await fetch("/api/subscription/status", { credentials: "include" });
-      if (!res.ok) {
-        // If auth fails, return null status to trigger retry/reload
-        return { plan: null, status: null };
-      }
-      return res.json();
-    },
-    retry: 2,
-    staleTime: 30000, // Cache for 30 seconds
-  });
-
-  const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing" || subscriptionStatus?.status === "on_trial";
+  // Use user data from useAuth hook for subscription status - more reliable than separate API call
+  const subscriptionStatus = user?.subscriptionStatus;
+  const hasActiveSubscription = subscriptionStatus === "active" || subscriptionStatus === "trialing" || subscriptionStatus === "on_trial";
+  const isLoadingSubscription = isLoadingUser;
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
 
@@ -62,23 +54,28 @@ const JourneyEditorPage = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const subscriptionResult = urlParams.get('subscription');
     
-    if (subscriptionResult === 'success' && journeyData && hasActiveSubscription) {
-      // Clear the URL param
-      window.history.replaceState({}, '', window.location.pathname);
+    if (subscriptionResult === 'success') {
+      // Refresh user data to get updated subscription status
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
-      // Show success toast
-      toast({
-        title: t('subscriptionActivated'),
-        description: t('canNowPublishFlow'),
-      });
-      
-      // Auto-open the publish modal
-      setPublishPrice(journeyData.price?.toString() || "0");
-      setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
-      setPublishStep(1);
-      setShowPublishModal(true);
+      if (journeyData && hasActiveSubscription) {
+        // Clear the URL param
+        window.history.replaceState({}, '', window.location.pathname);
+        
+        // Show success toast
+        toast({
+          title: t('subscriptionActivated'),
+          description: t('canNowPublishFlow'),
+        });
+        
+        // Auto-open the publish modal
+        setPublishPrice(journeyData.price?.toString() || "0");
+        setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
+        setPublishStep(1);
+        setShowPublishModal(true);
+      }
     }
-  }, [journeyData, hasActiveSubscription]);
+  }, [journeyData, hasActiveSubscription, queryClient]);
 
   useEffect(() => {
     const loadJourney = async () => {
