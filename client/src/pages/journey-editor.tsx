@@ -41,8 +41,16 @@ const JourneyEditorPage = () => {
 
   const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{ plan: string | null; status: string | null }>({
     queryKey: ["/api/subscription/status"],
-    queryFn: () => fetch("/api/subscription/status", { credentials: "include" }).then(res => res.json()),
-    retry: false,
+    queryFn: async () => {
+      const res = await fetch("/api/subscription/status", { credentials: "include" });
+      if (!res.ok) {
+        // If auth fails, return null status to trigger retry/reload
+        return { plan: null, status: null };
+      }
+      return res.json();
+    },
+    retry: 2,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   const hasActiveSubscription = subscriptionStatus?.status === "active" || subscriptionStatus?.status === "trialing" || subscriptionStatus?.status === "on_trial";
