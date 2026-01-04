@@ -595,82 +595,82 @@ const JourneyEditorPage = () => {
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 1 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 {publishStep > 1 ? <Check className="w-5 h-5" /> : '1'}
               </div>
-              <span className={`text-xs ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>Price</span>
+              <span className={`text-xs ${publishStep >= 1 ? 'text-white' : 'text-white/50'}`}>{t('publishModal.stepPrice')}</span>
             </div>
             <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 2 ? 'bg-violet-600' : 'bg-white/20'}`} />
             <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 2 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 {publishStep > 2 ? <Check className="w-5 h-5" /> : '2'}
               </div>
-              <span className={`text-xs ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>Stripe</span>
+              <span className={`text-xs ${publishStep >= 2 ? 'text-white' : 'text-white/50'}`}>{t('publishModal.stepPayment')}</span>
             </div>
             <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 3 ? 'bg-violet-600' : 'bg-white/20'}`} />
             <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 3 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 {publishStep > 3 ? <Check className="w-5 h-5" /> : '3'}
               </div>
-              <span className={`text-xs ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>Create</span>
+              <span className={`text-xs ${publishStep >= 3 ? 'text-white' : 'text-white/50'}`}>{t('publishModal.stepCreate')}</span>
             </div>
             <div className={`w-8 h-0.5 mt-[-16px] ${publishStep >= 4 ? 'bg-violet-600' : 'bg-white/20'}`} />
             <div className="flex flex-col items-center gap-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${publishStep >= 4 ? 'bg-violet-600 text-white' : 'bg-white/10 text-white/50'}`}>
                 4
               </div>
-              <span className={`text-xs ${publishStep >= 4 ? 'text-white' : 'text-white/50'}`}>Share</span>
+              <span className={`text-xs ${publishStep >= 4 ? 'text-white' : 'text-white/50'}`}>{t('publishModal.stepShare')}</span>
             </div>
           </div>
 
           {/* Intro Message */}
           <div className="bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 rounded-xl p-4 mb-4">
             <p className="text-center text-white/90">
-              <Sparkles className="w-4 h-4 inline-block mr-2 text-violet-400" />
-              A few more steps and you'll get a link to your flow that you can share with your clients
+              <Sparkles className="w-4 h-4 inline-block mx-2 text-violet-400" />
+              {t('publishModal.introMessage')}
             </p>
           </div>
 
           {publishStep === 1 ? (
             <>
               <DialogHeader className="space-y-3">
-                <DialogTitle className="text-2xl font-bold text-center">Step 1: Set Your Price</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-center">{t('publishModal.step1Title')}</DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Decide how much you want to charge for your flow
+                  {t('publishModal.step1Description')}
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-6 py-4">
                 <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">Why set a price?</h4>
+                  <h4 className="font-medium text-violet-300 mb-2">{t('publishModal.whySetPrice')}</h4>
                   <p className="text-sm text-white/70 mb-3">
-                    This is your work and expertise packaged into a digital experience. You decide its value.
+                    {t('publishModal.whySetPriceText')}
                   </p>
                   <ul className="text-sm text-white/70 space-y-2">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span><strong>Free:</strong> Great for building your audience and getting testimonials</span>
+                      <span>{t('publishModal.freeOption')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span><strong>Paid:</strong> Clients invest in themselves and take the journey more seriously</span>
+                      <span>{t('publishModal.paidOption')}</span>
                     </li>
                   </ul>
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-white/80 text-lg">Price (in USD)</Label>
+                  <Label className="text-white/80 text-lg">{t('publishModal.priceLabel')}</Label>
                   <div className="relative">
                     <Input
                       type="number"
                       min="0"
                       value={publishPrice}
                       onChange={(e) => setPublishPrice(e.target.value)}
-                      placeholder="0"
+                      placeholder={t('publishModal.pricePlaceholder')}
                       className="bg-white/5 border-white/20 text-white text-3xl text-center h-20 rounded-xl"
                       data-testid="input-publish-price"
                     />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 text-2xl">$</span>
                   </div>
                   <p className="text-base text-white/50 text-center">
-                    {publishPrice === "0" || publishPrice === "" ? "Free - clients can join without payment" : `Clients will pay $${publishPrice} to access your flow`}
+                    {publishPrice === "0" || publishPrice === "" ? t('publishModal.freeDescription') : t('publishModal.paidDescription', { price: publishPrice })}
                   </p>
                 </div>
 
@@ -680,15 +680,15 @@ const JourneyEditorPage = () => {
                     onClick={() => setShowPublishModal(false)}
                     className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
-                    Cancel
+                    {t('publishModal.cancel')}
                   </Button>
                   <Button
                     onClick={() => setPublishStep(2)}
                     className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
                     data-testid="button-next-step"
                   >
-                    <ArrowRight className="w-5 h-5 mr-2" />
-                    Next Step
+                    <ArrowRight className="w-5 h-5 mx-2" />
+                    {t('publishModal.continue')}
                   </Button>
                 </div>
               </div>
@@ -698,12 +698,12 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <CreditCard className="w-7 h-7 text-violet-400" />
-                  Step 2: Payment Setup
+                  {t('publishModal.step2Title')}
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
                   {(parseFloat(publishPrice) || 0) > 0 
-                    ? "Choose how you'd like to receive payments from clients"
-                    : "This step is optional for free flows"}
+                    ? t('publishModal.step2DescriptionPaid')
+                    : t('publishModal.step2DescriptionFree')}
                 </DialogDescription>
               </DialogHeader>
               
@@ -713,23 +713,23 @@ const JourneyEditorPage = () => {
                     <div className="border border-violet-500 bg-violet-500/10 rounded-xl p-5">
                       <div className="flex items-center gap-3 mb-2">
                         <ExternalLink className="w-5 h-5 text-violet-400" />
-                        <h4 className="font-medium text-white">Your Payment Link</h4>
+                        <h4 className="font-medium text-white">{t('publishModal.yourPaymentLink')}</h4>
                       </div>
                       <p className="text-sm text-white/60 mb-4">
-                        Use your existing PayPal, Stripe Payment Link, or any other payment link. Works from any country - payments go directly to you.
+                        {t('publishModal.paymentLinkExplanation')}
                       </p>
                       <div className="space-y-3">
-                        <Label className="text-white/70 text-sm">Payment Link URL</Label>
+                        <Label className="text-white/70 text-sm">{t('publishModal.paymentLinkLabel')}</Label>
                         <Input
                           type="url"
                           value={externalPaymentUrl}
                           onChange={(e) => setExternalPaymentUrl(e.target.value)}
-                          placeholder="https://paypal.me/... or https://buy.stripe.com/..."
+                          placeholder={t('publishModal.paymentLinkPlaceholder')}
                           className="bg-white/5 border-white/20 text-white h-12 rounded-lg"
                           data-testid="input-external-payment-url"
                         />
                         <p className="text-xs text-white/40">
-                          Clients will be redirected to this link to pay, then return to access your flow.
+                          {t('publishModal.paymentRedirectNote')}
                         </p>
                       </div>
                     </div>
@@ -737,7 +737,7 @@ const JourneyEditorPage = () => {
                     {!externalPaymentUrl && (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
                         <p className="text-sm text-amber-300 text-center">
-                          Please enter your payment link to continue.
+                          {t('publishModal.enterPaymentLink')}
                         </p>
                       </div>
                     )}
@@ -745,7 +745,7 @@ const JourneyEditorPage = () => {
                 ) : (
                   <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
                     <p className="text-sm text-white/70 text-center">
-                      Your flow is free! No payment setup needed. Click "Skip & Continue" to proceed.
+                      {t('publishModal.freeFlowNote')}
                     </p>
                   </div>
                 )}
@@ -756,7 +756,7 @@ const JourneyEditorPage = () => {
                     onClick={() => setPublishStep(1)}
                     className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
-                    Back
+                    {t('publishModal.back')}
                   </Button>
                   <Button
                     onClick={() => setPublishStep(3)}
@@ -764,9 +764,9 @@ const JourneyEditorPage = () => {
                     data-testid="button-next-after-payment"
                     disabled={(parseFloat(publishPrice) || 0) > 0 && !externalPaymentUrl}
                   >
-                    <ArrowRight className="w-5 h-5 mr-2" />
-                    {(parseFloat(publishPrice) || 0) === 0 ? "Skip & Continue" : 
-                      externalPaymentUrl ? "Next Step" : "Setup Required"}
+                    <ArrowRight className="w-5 h-5 mx-2" />
+                    {(parseFloat(publishPrice) || 0) === 0 ? t('publishModal.skipAndContinue') : 
+                      externalPaymentUrl ? t('publishModal.nextStep') : t('publishModal.setupRequired')}
                   </Button>
                 </div>
               </div>
@@ -776,49 +776,49 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <Rocket className="w-8 h-8 text-violet-400" />
-                  Step 3: Create Your Mini-Site
+                  {t('publishModal.step3Title')}
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  We'll create a beautiful landing page for your flow
+                  {t('publishModal.step3Description')}
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-6 py-4">
                 <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">What is a Mini-Site?</h4>
+                  <h4 className="font-medium text-violet-300 mb-2">{t('publishModal.whatIsMiniSite')}</h4>
                   <p className="text-sm text-white/70 mb-3">
-                    Your mini-site is a professional landing page that presents your flow to potential clients. It includes everything they need to decide to join.
+                    {t('publishModal.miniSiteExplanation')}
                   </p>
                   <ul className="text-sm text-white/70 space-y-2">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Beautiful design that represents your brand</span>
+                      <span>{t('publishModal.miniSiteFeature1')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Clear description of what clients will experience</span>
+                      <span>{t('publishModal.miniSiteFeature2')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
-                      <span>Easy sign-up and payment process for clients</span>
+                      <span>{t('publishModal.miniSiteFeature3')}</span>
                     </li>
                   </ul>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
-                  <h4 className="font-medium text-white mb-2">Your Flow Summary</h4>
+                  <h4 className="font-medium text-white mb-2">{t('publishModal.flowSummary')}</h4>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/60">Flow Name</span>
+                    <span className="text-white/60">{t('publishModal.flowName')}</span>
                     <span className="text-white font-medium">{journeyData.name}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/60">Duration</span>
-                    <span className="text-white font-medium">{journeyData.steps.length} days</span>
+                    <span className="text-white/60">{t('publishModal.duration')}</span>
+                    <span className="text-white font-medium">{t('publishModal.daysCount', { count: journeyData.steps.length })}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-white/60">Price</span>
+                    <span className="text-white/60">{t('publishModal.price')}</span>
                     <span className="text-white font-medium text-lg">
-                      {(parseFloat(publishPrice) || 0) === 0 ? "Free" : `$${publishPrice}`}
+                      {(parseFloat(publishPrice) || 0) === 0 ? t('free') : `$${publishPrice}`}
                     </span>
                   </div>
                 </div>
@@ -829,7 +829,7 @@ const JourneyEditorPage = () => {
                     onClick={() => setPublishStep(2)}
                     className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
-                    Back
+                    {t('publishModal.back')}
                   </Button>
                   <Button
                     onClick={handleConfirmPublish}
@@ -841,8 +841,8 @@ const JourneyEditorPage = () => {
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       <>
-                        <Rocket className="w-6 h-6 mr-3" />
-                        Create & Publish
+                        <Rocket className="w-6 h-6 mx-3" />
+                        {t('publishModal.createAndPublish')}
                       </>
                     )}
                   </Button>
@@ -854,23 +854,16 @@ const JourneyEditorPage = () => {
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
                   <CheckCircle className="w-8 h-8 text-emerald-400" />
-                  Step 4: Share Your Link
+                  {t('publishModal.step4Title')}
                 </DialogTitle>
                 <DialogDescription className="text-white/60 text-center text-base">
-                  Your flow is live! Share this link with your clients
+                  {t('publishModal.step4Description')}
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-6 py-4">
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-5">
-                  <h4 className="font-medium text-emerald-300 mb-2">Congratulations!</h4>
-                  <p className="text-sm text-white/70">
-                    Your flow is now live and ready for clients. Copy the link below and share it on social media, in emails, or anywhere you connect with your audience.
-                  </p>
-                </div>
-
                 <div className="space-y-4">
-                  <Label className="text-white/80 text-base">Your shareable link</Label>
+                  <Label className="text-white/80 text-base">{t('publishModal.shareableLink')}</Label>
                   <div 
                     onClick={handleCopyLink}
                     className="w-full bg-white/5 border border-white/20 rounded-xl p-4 cursor-pointer hover:bg-white/10 transition-colors"
@@ -886,23 +879,16 @@ const JourneyEditorPage = () => {
                   >
                     {copiedLink ? (
                       <>
-                        <Check className="w-5 h-5 mr-2 text-emerald-400" />
-                        Copied!
+                        <Check className="w-5 h-5 mx-2 text-emerald-400" />
+                        {t('publishModal.copied')}
                       </>
                     ) : (
                       <>
-                        <Copy className="w-5 h-5 mr-2" />
-                        Copy Link
+                        <Copy className="w-5 h-5 mx-2" />
+                        {t('publishModal.copyLink')}
                       </>
                     )}
                   </Button>
-                </div>
-
-                <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-5">
-                  <h4 className="font-medium text-violet-300 mb-2">What's next?</h4>
-                  <p className="text-sm text-white/70">
-                    Share this link with your clients. They'll see your beautiful landing page, can sign up (and pay if priced), and begin their journey with you.
-                  </p>
                 </div>
 
                 <div className="flex gap-4 pt-4">
@@ -911,15 +897,15 @@ const JourneyEditorPage = () => {
                     onClick={() => setShowPublishModal(false)}
                     className="flex-1 border-white/20 text-white hover:bg-white/10 h-14 text-base"
                   >
-                    Close
+                    {t('publishModal.done')}
                   </Button>
                   <Button
                     onClick={() => window.open(getShareableLink(), '_blank')}
                     className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 text-base"
                     data-testid="button-view-landing"
                   >
-                    <ExternalLink className="w-5 h-5 mr-2" />
-                    View My Page
+                    <ExternalLink className="w-5 h-5 mx-2" />
+                    {t('publishModal.viewLandingPage')}
                   </Button>
                 </div>
               </div>
