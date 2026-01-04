@@ -13,6 +13,10 @@ interface JourneyIntent {
   desiredFeeling?: string;
   additionalNotes?: string;
   language?: string; // 'he' for Hebrew, 'en' for English
+  // Flow building questions - user input about their process
+  clientChallenges?: string; // What challenges do the clients face?
+  profession?: string; // therapist, coach, healer, mentor, counselor, other
+  tone?: string; // warm, professional, direct, gentle, motivating, spiritual
   // Mentor style profile (extracted from uploaded content)
   mentorStyle?: MentorStyleProfile;
 }
@@ -510,7 +514,12 @@ JOURNEY DETAILS:
 - Goal: ${intent.mainGoal}
 - Target Audience: ${intent.targetAudience}
 - Desired Feeling: ${intent.desiredFeeling || "empowered and transformed"}
+${intent.clientChallenges ? `- Client Challenges: ${intent.clientChallenges}` : ""}
+${intent.profession ? `- Mentor Profession: ${intent.profession}` : ""}
+${intent.tone ? `- Desired Tone: ${intent.tone}` : ""}
 ${methodologySection}${contentExcerpts}
+
+CRITICAL: The content MUST directly address the client challenges described above. Each day should help the participant work through these specific challenges using the mentor's methodology.
 
 CREATE DAYS ${startDay}-${endDay}:
 ${startDay === 1 ? "Day 1: Introduction and foundation - set the context using the mentor's worldview." : ""}
@@ -1066,8 +1075,13 @@ IMPORTANT: Write ALL content as if you ARE this mentor. Use their voice, their p
 FLOW: ${intent.journeyName}
 GOAL: ${intent.mainGoal}
 AUDIENCE: ${intent.targetAudience}
+${intent.clientChallenges ? `CLIENT CHALLENGES: ${intent.clientChallenges}` : ""}
+${intent.profession ? `MENTOR PROFESSION: ${intent.profession}` : ""}
+${intent.tone ? `TONE: ${intent.tone}` : ""}
 ${intent.additionalNotes ? `CONTEXT: ${intent.additionalNotes}` : ""}
 ${mentorStyleSection}
+
+CRITICAL: Each day MUST directly address the client challenges. The content should help participants work through their specific struggles using the mentor's approach and the requested tone.
 
 ${startDay === 1 ? "Day 1 = foundation/introduction." : ""}
 ${endDay === totalDays ? `Day ${endDay} = powerful conclusion.` : ""}

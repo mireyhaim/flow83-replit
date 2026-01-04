@@ -96,6 +96,10 @@ const ContentUploadSection = ({ journeyData, onBack }: ContentUploadSectionProps
         status: "draft",
         description: journeyData.additionalNotes || "",
         language: journeyData.language || "en",
+        // Flow building questions - critical for personalized AI content
+        clientChallenges: journeyData.clientChallenges || "",
+        profession: journeyData.profession || "",
+        tone: journeyData.tone || "",
       });
       console.log("[ContentUpload] Journey created:", journey.id);
 

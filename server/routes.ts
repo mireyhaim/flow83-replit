@@ -1150,6 +1150,10 @@ export async function registerRoutes(
         desiredFeeling: "",
         additionalNotes: journey.description || "",
         language: journey.language || undefined,
+        // Flow building questions - critical for personalized content
+        clientChallenges: journey.clientChallenges || "",
+        profession: journey.profession || "",
+        tone: journey.tone || "",
         mentorStyle, // Include extracted style profile
       };
 
@@ -1270,6 +1274,10 @@ export async function registerRoutes(
         desiredFeeling: "",
         additionalNotes: journey.description || "",
         language: journey.language || undefined,
+        // Flow building questions - critical for personalized content
+        clientChallenges: journey.clientChallenges || "",
+        profession: journey.profession || "",
+        tone: journey.tone || "",
       };
 
       console.log("[auto-generate] Intent:", JSON.stringify(intent));

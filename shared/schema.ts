@@ -70,6 +70,10 @@ export const journeys = pgTable("journeys", {
   externalPaymentUrl: text("external_payment_url"), // PayPal/Stripe Payment Link
   // Language preference for the journey (he = Hebrew, en = English)
   language: text("language").default("en"),
+  // Flow building questions - mentor's input about their process
+  clientChallenges: text("client_challenges"), // What challenges do the clients face?
+  profession: text("profession"), // therapist, coach, healer, mentor, counselor, other
+  tone: text("tone"), // warm, professional, direct, gentle, motivating, spiritual
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({
