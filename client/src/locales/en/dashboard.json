@@ -407,6 +407,7 @@
     "pricePlaceholder": "0",
     "freeDescription": "Free - clients can join without payment",
     "paidDescription": "Clients will pay ${{price}} to access your flow",
+    "currencySymbol": "$",
     "cancel": "Cancel",
     "continue": "Continue",
     "step2Title": "Step 2: Payment Setup",

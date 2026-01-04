@@ -667,7 +667,7 @@ const JourneyEditorPage = () => {
                       className="bg-white/5 border-white/20 text-white text-3xl text-center h-20 rounded-xl"
                       data-testid="input-publish-price"
                     />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 text-2xl">$</span>
+                    <span className="absolute end-6 top-1/2 -translate-y-1/2 text-white/50 text-2xl">{t('publishModal.currencySymbol')}</span>
                   </div>
                   <p className="text-base text-white/50 text-center">
                     {publishPrice === "0" || publishPrice === "" ? t('publishModal.freeDescription') : t('publishModal.paidDescription', { price: publishPrice })}
@@ -818,7 +818,7 @@ const JourneyEditorPage = () => {
                   <div className="flex justify-between items-center py-2">
                     <span className="text-white/60">{t('publishModal.price')}</span>
                     <span className="text-white font-medium text-lg">
-                      {(parseFloat(publishPrice) || 0) === 0 ? t('free') : `$${publishPrice}`}
+                      {(parseFloat(publishPrice) || 0) === 0 ? t('free') : `${t('publishModal.currencySymbol')}${publishPrice}`}
                     </span>
                   </div>
                 </div>
