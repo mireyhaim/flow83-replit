@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { User, Mail, ArrowLeft, Loader2 } from "lucide-react";
 
+function isHebrewText(text: string): boolean {
+  if (!text) return false;
+  const hebrewRegex = /[\u0590-\u05FF]/;
+  return hebrewRegex.test(text);
+}
+
 interface JourneyBasic {
   id: string;
   name: string;
   description: string | null;
+  goal: string | null;
   price: number | null;
   currency: string | null;
   status: string;
+  language: string | null;
   mentor?: {
     firstName: string | null;
     lastName: string | null;
@@ -116,10 +124,29 @@ export default function ParticipantJoinPage() {
 
   const price = journey.price || 0;
   const isFree = price <= 0;
-  const currencySymbol = "$";
+  
+  // Detect Hebrew from explicit language field or content
+  const hasHebrewContent = isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "");
+  const isHebrew = journey.language === 'he' || hasHebrewContent;
+  const currencySymbol = isHebrew ? "₪" : "$";
   const mentorName = journey.mentor 
     ? `${journey.mentor.firstName || ""} ${journey.mentor.lastName || ""}`.trim() 
-    : "Your Guide";
+    : (isHebrew ? "המנחה שלך" : "Your Guide");
+    
+  // Set document direction for Hebrew
+  useEffect(() => {
+    if (isHebrew) {
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "he";
+    } else {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+    }
+    return () => {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+    };
+  }, [isHebrew]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
@@ -133,7 +160,7 @@ export default function ParticipantJoinPage() {
             data-testid="button-back"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {isHebrew ? "חזרה" : "Back"}
           </Button>
         </Link>
       </header>
@@ -167,16 +194,16 @@ export default function ParticipantJoinPage() {
               className="text-2xl"
               style={{ fontFamily: "'Playfair Display', serif", color: 'hsl(25 20% 20%)' }}
             >
-              Join {journey.name}
+              {isHebrew ? `הצטרפות ל${journey.name}` : `Join ${journey.name}`}
             </CardTitle>
             <CardDescription 
               className="mt-2"
               style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 15% 45%)' }}
             >
               {isFree ? (
-                "Create your account to start this journey"
+                isHebrew ? "צרו חשבון כדי להתחיל את המסע" : "Create your account to start this journey"
               ) : (
-                <>Create your account to continue to payment</>
+                isHebrew ? "צרו חשבון כדי להמשיך לתשלום" : "Create your account to continue to payment"
               )}
             </CardDescription>
             
@@ -190,7 +217,7 @@ export default function ParticipantJoinPage() {
                   fontFamily: "'Playfair Display', serif"
                 }}
               >
-                {isFree ? "Free" : `${currencySymbol}${price}`}
+                {isFree ? (isHebrew ? "חינם" : "Free") : `${currencySymbol}${price}`}
               </span>
             </div>
           </CardHeader>
@@ -210,7 +237,7 @@ export default function ParticipantJoinPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Continue with Google
+              {isHebrew ? "המשך עם Google" : "Continue with Google"}
             </Button>
 
             <div className="relative">
@@ -219,7 +246,7 @@ export default function ParticipantJoinPage() {
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm"
                 style={{ color: 'hsl(25 15% 45%)', fontFamily: "'DM Sans', sans-serif" }}
               >
-                or
+                {isHebrew ? "או" : "or"}
               </span>
             </div>
 
@@ -230,12 +257,12 @@ export default function ParticipantJoinPage() {
                   htmlFor="name"
                   style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 20% 20%)' }}
                 >
-                  Your Name (optional)
+                  {isHebrew ? "השם שלך (אופציונלי)" : "Your Name (optional)"}
                 </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder={isHebrew ? "הזינו את שמכם" : "Enter your name"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   data-testid="input-name"
@@ -248,7 +275,7 @@ export default function ParticipantJoinPage() {
                   htmlFor="email"
                   style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 20% 20%)' }}
                 >
-                  Email Address
+                  {isHebrew ? "כתובת אימייל" : "Email Address"}
                 </Label>
                 <Input
                   id="email"
@@ -283,7 +310,13 @@ export default function ParticipantJoinPage() {
                 ) : (
                   <Mail className="w-4 h-4" />
                 )}
-                {isSubmitting ? "Processing..." : (isFree ? "Start Journey" : `Continue to Payment - ${currencySymbol}${price}`)}
+                {isSubmitting 
+                  ? (isHebrew ? "מעבד..." : "Processing...") 
+                  : (isFree 
+                      ? (isHebrew ? "התחילו את המסע" : "Start Journey") 
+                      : (isHebrew ? `המשך לתשלום - ${currencySymbol}${price}` : `Continue to Payment - ${currencySymbol}${price}`)
+                    )
+                }
               </Button>
             </div>
 
@@ -291,7 +324,10 @@ export default function ParticipantJoinPage() {
               className="text-xs text-center"
               style={{ color: 'hsl(25 15% 55%)', fontFamily: "'DM Sans', sans-serif" }}
             >
-              By continuing, you agree to receive emails about your journey progress.
+              {isHebrew 
+                ? "בהמשכך, את/ה מסכימ/ה לקבל אימיילים על התקדמות המסע שלך."
+                : "By continuing, you agree to receive emails about your journey progress."
+              }
             </p>
           </CardContent>
         </Card>
