@@ -6,20 +6,11 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, CreditCard, Sparkles, ExternalLink, AlertTriangle } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
-import { formatDistanceToNow, differenceInDays } from "date-fns";
-import { apiRequest } from "@/lib/queryClient";
-
-type SubscriptionStatus = {
-  plan: string | null;
-  status: string | null;
-  trialEndsAt: string | null;
-  subscriptionEndsAt: string | null;
-  paymentFailedAt: string | null;
-};
+import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
   const { t } = useTranslation('dashboard');
@@ -65,63 +56,6 @@ export default function Dashboard() {
     queryFn: earningsApi.get,
     enabled: isAuthenticated,
   });
-
-  const { data: subscription } = useQuery<SubscriptionStatus>({
-    queryKey: ["/api/subscription/status"],
-    enabled: isAuthenticated,
-  });
-
-  const handleManageSubscription = async () => {
-    try {
-      const response = await apiRequest("GET", "/api/subscription/portal");
-      const data = await response.json();
-      if (data.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (error) {
-      console.error("Failed to get billing portal:", error);
-    }
-  };
-
-  const getSubscriptionDisplay = () => {
-    const isTrialing = subscription?.status === "trialing" || subscription?.status === "on_trial";
-    const isCanceling = subscription?.status === "canceling" || subscription?.status === "canceled";
-    const planName = subscription?.plan 
-      ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) 
-      : "Starter";
-
-    if (isTrialing && subscription?.trialEndsAt) {
-      const daysLeft = differenceInDays(new Date(subscription.trialEndsAt), new Date());
-      return {
-        label: `${planName} Trial`,
-        sublabel: daysLeft <= 1 
-          ? t('trialBanner.lastDay')
-          : t('trialBanner.daysRemaining', { days: Math.max(0, daysLeft) }),
-        variant: "trial" as const,
-        daysLeft: Math.max(0, daysLeft),
-      };
-    }
-
-    if (!subscription?.plan) {
-      return null;
-    }
-
-    if (isCanceling && subscription.subscriptionEndsAt) {
-      return {
-        label: planName,
-        sublabel: `Ends ${new Date(subscription.subscriptionEndsAt).toLocaleDateString()}`,
-        variant: "canceling" as const,
-      };
-    }
-
-    return {
-      label: planName,
-      sublabel: "Active subscription",
-      variant: "active" as const,
-    };
-  };
-
-  const subscriptionDisplay = getSubscriptionDisplay();
 
   const getActivityIcon = (eventType: string) => {
     switch (eventType) {
@@ -209,7 +143,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {!subscription?.plan && !subscriptionDisplay && (
+      {(
         <div className="mb-8 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-2 border-violet-300 rounded-2xl p-5 flex items-center justify-between" data-testid="banner-no-subscription">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
@@ -278,67 +212,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-
-      {subscriptionDisplay && (
-        <div 
-          className={`mb-8 rounded-2xl p-5 flex items-center justify-between ${
-            subscriptionDisplay.variant === "trial" 
-              ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300" 
-              : subscriptionDisplay.variant === "canceling"
-              ? "bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200"
-              : "bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-200"
-          }`}
-          data-testid="banner-subscription-status"
-        >
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              subscriptionDisplay.variant === "trial" 
-                ? "bg-amber-100" 
-                : subscriptionDisplay.variant === "canceling"
-                ? "bg-rose-100"
-                : "bg-emerald-100"
-            }`}>
-              <CreditCard className={`h-6 w-6 ${
-                subscriptionDisplay.variant === "trial" 
-                  ? "text-amber-600" 
-                  : subscriptionDisplay.variant === "canceling"
-                  ? "text-rose-600"
-                  : "text-emerald-600"
-              }`} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-900">{subscriptionDisplay.label}</h3>
-              <p className={`text-sm ${
-                subscriptionDisplay.variant === "trial" 
-                  ? "text-amber-700" 
-                  : subscriptionDisplay.variant === "canceling"
-                  ? "text-rose-700"
-                  : "text-emerald-700"
-              }`}>{subscriptionDisplay.sublabel}</p>
-            </div>
-          </div>
-          {subscriptionDisplay.variant === "trial" ? (
-            <Button 
-              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white"
-              onClick={() => window.open('https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ', '_blank')}
-              data-testid="button-upgrade-grow"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              {t('upgradeNow')}
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              className="rounded-full border-slate-300 hover:border-slate-400"
-              onClick={handleManageSubscription}
-              data-testid="button-manage-subscription"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              {t('manageBilling')}
-            </Button>
-          )}
-        </div>
-      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
