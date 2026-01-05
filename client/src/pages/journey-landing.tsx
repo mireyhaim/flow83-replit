@@ -347,7 +347,7 @@ export default function JourneyLandingPage() {
   };
 
   return (
-    <div className="min-h-screen lp-font-body" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
+    <div className={`min-h-screen lp-font-body ${isHebrew ? 'hebrew-landing' : ''}`} style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, hsl(40 35% 96%) 0%, hsl(30 30% 92%) 50%, hsl(25 25% 88%) 100%)' }}>
         {/* Large decorative circle - top left */}

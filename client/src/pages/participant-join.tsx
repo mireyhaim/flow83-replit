@@ -119,10 +119,10 @@ export default function ParticipantJoinPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif", color: 'hsl(25 20% 20%)' }}>
+          <h1 className="text-2xl font-bold mb-4" style={{ color: 'hsl(25 20% 20%)' }}>
             Flow Not Available
           </h1>
-          <p className="mb-6" style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 15% 45%)' }}>
+          <p className="mb-6" style={{ color: 'hsl(25 15% 45%)' }}>
             This flow is not available for joining.
           </p>
           <Link href="/">
@@ -162,7 +162,7 @@ export default function ParticipantJoinPage() {
   }, [isHebrew]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
+    <div className={`min-h-screen flex flex-col ${isHebrew ? 'hebrew-landing' : ''}`} style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
       {/* Header */}
       <header className="p-4">
         <Link href={`/j/${journeyId}`}>
@@ -204,14 +204,14 @@ export default function ParticipantJoinPage() {
             )}
             
             <CardTitle 
-              className="text-2xl"
-              style={{ fontFamily: "'Playfair Display', serif", color: 'hsl(25 20% 20%)' }}
+              className="text-2xl font-semibold"
+              style={{ color: 'hsl(25 20% 20%)' }}
             >
               {isHebrew ? `הצטרפות ל${journey.name}` : `Join ${journey.name}`}
             </CardTitle>
             <CardDescription 
               className="mt-2"
-              style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 15% 45%)' }}
+              style={{ color: 'hsl(25 15% 45%)' }}
             >
               {isFree ? (
                 isHebrew ? "צרו חשבון כדי להתחיל את המסע" : "Create your account to start this journey"
@@ -226,8 +226,7 @@ export default function ParticipantJoinPage() {
                 className="inline-block px-4 py-1.5 rounded-full text-lg font-semibold"
                 style={{ 
                   backgroundColor: 'hsl(145 30% 92%)', 
-                  color: 'hsl(145 25% 45%)',
-                  fontFamily: "'Playfair Display', serif"
+                  color: 'hsl(145 25% 45%)'
                 }}
               >
                 {isFree ? (isHebrew ? "חינם" : "Free") : `${currencySymbol}${price}`}
@@ -257,7 +256,7 @@ export default function ParticipantJoinPage() {
               <Separator />
               <span 
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm"
-                style={{ color: 'hsl(25 15% 45%)', fontFamily: "'DM Sans', sans-serif" }}
+                style={{ color: 'hsl(25 15% 45%)' }}
               >
                 {isHebrew ? "או" : "or"}
               </span>
@@ -268,7 +267,7 @@ export default function ParticipantJoinPage() {
               <div className="space-y-2">
                 <Label 
                   htmlFor="name"
-                  style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 20% 20%)' }}
+                  style={{ color: 'hsl(25 20% 20%)' }}
                 >
                   {isHebrew ? "השם שלך (אופציונלי)" : "Your Name (optional)"}
                 </Label>
@@ -279,14 +278,13 @@ export default function ParticipantJoinPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   data-testid="input-name"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label 
                   htmlFor="email"
-                  style={{ fontFamily: "'DM Sans', sans-serif", color: 'hsl(25 20% 20%)' }}
+                  style={{ color: 'hsl(25 20% 20%)' }}
                 >
                   {isHebrew ? "כתובת אימייל" : "Email Address"}
                 </Label>
@@ -297,7 +295,6 @@ export default function ParticipantJoinPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   data-testid="input-email"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 />
               </div>
 
@@ -335,7 +332,7 @@ export default function ParticipantJoinPage() {
 
             <p 
               className="text-xs text-center"
-              style={{ color: 'hsl(25 15% 55%)', fontFamily: "'DM Sans', sans-serif" }}
+              style={{ color: 'hsl(25 15% 55%)' }}
             >
               {isHebrew 
                 ? "בהמשכך, את/ה מסכימ/ה לקבל אימיילים על התקדמות המסע שלך."
