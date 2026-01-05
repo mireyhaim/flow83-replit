@@ -256,7 +256,9 @@ export default function ProfilePage() {
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-xs text-slate-500">{t('profilePage.firstName')}</Label>
+                  <Label htmlFor="firstName" className="text-xs text-slate-500">
+                    {t('profilePage.firstName')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
@@ -267,7 +269,9 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-xs text-slate-500">{t('profilePage.lastName')}</Label>
+                  <Label htmlFor="lastName" className="text-xs text-slate-500">
+                    {t('profilePage.lastName')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -301,7 +305,9 @@ export default function ProfilePage() {
             <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-6">{t('profilePage.professionalDetails')}</h2>
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="specialty" className="text-xs text-slate-500">{t('profilePage.specialty')}</Label>
+                <Label htmlFor="specialty" className="text-xs text-slate-500">
+                  {t('profilePage.specialty')} <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="specialty"
                   value={formData.specialty}
@@ -313,7 +319,9 @@ export default function ProfilePage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="methodology" className="text-xs text-slate-500">{t('profilePage.methodology')}</Label>
+                <Label htmlFor="methodology" className="text-xs text-slate-500">
+                  {t('profilePage.methodology')} <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="methodology"
                   value={formData.methodology}
