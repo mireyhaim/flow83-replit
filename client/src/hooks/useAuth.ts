@@ -4,17 +4,19 @@ import type { User } from "@shared/schema";
 // Check if mentor profile has required fields for AI personalization
 function checkProfileComplete(user: User | null | undefined): boolean {
   if (!user) return false;
-  // Required fields for generating personalized AI content
-  return !!(user.specialty && user.methodology && user.uniqueApproach);
+  // Required fields: firstName, lastName, specialty, methodology
+  // uniqueApproach is optional
+  return !!(user.firstName && user.lastName && user.specialty && user.methodology);
 }
 
 // Get list of missing profile fields
 function getMissingProfileFields(user: User | null | undefined): string[] {
-  if (!user) return ['specialty', 'methodology', 'uniqueApproach'];
+  if (!user) return ['firstName', 'lastName', 'specialty', 'methodology'];
   const missing: string[] = [];
+  if (!user.firstName) missing.push('firstName');
+  if (!user.lastName) missing.push('lastName');
   if (!user.specialty) missing.push('specialty');
   if (!user.methodology) missing.push('methodology');
-  if (!user.uniqueApproach) missing.push('uniqueApproach');
   return missing;
 }
 

@@ -308,7 +308,12 @@
     "imageUploaded": "Image uploaded",
     "imageUploadedDesc": "Your profile picture has been updated.",
     "failedToUploadImage": "Failed to upload image. Please try again.",
-    "failedToSaveProfile": "Failed to save profile. Please try again."
+    "failedToSaveProfile": "Failed to save profile. Please try again.",
+    "profileSaved": "Profile saved!",
+    "profileSavedDesc": "Your details have been updated successfully.",
+    "nameRequired": "First name and last name are required.",
+    "specialtyRequired": "Specialty is required.",
+    "methodologyRequired": "Methodology is required."
   },
 
   "feedbackPage": {

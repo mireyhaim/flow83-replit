@@ -308,7 +308,12 @@
     "imageUploaded": "התמונה הועלתה",
     "imageUploadedDesc": "תמונת הפרופיל שלך עודכנה.",
     "failedToUploadImage": "העלאת התמונה נכשלה. נסה שוב.",
-    "failedToSaveProfile": "שמירת הפרופיל נכשלה. נסה שוב."
+    "failedToSaveProfile": "שמירת הפרופיל נכשלה. נסה שוב.",
+    "profileSaved": "הפרופיל נשמר!",
+    "profileSavedDesc": "הפרטים שלך עודכנו בהצלחה.",
+    "nameRequired": "שם פרטי ושם משפחה הם שדות חובה.",
+    "specialtyRequired": "התמחות היא שדה חובה.",
+    "methodologyRequired": "השיטות שלך הוא שדה חובה."
   },
 
   "feedbackPage": {

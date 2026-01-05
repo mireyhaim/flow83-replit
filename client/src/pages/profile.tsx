@@ -106,6 +106,32 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
+    // Validate required fields
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      toast({
+        title: t('error'),
+        description: t('profilePage.nameRequired'),
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!formData.specialty.trim()) {
+      toast({
+        title: t('error'),
+        description: t('profilePage.specialtyRequired'),
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!formData.methodology.trim()) {
+      toast({
+        title: t('error'),
+        description: t('profilePage.methodologyRequired'),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const response = await fetch("/api/profile", {
@@ -117,6 +143,14 @@ export default function ProfilePage() {
       if (!response.ok) {
         throw new Error(t('profilePage.failedToSaveProfile'));
       }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      toast({
+        title: t('profilePage.profileSaved'),
+        description: t('profilePage.profileSavedDesc'),
+      });
     } catch (error) {
       toast({
         title: t('error'),
