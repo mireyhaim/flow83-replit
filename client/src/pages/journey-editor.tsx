@@ -42,6 +42,9 @@ const JourneyEditorPage = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [expandedPlanDetails, setExpandedPlanDetails] = useState(false);
+  const [showOtherPayment, setShowOtherPayment] = useState(false);
+  const [growPaymentUrl, setGrowPaymentUrl] = useState("");
+  const [otherPaymentUrl, setOtherPaymentUrl] = useState("");
 
   // Use user data from useAuth hook for subscription status - more reliable than separate API call
   const subscriptionStatus = user?.subscriptionStatus;
@@ -80,7 +83,17 @@ const JourneyEditorPage = () => {
         
         // Auto-open the publish modal
         setPublishPrice(journeyData.price?.toString() || "0");
-        setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
+        const existingPaymentUrl = journeyData.externalPaymentUrl || "";
+        setExternalPaymentUrl(existingPaymentUrl);
+        const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
+        if (isGrow) {
+          setGrowPaymentUrl(existingPaymentUrl);
+          setOtherPaymentUrl("");
+        } else if (existingPaymentUrl) {
+          setOtherPaymentUrl(existingPaymentUrl);
+          setGrowPaymentUrl("");
+          setShowOtherPayment(true);
+        }
         setPublishStep(1);
         setShowPublishModal(true);
       }
@@ -196,7 +209,22 @@ const JourneyEditorPage = () => {
         return;
       }
       setPublishPrice(journeyData.price?.toString() || "0");
-      setExternalPaymentUrl(journeyData.externalPaymentUrl || "");
+      const existingPaymentUrl = journeyData.externalPaymentUrl || "";
+      setExternalPaymentUrl(existingPaymentUrl);
+      const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
+      if (isGrow) {
+        setGrowPaymentUrl(existingPaymentUrl);
+        setOtherPaymentUrl("");
+        setShowOtherPayment(false);
+      } else if (existingPaymentUrl) {
+        setOtherPaymentUrl(existingPaymentUrl);
+        setGrowPaymentUrl("");
+        setShowOtherPayment(true);
+      } else {
+        setGrowPaymentUrl("");
+        setOtherPaymentUrl("");
+        setShowOtherPayment(false);
+      }
       setPublishStep(1);
       setShowPublishModal(true);
     }
@@ -724,31 +752,101 @@ const JourneyEditorPage = () => {
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-4">
+              <div className="space-y-5 py-4">
                 {(parseFloat(publishPrice) || 0) > 0 ? (
                   <>
-                    <div className="border border-violet-500 bg-violet-500/10 rounded-xl p-5">
-                      <div className="flex items-center gap-3 mb-2">
-                        <ExternalLink className="w-5 h-5 text-violet-400" />
-                        <h4 className="font-medium text-white">{t('publishModal.yourPaymentLink')}</h4>
+                    {/* Primary Option: Grow */}
+                    <div className={`border-2 rounded-xl p-5 relative transition-all ${growPaymentUrl || (!externalPaymentUrl && !showOtherPayment) ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/20 bg-white/5'}`}>
+                      <div className="absolute -top-3 end-4 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                        {t('publishModal.growRecommended')}
                       </div>
-                      <p className="text-sm text-white/60 mb-4">
-                        {t('publishModal.paymentLinkExplanation')}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <h4 className="font-semibold text-white text-lg">{t('publishModal.connectToGrow')}</h4>
+                      </div>
+                      <p className="text-sm text-white/70 mb-4">
+                        {t('publishModal.growDescription')}
                       </p>
-                      <div className="space-y-3">
-                        <Label className="text-white/70 text-sm">{t('publishModal.paymentLinkLabel')}</Label>
-                        <Input
-                          type="url"
-                          value={externalPaymentUrl}
-                          onChange={(e) => setExternalPaymentUrl(e.target.value)}
-                          placeholder={t('publishModal.paymentLinkPlaceholder')}
-                          className="bg-white/5 border-white/20 text-white h-12 rounded-lg"
-                          data-testid="input-external-payment-url"
-                        />
-                        <p className="text-xs text-white/40">
-                          {t('publishModal.paymentRedirectNote')}
-                        </p>
+                      <ul className="text-sm text-white/60 space-y-2 mb-5">
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <span>{t('publishModal.growFeature1')}</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <span>{t('publishModal.growFeature2')}</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <span>{t('publishModal.growFeature3')}</span>
+                        </li>
+                      </ul>
+                      
+                      <div className="space-y-4">
+                        <Button
+                          onClick={() => window.open('https://www.grow.link/signup', '_blank')}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-base font-medium"
+                          data-testid="button-open-grow"
+                        >
+                          <ExternalLink className="w-4 h-4 mx-2" />
+                          {t('publishModal.openGrow')}
+                        </Button>
+                        
+                        <div className="border-t border-white/10 pt-4">
+                          <p className="text-sm text-white/60 mb-3 text-center">{t('publishModal.haveGrowAccount')}</p>
+                          <Label className="text-white/70 text-sm">{t('publishModal.enterGrowLink')}</Label>
+                          <Input
+                            type="url"
+                            value={growPaymentUrl}
+                            onChange={(e) => {
+                              setGrowPaymentUrl(e.target.value);
+                              setOtherPaymentUrl("");
+                              setExternalPaymentUrl(e.target.value);
+                            }}
+                            placeholder={t('publishModal.growLinkPlaceholder')}
+                            className="bg-white/5 border-white/20 text-white h-12 rounded-lg mt-2"
+                            data-testid="input-grow-payment-url"
+                          />
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Secondary Option: Other Payment Methods */}
+                    <div className={`border rounded-xl overflow-hidden transition-all ${otherPaymentUrl ? 'border-violet-500 bg-violet-500/10' : 'border-white/20'}`}>
+                      <button
+                        onClick={() => setShowOtherPayment(!showOtherPayment)}
+                        className="w-full p-4 flex items-center justify-between text-white/70 hover:bg-white/5 transition-colors"
+                        data-testid="button-toggle-other-payment"
+                      >
+                        <span className="font-medium">{t('publishModal.otherPaymentOption')}</span>
+                        {(showOtherPayment || otherPaymentUrl) ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </button>
+                      
+                      {(showOtherPayment || otherPaymentUrl) && (
+                        <div className="p-5 pt-0 space-y-3">
+                          <p className="text-sm text-white/50">
+                            {t('publishModal.otherPaymentDescription')}
+                          </p>
+                          <Label className="text-white/70 text-sm">{t('publishModal.otherPaymentLabel')}</Label>
+                          <Input
+                            type="url"
+                            value={otherPaymentUrl}
+                            onChange={(e) => {
+                              setOtherPaymentUrl(e.target.value);
+                              setGrowPaymentUrl("");
+                              setExternalPaymentUrl(e.target.value);
+                            }}
+                            placeholder={t('publishModal.otherPaymentPlaceholder')}
+                            className="bg-white/5 border-white/20 text-white h-12 rounded-lg"
+                            data-testid="input-other-payment-url"
+                          />
+                          <p className="text-xs text-white/40">
+                            {t('publishModal.paymentRedirectNote')}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {!externalPaymentUrl && (
