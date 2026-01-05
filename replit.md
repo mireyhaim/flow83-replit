@@ -98,6 +98,36 @@ Internal admin dashboard for platform monitoring (accessible at `/admin`):
 - `systemErrors` table stores platform errors for monitoring
 - `role` field on users table (`user` | `super_admin`)
 
+### Conversation Phase System
+
+The chat experience uses a state machine to create authentic 1:1 mentor conversations (not content delivery):
+
+**Phases:**
+- `intro` - Welcome and opening question ("How are you arriving today?")
+- `reflection` - Mirror user's emotions, ask deeper questions
+- `task` - Present ONE specific task for the day
+- `integration` - Acknowledge work done, close the day warmly
+
+**Phase Transitions (Rule-Based):**
+- intro → reflection: User sends message > 10 characters
+- reflection → task: User shows emotional engagement (keywords like "feel", "good", "hard") or message > 30 chars
+- task → integration: User indicates completion (keywords like "done", "finished", "tried") or message > 50 chars
+- integration → Day Complete: Triggers day summary generation, resets to `intro` for next day
+
+**AI Response Constraints:**
+- Max 120 words per response
+- One intention per message (don't ask multiple questions)
+- Conversational Hebrew tone matching mentor's voice
+- No bullet points or structured formats
+
+**Database:**
+- `participants.currentPhase` stores current phase (default: 'intro')
+- Phase resets to 'intro' when day is completed
+
+**Key Files:**
+- `server/ai.ts`: getPhaseSpecificPrompt(), generateChatResponse(), detectPhaseTransition()
+- `server/routes.ts`: Chat endpoint with phase handling at `/api/participants/:participantId/steps/:stepId/messages`
+
 ### Key Architectural Decisions
 
 1. **Shared Schema Pattern**: Database schema and types are defined once in `shared/schema.ts` and used by both frontend and backend, ensuring type safety across the stack.
