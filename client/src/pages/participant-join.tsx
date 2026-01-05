@@ -48,6 +48,25 @@ export default function ParticipantJoinPage() {
     enabled: !!journeyId,
   });
 
+  // Compute Hebrew detection - must be before useEffect
+  const hasHebrewContent = journey ? (isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "")) : false;
+  const isHebrew = journey ? (journey.language === 'he' || hasHebrewContent) : false;
+
+  // Set document direction for Hebrew - must be called unconditionally before any early returns
+  useEffect(() => {
+    if (isHebrew) {
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "he";
+    } else {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+    }
+    return () => {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+    };
+  }, [isHebrew]);
+
   const handleGoogleSignIn = () => {
     const returnTo = encodeURIComponent(`/auth/callback?journeyId=${journeyId}`);
     window.location.href = `/api/login?returnTo=${returnTo}`;
@@ -138,29 +157,10 @@ export default function ParticipantJoinPage() {
 
   const price = journey.price || 0;
   const isFree = price <= 0;
-  
-  // Detect Hebrew from explicit language field or content
-  const hasHebrewContent = isHebrewText(journey.name) || isHebrewText(journey.goal || "") || isHebrewText(journey.description || "");
-  const isHebrew = journey.language === 'he' || hasHebrewContent;
   const currencySymbol = isHebrew ? "₪" : "$";
   const mentorName = journey.mentor 
     ? `${journey.mentor.firstName || ""} ${journey.mentor.lastName || ""}`.trim() 
     : (isHebrew ? "המנחה שלך" : "Your Guide");
-    
-  // Set document direction for Hebrew
-  useEffect(() => {
-    if (isHebrew) {
-      document.documentElement.dir = "rtl";
-      document.documentElement.lang = "he";
-    } else {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    }
-    return () => {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    };
-  }, [isHebrew]);
 
   return (
     <div className={`min-h-screen flex flex-col ${isHebrew ? 'hebrew-landing' : ''}`} style={{ backgroundColor: 'hsl(40 30% 97%)' }}>
