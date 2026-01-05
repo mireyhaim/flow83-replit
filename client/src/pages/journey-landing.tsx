@@ -111,10 +111,11 @@ export default function JourneyLandingPage() {
     onSuccess: (data) => {
       if (data.requiresPayment) {
         if (data.paymentType === "external" && data.externalPaymentUrl) {
+          // Store token for later verification
           localStorage.setItem("external_payment_token", data.token);
           localStorage.setItem("external_payment_return_url", data.returnUrl);
-          window.open(data.externalPaymentUrl, "_blank");
-          window.location.href = data.returnUrl;
+          // Navigate to a waiting page instead of immediately going to success page
+          navigate(`/payment/external-pending?token=${data.token}&paymentUrl=${encodeURIComponent(data.externalPaymentUrl)}`);
         } else if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         }
