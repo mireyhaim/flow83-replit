@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
@@ -868,6 +868,7 @@ export async function registerRoutes(
       
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
+        currentPhase: 'intro', // Reset phase for new day
         lastActiveAt: new Date(),
         ...(isJourneyComplete ? { completedAt: new Date() } : {}),
       });
@@ -988,6 +989,7 @@ export async function registerRoutes(
       
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
+        currentPhase: 'intro', // Reset phase for new day
         lastActiveAt: new Date(),
         ...(isJourneyComplete ? { completedAt: new Date() } : {}),
       });
@@ -1533,15 +1535,20 @@ export async function registerRoutes(
         return { type: b.type, content: contentText };
       });
 
-      // PRD-compliant chat context
+      // Get current phase from participant (default to intro)
+      const currentPhase = (participant.currentPhase as ConversationPhase) || 'intro';
+      const dayGoal = step.goal || step.description || "Focus on today's growth";
+      const dayTask = step.task || "Complete today's exercise";
+
+      // Phase-aware chat context
       let botResponse = await generateChatResponse(
         {
           journeyName: journey.name,
           dayNumber: step.dayNumber,
           totalDays,
           dayTitle: step.title,
-          dayGoal: step.goal || step.description || "Focus on today's growth",
-          dayTask: step.task || "Complete today's exercise",
+          dayGoal,
+          dayTask,
           dayExplanation: step.explanation || undefined,
           dayClosingMessage: step.closingMessage || undefined,
           contentBlocks,
@@ -1559,6 +1566,7 @@ export async function registerRoutes(
             resistance: previousDaySummary.summaryResistance || undefined,
           } : undefined,
           language: journey.language || undefined,
+          currentPhase, // Include current phase
         },
         content.trim()
       );
@@ -1567,7 +1575,7 @@ export async function registerRoutes(
       let dayCompleted = false;
       
       // Primary detection: explicit marker
-      if (botResponse.startsWith("[DAY_COMPLETE]")) {
+      if (botResponse.includes("[DAY_COMPLETE]")) {
         dayCompleted = true;
         // Remove the marker from the visible message
         botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
@@ -1585,13 +1593,41 @@ export async function registerRoutes(
         ];
         const hasFarewell = farewellPatterns.some(pattern => pattern.test(botResponse));
         
-        // Also check if we've had enough exchanges (at least 6 messages total)
-        if (hasFarewell && history.length >= 5) {
+        // Also check if we're in integration phase
+        if (hasFarewell || currentPhase === 'integration') {
           dayCompleted = true;
-          console.log("Day completion detected via farewell pattern");
+          console.log("Day completion detected via farewell pattern or integration phase");
         }
       }
-      // Note: Don't call completeDayState here - let the user click "Continue" to advance
+
+      // Detect phase transition based on user response
+      let newPhase = currentPhase;
+      if (!dayCompleted) {
+        const transitionResult = await detectPhaseTransition(
+          currentPhase,
+          content.trim(),
+          botResponse,
+          dayGoal,
+          dayTask
+        );
+        
+        if (transitionResult.shouldTransition && transitionResult.nextPhase) {
+          newPhase = transitionResult.nextPhase;
+          console.log(`Phase transition: ${currentPhase} -> ${newPhase} (${transitionResult.reason})`);
+          
+          // Update participant's current phase
+          await storage.updateParticipant(participantId, { currentPhase: newPhase });
+        } else if (transitionResult.shouldTransition && !transitionResult.nextPhase) {
+          // Day is complete
+          dayCompleted = true;
+          console.log(`Day completion via phase transition: ${transitionResult.reason}`);
+        }
+      }
+
+      // Reset phase to intro if day completed (for next day)
+      if (dayCompleted) {
+        await storage.updateParticipant(participantId, { currentPhase: 'intro' });
+      }
 
       const botMessage = await storage.createMessage({
         participantId,
@@ -1601,7 +1637,7 @@ export async function registerRoutes(
         isSummary: dayCompleted,
       });
 
-      res.json({ userMessage, botMessage, dayCompleted });
+      res.json({ userMessage, botMessage, dayCompleted, currentPhase: dayCompleted ? 'intro' : newPhase });
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ error: "Failed to send message" });
