@@ -786,7 +786,7 @@ const JourneyEditorPage = () => {
                       
                       <div className="space-y-4">
                         <Button
-                          onClick={() => window.open('https://www.grow.link/signup', '_blank')}
+                          onClick={() => window.open('https://grow.website/', '_blank')}
                           className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-base font-medium"
                           data-testid="button-open-grow"
                         >
