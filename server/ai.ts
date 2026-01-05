@@ -1087,83 +1087,97 @@ interface ChatContext {
   };
   // Explicit language setting ('he' for Hebrew, 'en' for English)
   language?: string;
+  // Current conversation phase (intro | reflection | task | integration)
+  currentPhase?: 'intro' | 'reflection' | 'task' | 'integration';
 }
 
-// Flow83 Journey Guide - Master System Prompt (constant for all API calls)
-const SYSTEM_PROMPT_BASE = `You are the Flow83 Journey Guide.
+// Conversation Phase Types
+export type ConversationPhase = 'intro' | 'reflection' | 'task' | 'integration';
 
-Your role is to guide users through a structured, time-bound personal journey.
-You are not a general-purpose chat assistant.
+// Phase transition result
+export interface PhaseTransitionResult {
+  shouldTransition: boolean;
+  nextPhase: ConversationPhase | null;
+  reason: string;
+}
 
-=== CORE PRINCIPLES ===
-- You follow a predefined journey with a clear beginning, middle, and end.
-- Each day has a specific objective, explanation, and task.
-- You respond only within the scope of the current day.
-- You do not jump ahead, expand the process, or introduce new topics.
+// Flow83 Conversation State Machine - Human Mentor System Prompt (constant base)
+const MENTOR_SYSTEM_PROMPT_BASE = `You are a human mentor guiding one person through a personal growth process.
+
+You are NOT a chatbot.
+You do NOT rush.
+You speak naturally, like a real person in a 1:1 session.
+
+=== CORE BEHAVIOR ===
+- Respond emotionally FIRST, before giving any instructions
+- Sound supportive, grounded, and human
+- Keep responses SHORT and conversational (max 120 words)
+- ONE response = ONE intention
+- Ask at MOST one question per message
+- ALWAYS respond to what the user just said before moving forward
+- Never explain + task + summarize in one message
 
 === BOUNDARIES ===
-- You do not diagnose, treat, or provide medical, psychological, or financial advice.
-- You do not interpret the user in clinical or therapeutic terms.
-- You do not promise outcomes or guarantees.
-- You do not create dependency.
-- You do not replace human professionals.
+- You do not diagnose, treat, or provide medical/psychological advice
+- You do not promise outcomes or guarantees
+- You stay within the scope of today's journey day
+- You do not jump ahead to future days
 
-=== INTERACTION RULES ===
-- You respond only to what the user shared today.
-- You reflect the user's words gently and clearly.
-- You avoid over-analysis or long explanations.
-- You do not ask open-ended exploratory questions unless defined in today's task.
-- If the user resists, feels stuck, or says "I don't know", you normalize and soften the task.
-- If the user shares something that seems unrelated, acknowledge it and connect it back to the journey.
-- Never exceed 200 words per response.
-
-=== TONE AND PRESENCE ===
-- Calm
-- Warm
-- Grounded
-- Respectful
+=== TONE ===
+- Calm, warm, grounded
 - Emotionally attuned
 - Clear and simple language
-
-=== YOUR GOAL ===
-Help the user complete today's step,
-feel safe and supported,
-and move forward in the journey — one day at a time.
-
-You are a guide, not a solver.
+- Use the participant's name naturally
 
 === LANGUAGE RULE ===
-You MUST respond in the SAME LANGUAGE as the journey name and content. If the journey is in English, respond in English. If in Hebrew, respond in Hebrew. NEVER switch languages.
+Respond in the SAME LANGUAGE as the journey content. If Hebrew, respond in Hebrew. If English, respond in English.`;
 
-=== BE THE MENTOR ===
-- Speak with the mentor's personality, warmth, and voice
-- React emotionally to what they share
-- Use the participant's name naturally when it feels right
-- Use their words back to them
-- React to their EMOTIONS before their content
+// Phase-specific prompts
+const PHASE_PROMPTS = {
+  intro: `=== CURRENT PHASE: INTRO ===
 
-=== DAY STRUCTURE ===
-Each day has:
-1. OBJECTIVE - Today's main focus
-2. EXPLANATION - The teaching content
-3. TASK - The practical exercise
-4. CLOSING MESSAGE - The mentor's closing words (use when completing the day)
+Your role in this phase:
+- Gently introduce the intention of the day
+- Create emotional safety and connection
+- Ask ONE soft opening question to understand where they're at
 
-=== COMPLETING THE DAY ===
-When the user has engaged with today's task and content:
-- Reflect what came up today
-- Acknowledge their effort
-- Give a simple intention to carry forward
-- Say warm goodbye
-- Start message with "[DAY_COMPLETE]" marker (hidden from user)
+CRITICAL: Do NOT give tasks yet. Do NOT explain the full day content.
+Just warmly welcome them and ask how they're arriving today.`,
 
-=== NEVER DO ===
-- Multiple questions in one message
-- Bullet points or numbered lists
-- Formal/clinical language
-- Jump to future days
-- Ignore emotions to push content
-- Keep chatting endlessly without completing the day`;
+  reflection: `=== CURRENT PHASE: REFLECTION ===
+
+Your role in this phase:
+- Reflect back what the user shared
+- Name one emotion or pattern you notice in their words
+- Ask ONE deep but gentle question to go deeper
+
+CRITICAL: Do NOT give tasks yet. Stay with their experience.
+Help them feel heard and understood before moving forward.`,
+
+  task: `=== CURRENT PHASE: TASK ===
+
+Your role in this phase:
+- Give ONE small, clear task from today's content
+- Explain briefly why this task fits what they shared
+- Keep it simple and grounded
+
+The user is ready for the task. Give it clearly and supportively.
+When they complete it or engage meaningfully, acknowledge their effort.`,
+
+  integration: `=== CURRENT PHASE: INTEGRATION ===
+
+Your role in this phase:
+- Acknowledge the user's effort today
+- Summarize ONE key insight from the conversation
+- Prepare them emotionally for rest or the next day
+- Give a warm closing
+
+This is the end of today's session. Be conclusive but warm.
+Start your message with the hidden marker [DAY_COMPLETE] (user won't see this).`
+};
+
+// Legacy system prompt for backwards compatibility
+const SYSTEM_PROMPT_BASE = MENTOR_SYSTEM_PROMPT_BASE;
 
 export async function generateChatResponse(
   context: ChatContext,
@@ -1173,59 +1187,64 @@ export async function generateChatResponse(
   const useHebrew = context.language === 'he' || (!context.language && isHebrewText(`${context.journeyName} ${context.dayGoal}`));
   const languageName = useHebrew ? "Hebrew" : "English";
   
-  // Context Prompt (dynamic from DB) - Flow83 way
+  // Get current phase (default to intro if not set)
+  const currentPhase = context.currentPhase || 'intro';
+  const phasePrompt = PHASE_PROMPTS[currentPhase];
+  
+  // Minimal context - only what's needed for this phase
   let contextPrompt = `
 === CONTEXT ===
 Mentor: ${context.mentorName}
 ${context.participantName ? `Participant: ${context.participantName}` : ""}
 ${context.mentorToneOfVoice ? `Mentor voice/style: ${context.mentorToneOfVoice}` : ""}
-${context.mentorMethodDescription ? `Mentor method: ${context.mentorMethodDescription}` : ""}
-${context.mentorBehavioralRules ? `Mentor rules: ${context.mentorBehavioralRules}` : ""}
 
-Journey name: ${context.journeyName}
-Current day: ${context.dayNumber} of ${context.totalDays}
-Day objective: ${context.dayGoal}
-Day explanation: ${context.dayExplanation || ""}
-Today's task: ${context.dayTask}
-${context.dayClosingMessage ? `Closing message: ${context.dayClosingMessage}` : ""}
+Journey: ${context.journeyName}
+Day ${context.dayNumber} of ${context.totalDays}
+Day objective: ${context.dayGoal}`;
 
-LANGUAGE REQUIREMENT: You MUST respond in ${languageName}. This is a ${languageName}-language journey.`;
+  // Only include task details in task phase
+  if (currentPhase === 'task' || currentPhase === 'integration') {
+    contextPrompt += `
+Today's task: ${context.dayTask}`;
+    if (context.dayExplanation) {
+      contextPrompt += `
+Day explanation: ${context.dayExplanation}`;
+    }
+  }
+  
+  // Include closing message only in integration phase
+  if (currentPhase === 'integration' && context.dayClosingMessage) {
+    contextPrompt += `
+Closing message to use: ${context.dayClosingMessage}`;
+  }
 
-  // Add user summary if exists (long-term memory)
+  contextPrompt += `
+
+LANGUAGE: Respond in ${languageName}.`;
+
+  // Add user summary if exists (long-term memory) - brief version
   if (context.userSummary && Object.values(context.userSummary).some(v => v)) {
     contextPrompt += `
 
-User context from previous sessions:`;
+What you know about this person:`;
     if (context.userSummary.challenge) {
-      contextPrompt += `\n- Main challenge: ${context.userSummary.challenge}`;
+      contextPrompt += ` Challenge: ${context.userSummary.challenge}.`;
     }
     if (context.userSummary.emotionalTone) {
-      contextPrompt += `\n- Emotional state: ${context.userSummary.emotionalTone}`;
-    }
-    if (context.userSummary.insight) {
-      contextPrompt += `\n- Insight reached: ${context.userSummary.insight}`;
-    }
-    if (context.userSummary.resistance) {
-      contextPrompt += `\n- Resistance noted: ${context.userSummary.resistance}`;
+      contextPrompt += ` Mood: ${context.userSummary.emotionalTone}.`;
     }
   }
 
-  // Instruction Prompt - Flow83 way
-  const instructionPrompt = `
-=== INSTRUCTION ===
-Respond according to today's task only.
-Do not introduce new topics.
-End by confirming completion of today's step when appropriate.`;
+  // Build the full system prompt: base + phase + context
+  const systemPrompt = MENTOR_SYSTEM_PROMPT_BASE + "\n\n" + phasePrompt + "\n\n" + contextPrompt;
 
-  const systemPrompt = SYSTEM_PROMPT_BASE + "\n\n" + contextPrompt + "\n" + instructionPrompt;
-
-  // PRD 7.1 - Short-term memory: only last 5 messages
+  // Only last 3 messages for phase-based conversation (keep it focused)
   const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
     { role: "system", content: systemPrompt },
   ];
 
-  // Add only recent messages (max 5 per PRD)
-  const recentMessages = context.recentMessages.slice(-5);
+  // Add only last 3 messages to keep context focused
+  const recentMessages = context.recentMessages.slice(-3);
   for (const msg of recentMessages) {
     messages.push({
       role: msg.role === "assistant" ? "assistant" : "user",
@@ -1235,42 +1254,140 @@ End by confirming completion of today's step when appropriate.`;
 
   messages.push({ role: "user", content: userMessage });
 
-  // PRD 10 - API configuration
-  console.log("Generating chat response with context:", JSON.stringify({
+  console.log("Generating chat response:", JSON.stringify({
     mentorName: context.mentorName,
     journeyName: context.journeyName,
     dayNumber: context.dayNumber,
-    messageCount: messages.length,
-    userMessage
+    currentPhase,
+    messageCount: messages.length
   }));
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages,
-    max_tokens: 300, // ~200 words max per behavior rules
+    max_tokens: 200, // ~120 words max for conversational responses
   });
 
   const aiContent = response.choices[0].message.content;
   console.log("AI response received:", aiContent ? `${aiContent.substring(0, 100)}...` : "EMPTY");
 
-  // If AI returns empty, provide a contextual fallback in the journey's language
+  // Phase-appropriate fallbacks
   if (!aiContent) {
-    console.warn("AI returned empty content, using fallback");
-    const contentToCheck = `${context.journeyName} ${context.dayGoal || ""}`;
-    const isHebrew = isHebrewText(contentToCheck);
+    console.warn("AI returned empty content, using phase fallback");
+    const isHebrew = isHebrewText(`${context.journeyName} ${context.dayGoal || ""}`);
     
-    if (isHebrew) {
-      return context.dayGoal 
-        ? `בואי נתחיל את היום. היום אנחנו מתמקדים ב: ${context.dayGoal}. איך את מרגישה לגבי זה?`
-        : "אני כאן איתך. איך את מרגישה היום?";
-    } else {
-      return context.dayGoal 
-        ? `Let's start the day. Today we're focusing on: ${context.dayGoal}. How do you feel about that?`
-        : "I'm here with you. How are you feeling today?";
-    }
+    const fallbacks: Record<ConversationPhase, { he: string; en: string }> = {
+      intro: {
+        he: `שלום ${context.participantName || ""}! ברוכים הבאים ליום ${context.dayNumber}. איך את מגיעה היום?`,
+        en: `Hi ${context.participantName || ""}! Welcome to day ${context.dayNumber}. How are you arriving today?`
+      },
+      reflection: {
+        he: "תודה ששיתפת. מה עוד עולה לך כשאת חושבת על זה?",
+        en: "Thank you for sharing. What else comes up for you when you think about this?"
+      },
+      task: {
+        he: `המשימה להיום: ${context.dayTask}. איך זה מרגיש?`,
+        en: `Today's task: ${context.dayTask}. How does that feel?`
+      },
+      integration: {
+        he: "עשית עבודה נפלאה היום. קחי את התובנות איתך ונתראה מחר.",
+        en: "You did wonderful work today. Take these insights with you and see you tomorrow."
+      }
+    };
+    
+    return isHebrew ? fallbacks[currentPhase].he : fallbacks[currentPhase].en;
   }
   
   return aiContent;
+}
+
+// Detect if user response indicates readiness to transition to next phase
+export async function detectPhaseTransition(
+  currentPhase: ConversationPhase,
+  userMessage: string,
+  assistantResponse: string,
+  dayGoal: string,
+  dayTask: string
+): Promise<PhaseTransitionResult> {
+  // Simple rule-based detection (can be enhanced with AI later)
+  const lowerMessage = userMessage.toLowerCase();
+  const isHebrew = isHebrewText(userMessage);
+  
+  // Check for day completion marker in assistant response
+  if (assistantResponse.includes('[DAY_COMPLETE]')) {
+    return {
+      shouldTransition: true,
+      nextPhase: null, // Day is complete, move to next day
+      reason: 'Day marked complete by assistant'
+    };
+  }
+  
+  // Phase transition rules
+  switch (currentPhase) {
+    case 'intro':
+      // User responded to opening question - move to reflection
+      if (userMessage.length > 10) {
+        return {
+          shouldTransition: true,
+          nextPhase: 'reflection',
+          reason: 'User shared initial response'
+        };
+      }
+      break;
+      
+    case 'reflection':
+      // User engaged with reflection - move to task after 1-2 exchanges
+      // Check for emotional sharing or acknowledgment
+      const emotionalIndicators = isHebrew 
+        ? ['מרגיש', 'קשה', 'טוב', 'רע', 'שמח', 'עצוב', 'מבין', 'כן', 'נכון', 'בדיוק']
+        : ['feel', 'hard', 'good', 'bad', 'happy', 'sad', 'understand', 'yes', 'right', 'exactly'];
+      
+      const hasEmotionalContent = emotionalIndicators.some(indicator => 
+        lowerMessage.includes(indicator) || userMessage.includes(indicator)
+      );
+      
+      if (hasEmotionalContent || userMessage.length > 30) {
+        return {
+          shouldTransition: true,
+          nextPhase: 'task',
+          reason: 'User engaged emotionally in reflection'
+        };
+      }
+      break;
+      
+    case 'task':
+      // User completed or engaged with task - move to integration
+      const completionIndicators = isHebrew
+        ? ['עשיתי', 'סיימתי', 'הבנתי', 'ניסיתי', 'עשה', 'עובד', 'מצליח']
+        : ['done', 'did', 'finished', 'tried', 'completed', 'understand', 'got it'];
+      
+      const hasCompletionSignal = completionIndicators.some(indicator =>
+        lowerMessage.includes(indicator) || userMessage.includes(indicator)
+      );
+      
+      if (hasCompletionSignal || userMessage.length > 50) {
+        return {
+          shouldTransition: true,
+          nextPhase: 'integration',
+          reason: 'User engaged with or completed task'
+        };
+      }
+      break;
+      
+    case 'integration':
+      // After integration, day is complete
+      return {
+        shouldTransition: true,
+        nextPhase: null, // Day complete
+        reason: 'Integration phase complete'
+      };
+  }
+  
+  return {
+    shouldTransition: false,
+    nextPhase: null,
+    reason: 'Not ready to transition'
+  };
 }
 
 async function generateSimpleDaysBatch(
