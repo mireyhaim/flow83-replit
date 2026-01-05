@@ -1540,7 +1540,36 @@ export async function registerRoutes(
       const dayGoal = step.goal || step.description || "Focus on today's growth";
       const dayTask = step.task || "Complete today's exercise";
 
-      // Phase-aware chat context
+      // IMPORTANT: Detect phase transition BEFORE generating response
+      // This ensures the AI responds in the NEW phase, not the old one
+      let phaseForResponse = currentPhase;
+      let dayCompleted = false;
+      
+      console.log(`[Phase] Current phase: ${currentPhase}, message length: ${content.trim().length}`);
+      
+      // Pre-transition detection (without bot response - based on user message only)
+      const transitionResult = await detectPhaseTransition(
+        currentPhase,
+        content.trim(),
+        "", // Empty bot response - we're detecting based on user input only
+        dayGoal,
+        dayTask
+      );
+      console.log(`[Phase] Pre-response transition check:`, transitionResult);
+      
+      if (transitionResult.shouldTransition && transitionResult.nextPhase) {
+        phaseForResponse = transitionResult.nextPhase;
+        console.log(`[Phase] Transitioning BEFORE response: ${currentPhase} -> ${phaseForResponse} (${transitionResult.reason})`);
+        
+        // Update participant's current phase before generating response
+        await storage.updateParticipant(participantId, { currentPhase: phaseForResponse });
+      } else if (transitionResult.shouldTransition && !transitionResult.nextPhase) {
+        // Day is complete (integration phase finished)
+        dayCompleted = true;
+        console.log(`Day completion via phase transition: ${transitionResult.reason}`);
+      }
+
+      // Generate response using the NEW phase (after transition)
       let botResponse = await generateChatResponse(
         {
           journeyName: journey.name,
@@ -1566,20 +1595,17 @@ export async function registerRoutes(
             resistance: previousDaySummary.summaryResistance || undefined,
           } : undefined,
           language: journey.language || undefined,
-          currentPhase, // Include current phase
+          currentPhase: phaseForResponse, // Use the NEW phase after transition
         },
         content.trim()
       );
 
-      // Check if AI marked the day as complete - just signal to frontend, don't auto-advance
-      let dayCompleted = false;
-      
-      // Primary detection: explicit marker
+      // Check if AI marked the day as complete
       if (botResponse.includes("[DAY_COMPLETE]")) {
         dayCompleted = true;
         // Remove the marker from the visible message
         botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
-      } else {
+      } else if (!dayCompleted) {
         // Secondary detection: farewell patterns (AI sometimes forgets the marker)
         const farewellPatterns = [
           /see you tomorrow/i,
@@ -1594,35 +1620,9 @@ export async function registerRoutes(
         const hasFarewell = farewellPatterns.some(pattern => pattern.test(botResponse));
         
         // Also check if we're in integration phase
-        if (hasFarewell || currentPhase === 'integration') {
+        if (hasFarewell || phaseForResponse === 'integration') {
           dayCompleted = true;
           console.log("Day completion detected via farewell pattern or integration phase");
-        }
-      }
-
-      // Detect phase transition based on user response
-      let newPhase = currentPhase;
-      console.log(`[Phase] Current phase: ${currentPhase}, message length: ${content.trim().length}`);
-      if (!dayCompleted) {
-        const transitionResult = await detectPhaseTransition(
-          currentPhase,
-          content.trim(),
-          botResponse,
-          dayGoal,
-          dayTask
-        );
-        console.log(`[Phase] Transition result:`, transitionResult);
-        
-        if (transitionResult.shouldTransition && transitionResult.nextPhase) {
-          newPhase = transitionResult.nextPhase;
-          console.log(`[Phase] Transitioning: ${currentPhase} -> ${newPhase} (${transitionResult.reason})`);
-          
-          // Update participant's current phase
-          await storage.updateParticipant(participantId, { currentPhase: newPhase });
-        } else if (transitionResult.shouldTransition && !transitionResult.nextPhase) {
-          // Day is complete
-          dayCompleted = true;
-          console.log(`Day completion via phase transition: ${transitionResult.reason}`);
         }
       }
 
@@ -1639,7 +1639,7 @@ export async function registerRoutes(
         isSummary: dayCompleted,
       });
 
-      res.json({ userMessage, botMessage, dayCompleted, currentPhase: dayCompleted ? 'intro' : newPhase });
+      res.json({ userMessage, botMessage, dayCompleted, currentPhase: dayCompleted ? 'intro' : phaseForResponse });
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ error: "Failed to send message" });
