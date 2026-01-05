@@ -84,6 +84,7 @@ export default function ParticipantJoinPage() {
           // Check if this is a Grow link (supports iframe)
           const paymentUrl = data.externalPaymentUrl.toLowerCase();
           const isGrowLink = paymentUrl.includes('pay.grow.link') || 
+                             paymentUrl.includes('grow.website') ||
                              paymentUrl.includes('meshulam.co.il') || 
                              paymentUrl.includes('grow.business');
           

@@ -28,7 +28,7 @@ export default function GrowPaymentIframePage() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Optional: validate event.origin for known Grow domains
-      const validOrigins = ['pay.grow.link', 'meshulam.co.il', 'grow.business'];
+      const validOrigins = ['pay.grow.link', 'grow.website', 'meshulam.co.il', 'grow.business'];
       const isValidOrigin = validOrigins.some(domain => 
         event.origin.includes(domain)
       );

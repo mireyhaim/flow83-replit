@@ -85,7 +85,7 @@ const JourneyEditorPage = () => {
         setPublishPrice(journeyData.price?.toString() || "0");
         const existingPaymentUrl = journeyData.externalPaymentUrl || "";
         setExternalPaymentUrl(existingPaymentUrl);
-        const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
+        const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('grow.website') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
         if (isGrow) {
           setGrowPaymentUrl(existingPaymentUrl);
           setOtherPaymentUrl("");
@@ -211,7 +211,7 @@ const JourneyEditorPage = () => {
       setPublishPrice(journeyData.price?.toString() || "0");
       const existingPaymentUrl = journeyData.externalPaymentUrl || "";
       setExternalPaymentUrl(existingPaymentUrl);
-      const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
+      const isGrow = existingPaymentUrl.includes('grow.link') || existingPaymentUrl.includes('grow.website') || existingPaymentUrl.includes('meshulam') || existingPaymentUrl.includes('grow.business');
       if (isGrow) {
         setGrowPaymentUrl(existingPaymentUrl);
         setOtherPaymentUrl("");
