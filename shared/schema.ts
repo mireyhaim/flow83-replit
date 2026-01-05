@@ -70,6 +70,7 @@ export const journeys = pgTable("journeys", {
   landingPageContent: jsonb("landing_page_content"),
   // External payment settings (mentor's own payment link)
   externalPaymentUrl: text("external_payment_url"), // PayPal/Stripe Payment Link
+  paymentProvider: text("payment_provider"), // 'grow' | 'paypal' | 'stripe' | 'other' - for future integrations
   // Language preference for the journey (he = Hebrew, en = English)
   language: text("language").default("en"),
   // Flow building questions - mentor's input about their process
