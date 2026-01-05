@@ -129,6 +129,7 @@ export const participants = pgTable("participants", {
   name: varchar("name"),
   stripeSessionId: varchar("stripe_session_id"),
   currentDay: integer("current_day").default(1),
+  currentPhase: text("current_phase").default("intro"), // intro | reflection | task | integration
   completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
   startedAt: timestamp("started_at").defaultNow(),
   lastActiveAt: timestamp("last_active_at").defaultNow(),
@@ -283,6 +284,7 @@ export const externalPaymentSessions = pgTable("external_payment_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
   completedAt: timestamp("completed_at"),
 });
+
 
 export const insertExternalPaymentSessionSchema = createInsertSchema(externalPaymentSessions).omit({
   id: true,
