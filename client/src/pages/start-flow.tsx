@@ -1,82 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { journeyApi } from "@/lib/api";
 import { Loader2, Sparkles, ArrowRight, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_07_05_52_PM_1766771570678.png";
 
 export default function StartFlowPage() {
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) return;
 
-    const createDraftFlow = async () => {
-      if (isCreating) return;
-      setIsCreating(true);
-
-      try {
-        const journey = await journeyApi.create({
-          name: "My New Flow",
-          goal: "",
-          audience: "",
-          duration: 7,
-          status: "draft",
-          description: "",
-        });
-
-        setLocation(`/journeys/new?draft=${journey.id}`);
-      } catch (err: any) {
-        console.error("Failed to create draft:", err);
-        setError(err.message || "Failed to create flow");
-        setTimeout(() => {
-          setLocation("/journeys");
-        }, 2000);
-      }
-    };
-
-    createDraftFlow();
-  }, [authLoading, isAuthenticated, isCreating, setLocation]);
+    // After successful authentication, redirect to dashboard
+    setLocation("/dashboard");
+  }, [authLoading, isAuthenticated, setLocation]);
 
   const handleLogin = () => {
-    window.location.href = "/api/login?returnTo=/start-flow";
+    window.location.href = "/api/login?returnTo=/dashboard";
   };
 
-  if (authLoading || isCreating) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 flex items-center justify-center">
         <div className="text-center space-y-6">
           <div className="w-20 h-20 mx-auto bg-violet-100 rounded-full flex items-center justify-center">
             <Sparkles className="w-10 h-10 text-violet-600 animate-pulse" />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {t('creatingWorkspace')}
-            </h1>
-            <p className="text-gray-600">
-              {t('settingUp')}
-            </p>
-          </div>
           <Loader2 className="w-8 h-8 mx-auto text-violet-600 animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-xl font-bold text-gray-900">{t('somethingWentWrong')}</h1>
-          <p className="text-gray-600">{error}</p>
-          <p className="text-sm text-gray-500">{t('redirecting')}</p>
         </div>
       </div>
     );
