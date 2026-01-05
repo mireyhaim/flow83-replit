@@ -237,7 +237,7 @@ export default function ParticipantJoinPage() {
                   htmlFor="name"
                   style={{ color: 'hsl(25 20% 20%)' }}
                 >
-                  {isHebrew ? "השם שלך (אופציונלי)" : "Your Name (optional)"}
+                  {isHebrew ? "השם שלך" : "Your Name"}
                 </Label>
                 <Input
                   id="name"
@@ -265,6 +265,15 @@ export default function ParticipantJoinPage() {
                   data-testid="input-email"
                 />
               </div>
+
+              <p 
+                className="text-sm text-center"
+                style={{ color: 'hsl(25 15% 50%)' }}
+              >
+                {isHebrew 
+                  ? "פרטים אלו ישמשו אותך לכניסה לפלואו בעתיד" 
+                  : "These details will be used to access your flow in the future"}
+              </p>
 
               {error && (
                 <p className="text-red-500 text-sm text-center" data-testid="text-error">
