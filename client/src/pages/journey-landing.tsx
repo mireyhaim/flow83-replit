@@ -506,31 +506,65 @@ export default function JourneyLandingPage() {
               </h2>
             </div>
             
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 lp-shadow-card">
-              <div className="space-y-8">
-                {content.painPoints.points.map((point, index) => (
-                  <p key={index} className="lp-font-body text-lg md:text-xl lp-text-earth leading-relaxed">
-                    <span className={`font-medium ${index % 2 === 0 ? 'lp-text-sage' : 'lp-text-terracotta'}`}>
-                      {point.label}.
-                    </span>{" "}
-                    {point.description}
-                  </p>
-                ))}
-              </div>
-              
-              {content.painPoints.closingMessage && (
-                <div className="mt-12 pt-8 border-t" style={{ borderColor: 'hsl(35 20% 88%)' }}>
-                  <p className="lp-font-heading text-xl md:text-2xl lp-text-earth text-center italic">
-                    {content.painPoints.closingMessage.includes("awakening") ? (
-                      <>
-                        If any of this resonates, you're in the right place.<br className="hidden md:block" />
-                        <span className="lp-text-sage">You're not broken. You're awakening.</span>
-                      </>
-                    ) : content.painPoints.closingMessage}
-                  </p>
-                </div>
-              )}
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              {content.painPoints.points.map((point, index) => {
+                const colors = [
+                  { bg: 'hsl(25 85% 97%)', border: 'hsl(25 85% 55% / 0.3)', text: 'hsl(25 85% 45%)' },
+                  { bg: 'hsl(145 30% 96%)', border: 'hsl(145 25% 45% / 0.3)', text: 'hsl(145 25% 40%)' },
+                  { bg: 'hsl(280 40% 97%)', border: 'hsl(280 40% 60% / 0.3)', text: 'hsl(280 40% 45%)' },
+                  { bg: 'hsl(200 60% 97%)', border: 'hsl(200 60% 50% / 0.3)', text: 'hsl(200 60% 40%)' },
+                ];
+                const color = colors[index % colors.length];
+                return (
+                  <div 
+                    key={index} 
+                    className="p-6 md:p-8 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                    style={{ 
+                      backgroundColor: color.bg,
+                      border: `2px solid ${color.border}`
+                    }}
+                  >
+                    <h3 
+                      className="text-xl md:text-2xl font-bold mb-3"
+                      style={{ color: color.text }}
+                    >
+                      {point.label}
+                    </h3>
+                    <p className="lp-font-body lp-text-earth leading-relaxed text-base md:text-lg">
+                      {point.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
+              
+            {content.painPoints.closingMessage && (
+              <div 
+                className="max-w-3xl mx-auto p-8 md:p-10 rounded-2xl text-center"
+                style={{ 
+                  background: 'linear-gradient(135deg, hsl(25 85% 55% / 0.1) 0%, hsl(145 25% 45% / 0.1) 100%)',
+                  border: '1px solid hsl(25 85% 55% / 0.2)'
+                }}
+              >
+                <p className="lp-font-heading text-xl md:text-2xl lp-text-earth leading-relaxed">
+                  {content.painPoints.closingMessage.includes("awakening") || content.painPoints.closingMessage.includes("מתעוררים") ? (
+                    <>
+                      {isHebrew ? (
+                        <>
+                          אם משהו מזה מהדהד בכם, אתם במקום הנכון.<br className="hidden md:block" />
+                          <span style={{ color: 'hsl(145 25% 40%)' }} className="font-semibold">אתם לא שבורים. אתם מתעוררים.</span>
+                        </>
+                      ) : (
+                        <>
+                          If any of this resonates, you're in the right place.<br className="hidden md:block" />
+                          <span style={{ color: 'hsl(145 25% 40%)' }} className="font-semibold">You're not broken. You're awakening.</span>
+                        </>
+                      )}
+                    </>
+                  ) : content.painPoints.closingMessage}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
