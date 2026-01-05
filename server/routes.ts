@@ -1602,6 +1602,7 @@ export async function registerRoutes(
 
       // Detect phase transition based on user response
       let newPhase = currentPhase;
+      console.log(`[Phase] Current phase: ${currentPhase}, message length: ${content.trim().length}`);
       if (!dayCompleted) {
         const transitionResult = await detectPhaseTransition(
           currentPhase,
@@ -1610,10 +1611,11 @@ export async function registerRoutes(
           dayGoal,
           dayTask
         );
+        console.log(`[Phase] Transition result:`, transitionResult);
         
         if (transitionResult.shouldTransition && transitionResult.nextPhase) {
           newPhase = transitionResult.nextPhase;
-          console.log(`Phase transition: ${currentPhase} -> ${newPhase} (${transitionResult.reason})`);
+          console.log(`[Phase] Transitioning: ${currentPhase} -> ${newPhase} (${transitionResult.reason})`);
           
           // Update participant's current phase
           await storage.updateParticipant(participantId, { currentPhase: newPhase });
