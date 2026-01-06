@@ -104,6 +104,14 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/login", (req, res, next) => {
     ensureStrategy(req.hostname);
+    
+    // Save returnTo URL to session for post-auth redirect
+    const returnTo = req.query.returnTo as string;
+    const redirectUrl = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) 
+      ? returnTo 
+      : "/dashboard";
+    (req.session as any).returnTo = redirectUrl;
+    
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -112,8 +120,13 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     ensureStrategy(req.hostname);
+    
+    // Get the saved returnTo URL, default to dashboard
+    const returnTo = (req.session as any).returnTo || "/dashboard";
+    delete (req.session as any).returnTo;
+    
     passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
+      successReturnToOrRedirect: returnTo,
       failureRedirect: "/api/login",
     })(req, res, next);
   });
