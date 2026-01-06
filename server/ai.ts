@@ -1242,11 +1242,15 @@ export async function generateChatResponse(
   const currentPhase = context.currentPhase || 'intro';
   const phasePrompt = PHASE_PROMPTS[currentPhase];
   
+  // Extract first names for more personal conversation
+  const mentorFirstName = getFirstName(context.mentorName);
+  const participantFirstName = context.participantName ? getFirstName(context.participantName) : "";
+  
   // Minimal context - only what's needed for this phase
   let contextPrompt = `
 === CONTEXT ===
-Mentor: ${context.mentorName}
-${context.participantName ? `Participant: ${context.participantName}` : ""}
+Mentor: ${mentorFirstName}
+${participantFirstName ? `Participant: ${participantFirstName}` : ""}
 ${context.mentorToneOfVoice ? `Mentor voice/style: ${context.mentorToneOfVoice}` : ""}
 
 Journey: ${context.journeyName}
@@ -1327,11 +1331,11 @@ What you know about this person:`;
     console.warn("AI returned empty content, using phase fallback");
     const isHebrew = isHebrewText(`${context.journeyName} ${context.dayGoal || ""}`);
     
-    // Grounded fallbacks - no over-validation
+    // Grounded fallbacks - no over-validation, use first names only
     const fallbacks: Record<ConversationPhase, { he: string; en: string }> = {
       intro: {
-        he: `היי${context.participantName ? ` ${context.participantName}` : ""}, יום ${context.dayNumber} מתחיל. איך את מגיעה?`,
-        en: `Hey${context.participantName ? ` ${context.participantName}` : ""}, day ${context.dayNumber} begins. How are you arriving?`
+        he: `היי${participantFirstName ? ` ${participantFirstName}` : ""}, יום ${context.dayNumber} מתחיל. איך את מגיעה?`,
+        en: `Hey${participantFirstName ? ` ${participantFirstName}` : ""}, day ${context.dayNumber} begins. How are you arriving?`
       },
       reflection: {
         he: "אני שומע/ת. מה עוד עולה כשאת חושבת על זה?",
@@ -1658,10 +1662,19 @@ function isHebrewText(text: string): boolean {
   return hebrewChars > latinChars;
 }
 
+// Helper to extract first name from full name
+function getFirstName(fullName: string): string {
+  if (!fullName) return "";
+  return fullName.split(" ")[0];
+}
+
 // PRD-compliant day opening message
 export async function generateDayOpeningMessage(context: Omit<ChatContext, "recentMessages" | "userSummary">): Promise<string> {
   const isFirstDay = context.dayNumber === 1;
-  const participantGreeting = context.participantName ? context.participantName : "";
+  
+  // Extract first names only
+  const mentorFirstName = getFirstName(context.mentorName);
+  const participantFirstName = context.participantName ? getFirstName(context.participantName) : "";
   
   // Use explicit language if provided, otherwise fall back to auto-detection
   const contentToCheck = `${context.journeyName} ${context.dayGoal || ""} ${context.dayTitle || ""}`;
@@ -1671,31 +1684,31 @@ export async function generateDayOpeningMessage(context: Omit<ChatContext, "rece
   if (isFirstDay) {
     // Day 1: Generate introduction in the journey's language
     if (isHebrew) {
-      const greeting = participantGreeting ? `היי ${participantGreeting}` : "היי";
-      return `${greeting}, אני ${context.mentorName} הדיגיטלי.
-פיתחו אותי עם כל התוכן והידע של ${context.mentorName} ואני אשמח להעביר אותך את התהליך "${context.journeyName}".
+      const greeting = participantFirstName ? `היי ${participantFirstName}` : "היי";
+      return `${greeting}, אני ${mentorFirstName} הדיגיטלי.
+פיתחו אותי עם כל התוכן והידע של ${mentorFirstName} ואני אשמח להעביר אותך את התהליך "${context.journeyName}".
 היום אנחנו ביום הראשון לתהליך ואשמח להכיר אותך קצת.
 אז קודם כל, מה שלומך?`;
     } else {
       // English version
-      const greeting = participantGreeting ? `Hi ${participantGreeting}` : "Hi";
-      return `${greeting}, I'm ${context.mentorName}'s digital mentor.
-I was created with all of ${context.mentorName}'s content and knowledge, and I'm excited to guide you through "${context.journeyName}".
+      const greeting = participantFirstName ? `Hi ${participantFirstName}` : "Hi";
+      return `${greeting}, I'm ${mentorFirstName}'s digital mentor.
+I was created with all of ${mentorFirstName}'s content and knowledge, and I'm excited to guide you through "${context.journeyName}".
 Today is Day 1 of your journey, and I'd love to get to know you a little.
 So first of all, how are you doing?`;
     }
   }
   
   // Days 2+: Regular day opening
-  const systemPrompt = `You ARE ${context.mentorName}, opening Day ${context.dayNumber} of ${context.totalDays} in your journey "${context.journeyName}".
+  const systemPrompt = `You ARE ${mentorFirstName}, opening Day ${context.dayNumber} of ${context.totalDays} in your journey "${context.journeyName}".
 
 ${context.mentorToneOfVoice ? `YOUR TONE: ${context.mentorToneOfVoice}` : ""}
-${context.participantName ? `PARTICIPANT NAME: ${context.participantName}` : ""}
+${participantFirstName ? `PARTICIPANT NAME: ${participantFirstName} (use first name only)` : ""}
 
 TODAY'S FOCUS: ${context.dayGoal}
 
 Write a warm, personal opening for today. The message should:
-- Greet them by name if available, like continuing a conversation with a friend
+- Greet them by FIRST NAME only if available, like continuing a conversation with a friend
 - Briefly mention today's theme (1 sentence)
 - Ask ONE question that invites them into today's work
 - Maximum 70 words
