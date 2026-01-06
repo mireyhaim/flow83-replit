@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { journeyApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, BookOpen } from "lucide-react";
+import { Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, BookOpen, Link2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
@@ -55,6 +55,12 @@ export default function JourneysPage() {
     if (deleteJourneyId) {
       deleteMutation.mutate(deleteJourneyId);
     }
+  };
+
+  const handleCopyLink = (journeyId: string) => {
+    const url = `${window.location.origin}/j/${journeyId}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: t('journeysPage.linkCopied') });
   };
 
 
@@ -125,13 +131,21 @@ export default function JourneysPage() {
                       </DropdownMenuItem>
                     </Link>
                     {journey.status === "published" && (
-                      <Link href={`/p/${journey.id}`}>
+                      <Link href={`/j/${journey.id}`} target="_blank">
                         <DropdownMenuItem className="text-slate-700 focus:bg-slate-100 focus:text-slate-900" data-testid={`menu-preview-${journey.id}`}>
                           <Eye className="me-2 h-4 w-4" />
                           {t('journeysPage.preview')}
                         </DropdownMenuItem>
                       </Link>
                     )}
+                    <DropdownMenuItem 
+                      className="text-slate-700 focus:bg-slate-100 focus:text-slate-900"
+                      onClick={() => handleCopyLink(journey.id)}
+                      data-testid={`menu-copy-link-${journey.id}`}
+                    >
+                      <Link2 className="me-2 h-4 w-4" />
+                      {t('journeysPage.copyLink')}
+                    </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-red-600 focus:bg-red-50 focus:text-red-600"
                       onClick={() => setDeleteJourneyId(journey.id)}

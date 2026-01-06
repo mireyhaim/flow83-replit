@@ -131,6 +131,8 @@
     "edit": "Edit",
     "preview": "Preview",
     "delete": "Delete",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!",
     "deleteFlowTitle": "Delete Flow?",
     "deleteFlowDescription": "This will permanently delete this flow and all its content. This action cannot be undone.",
     "cancel": "Cancel",

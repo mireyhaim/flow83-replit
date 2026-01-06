@@ -131,6 +131,8 @@
     "edit": "ערוך",
     "preview": "תצוגה מקדימה",
     "delete": "מחק",
+    "copyLink": "העתק קישור",
+    "linkCopied": "הקישור הועתק!",
     "deleteFlowTitle": "למחוק את ה-Flow?",
     "deleteFlowDescription": "פעולה זו תמחק לצמיתות את ה-Flow הזה ואת כל התוכן שלו. לא ניתן לבטל פעולה זו.",
     "cancel": "ביטול",
