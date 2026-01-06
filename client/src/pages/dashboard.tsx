@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +13,7 @@ import type { ActivityEvent } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading: authLoading, isProfileComplete } = useAuth();
   const onboarding = useOnboarding();
   const [, navigate] = useLocation();
@@ -77,6 +77,21 @@ export default function Dashboard() {
       default: return t('activityRecorded', { ns: 'dashboard' });
     }
   };
+
+  // Format currency based on current language (Hebrew = ILS, English = USD)
+  const formatCurrency = useMemo(() => {
+    const isHebrew = i18n.language === 'he';
+    const currencySymbol = isHebrew ? '₪' : '$';
+    const locale = isHebrew ? 'he-IL' : 'en-US';
+    
+    return (amount: number) => {
+      const formatted = amount.toLocaleString(locale, { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+      return isHebrew ? `${formatted} ${currencySymbol}` : `${currencySymbol}${formatted}`;
+    };
+  }, [i18n.language]);
 
   if (authLoading) {
     return (
@@ -284,7 +299,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="text-4xl font-bold text-slate-900 mb-2" data-testid="text-earnings">
-                ${(earnings?.totalEarnings ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {formatCurrency(earnings?.totalEarnings ?? 0)}
               </div>
               <p className="text-sm text-slate-400 mb-6">{t('totalEarningsFromFlows')}</p>
               {(earnings?.recentPayments?.length ?? 0) > 0 ? (
@@ -296,7 +311,7 @@ export default function Dashboard() {
                         <p className="text-sm text-slate-900">{payment.customerName || payment.customerEmail}</p>
                         <p className="text-xs text-slate-400">{new Date(payment.createdAt).toLocaleDateString()}</p>
                       </div>
-                      <span className="text-emerald-600 font-semibold">${payment.amount.toFixed(2)}</span>
+                      <span className="text-emerald-600 font-semibold">{formatCurrency(payment.amount)}</span>
                     </div>
                   ))}
                 </div>
