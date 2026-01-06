@@ -314,6 +314,8 @@
     "profileSaved": "Profile saved!",
     "profileSavedDesc": "Your details have been updated successfully.",
     "nameRequired": "First name and last name are required.",
+    "hebrewNameRequired": "Please enter your name in Hebrew only.",
+    "imageRequired": "Profile image is required.",
     "specialtyRequired": "Specialty is required.",
     "methodologyRequired": "Methodology is required."
   },

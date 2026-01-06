@@ -314,6 +314,8 @@
     "profileSaved": "הפרופיל נשמר!",
     "profileSavedDesc": "הפרטים שלך עודכנו בהצלחה.",
     "nameRequired": "שם פרטי ושם משפחה הם שדות חובה.",
+    "hebrewNameRequired": "יש להזין שם בעברית בלבד.",
+    "imageRequired": "תמונת פרופיל היא שדה חובה.",
     "specialtyRequired": "התמחות היא שדה חובה.",
     "methodologyRequired": "השיטות שלך הוא שדה חובה."
   },

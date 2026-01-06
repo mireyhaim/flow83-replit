@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -105,6 +105,12 @@ export default function ProfilePage() {
     }
   };
 
+  // Helper to check if text contains only Hebrew characters and spaces
+  const isHebrewOnly = (text: string) => {
+    const hebrewPattern = /^[\u0590-\u05FF\s]+$/;
+    return hebrewPattern.test(text);
+  };
+
   const handleSave = async () => {
     // Validate required fields
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
@@ -115,6 +121,29 @@ export default function ProfilePage() {
       });
       return;
     }
+    
+    // For Hebrew users, validate that names are in Hebrew only
+    if (i18n.language === 'he') {
+      if (!isHebrewOnly(formData.firstName.trim()) || !isHebrewOnly(formData.lastName.trim())) {
+        toast({
+          title: t('error'),
+          description: t('profilePage.hebrewNameRequired'),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Profile image is required
+    if (!profileImage) {
+      toast({
+        title: t('error'),
+        description: t('profilePage.imageRequired'),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!formData.specialty.trim()) {
       toast({
         title: t('error'),
