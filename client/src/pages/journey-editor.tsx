@@ -322,10 +322,10 @@ const JourneyEditorPage = () => {
                 className={journeyData.status === "published" 
                   ? "bg-amber-600 hover:bg-amber-700" 
                   : "bg-violet-600 hover:bg-violet-700"}
-                disabled={isPublishing || (isLoadingSubscription && journeyData.status !== "published")}
+                disabled={isPublishing}
                 data-testid="button-publish"
               >
-                {isPublishing || (isLoadingSubscription && journeyData.status !== "published") ? (
+                {isPublishing ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : journeyData.status === "published" ? (
                   <GlobeLock className="w-4 h-4 mr-2" />
