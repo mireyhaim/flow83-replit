@@ -70,8 +70,8 @@ export default function JourneysPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
           {t('dashboard:journeysPage.title')}
         </h1>
         <p className="text-slate-500 text-sm">
@@ -104,11 +104,11 @@ export default function JourneysPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {journeys.map((journey) => (
             <div 
               key={journey.id}
-              className="group bg-white rounded-xl border border-slate-200 p-5 transition-all duration-200 hover:shadow-md hover:border-violet-200"
+              className="group bg-white rounded-xl border border-slate-200 p-4 md:p-5 transition-all duration-200 hover:shadow-md hover:border-violet-200"
               data-testid={`card-journey-${journey.id}`}
             >
               <div className="flex items-start justify-between mb-3">
@@ -197,14 +197,14 @@ export default function JourneysPage() {
                 <Link href={`/journey/${journey.id}/edit`} className="flex-1">
                   <Button 
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-11 md:h-9 text-sm"
                   >
                     {t('dashboard:journeysPage.editFlow')}
                   </Button>
                 </Link>
                 {journey.status !== "published" && (
                   <Link href={`/journey/${journey.id}/publish`}>
-                    <Button className="bg-violet-600 hover:bg-violet-700">
+                    <Button className="bg-violet-600 hover:bg-violet-700 h-11 md:h-9 px-4">
                       <Rocket className="w-4 h-4" />
                     </Button>
                   </Link>

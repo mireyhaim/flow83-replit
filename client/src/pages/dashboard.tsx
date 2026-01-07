@@ -178,10 +178,10 @@ export default function Dashboard() {
         onSkip={onboarding.skipOnboarding}
       />
 
-      <header className="mb-8">
-        <div className="flex items-center justify-between">
+      <header className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-dashboard-title">
+            <h1 className="text-xl md:text-2xl font-semibold text-slate-900" data-testid="text-dashboard-title">
               {t('welcomeBack', { name: user?.firstName || '', ns: 'auth' })}
             </h1>
             <p className="text-slate-500 text-sm mt-1" data-testid="text-welcome-message">
@@ -193,10 +193,10 @@ export default function Dashboard() {
               variant="ghost"
               size="sm"
               onClick={onboarding.startOnboarding}
-              className="text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+              className="text-slate-500 hover:text-slate-900 hover:bg-slate-100 self-start sm:self-auto h-11 sm:h-9"
               data-testid="button-start-tutorial"
             >
-              <HelpCircle className="h-4 w-4 mr-2" />
+              <HelpCircle className="h-4 w-4 me-2" />
               {t('tutorial')}
             </Button>
           )}
@@ -211,24 +211,24 @@ export default function Dashboard() {
         
         return (
           <div 
-            className={`mb-8 rounded-2xl p-5 flex items-center justify-between ${
+            className={`mb-6 md:mb-8 rounded-xl md:rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${
               isExpired 
                 ? "bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-300" 
                 : "bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300"
             }`}
             data-testid="banner-payment-failed"
           >
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            <div className="flex items-center gap-3 flex-1">
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex-shrink-0 flex items-center justify-center ${
                 isExpired ? "bg-red-100" : "bg-amber-100"
               }`}>
-                <AlertTriangle className={`h-6 w-6 ${isExpired ? "text-red-600" : "text-amber-600"}`} />
+                <AlertTriangle className={`h-5 w-5 md:h-6 md:w-6 ${isExpired ? "text-red-600" : "text-amber-600"}`} />
               </div>
-              <div>
-                <h3 className={`font-semibold ${isExpired ? "text-red-900" : "text-amber-900"}`}>
+              <div className="min-w-0">
+                <h3 className={`font-semibold text-sm md:text-base ${isExpired ? "text-red-900" : "text-amber-900"}`}>
                   {isExpired ? t('flowsBlocked') : t('paymentFailed')}
                 </h3>
-                <p className={`text-sm ${isExpired ? "text-red-700" : "text-amber-700"}`}>
+                <p className={`text-xs md:text-sm ${isExpired ? "text-red-700" : "text-amber-700"}`}>
                   {isExpired 
                     ? t('flowsBlockedDescription')
                     : t('paymentFailedDescription', { days: daysLeft })
@@ -237,7 +237,7 @@ export default function Dashboard() {
               </div>
             </div>
             <Button 
-              className={`rounded-full ${
+              className={`rounded-full w-full sm:w-auto h-11 sm:h-10 ${
                 isExpired 
                   ? "bg-red-600 hover:bg-red-700" 
                   : "bg-amber-600 hover:bg-amber-700"
@@ -253,24 +253,24 @@ export default function Dashboard() {
 
       {!isProfileComplete && (
         <div 
-          className="mb-8 rounded-2xl p-5 flex items-center justify-between bg-gradient-to-r from-violet-50 to-indigo-50 border-2 border-violet-200"
+          className="mb-6 md:mb-8 rounded-xl md:rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-gradient-to-r from-violet-50 to-indigo-50 border-2 border-violet-200"
           data-testid="banner-profile-incomplete"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
-              <User className="h-6 w-6 text-violet-600" />
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-violet-100 flex-shrink-0 flex items-center justify-center">
+              <User className="h-5 w-5 md:h-6 md:w-6 text-violet-600" />
             </div>
-            <div>
-              <h3 className="font-semibold text-violet-900">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-sm md:text-base text-violet-900">
                 {t('profileCompletion.bannerTitle')}
               </h3>
-              <p className="text-sm text-violet-700">
+              <p className="text-xs md:text-sm text-violet-700">
                 {t('profileCompletion.bannerDescription')}
               </p>
             </div>
           </div>
           <Button 
-            className="rounded-full bg-violet-600 hover:bg-violet-700"
+            className="rounded-full bg-violet-600 hover:bg-violet-700 w-full sm:w-auto h-11 sm:h-10"
             asChild
             data-testid="button-complete-profile"
           >
@@ -285,68 +285,68 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-violet-200 transition-all" data-testid="card-total-journeys">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-violet-600" />
+          <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mb-6 md:mb-8">
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-violet-200 transition-all" data-testid="card-total-journeys">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-violet-50 flex items-center justify-center">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-total-journeys">{stats?.totalJourneys ?? 0}</div>
-              <p className="text-sm text-slate-500">{t('myFlows')}</p>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-total-journeys">{stats?.totalJourneys ?? 0}</div>
+              <p className="text-xs md:text-sm text-slate-500">{t('myFlows')}</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-sky-200 transition-all" data-testid="card-total-participants">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-sky-600" />
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-sky-200 transition-all" data-testid="card-total-participants">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-sky-50 flex items-center justify-center">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-sky-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-total-participants">{stats?.totalParticipants ?? 0}</div>
-              <p className="text-sm text-slate-500">{t('participants')}</p>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-total-participants">{stats?.totalParticipants ?? 0}</div>
+              <p className="text-xs md:text-sm text-slate-500">{t('participants')}</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-emerald-200 transition-all" data-testid="card-active-participants">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-emerald-200 transition-all" data-testid="card-active-participants">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-active-participants">{stats?.activeParticipants ?? 0}</div>
-              <p className="text-sm text-slate-500">{t('activeParticipants')}</p>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-active-participants">{stats?.activeParticipants ?? 0}</div>
+              <p className="text-xs md:text-sm text-slate-500">{t('activeParticipants')}</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-amber-200 transition-all" data-testid="card-completion-rate">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-amber-600" />
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-amber-200 transition-all" data-testid="card-completion-rate">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-amber-50 flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1" data-testid="text-completion-rate">{stats?.completionRate ?? 0}%</div>
-              <p className="text-sm text-slate-500">{t('completedParticipants')}</p>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-completion-rate">{stats?.completionRate ?? 0}%</div>
+              <p className="text-xs md:text-sm text-slate-500">{t('completedParticipants')}</p>
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all" data-testid="card-earnings">
-              <div className="flex items-center justify-between mb-6">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-earnings">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{t('earnings')}</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-slate-900">{t('earnings')}</h3>
                     <p className="text-xs text-slate-400">{t('totalRevenue')}</p>
                   </div>
                 </div>
-                <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">
+                <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 font-medium self-start sm:self-auto">
                   {(earnings?.paymentCount ?? 0) > 0 ? t('salesCount', { count: earnings?.paymentCount }) : t('noSalesYet')}
                 </span>
               </div>
-              <div className="text-4xl font-bold text-slate-900 mb-2" data-testid="text-earnings">
+              <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1 md:mb-2" data-testid="text-earnings">
                 {formatCurrency(earnings?.totalEarnings ?? 0)}
               </div>
-              <p className="text-sm text-slate-400 mb-6">{t('totalEarningsFromFlows')}</p>
+              <p className="text-xs md:text-sm text-slate-400 mb-4 md:mb-6">{t('totalEarningsFromFlows')}</p>
               {(earnings?.recentPayments?.length ?? 0) > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-slate-400 mb-2">{t('recentSales')}</p>
@@ -369,12 +369,12 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all" data-testid="card-recent-activity">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-violet-600" />
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-recent-activity">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-violet-50 flex items-center justify-center">
+                  <Clock className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">{t('recentActivity')}</h3>
+                <h3 className="text-base md:text-lg font-semibold text-slate-900">{t('recentActivity')}</h3>
               </div>
               {recentActivity.length === 0 ? (
                 <div className="text-center py-8">
@@ -400,14 +400,14 @@ export default function Dashboard() {
           </div>
 
           {/* Participants Table */}
-          <div className="mt-8 bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all" data-testid="card-participants-table">
-            <div className="flex items-center justify-between mb-6">
+          <div className="mt-6 md:mt-8 bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-participants-table">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-sky-600" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-sky-50 flex items-center justify-center">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-sky-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{t('participantsTable.title')}</h3>
+                  <h3 className="text-base md:text-lg font-semibold text-slate-900">{t('participantsTable.title')}</h3>
                   <p className="text-xs text-slate-400">{t('participantsTable.subtitle')}</p>
                 </div>
               </div>
