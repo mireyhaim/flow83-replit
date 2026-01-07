@@ -9,8 +9,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
   LayoutGrid, Sparkles, ChevronDown, CheckCircle,
-  BookOpen, ListTodo, Users, Calendar
+  BookOpen, ListTodo, Users, Calendar, MoreVertical, Settings
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { journeyApi, stepApi, blockApi } from "@/lib/api";
@@ -35,6 +41,7 @@ const JourneyEditorPage = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ stepId: string; field: string } | null>(null);
+  const [isHeroExpanded, setIsHeroExpanded] = useState(false);
 
   // Force refresh user data when entering the editor (once on mount) to get fresh subscription status
   const hasRefreshedUser = useRef(false);
@@ -265,118 +272,199 @@ const JourneyEditorPage = () => {
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors shrink-0" data-testid="link-my-flows">
                 <LayoutGrid className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">{t('myFlows')}</span>
+                <span className="text-sm font-medium hidden md:inline">{t('myFlows')}</span>
               </Link>
-              <div className="h-5 w-px bg-white/10 hidden sm:block" />
-              <div className="min-w-0">
-                <h1 className="text-base md:text-lg font-semibold text-white truncate" data-testid="text-journey-name">
+              <div className="h-5 w-px bg-white/10 hidden md:block" />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm md:text-lg font-semibold text-white truncate max-w-[120px] md:max-w-none" data-testid="text-journey-name">
                   {journeyData.name}
                 </h1>
               </div>
               {journeyData.status === "published" && (
-                <span className="flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium shrink-0">
+                <span className="flex items-center gap-1 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium shrink-0">
                   <Globe className="w-3 h-3" />
-                  <span className="hidden sm:inline">{t('live')}</span>
+                  <span className="hidden md:inline">{t('live')}</span>
                 </span>
               )}
             </div>
             
             <div className="flex gap-1 md:gap-3 items-center shrink-0">
+              {/* Mobile dropdown menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="md:hidden">
+                  <Button variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/10 px-2" data-testid="button-mobile-menu">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-white/10">
+                  <DropdownMenuItem onClick={() => setLocation(`/journey/${journeyData.id}/settings`)} className="text-white/80 focus:text-white focus:bg-white/10">
+                    <Settings className="w-4 h-4 me-2" />
+                    {t('settings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePreview} className="text-white/80 focus:text-white focus:bg-white/10">
+                    <Eye className="w-4 h-4 me-2" />
+                    {t('preview')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              {/* Desktop buttons */}
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation(`/journey/${journeyData.id}/settings`)}
-                className="text-white/60 hover:text-white hover:bg-white/10 px-2 md:px-3"
+                className="hidden md:flex text-white/60 hover:text-white hover:bg-white/10 px-3"
                 data-testid="button-settings"
               >
-                <span className="hidden sm:inline">{t('settings')}</span>
-                <Target className="w-4 h-4 sm:hidden" />
+                {t('settings')}
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handlePreview} 
-                className="text-white/60 hover:text-white hover:bg-white/10 px-2 md:px-3"
+                className="hidden md:flex text-white/60 hover:text-white hover:bg-white/10 px-3"
                 data-testid="button-preview"
               >
-                <Eye className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t('preview')}</span>
+                <Eye className="w-4 h-4 me-2" />
+                {t('preview')}
               </Button>
+              
+              {/* Save button - always visible but compact on mobile */}
               <Button 
                 onClick={handleSave} 
                 size="sm"
                 variant="outline"
                 disabled={isSaving}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10 px-2 md:px-3"
                 data-testid="button-save"
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4 md:me-2" />
                 )}
-                {t('save')}
+                <span className="hidden md:inline">{t('save')}</span>
               </Button>
+              
+              {/* Publish button - always visible */}
               <Button 
                 onClick={handlePublishClick} 
                 size="sm"
-                className={journeyData.status === "published" 
+                className={`px-2 md:px-3 ${journeyData.status === "published" 
                   ? "bg-amber-600 hover:bg-amber-700" 
-                  : "bg-violet-600 hover:bg-violet-700"}
+                  : "bg-violet-600 hover:bg-violet-700"}`}
                 disabled={isPublishing}
                 data-testid="button-publish"
               >
                 {isPublishing ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : journeyData.status === "published" ? (
-                  <GlobeLock className="w-4 h-4 mr-2" />
+                  <GlobeLock className="w-4 h-4 md:me-2" />
                 ) : (
-                  <Globe className="w-4 h-4 mr-2" />
+                  <Globe className="w-4 h-4 md:me-2" />
                 )}
-                {journeyData.status === "published" ? t('unpublishFlow') : t('publishFlow')}
+                <span className="hidden md:inline">{journeyData.status === "published" ? t('unpublishFlow') : t('publishFlow')}</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        {/* Hero Section */}
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-8">
+        {/* Hero Section - Collapsible on mobile */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
+          className="mb-4 md:mb-10"
         >
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-600/30">
-              <Target className="w-6 h-6 text-white" />
+          {/* Mobile: Compact collapsible header */}
+          <button 
+            className="md:hidden w-full flex items-center justify-between py-2"
+            onClick={() => setIsHeroExpanded(!isHeroExpanded)}
+            data-testid="button-toggle-hero"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-600/20">
+                <Target className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-start min-w-0">
+                <span className="text-sm font-medium text-violet-400">{t('flowGoal')}</span>
+                <p className="text-white/60 text-sm truncate max-w-[200px]">
+                  {journeyData.goal || t('noGoalSetYet')}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-2">{t('flowGoal')}</h2>
-              <p className="text-white/60 text-base leading-relaxed">
-                {journeyData.goal || t('noGoalSetYet')}
-              </p>
-            </div>
-          </div>
+            <motion.div
+              animate={{ rotate: isHeroExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-white/40"
+            >
+              <ChevronDown className="w-5 h-5" />
+            </motion.div>
+          </button>
           
-          {/* Meta Info */}
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-violet-400" />
-              <span className="text-sm text-white/60">{t('days', { count: journeyData.duration || 7 })}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-violet-400" />
-              <span className="text-sm text-white/60">{journeyData.audience || t('notSpecified')}</span>
-            </div>
-          </div>
+          {/* Mobile: Expanded content */}
+          <AnimatePresence>
+            {isHeroExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden overflow-hidden"
+              >
+                <div className="pt-3 pb-2">
+                  <p className="text-white/60 text-sm leading-relaxed mb-3">
+                    {journeyData.goal || t('noGoalSetYet')}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-violet-400" />
+                      <span className="text-xs text-white/50">{t('days', { count: journeyData.duration || 7 })}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-violet-400" />
+                      <span className="text-xs text-white/50">{journeyData.audience || t('notSpecified')}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
-          <div className="h-px bg-gradient-to-r from-violet-600/30 via-white/10 to-transparent mt-8" />
+          {/* Desktop: Full hero section */}
+          <div className="hidden md:block">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-600/30">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">{t('flowGoal')}</h2>
+                <p className="text-white/60 text-base leading-relaxed">
+                  {journeyData.goal || t('noGoalSetYet')}
+                </p>
+              </div>
+            </div>
+            
+            {/* Meta Info */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-violet-400" />
+                <span className="text-sm text-white/60">{t('days', { count: journeyData.duration || 7 })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-violet-400" />
+                <span className="text-sm text-white/60">{journeyData.audience || t('notSpecified')}</span>
+              </div>
+            </div>
+            
+            <div className="h-px bg-gradient-to-r from-violet-600/30 via-white/10 to-transparent mt-8" />
+          </div>
         </motion.div>
 
-        {/* Mobile Day Chips */}
-        <div className="md:hidden mb-6 -mx-4 px-4">
-          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+        {/* Mobile Day Chips - Sticky */}
+        <div className="md:hidden sticky top-14 z-30 -mx-4 px-4 py-2 bg-[#0f0f23]/95 backdrop-blur-md border-b border-white/5">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {journeyData.steps.map((step, index) => {
               const isExpanded = expandedDays.has(step.id);
               const isComplete = step.goal && step.explanation && step.task;
@@ -386,17 +474,17 @@ const JourneyEditorPage = () => {
                   onClick={() => {
                     setExpandedDays(new Set([step.id]));
                     setTimeout(() => {
-                      document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }, 100);
                   }}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-sm ${
                     isExpanded
-                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/30'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md shadow-violet-600/20'
+                      : 'bg-white/10 text-white/70 hover:bg-white/15'
                   }`}
                 >
                   <span className="font-semibold">{step.dayNumber}</span>
-                  {isComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                  {isComplete && <CheckCircle className="w-3 h-3 text-emerald-400" />}
                 </button>
               );
             })}
