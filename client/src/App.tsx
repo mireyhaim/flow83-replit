@@ -23,6 +23,7 @@ import JourneysPage from "@/pages/journeys";
 import JourneyCreatePage from "@/pages/journey-create";
 import JourneyEditorPage from "@/pages/journey-editor";
 import JourneySettingsPage from "@/pages/journey-settings";
+import JourneyPublishPage from "@/pages/journey-publish";
 import ParticipantView from "@/pages/participant-view";
 import JourneyLandingPage from "@/pages/journey-landing";
 import ParticipantJoinPage from "@/pages/participant-join";
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/journeys/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/edit" component={JourneyEditorPage} />
       <Route path="/journey/:id/settings" component={JourneySettingsPage} />
+      <Route path="/journey/:id/publish" component={JourneyPublishPage} />
       <Route path="/j/:id" component={JourneyLandingPage} />
       <Route path="/join/:journeyId" component={ParticipantJoinPage} />
       <Route path="/auth/callback" component={AuthCallbackPage} />
