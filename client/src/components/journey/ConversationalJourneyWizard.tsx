@@ -56,8 +56,8 @@ const steps: Step[] = [
     icon: Globe,
     labelEn: 'Language',
     labelHe: 'שפה',
-    questionEn: "Hi! I'm here to help you create a transformational journey. What language will your journey be in?",
-    questionHe: 'היי! אני כאן לעזור לך ליצור מסע טרנספורמטיבי. באיזו שפה יהיה המסע?',
+    questionEn: "Hi! I'm here to help you create a transformational Flow. What language will your Flow be in?",
+    questionHe: 'היי! אני כאן לעזור לך ליצור Flow טרנספורמטיבי. באיזו שפה יהיה ה-Flow?',
     type: 'options',
     options: [
       { value: 'he', labelEn: 'עברית', labelHe: 'עברית' },
@@ -69,8 +69,8 @@ const steps: Step[] = [
     icon: Calendar,
     labelEn: 'Duration',
     labelHe: 'משך',
-    questionEn: 'How many days will your journey last?',
-    questionHe: 'כמה ימים יימשך המסע?',
+    questionEn: 'How many days will your Flow last?',
+    questionHe: 'כמה ימים יימשך ה-Flow?',
     type: 'options',
     options: [
       { value: '3', labelEn: '3 days', labelHe: '3 ימים' },
@@ -82,8 +82,8 @@ const steps: Step[] = [
     icon: Type,
     labelEn: 'Name',
     labelHe: 'שם',
-    questionEn: 'What will be the name of your journey?',
-    questionHe: 'מה יהיה שם המסע?',
+    questionEn: 'What will be the name of your Flow?',
+    questionHe: 'מה יהיה שם ה-Flow?',
     type: 'text'
   },
   {
@@ -91,8 +91,8 @@ const steps: Step[] = [
     icon: Users,
     labelEn: 'Audience',
     labelHe: 'קהל יעד',
-    questionEn: 'Who is your target audience? Describe the people who will go through this journey.',
-    questionHe: 'מי קהל היעד שלך? תאר את האנשים שיעברו את המסע הזה.',
+    questionEn: 'Who is your target audience? Describe the people who will go through this Flow.',
+    questionHe: 'מי קהל היעד שלך? תאר את האנשים שיעברו את ה-Flow הזה.',
     type: 'textarea'
   },
   {
@@ -100,8 +100,8 @@ const steps: Step[] = [
     icon: Target,
     labelEn: 'Goal',
     labelHe: 'מטרה',
-    questionEn: 'What is the main goal of this journey? What will participants achieve by the end?',
-    questionHe: 'מה המטרה העיקרית של המסע? מה המשתתפים ישיגו בסוף?',
+    questionEn: 'What is the main goal of this Flow? What will participants achieve by the end?',
+    questionHe: 'מה המטרה העיקרית של ה-Flow? מה המשתתפים ישיגו בסוף?',
     type: 'textarea'
   },
   {
@@ -109,8 +109,8 @@ const steps: Step[] = [
     icon: MessageCircle,
     labelEn: 'Tone',
     labelHe: 'טון',
-    questionEn: 'What tone would you like your journey to have?',
-    questionHe: 'באיזה טון תרצה שהמסע ידבר?',
+    questionEn: 'What tone would you like your Flow to have?',
+    questionHe: 'באיזה טון תרצה שה-Flow ידבר?',
     type: 'options',
     options: [
       { value: 'warm', labelEn: 'Warm & Supportive', labelHe: 'חם ותומך' },
@@ -124,8 +124,8 @@ const steps: Step[] = [
     icon: FileUp,
     labelEn: 'Content',
     labelHe: 'תוכן',
-    questionEn: "Now it's time to upload your content. Upload files or paste text - I'll transform it into an amazing journey.",
-    questionHe: 'עכשיו הגיע הזמן להעלות את התוכן שלך. העלה קבצים או הדבק טקסט - אני אהפוך אותו למסע מדהים.',
+    questionEn: "Now it's time to upload your content. Upload files or paste text - I'll transform it into an amazing Flow.",
+    questionHe: 'עכשיו הגיע הזמן להעלות את התוכן שלך. העלה קבצים או הדבק טקסט - אני אהפוך אותו ל-Flow מדהים.',
     type: 'file'
   }
 ];
@@ -290,7 +290,7 @@ const ConversationalJourneyWizard = () => {
         content = content + "\n\n" + parsed.text;
       }
 
-      setProgressMessage(isHebrew ? 'יוצר את המסע...' : 'Creating journey...');
+      setProgressMessage(isHebrew ? 'יוצר את ה-Flow...' : 'Creating Flow...');
       setProgress(5);
 
       const journey = await journeyApi.create({
@@ -319,7 +319,7 @@ const ConversationalJourneyWizard = () => {
       console.error('Generation error:', error);
       toast({
         title: isHebrew ? 'שגיאה' : 'Error',
-        description: isHebrew ? 'אירעה שגיאה ביצירת המסע' : 'An error occurred creating the journey',
+        description: isHebrew ? 'אירעה שגיאה ביצירת ה-Flow' : 'An error occurred creating the Flow',
         variant: 'destructive'
       });
     } finally {
@@ -344,7 +344,7 @@ const ConversationalJourneyWizard = () => {
         <div className="hidden lg:flex w-72 flex-col border-e border-white/5 bg-black/20 backdrop-blur-xl">
           <div className="p-5 border-b border-white/5">
             <h3 className="text-white/80 text-sm font-medium">
-              {isHebrew ? 'בניית המסע' : 'Building Your Journey'}
+              {isHebrew ? 'בניית ה-Flow' : 'Building Your Flow'}
             </h3>
           </div>
           
@@ -598,7 +598,7 @@ const ConversationalJourneyWizard = () => {
                             data-testid="button-generate"
                           >
                             <Sparkles className="w-5 h-5 me-2" />
-                            {isHebrew ? 'צור את המסע שלי' : 'Create My Journey'}
+                            {isHebrew ? 'צור את ה-Flow שלי' : 'Create My Flow'}
                           </Button>
                         </div>
                       )}
@@ -621,7 +621,7 @@ const ConversationalJourneyWizard = () => {
                     
                     <div className="space-y-2">
                       <h3 className="text-xl text-white font-medium">
-                        {isHebrew ? 'יוצר את המסע שלך...' : 'Creating your journey...'}
+                        {isHebrew ? 'יוצר את ה-Flow שלך...' : 'Creating your Flow...'}
                       </h3>
                       <p className="text-white/60">{progressMessage}</p>
                     </div>
