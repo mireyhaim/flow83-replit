@@ -5,16 +5,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  ArrowLeft, Check, CreditCard, Rocket, 
-  CheckCircle, Copy, ExternalLink, Loader2, Sparkles,
-  ChevronDown, ChevronUp, Lock, Crown, Coins, Share2
+  ArrowLeft, ArrowRight, Check, CreditCard, Rocket, 
+  Copy, ExternalLink, Loader2, Lock, Crown, ChevronDown, ChevronUp
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { journeyApi } from "@/lib/api";
 import type { Journey } from "@shared/schema";
 import { motion, AnimatePresence } from "framer-motion";
-import { GlassPanel, GradientHeader, StepIndicator } from "@/components/ui/glass-panel";
 
 const JourneyPublishPage = () => {
   const { t, i18n } = useTranslation('dashboard');
@@ -135,67 +133,51 @@ const JourneyPublishPage = () => {
     }
   };
 
-  const steps = [
-    { id: 1, label: t('publishModal.stepPrice') },
-    { id: 2, label: t('publishModal.stepPayment') },
-    { id: 3, label: t('publishModal.stepCreate') },
-    { id: 4, label: t('publishModal.stepShare') },
-  ];
+  const handleStepClick = (step: number) => {
+    if (step < currentStep && currentStep !== 4) {
+      setCurrentStep(step);
+    }
+  };
+
+  const isPaid = (parseFloat(publishPrice) || 0) > 0;
 
   if (isLoading || isLoadingSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center relative z-10"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-violet-600/30">
-            <Loader2 className="w-8 h-8 animate-spin text-white" />
-          </div>
-          <p className="text-white/60 text-lg">{t('loadingFlow')}</p>
-        </motion.div>
+      <div className="min-h-screen bg-[#0c0a12] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
   if (!hasActiveSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
+      <div className="min-h-screen bg-[#0c0a12] flex items-center justify-center p-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md relative z-10"
+          className="max-w-sm w-full text-center"
         >
-          <GlassPanel variant="highlight" padding="lg" className="text-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-violet-600/30">
-              <Lock className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-3">{t('subscription.choosePlanTitle')}</h1>
-            <p className="text-white/60 mb-8">{t('subscription.choosePlanDescription')}</p>
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => setLocation('/pricing')}
-                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-lg font-medium shadow-lg shadow-violet-600/25"
-                data-testid="button-view-plans"
-              >
-                <Crown className="w-5 h-5 mx-2" />
-                {t('viewPlans')}
-              </Button>
-              <button
-                onClick={() => setLocation(`/journey/${params?.id}/edit`)}
-                className="text-white/50 hover:text-white text-sm py-3 transition-colors"
-                data-testid="button-back-to-editor"
-              >
-                <ArrowLeft className="w-4 h-4 inline mx-2" />
-                {t('journeySettings.backToEditor')}
-              </button>
-            </div>
-          </GlassPanel>
+          <div className="w-16 h-16 rounded-2xl bg-violet-600 mx-auto flex items-center justify-center mb-8">
+            <Lock className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-3">{t('subscription.choosePlanTitle')}</h1>
+          <p className="text-white/50 mb-10 leading-relaxed">{t('subscription.choosePlanDescription')}</p>
+          <Button
+            onClick={() => setLocation('/pricing')}
+            className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-lg font-medium mb-4"
+            data-testid="button-view-plans"
+          >
+            <Crown className="w-5 h-5 mx-2" />
+            {t('viewPlans')}
+          </Button>
+          <button
+            onClick={() => setLocation(`/journey/${params?.id}/edit`)}
+            className="text-white/40 hover:text-white/70 text-sm transition-colors"
+            data-testid="button-back-to-editor"
+          >
+            <ArrowLeft className="w-4 h-4 inline mx-1" />
+            {t('journeySettings.backToEditor')}
+          </button>
         </motion.div>
       </div>
     );
@@ -203,236 +185,181 @@ const JourneyPublishPage = () => {
 
   if (!journeyData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
-        <GlassPanel className="text-center max-w-md relative z-10">
-          <h1 className="text-2xl font-bold text-white mb-4">{t('flowNotFound')}</h1>
+      <div className="min-h-screen bg-[#0c0a12] flex items-center justify-center p-6">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold text-white mb-4">{t('flowNotFound')}</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-back" className="bg-violet-600 hover:bg-violet-700">
             {t('backToFlows')}
           </Button>
-        </GlassPanel>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] relative overflow-hidden">
-      <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 end-1/3 w-[300px] h-[300px] bg-fuchsia-600/5 rounded-full blur-[80px] pointer-events-none" />
-      
-      <div className="relative z-10">
-        <header className="bg-black/20 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
-          <div className="max-w-4xl mx-auto px-4 md:px-6">
-            <div className="flex items-center justify-between h-16">
-              <Link 
-                href={`/journey/${journeyData.id}/edit`} 
-                className="flex items-center gap-2 text-white/50 hover:text-white transition-colors"
-                data-testid="link-back-to-editor"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium hidden md:inline">{t('journeySettings.backToEditor')}</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
-                  <Rocket className="w-4 h-4 text-white" />
-                </div>
-                <h1 className="text-lg font-semibold text-white">{t('publishFlow')}</h1>
-              </div>
-              <div className="w-24" />
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-2xl mx-auto px-4 md:px-6 py-8 md:py-12">
-          <div className="mb-10 md:mb-12">
-            <StepIndicator 
-              steps={steps} 
-              currentStep={currentStep} 
-              onStepClick={(id) => id < currentStep && setCurrentStep(id)}
+    <div className="min-h-screen bg-[#0c0a12] flex flex-col">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <Link 
+          href={`/journey/${journeyData.id}/edit`} 
+          className="text-white/40 hover:text-white/70 transition-colors text-sm flex items-center gap-2"
+          data-testid="link-back-to-editor"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('journeySettings.backToEditor')}</span>
+        </Link>
+        
+        <div className="flex items-center gap-2">
+          {[1, 2, 3, 4].map((step) => (
+            <button
+              key={step}
+              onClick={() => handleStepClick(step)}
+              disabled={step >= currentStep || currentStep === 4}
+              className={`h-2 rounded-full transition-all ${
+                step === currentStep 
+                  ? 'w-6 bg-violet-500' 
+                  : step < currentStep 
+                    ? 'w-2 bg-violet-500 cursor-pointer hover:bg-violet-400' 
+                    : 'w-2 bg-white/20'
+              } ${step < currentStep && currentStep !== 4 ? 'cursor-pointer' : ''}`}
+              data-testid={`step-indicator-${step}`}
             />
-          </div>
+          ))}
+        </div>
+        
+        <div className="w-20" />
+      </header>
 
+      <main className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center"
               >
-                <GlassPanel variant="highlight" padding="md" className="text-center">
-                  <Sparkles className="w-6 h-6 text-violet-400 mx-auto mb-3" />
-                  <p className="text-white/90">{t('publishModal.introMessage')}</p>
-                </GlassPanel>
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  {t('publishModal.step1Title')}
+                </h1>
+                <p className="text-white/50 mb-10">
+                  {t('publishModal.step1Description')}
+                </p>
 
-                <GradientHeader
-                  icon={<Coins className="w-full h-full" />}
-                  title={t('publishModal.step1Title')}
-                  subtitle={t('publishModal.step1Description')}
-                  size="lg"
-                />
-
-                <GlassPanel variant="subtle" className="space-y-4">
-                  <h4 className="font-medium text-violet-300">{t('publishModal.whySetPrice')}</h4>
-                  <p className="text-sm text-white/60">{t('publishModal.whySetPriceText')}</p>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-violet-400" />
-                      </div>
-                      <span className="text-sm text-white/70">{t('publishModal.freeOption')}</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-violet-400" />
-                      </div>
-                      <span className="text-sm text-white/70">{t('publishModal.paidOption')}</span>
-                    </div>
-                  </div>
-                </GlassPanel>
-
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      min="0"
-                      value={publishPrice}
-                      onChange={(e) => setPublishPrice(e.target.value)}
-                      placeholder="0"
-                      className="bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white text-5xl text-center h-28 rounded-2xl transition-colors"
-                      data-testid="input-publish-price"
-                    />
-                    <span className="absolute end-6 top-1/2 -translate-y-1/2 text-white/40 text-3xl font-light">
-                      {t('publishModal.currencySymbol')}
-                    </span>
-                  </div>
-                  <p className="text-white/50 text-center">
-                    {publishPrice === "0" || publishPrice === "" 
-                      ? t('publishModal.freeDescription') 
-                      : t('publishModal.paidDescription', { price: publishPrice })}
-                  </p>
+                <div className="relative mb-6">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={publishPrice}
+                    onChange={(e) => setPublishPrice(e.target.value)}
+                    placeholder="0"
+                    className="bg-white/5 border-white/10 focus:border-violet-500 text-white text-5xl text-center h-24 rounded-2xl"
+                    data-testid="input-publish-price"
+                  />
+                  <span className="absolute end-5 top-1/2 -translate-y-1/2 text-white/30 text-2xl">
+                    {t('publishModal.currencySymbol')}
+                  </span>
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setLocation(`/journey/${journeyData.id}/edit`)}
-                    className="flex-1 border border-white/10 text-white/70 hover:bg-white/5 hover:text-white h-14"
-                    data-testid="button-cancel"
-                  >
-                    {t('publishModal.cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(2)}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-lg font-medium shadow-lg shadow-violet-600/25"
-                    data-testid="button-next-step"
-                  >
-                    {t('publishModal.continue')}
-                  </Button>
-                </div>
+                <p className="text-white/40 text-sm mb-10">
+                  {publishPrice === "0" || publishPrice === "" 
+                    ? t('publishModal.freeDescription') 
+                    : t('publishModal.paidDescription', { price: publishPrice })}
+                </p>
+
+                <Button
+                  onClick={() => setCurrentStep(2)}
+                  className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-lg font-medium"
+                  data-testid="button-next-step"
+                >
+                  {t('publishModal.continue')}
+                  <ArrowRight className="w-5 h-5 mx-2" />
+                </Button>
               </motion.div>
             )}
 
             {currentStep === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center"
               >
-                <GradientHeader
-                  icon={<CreditCard className="w-full h-full" />}
-                  title={t('publishModal.step2Title')}
-                  subtitle={(parseFloat(publishPrice) || 0) > 0 
-                    ? t('publishModal.step2DescriptionPaid')
-                    : t('publishModal.step2DescriptionFree')}
-                  size="lg"
-                />
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  {t('publishModal.step2Title')}
+                </h1>
+                <p className="text-white/50 mb-8">
+                  {isPaid ? t('publishModal.step2DescriptionPaid') : t('publishModal.step2DescriptionFree')}
+                </p>
 
-                {(parseFloat(publishPrice) || 0) > 0 ? (
-                  <div className="space-y-4">
-                    <GlassPanel 
-                      variant={growPaymentUrl || (!externalPaymentUrl && !showOtherPayment) ? "highlight" : "default"} 
-                      className="relative"
+                {isPaid ? (
+                  <div className="space-y-4 mb-8 text-start">
+                    <div 
+                      className={`rounded-2xl p-5 border transition-all ${
+                        growPaymentUrl || (!externalPaymentUrl && !showOtherPayment) 
+                          ? 'bg-violet-600/10 border-violet-500/50' 
+                          : 'bg-white/5 border-white/10'
+                      }`}
                     >
-                      <div className="absolute -top-3 end-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
-                        {t('publishModal.growRecommended')}
-                      </div>
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                          <CreditCard className="w-6 h-6 text-white" />
+                        <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-white" />
                         </div>
-                        <h4 className="font-semibold text-white text-lg">{t('publishModal.connectToGrow')}</h4>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-white">{t('publishModal.connectToGrow')}</h3>
+                          <p className="text-xs text-violet-400">{t('publishModal.growRecommended')}</p>
+                        </div>
                       </div>
-                      <p className="text-sm text-white/60 mb-5">{t('publishModal.growDescription')}</p>
-                      <ul className="text-sm text-white/50 space-y-2 mb-6">
-                        {[t('publishModal.growFeature1'), t('publishModal.growFeature2'), t('publishModal.growFeature3')].map((feature, i) => (
-                          <li key={i} className="flex items-center gap-3">
-                            <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
                       
-                      <div className="space-y-4">
-                        <Button
-                          onClick={() => window.open('https://grow.website/', '_blank')}
-                          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 h-12 font-medium shadow-lg shadow-emerald-500/20"
-                          data-testid="button-open-grow"
-                        >
-                          <ExternalLink className="w-4 h-4 mx-2" />
-                          {t('publishModal.openGrow')}
-                        </Button>
-                        
-                        <div className="border-t border-white/10 pt-4">
-                          <p className="text-sm text-white/50 mb-3 text-center">{t('publishModal.haveGrowAccount')}</p>
-                          <Input
-                            type="url"
-                            value={growPaymentUrl}
-                            onChange={(e) => {
-                              setGrowPaymentUrl(e.target.value);
-                              setOtherPaymentUrl("");
-                              setExternalPaymentUrl(e.target.value);
-                            }}
-                            placeholder={t('publishModal.growLinkPlaceholder')}
-                            className="bg-white/5 border-white/10 hover:border-emerald-500/50 focus:border-emerald-500 text-white h-12 rounded-xl transition-colors"
-                            data-testid="input-grow-payment-url"
-                          />
-                        </div>
-                      </div>
-                    </GlassPanel>
+                      <Input
+                        type="url"
+                        value={growPaymentUrl}
+                        onChange={(e) => {
+                          setGrowPaymentUrl(e.target.value);
+                          setOtherPaymentUrl("");
+                          setExternalPaymentUrl(e.target.value);
+                        }}
+                        placeholder={t('publishModal.growLinkPlaceholder')}
+                        className="bg-white/5 border-white/10 focus:border-violet-500 text-white h-12 rounded-xl mb-3"
+                        data-testid="input-grow-payment-url"
+                      />
+                      
+                      <button
+                        onClick={() => window.open('https://grow.website/', '_blank')}
+                        className="text-violet-400 hover:text-violet-300 text-sm flex items-center gap-1 transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        {t('publishModal.openGrow')}
+                      </button>
+                    </div>
 
-                    <GlassPanel 
-                      variant={otherPaymentUrl ? "highlight" : "subtle"} 
-                      padding="none"
-                      className="overflow-hidden"
+                    <div 
+                      className={`rounded-2xl border overflow-hidden transition-all ${
+                        otherPaymentUrl ? 'bg-violet-600/10 border-violet-500/50' : 'bg-white/5 border-white/10'
+                      }`}
                     >
                       <button
                         onClick={() => setShowOtherPayment(!showOtherPayment)}
-                        className="w-full p-5 flex items-center justify-between text-white/60 hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between text-white/60 hover:bg-white/5 transition-colors"
                         data-testid="button-toggle-other-payment"
                       >
                         <span className="font-medium">{t('publishModal.otherPaymentOption')}</span>
-                        {(showOtherPayment || otherPaymentUrl) 
-                          ? <ChevronUp className="w-5 h-5" /> 
-                          : <ChevronDown className="w-5 h-5" />}
+                        {showOtherPayment ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </button>
                       
                       <AnimatePresence>
-                        {(showOtherPayment || otherPaymentUrl) && (
+                        {showOtherPayment && (
                           <motion.div 
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="px-5 pb-5 space-y-3"
+                            className="px-4 pb-4"
                           >
-                            <p className="text-sm text-white/40">{t('publishModal.otherPaymentDescription')}</p>
+                            <p className="text-sm text-white/40 mb-3">{t('publishModal.otherPaymentDescription')}</p>
                             <Input
                               type="url"
                               value={otherPaymentUrl}
@@ -442,53 +369,47 @@ const JourneyPublishPage = () => {
                                 setExternalPaymentUrl(e.target.value);
                               }}
                               placeholder={t('publishModal.otherPaymentPlaceholder')}
-                              className="bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white h-12 rounded-xl transition-colors"
+                              className="bg-white/5 border-white/10 focus:border-violet-500 text-white h-12 rounded-xl"
                               data-testid="input-other-payment-url"
                             />
-                            <p className="text-xs text-white/30">{t('publishModal.paymentRedirectNote')}</p>
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </GlassPanel>
+                    </div>
 
                     {!externalPaymentUrl && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <GlassPanel className="bg-amber-500/10 border-amber-500/20">
-                          <p className="text-sm text-amber-300 text-center">{t('publishModal.enterPaymentLink')}</p>
-                        </GlassPanel>
-                      </motion.div>
+                      <p className="text-amber-400/80 text-sm text-center">
+                        {t('publishModal.enterPaymentLink')}
+                      </p>
                     )}
                   </div>
                 ) : (
-                  <GlassPanel variant="highlight">
-                    <p className="text-white/70 text-center">{t('publishModal.freeFlowNote')}</p>
-                  </GlassPanel>
+                  <div className="bg-white/5 rounded-2xl p-5 mb-8">
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-emerald-400" />
+                      <p className="text-white/70">{t('publishModal.freeFlowNote')}</p>
+                    </div>
+                  </div>
                 )}
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3">
                   <Button
                     variant="ghost"
                     onClick={() => setCurrentStep(1)}
-                    className="flex-1 border border-white/10 text-white/70 hover:bg-white/5 hover:text-white h-14"
+                    className="flex-1 border border-white/10 text-white/60 hover:bg-white/5 hover:text-white h-14"
                     data-testid="button-back"
                   >
-                    <ArrowLeft className="w-4 h-4 mx-2" />
+                    <ArrowLeft className="w-4 h-4 mx-1" />
                     {t('publishModal.back')}
                   </Button>
                   <Button
                     onClick={() => setCurrentStep(3)}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-lg font-medium shadow-lg shadow-violet-600/25 disabled:opacity-50"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 font-medium disabled:opacity-40"
                     data-testid="button-next-after-payment"
-                    disabled={(parseFloat(publishPrice) || 0) > 0 && !externalPaymentUrl}
+                    disabled={isPaid && !externalPaymentUrl}
                   >
-                    {(parseFloat(publishPrice) || 0) === 0 
-                      ? t('publishModal.skipAndContinue') 
-                      : externalPaymentUrl 
-                        ? t('publishModal.nextStep') 
-                        : t('publishModal.setupRequired')}
+                    {t('publishModal.continue')}
+                    <ArrowRight className="w-5 h-5 mx-2" />
                   </Button>
                 </div>
               </motion.div>
@@ -497,78 +418,60 @@ const JourneyPublishPage = () => {
             {currentStep === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center"
               >
-                <GradientHeader
-                  icon={<Rocket className="w-full h-full" />}
-                  title={t('publishModal.step3Title')}
-                  subtitle={t('publishModal.step3Description')}
-                  size="lg"
-                />
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  {t('publishModal.step3Title')}
+                </h1>
+                <p className="text-white/50 mb-8">
+                  {t('publishModal.step3Description')}
+                </p>
 
-                <GlassPanel variant="subtle" className="space-y-4">
-                  <h4 className="font-medium text-violet-300">{t('publishModal.whatIsMiniSite')}</h4>
-                  <p className="text-sm text-white/60">{t('publishModal.miniSiteExplanation')}</p>
-                  <div className="space-y-2">
-                    {[t('publishModal.miniSiteFeature1'), t('publishModal.miniSiteFeature2'), t('publishModal.miniSiteFeature3')].map((feature, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className="w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="w-3 h-3 text-violet-400" />
-                        </div>
-                        <span className="text-sm text-white/70">{feature}</span>
-                      </div>
-                    ))}
+                <div className="bg-white/5 rounded-2xl p-5 mb-8 text-start space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-white/50">{t('publishModal.flowName')}</span>
+                    <span className="text-white font-medium">{journeyData.name}</span>
                   </div>
-                </GlassPanel>
-
-                <GlassPanel className="space-y-0">
-                  <h4 className="font-medium text-white mb-4">{t('publishModal.flowSummary')}</h4>
-                  <div className="divide-y divide-white/10">
-                    <div className="flex justify-between items-center py-4">
-                      <span className="text-white/50">{t('publishModal.flowName')}</span>
-                      <span className="text-white font-medium">{journeyData.name}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-4">
-                      <span className="text-white/50">{t('publishModal.duration')}</span>
-                      <span className="text-white font-medium">{t('publishModal.daysCount', { count: journeyData.duration || 7 })}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-4">
-                      <span className="text-white/50">{t('publishModal.price')}</span>
-                      <span className="text-white font-semibold text-xl">
-                        {(parseFloat(publishPrice) || 0) === 0 
-                          ? t('free') 
-                          : `${t('publishModal.currencySymbol')}${publishPrice}`}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-white/50">{t('publishModal.price')}</span>
+                    <span className="text-white font-medium">
+                      {isPaid ? `${publishPrice} ${t('publishModal.currencySymbol')}` : t('publishModal.free')}
+                    </span>
                   </div>
-                </GlassPanel>
+                  {isPaid && externalPaymentUrl && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-white/50">{t('publishModal.paymentLink')}</span>
+                      <span className="text-violet-400 text-sm truncate max-w-[180px]">{externalPaymentUrl}</span>
+                    </div>
+                  )}
+                </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3">
                   <Button
                     variant="ghost"
                     onClick={() => setCurrentStep(2)}
-                    className="flex-1 border border-white/10 text-white/70 hover:bg-white/5 hover:text-white h-14"
-                    data-testid="button-back-step3"
+                    className="flex-1 border border-white/10 text-white/60 hover:bg-white/5 hover:text-white h-14"
+                    data-testid="button-back-confirm"
                   >
-                    <ArrowLeft className="w-4 h-4 mx-2" />
+                    <ArrowLeft className="w-4 h-4 mx-1" />
                     {t('publishModal.back')}
                   </Button>
                   <Button
                     onClick={handleConfirmPublish}
                     disabled={isPublishing}
-                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 h-16 text-lg font-bold shadow-xl shadow-emerald-500/25"
-                    data-testid="button-publish-now"
+                    className="flex-1 bg-violet-600 hover:bg-violet-700 h-14 font-medium"
+                    data-testid="button-publish"
                   >
                     {isPublishing ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        <Rocket className="w-6 h-6 mx-2" />
-                        {t('publishModal.createAndPublish')}
+                        <Rocket className="w-5 h-5 mx-2" />
+                        {t('publishModal.publishNow')}
                       </>
                     )}
                   </Button>
@@ -581,101 +484,74 @@ const JourneyPublishPage = () => {
                 key="step4"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
+                transition={{ duration: 0.3 }}
+                className="text-center"
               >
-                <div className="text-center">
-                  <motion.div 
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", delay: 0.2, duration: 0.8 }}
-                    className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/30"
-                  >
-                    <CheckCircle className="w-12 h-12 text-white" />
-                  </motion.div>
-                  <motion.h2 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-3xl font-bold text-white mb-3"
-                  >
-                    {t('publishModal.step4Title')}
-                  </motion.h2>
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-white/60 text-lg"
-                  >
-                    {t('publishModal.step4Description')}
-                  </motion.p>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+                  className="w-20 h-20 rounded-full bg-emerald-500 mx-auto flex items-center justify-center mb-8"
+                >
+                  <Check className="w-10 h-10 text-white" />
+                </motion.div>
+
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  {t('publishModal.successTitle')}
+                </h1>
+                <p className="text-white/50 mb-8">
+                  {t('publishModal.successDescription')}
+                </p>
+
+                <div className="bg-white/5 rounded-2xl p-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      readOnly
+                      value={getShareableLink()}
+                      className="flex-1 bg-transparent text-white/70 text-sm outline-none"
+                      data-testid="text-shareable-link"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyLink}
+                      className="text-violet-400 hover:text-violet-300 hover:bg-violet-500/10"
+                      data-testid="button-copy-link"
+                    >
+                      {copiedLink ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-4"
-                >
-                  <GlassPanel variant="highlight" className="text-center">
-                    <Share2 className="w-6 h-6 text-violet-400 mx-auto mb-3" />
-                    <p className="text-white/70 text-sm mb-3">{t('publishModal.shareableLink')}</p>
-                    <p className="text-lg text-white font-mono break-all bg-black/20 rounded-xl p-4">
-                      {getShareableLink()}
-                    </p>
-                  </GlassPanel>
-
+                <div className="space-y-3">
                   <Button
                     onClick={handleCopyLink}
-                    className={`w-full h-14 text-lg font-medium transition-all ${
-                      copiedLink 
-                        ? 'bg-emerald-600 hover:bg-emerald-600' 
-                        : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 shadow-lg shadow-violet-600/25'
-                    }`}
-                    data-testid="button-copy-link-action"
+                    className="w-full bg-violet-600 hover:bg-violet-700 h-14 font-medium"
+                    data-testid="button-copy-and-share"
                   >
-                    {copiedLink ? (
-                      <>
-                        <Check className="w-5 h-5 mx-2" />
-                        {t('publishModal.copied')}
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-5 h-5 mx-2" />
-                        {t('publishModal.copyLink')}
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                  className="pt-4"
-                >
-                  <Button
-                    onClick={() => setLocation('/journeys')}
-                    className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-lg font-medium shadow-lg shadow-violet-600/25"
-                    data-testid="button-to-journeys"
-                  >
-                    <Check className="w-5 h-5 mx-2" />
-                    {t('publishModal.done')}
+                    <Copy className="w-5 h-5 mx-2" />
+                    {copiedLink ? t('publishModal.linkCopied') : t('publishModal.copyLink')}
                   </Button>
                   
-                  <button
-                    onClick={() => setLocation(`/journey/${journeyData.id}/edit`)}
-                    className="w-full text-white/40 hover:text-white/70 text-sm py-4 transition-colors"
-                    data-testid="button-back-to-editor-final"
+                  <Button
+                    variant="ghost"
+                    onClick={() => setLocation('/journeys')}
+                    className="w-full border border-white/10 text-white/60 hover:bg-white/5 hover:text-white h-12"
+                    data-testid="button-back-to-flows"
                   >
-                    {t('journeySettings.backToEditor')}
-                  </button>
-                </motion.div>
+                    {t('publishModal.backToFlows')}
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

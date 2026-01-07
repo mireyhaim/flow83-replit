@@ -3,14 +3,12 @@ import { useRoute, useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { ChevronLeft, Loader2, Save, Settings, LayoutGrid, Target, Users, Clock, FileText } from "lucide-react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi } from "@/lib/api";
 import { useTranslation } from "react-i18next";
 import type { Journey } from "@shared/schema";
 import { motion } from "framer-motion";
-import { GlassPanel, GradientHeader } from "@/components/ui/glass-panel";
 
 const JourneySettingsPage = () => {
   const [match, params] = useRoute("/journey/:id/settings");
@@ -80,212 +78,152 @@ const JourneySettingsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center relative z-10"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-violet-600/30">
-            <Loader2 className="w-8 h-8 animate-spin text-white" />
-          </div>
-          <p className="text-white/60 text-lg">{t('loadingFlow')}</p>
-        </motion.div>
+      <div className="min-h-screen bg-[#0c0a12] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
   if (!journey) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
-        <GlassPanel className="text-center max-w-md relative z-10">
-          <h1 className="text-2xl font-bold text-white mb-4">{t('journeySettings.flowNotFound')}</h1>
+      <div className="min-h-screen bg-[#0c0a12] flex items-center justify-center p-6">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold text-white mb-4">{t('journeySettings.flowNotFound')}</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-go-journeys" className="bg-violet-600 hover:bg-violet-700">
             {t('journeySettings.goToFlows')}
           </Button>
-        </GlassPanel>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] relative overflow-hidden">
-      <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 end-1/3 w-[300px] h-[300px] bg-fuchsia-600/5 rounded-full blur-[80px] pointer-events-none" />
-      
-      <div className="relative z-10">
-        <header className="bg-black/20 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
-          <div className="max-w-4xl mx-auto px-4 md:px-6">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3">
-                <Link href="/journeys" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors" data-testid="link-my-flows">
-                  <LayoutGrid className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden md:inline">{t('journeyCreate.myFlows')}</span>
-                </Link>
-                <div className="h-5 w-px bg-white/10" />
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
-                    <Settings className="w-4 h-4 text-white" />
-                  </div>
-                  <h1 className="text-base md:text-lg font-semibold text-white">{t('journeySettings.title')}</h1>
-                </div>
+    <div className="min-h-screen bg-[#0c0a12] flex flex-col">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <Link 
+          href={`/journey/${journey.id}/edit`}
+          className="text-white/40 hover:text-white/70 transition-colors text-sm flex items-center gap-2"
+          data-testid="link-back-to-editor"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('journeySettings.backToEditor')}</span>
+        </Link>
+        
+        <h1 className="text-white/70 font-medium">{t('journeySettings.title')}</h1>
+        
+        <div className="w-20" />
+      </header>
+
+      <main className="flex-1 flex items-start justify-center p-6 pt-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-lg"
+        >
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {t('journeySettings.editFlowDetails')}
+            </h1>
+            <p className="text-white/50">{journey.name}</p>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-white/70 text-sm mb-2">{t('journeySettings.flowName')} *</label>
+              <Input 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t('journeySettings.flowNamePlaceholder')}
+                className="bg-white/5 border-white/10 focus:border-violet-500 text-white h-12 rounded-xl"
+                data-testid="input-journey-name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white/70 text-sm mb-2">{t('journeySettings.mainGoal')} *</label>
+              <Textarea 
+                value={formData.goal}
+                onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                placeholder={t('journeySettings.mainGoalPlaceholder')}
+                className="min-h-[100px] bg-white/5 border-white/10 focus:border-violet-500 text-white rounded-xl resize-none"
+                data-testid="textarea-journey-goal"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white/70 text-sm mb-2">{t('journeySettings.targetAudience')} *</label>
+              <Input 
+                value={formData.audience}
+                onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
+                placeholder={t('journeySettings.targetAudiencePlaceholder')}
+                className="bg-white/5 border-white/10 focus:border-violet-500 text-white h-12 rounded-xl"
+                data-testid="input-journey-audience"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white/70 text-sm mb-3">{t('journeySettings.duration')} *</label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setFormData({ ...formData, duration: "3" })}
+                  data-testid="radio-duration-3"
+                  className={`flex-1 py-4 rounded-xl border transition-all text-center ${
+                    formData.duration === "3"
+                      ? "bg-violet-600 border-violet-500 text-white"
+                      : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
+                  }`}
+                >
+                  <div className="text-2xl font-bold">3</div>
+                  <div className="text-sm opacity-70">{t('journeySettings.days3')}</div>
+                </button>
+                <button
+                  onClick={() => setFormData({ ...formData, duration: "7" })}
+                  data-testid="radio-duration-7"
+                  className={`flex-1 py-4 rounded-xl border transition-all text-center ${
+                    formData.duration === "7"
+                      ? "bg-violet-600 border-violet-500 text-white"
+                      : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
+                  }`}
+                >
+                  <div className="text-2xl font-bold">7</div>
+                  <div className="text-sm opacity-70">{t('journeySettings.days7')}</div>
+                </button>
               </div>
-              <button
-                onClick={() => setLocation(`/journey/${journey.id}/edit`)}
-                className="flex items-center gap-1 text-white/50 hover:text-white text-sm transition-colors"
-                data-testid="button-back-to-editor"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span className="hidden md:inline">{t('journeySettings.backToEditor')}</span>
-              </button>
+            </div>
+
+            <div>
+              <label className="block text-white/40 text-sm mb-2">
+                {t('journeySettings.description')} <span className="text-white/20">({t('journeySettings.descriptionOptional')})</span>
+              </label>
+              <Textarea 
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder={t('journeySettings.descriptionPlaceholder')}
+                className="min-h-[80px] bg-white/5 border-white/10 focus:border-violet-500 text-white rounded-xl resize-none"
+                data-testid="textarea-journey-description"
+              />
             </div>
           </div>
-        </header>
 
-        <main className="max-w-2xl mx-auto px-4 md:px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <GradientHeader
-              icon={<Settings className="w-full h-full" />}
-              title={t('journeySettings.editFlowDetails')}
-              subtitle={journey.name}
-              size="md"
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mt-8"
-          >
-            <GlassPanel className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-violet-400" />
-                  <Label htmlFor="name" className="text-sm font-medium text-white">{t('journeySettings.flowName')} *</Label>
-                </div>
-                <Input 
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={t('journeySettings.flowNamePlaceholder')}
-                  className="bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white placeholder:text-white/30 h-12 rounded-xl transition-colors"
-                  data-testid="input-journey-name"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Target className="w-4 h-4 text-violet-400" />
-                  <Label htmlFor="goal" className="text-sm font-medium text-white">{t('journeySettings.mainGoal')} *</Label>
-                </div>
-                <Textarea 
-                  id="goal"
-                  value={formData.goal}
-                  onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                  placeholder={t('journeySettings.mainGoalPlaceholder')}
-                  className="min-h-[100px] bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white placeholder:text-white/30 rounded-xl transition-colors resize-none"
-                  data-testid="textarea-journey-goal"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Users className="w-4 h-4 text-violet-400" />
-                  <Label htmlFor="audience" className="text-sm font-medium text-white">{t('journeySettings.targetAudience')} *</Label>
-                </div>
-                <Input 
-                  id="audience"
-                  value={formData.audience}
-                  onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
-                  placeholder={t('journeySettings.targetAudiencePlaceholder')}
-                  className="bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white placeholder:text-white/30 h-12 rounded-xl transition-colors"
-                  data-testid="input-journey-audience"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="w-4 h-4 text-violet-400" />
-                  <Label className="text-sm font-medium text-white">{t('journeySettings.duration')} *</Label>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setFormData({ ...formData, duration: "3" })}
-                    data-testid="radio-duration-3"
-                    className={`flex-1 p-4 rounded-xl border transition-all ${
-                      formData.duration === "3"
-                        ? "bg-violet-600/20 border-violet-500 text-white"
-                        : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
-                    }`}
-                  >
-                    <div className="text-2xl font-bold mb-1">3</div>
-                    <div className="text-sm opacity-70">{t('journeySettings.days3')}</div>
-                  </button>
-                  <button
-                    onClick={() => setFormData({ ...formData, duration: "7" })}
-                    data-testid="radio-duration-7"
-                    className={`flex-1 p-4 rounded-xl border transition-all ${
-                      formData.duration === "7"
-                        ? "bg-violet-600/20 border-violet-500 text-white"
-                        : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
-                    }`}
-                  >
-                    <div className="text-2xl font-bold mb-1">7</div>
-                    <div className="text-sm opacity-70">{t('journeySettings.days7')}</div>
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-4 h-4 text-white/40" />
-                  <Label htmlFor="description" className="text-sm font-medium text-white/60">{t('journeySettings.description')}</Label>
-                  <span className="text-xs text-white/30">({t('journeySettings.descriptionOptional')})</span>
-                </div>
-                <Textarea 
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder={t('journeySettings.descriptionPlaceholder')}
-                  className="min-h-[80px] bg-white/5 border-white/10 hover:border-violet-500/50 focus:border-violet-500 text-white placeholder:text-white/30 rounded-xl transition-colors resize-none"
-                  data-testid="textarea-journey-description"
-                />
-              </div>
-            </GlassPanel>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="mt-6"
-          >
+          <div className="mt-10">
             <Button 
               onClick={handleSave} 
-              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-14 text-lg font-medium shadow-lg shadow-violet-600/25"
+              className="w-full bg-violet-600 hover:bg-violet-700 h-14 text-lg font-medium"
               disabled={isSaving || !formData.name || !formData.goal || !formData.audience}
               data-testid="button-save-settings"
             >
               {isSaving ? (
-                <Loader2 className="w-5 h-5 animate-spin mx-2" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <Save className="w-5 h-5 mx-2" />
+                <>
+                  <Save className="w-5 h-5 mx-2" />
+                  {t('journeySettings.saveAndReturn')}
+                </>
               )}
-              {t('journeySettings.saveAndReturn')}
             </Button>
-          </motion.div>
-        </main>
-      </div>
+          </div>
+        </motion.div>
+      </main>
     </div>
   );
 };
