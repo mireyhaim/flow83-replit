@@ -70,6 +70,7 @@ export interface IStorage {
   createActivityEvent(event: InsertActivityEvent): Promise<ActivityEvent>;
   getInactiveParticipants(creatorId: string, daysSinceActive: number): Promise<(Participant & { journey: Journey; user: User })[]>;
   getParticipantsByCreator(creatorId: string): Promise<Participant[]>;
+  getParticipantsWithJourneyByCreator(creatorId: string): Promise<(Participant & { journeyName: string })[]>;
 
   getNotificationSettings(userId: string): Promise<NotificationSettings | undefined>;
   upsertNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings>;
@@ -456,6 +457,23 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(journeys, eq(participants.journeyId, journeys.id))
       .where(eq(journeys.creatorId, creatorId))
       .then(results => results.map(r => r.participant));
+  }
+
+  async getParticipantsWithJourneyByCreator(creatorId: string): Promise<(Participant & { journeyName: string })[]> {
+    const results = await db
+      .select({
+        participant: participants,
+        journeyName: journeys.name,
+      })
+      .from(participants)
+      .innerJoin(journeys, eq(participants.journeyId, journeys.id))
+      .where(eq(journeys.creatorId, creatorId))
+      .orderBy(desc(participants.startedAt));
+    
+    return results.map(r => ({
+      ...r.participant,
+      journeyName: r.journeyName,
+    }));
   }
 
   async getNotificationSettings(userId: string): Promise<NotificationSettings | undefined> {

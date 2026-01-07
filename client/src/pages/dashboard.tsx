@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,11 +6,15 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, Eye, EyeOff, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import type { ActivityEvent } from "@shared/schema";
+import type { ActivityEvent, Participant } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
+
+interface ParticipantWithJourney extends Participant {
+  journeyName: string;
+}
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation('dashboard');
@@ -56,6 +60,47 @@ export default function Dashboard() {
     queryFn: earningsApi.get,
     enabled: isAuthenticated,
   });
+
+  const { data: participants = [] } = useQuery<ParticipantWithJourney[]>({
+    queryKey: ["/api/participants/all"],
+    queryFn: async () => {
+      const res = await fetch("/api/participants/all");
+      if (!res.ok) throw new Error("Failed to fetch participants");
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
+
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+
+  const toggleIdReveal = (participantId: string) => {
+    setRevealedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(participantId)) {
+        next.delete(participantId);
+      } else {
+        next.add(participantId);
+      }
+      return next;
+    });
+  };
+
+  const maskIdNumber = (idNumber: string | null | undefined, participantId: string) => {
+    if (!idNumber) return '-';
+    if (revealedIds.has(participantId)) return idNumber;
+    // Handle short IDs safely - show last 4 or fewer chars with asterisks
+    const visibleChars = Math.min(4, idNumber.length);
+    return `***${idNumber.slice(-visibleChars)}`;
+  };
+
+  const getParticipantStatus = (p: ParticipantWithJourney) => {
+    if (p.completedAt) return { label: t('participantStatus.completed'), color: 'bg-emerald-100 text-emerald-700' };
+    const daysSinceActive = p.lastActiveAt 
+      ? Math.floor((Date.now() - new Date(p.lastActiveAt).getTime()) / (1000 * 60 * 60 * 24))
+      : 999;
+    if (daysSinceActive > 3) return { label: t('participantStatus.stuck'), color: 'bg-amber-100 text-amber-700' };
+    return { label: t('participantStatus.active'), color: 'bg-sky-100 text-sky-700' };
+  };
 
   const getActivityIcon = (eventType: string) => {
     switch (eventType) {
@@ -352,6 +397,125 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Participants Table */}
+          <div className="mt-8 bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all" data-testid="card-participants-table">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-sky-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">{t('participantsTable.title')}</h3>
+                  <p className="text-xs text-slate-400">{t('participantsTable.subtitle')}</p>
+                </div>
+              </div>
+            </div>
+            
+            {participants.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-sm text-slate-500">{t('participantsTable.empty')}</p>
+                <p className="text-xs text-slate-400 mt-1">{t('participantsTable.emptyHint')}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full" data-testid="table-participants">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.name')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.email')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.idNumber')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.flow')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.day')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.status')}</th>
+                      <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.payment')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participants.slice(0, 10).map((p) => {
+                      const status = getParticipantStatus(p);
+                      return (
+                        <tr 
+                          key={p.id} 
+                          className="border-b border-slate-50 hover:bg-slate-50 transition-colors"
+                          data-testid={`row-participant-${p.id}`}
+                        >
+                          <td className="py-3 px-4">
+                            <span className="text-sm font-medium text-slate-900" data-testid={`text-name-${p.id}`}>
+                              {p.name || '-'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="text-sm text-slate-600" data-testid={`text-email-${p.id}`}>
+                              {p.email || '-'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-slate-600 font-mono" data-testid={`text-id-${p.id}`}>
+                                {maskIdNumber(p.idNumber, p.id)}
+                              </span>
+                              {p.idNumber && (
+                                <button
+                                  onClick={() => toggleIdReveal(p.id)}
+                                  className="p-1 hover:bg-slate-200 rounded transition-colors"
+                                  data-testid={`button-toggle-id-${p.id}`}
+                                  title={revealedIds.has(p.id) ? t('participantsTable.hideId') : t('participantsTable.showId')}
+                                >
+                                  {revealedIds.has(p.id) ? (
+                                    <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5 text-slate-400" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="text-sm text-slate-600" data-testid={`text-flow-${p.id}`}>
+                              {p.journeyName}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="text-sm text-slate-600" data-testid={`text-day-${p.id}`}>
+                              {t('participantsTable.dayNumber', { day: p.currentDay || 1 })}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span 
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${status.color}`}
+                              data-testid={`status-${p.id}`}
+                            >
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            {p.paymentVerified ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-600 text-sm">
+                                <CheckCircle className="h-4 w-4" />
+                                {t('participantsTable.paid')}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-slate-400 text-sm">
+                                <CreditCard className="h-4 w-4" />
+                                {t('participantsTable.pending')}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {participants.length > 10 && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-slate-400">{t('participantsTable.showingOf', { shown: 10, total: participants.length })}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

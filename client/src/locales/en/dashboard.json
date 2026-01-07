@@ -382,6 +382,32 @@
     "subscribeNow": "Subscribe Now"
   },
 
+  "participantStatus": {
+    "active": "Active",
+    "stuck": "Stuck",
+    "completed": "Completed"
+  },
+
+  "participantsTable": {
+    "title": "Participants",
+    "subtitle": "All participants in your flows",
+    "empty": "No participants yet",
+    "emptyHint": "Participants will appear here when they join your flows",
+    "name": "Name",
+    "email": "Email",
+    "idNumber": "ID",
+    "flow": "Flow",
+    "day": "Day",
+    "status": "Status",
+    "payment": "Payment",
+    "dayNumber": "Day {{day}}",
+    "paid": "Paid",
+    "pending": "Pending",
+    "showId": "Show ID",
+    "hideId": "Hide ID",
+    "showingOf": "Showing {{shown}} of {{total}}"
+  },
+
   "subscription": {
     "choosePlanTitle": "Choose a Plan to Activate Your Flow",
     "choosePlanDescription": "You've created something amazing! To publish your flow and start sharing it with clients, choose a plan that fits your needs.",

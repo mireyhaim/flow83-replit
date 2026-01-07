@@ -382,6 +382,32 @@
     "subscribeNow": "הירשם עכשיו"
   },
 
+  "participantStatus": {
+    "active": "פעיל",
+    "stuck": "תקוע",
+    "completed": "השלים"
+  },
+
+  "participantsTable": {
+    "title": "משתתפים",
+    "subtitle": "כל המשתתפים בתהליכים שלך",
+    "empty": "אין משתתפים עדיין",
+    "emptyHint": "משתתפים יופיעו כאן כשיצטרפו לתהליכים שלך",
+    "name": "שם",
+    "email": "אימייל",
+    "idNumber": "ת.ז.",
+    "flow": "תהליך",
+    "day": "יום",
+    "status": "סטטוס",
+    "payment": "תשלום",
+    "dayNumber": "יום {{day}}",
+    "paid": "שולם",
+    "pending": "ממתין",
+    "showId": "הצג ת.ז.",
+    "hideId": "הסתר ת.ז.",
+    "showingOf": "מציג {{shown}} מתוך {{total}}"
+  },
+
   "subscription": {
     "choosePlanTitle": "בחרו מסלול להפעלת ה-Flow שלכם",
     "choosePlanDescription": "יצרתם משהו מדהים! כדי לפרסם את ה-Flow ולהתחיל לשתף אותו עם לקוחות, בחרו מסלול שמתאים לצרכים שלכם.",

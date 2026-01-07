@@ -228,6 +228,17 @@ export async function registerRoutes(
     }
   });
 
+  // Get all participants for mentor dashboard
+  app.get("/api/participants/all", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const participants = await storage.getParticipantsWithJourneyByCreator(userId);
+      res.json(participants);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch participants" });
+    }
+  });
+
   // Notification settings routes
   app.get("/api/notification-settings", isAuthenticated, async (req: any, res) => {
     try {
