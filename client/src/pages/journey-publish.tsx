@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  ArrowLeft, ArrowRight, Check, CreditCard, Rocket, 
+  ArrowLeft, Check, CreditCard, Rocket, 
   Copy, ExternalLink, Loader2, Lock, Crown, ChevronDown, ChevronUp
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -255,7 +255,7 @@ const JourneyPublishPage = () => {
                     value={publishPrice}
                     onChange={(e) => setPublishPrice(e.target.value)}
                     placeholder="0"
-                    className="bg-white/5 border-white/10 focus:border-violet-500 text-white text-5xl text-center h-24 rounded-2xl"
+                    className="bg-white/5 border-white/10 focus:border-violet-500 text-white text-5xl text-center h-24 rounded-2xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     data-testid="input-publish-price"
                   />
                   <span className="absolute end-5 top-1/2 -translate-y-1/2 text-white/30 text-2xl">
@@ -275,7 +275,6 @@ const JourneyPublishPage = () => {
                   data-testid="button-next-step"
                 >
                   {t('publishModal.continue')}
-                  <ArrowRight className="w-5 h-5 mx-2" />
                 </Button>
               </motion.div>
             )}
@@ -399,7 +398,6 @@ const JourneyPublishPage = () => {
                     className="flex-1 border border-white/10 text-white/60 hover:bg-white/5 hover:text-white h-14"
                     data-testid="button-back"
                   >
-                    <ArrowLeft className="w-4 h-4 mx-1" />
                     {t('publishModal.back')}
                   </Button>
                   <Button
@@ -409,7 +407,6 @@ const JourneyPublishPage = () => {
                     disabled={isPaid && !externalPaymentUrl}
                   >
                     {t('publishModal.continue')}
-                    <ArrowRight className="w-5 h-5 mx-2" />
                   </Button>
                 </div>
               </motion.div>
@@ -457,7 +454,6 @@ const JourneyPublishPage = () => {
                     className="flex-1 border border-white/10 text-white/60 hover:bg-white/5 hover:text-white h-14"
                     data-testid="button-back-confirm"
                   >
-                    <ArrowLeft className="w-4 h-4 mx-1" />
                     {t('publishModal.back')}
                   </Button>
                   <Button
