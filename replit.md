@@ -129,35 +129,62 @@ The journey creation experience uses a modern conversational wizard design (simi
 - `client/src/components/journey/ConversationalJourneyWizard.tsx` - Main wizard component
 - `client/src/pages/journey-create.tsx` - Page wrapper
 
-### Conversation Phase System
+### Conversation Director System
 
-The chat experience uses a state machine to create authentic 1:1 mentor conversations (not content delivery):
+The chat experience uses a **Conversation Director** architecture where deterministic logic controls the conversation flow (WHAT to do) while AI only phrases responses (HOW to say it). This ensures consistent, human-feeling conversations that don't feel like generic AI.
+
+**Core Principle:** The system leads, not the AI.
+
+**Pipeline:**
+1. **Director** (`server/conversationDirector.ts`) - Analyzes user message, selects action using weighted probabilities
+2. **PromptBuilder** (`server/promptBuilder.ts`) - Creates action-specific prompts with constraints
+3. **AI** - Phrases the response following strict guidelines
+4. **Sanitizer** - Filters artificial phrases, enforces word limits
 
 **Phases:**
-- `intro` - Welcome and opening question ("How are you arriving today?")
-- `reflection` - Mirror user's emotions, ask deeper questions
+- `intro` - Welcome and opening question
+- `reflection` - Mirror emotions, ask deeper questions
 - `task` - Present ONE specific task for the day
-- `integration` - Acknowledge work done, close the day warmly
+- `integration` - Acknowledge work done, close warmly
 
-**Phase Transitions (Rule-Based):**
-- intro → reflection: User sends message > 10 characters
-- reflection → task: User shows emotional engagement (keywords like "feel", "good", "hard") or message > 30 chars
-- task → integration: User indicates completion (keywords like "done", "finished", "tried") or message > 50 chars
-- integration → Day Complete: Triggers day summary generation, resets to `intro` for next day
+**Actions:**
+- `reflect` - Mirror what participant shared
+- `ask_question` - Ask a single focused question
+- `validate` - Acknowledge feelings/experience
+- `micro_task` - Give small immediate action
+- `give_task` - Present the main day task
+- `silence` - Minimal response, hold space
+- `close_day` - Summarize and close
 
-**AI Response Constraints:**
-- Max 120 words per response
-- One intention per message (don't ask multiple questions)
-- Conversational Hebrew tone matching mentor's voice
-- No bullet points or structured formats
+**Mentor Profiles:**
+Each mentor style has base action weights that shape the conversation:
+- `practical` - Higher task weight, lower silence
+- `emotional` - Higher reflection, more validation
+- `spiritual` - More silence, contemplative questions
+- `structured` - More questions, organized approach
 
-**Database:**
-- `participants.currentPhase` stores current phase (default: 'intro')
-- Phase resets to 'intro' when day is completed
+Tone modifiers (warm, professional, motivating, direct) further adjust weights.
+
+**Blacklist System:**
+Filters artificial therapeutic phrases in Hebrew/English:
+- Filtered: "זה נפלא", "אני שמח/ה", "נהדר!", "תודה ששיתפת"
+- Replaced with grounded alternatives: "אני שומע/ת אותך", "זה לא פשוט"
+
+**State Persistence:**
+- `participants.currentPhase` - Current conversation phase
+- `participants.messageCountInPhase` - Messages in current phase
+- `participants.questionsAskedInPhase` - Questions asked in phase
+- All counters reset when day is completed
+
+**Feature Flag:**
+- `useDirector = !!journey.mentorStyle` - New journeys with mentorStyle use Director
+- Journeys without mentorStyle fall back to legacy phase system for backward compatibility
 
 **Key Files:**
-- `server/ai.ts`: getPhaseSpecificPrompt(), generateChatResponse(), detectPhaseTransition()
-- `server/routes.ts`: Chat endpoint with phase handling at `/api/participants/:participantId/steps/:stepId/messages`
+- `server/conversationDirector.ts` - Director logic, weighted action selection, state machine
+- `server/promptBuilder.ts` - Action prompts, blacklist, sanitization
+- `server/ai.ts` - AI integration, generateChatResponseWithDirector()
+- `server/routes.ts` - Chat endpoint at `/api/participants/:participantId/steps/:stepId/messages`
 
 ### Key Architectural Decisions
 

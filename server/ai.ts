@@ -1,4 +1,18 @@
 import OpenAI from "openai";
+import {
+  makeDecision,
+  updateState,
+  getMentorProfile,
+  initializeState,
+  ConversationState,
+  DirectorDecision,
+  ConversationPhase as DirectorPhase
+} from "./conversationDirector";
+import {
+  buildSystemPrompt,
+  buildMessages,
+  postProcess
+} from "./promptBuilder";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -2105,4 +2119,191 @@ Return valid JSON matching this structure exactly.`;
   }
 
   return JSON.parse(content) as LandingPageContent;
+}
+
+// =============================================
+// DIRECTOR-BASED CHAT SYSTEM
+// The system decides WHAT to do. AI only phrases it.
+// =============================================
+
+export interface DirectorChatContext {
+  journeyName: string;
+  dayNumber: number;
+  totalDays: number;
+  dayGoal: string;
+  dayTask: string;
+  mentorName: string;
+  mentorStyle?: string;
+  mentorTone?: string;
+  participantName?: string;
+  recentMessages: { role: string; content: string }[];
+  language: 'he' | 'en';
+  conversationState: ConversationState;
+}
+
+export interface DirectorChatResult {
+  response: string;
+  decision: DirectorDecision;
+  newState: ConversationState;
+  dayCompleted: boolean;
+}
+
+/**
+ * Generate chat response using the Conversation Director system
+ * 
+ * This is the new system where:
+ * - The Director (deterministic logic) decides WHAT to do
+ * - The PromptBuilder constrains the AI prompt
+ * - The AI only generates natural language phrasing
+ * - Post-processing filters blacklisted phrases
+ */
+export async function generateChatResponseWithDirector(
+  context: DirectorChatContext,
+  userMessage: string
+): Promise<DirectorChatResult> {
+  const isHebrew = context.language === 'he';
+  
+  // Get mentor profile based on style and tone
+  const mentorProfile = getMentorProfile(context.mentorStyle || 'emotional', context.mentorTone);
+  
+  // Director makes the decision
+  const decision = makeDecision(
+    context.conversationState,
+    userMessage,
+    mentorProfile
+  );
+  
+  console.log(`[Director] Decision:`, {
+    action: decision.action,
+    currentPhase: decision.phase,
+    nextPhase: decision.nextPhase,
+    reason: decision.reason
+  });
+  
+  // Build constrained prompt for AI
+  const systemPrompt = buildSystemPrompt(decision, {
+    mentorName: context.mentorName,
+    participantName: context.participantName,
+    mentorTone: context.mentorTone,
+    journeyName: context.journeyName,
+    dayNumber: context.dayNumber,
+    totalDays: context.totalDays,
+    dayGoal: context.dayGoal,
+    dayTask: context.dayTask,
+    recentMessages: context.recentMessages,
+    language: context.language
+  });
+  
+  const messages = buildMessages(systemPrompt, {
+    mentorName: context.mentorName,
+    participantName: context.participantName,
+    mentorTone: context.mentorTone,
+    journeyName: context.journeyName,
+    dayNumber: context.dayNumber,
+    totalDays: context.totalDays,
+    dayGoal: context.dayGoal,
+    dayTask: context.dayTask,
+    recentMessages: context.recentMessages,
+    language: context.language
+  }, userMessage);
+  
+  // Generate AI response with tight constraints
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    max_tokens: 150, // ~80 words max
+    temperature: 0.7, // Some creativity in phrasing
+  });
+  
+  let aiContent = response.choices[0].message.content;
+  
+  if (!aiContent) {
+    // Fallback based on action
+    const fallbacks: Record<string, { he: string; en: string }> = {
+      reflect: {
+        he: "אני שומע/ת. ממשיכים.",
+        en: "I hear you. Let's continue."
+      },
+      ask_question: {
+        he: "מה עולה לך כשאת חושבת על זה?",
+        en: "What comes up when you think about this?"
+      },
+      validate: {
+        he: "אני פה.",
+        en: "I'm here."
+      },
+      micro_task: {
+        he: "עצרי רגע. נשמי.",
+        en: "Pause for a moment. Breathe."
+      },
+      give_task: {
+        he: `המשימה להיום: ${context.dayTask}`,
+        en: `Today's task: ${context.dayTask}`
+      },
+      close_day: {
+        he: "[DAY_COMPLETE]עצרת היום. נתראה מחר.",
+        en: "[DAY_COMPLETE]You paused today. See you tomorrow."
+      },
+      summarize: {
+        he: "משהו זז היום.",
+        en: "Something shifted today."
+      },
+      silence: {
+        he: "...",
+        en: "..."
+      }
+    };
+    
+    aiContent = isHebrew 
+      ? fallbacks[decision.action]?.he || fallbacks.validate.he
+      : fallbacks[decision.action]?.en || fallbacks.validate.en;
+  }
+  
+  // Add [DAY_COMPLETE] marker for close_day action if not present
+  if (decision.action === 'close_day' && !aiContent.includes('[DAY_COMPLETE]')) {
+    aiContent = '[DAY_COMPLETE]' + aiContent;
+  }
+  
+  // Post-process: sanitize blacklisted phrases and trim
+  let processedContent = postProcess(aiContent, context.language);
+  
+  // Check for day completion
+  const dayCompleted = processedContent.includes('[DAY_COMPLETE]') || decision.context.completesDay === true;
+  
+  // Remove the marker from visible content
+  processedContent = processedContent.replace('[DAY_COMPLETE]', '').trim();
+  
+  // Update conversation state
+  const newState = updateState(context.conversationState, decision, userMessage);
+  if (decision.nextPhase) {
+    newState.phase = decision.nextPhase;
+  }
+  
+  console.log(`[Director] Response generated:`, {
+    responseLength: processedContent.length,
+    dayCompleted,
+    newPhase: newState.phase
+  });
+  
+  return {
+    response: processedContent,
+    decision,
+    newState,
+    dayCompleted
+  };
+}
+
+/**
+ * Initialize conversation state for Director system
+ */
+export function initializeDirectorState(dayTask: string, dayGoal: string): ConversationState {
+  return initializeState(dayTask, dayGoal);
+}
+
+/**
+ * Convert existing phase to Director phase
+ */
+export function toDirectorPhase(phase: ConversationPhase | string): DirectorPhase {
+  const validPhases: DirectorPhase[] = ['intro', 'reflection', 'task', 'integration'];
+  return validPhases.includes(phase as DirectorPhase) ? phase as DirectorPhase : 'intro';
 }

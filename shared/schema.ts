@@ -131,6 +131,8 @@ export const participants = pgTable("participants", {
   stripeSessionId: varchar("stripe_session_id"),
   currentDay: integer("current_day").default(1),
   currentPhase: text("current_phase").default("intro"), // intro | reflection | task | integration
+  messageCountInPhase: integer("message_count_in_phase").default(0), // Director state tracking
+  questionsAskedInPhase: integer("questions_asked_in_phase").default(0), // Director state tracking
   completedBlocks: text("completed_blocks").array().default(sql`'{}'::text[]`),
   startedAt: timestamp("started_at").defaultNow(),
   lastActiveAt: timestamp("last_active_at").defaultNow(),

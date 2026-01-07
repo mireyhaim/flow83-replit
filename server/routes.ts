@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, type ConversationPhase } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import multer from "multer";
@@ -1540,95 +1540,145 @@ export async function registerRoutes(
       const dayGoal = step.goal || step.description || "Focus on today's growth";
       const dayTask = step.task || "Complete today's exercise";
 
-      // IMPORTANT: Detect phase transition BEFORE generating response
-      // This ensures the AI responds in the NEW phase, not the old one
-      let phaseForResponse = currentPhase;
+      let botResponse: string;
       let dayCompleted = false;
-      
-      console.log(`[Phase] Current phase: ${currentPhase}, message length: ${content.trim().length}`);
-      
-      // Pre-transition detection (without bot response - based on user message only)
-      const transitionResult = await detectPhaseTransition(
-        currentPhase,
-        content.trim(),
-        "", // Empty bot response - we're detecting based on user input only
-        dayGoal,
-        dayTask
-      );
-      console.log(`[Phase] Pre-response transition check:`, transitionResult);
-      
-      if (transitionResult.shouldTransition && transitionResult.nextPhase) {
-        phaseForResponse = transitionResult.nextPhase;
-        console.log(`[Phase] Transitioning BEFORE response: ${currentPhase} -> ${phaseForResponse} (${transitionResult.reason})`);
-        
-        // Update participant's current phase before generating response
-        await storage.updateParticipant(participantId, { currentPhase: phaseForResponse });
-      } else if (transitionResult.shouldTransition && !transitionResult.nextPhase) {
-        // Day is complete (integration phase finished)
-        dayCompleted = true;
-        console.log(`Day completion via phase transition: ${transitionResult.reason}`);
-      }
+      let phaseForResponse = currentPhase;
 
-      // Generate response using the NEW phase (after transition)
-      let botResponse = await generateChatResponse(
-        {
-          journeyName: journey.name,
-          dayNumber: step.dayNumber,
-          totalDays,
-          dayTitle: step.title,
+      // Use Director system if journey has mentorStyle set
+      const useDirector = !!journey.mentorStyle;
+      
+      if (useDirector) {
+        console.log(`[Director] Using Director system for journey with mentorStyle: ${journey.mentorStyle}`);
+        
+        // Restore conversation state from participant record
+        const conversationState = initializeDirectorState(dayTask, dayGoal);
+        conversationState.phase = toDirectorPhase(currentPhase);
+        conversationState.messageCountInPhase = participant.messageCountInPhase || 0;
+        conversationState.questionsAskedInPhase = participant.questionsAskedInPhase || 0;
+        conversationState.totalMessageCount = history.length;
+        
+        // Generate response using Director system
+        const result = await generateChatResponseWithDirector(
+          {
+            journeyName: journey.name,
+            dayNumber: step.dayNumber,
+            totalDays,
+            dayGoal,
+            dayTask,
+            mentorName,
+            mentorStyle: journey.mentorStyle || undefined,
+            mentorTone: journey.tone || mentor?.toneOfVoice || undefined,
+            participantName,
+            recentMessages,
+            language: (journey.language === 'he' ? 'he' : 'en') as 'he' | 'en',
+            conversationState
+          },
+          content.trim()
+        );
+        
+        botResponse = result.response;
+        dayCompleted = result.dayCompleted;
+        phaseForResponse = result.newState.phase;
+        
+        // Persist conversation state to participant record
+        await storage.updateParticipant(participantId, { 
+          currentPhase: result.newState.phase,
+          messageCountInPhase: result.newState.messageCountInPhase,
+          questionsAskedInPhase: result.newState.questionsAskedInPhase
+        });
+        
+        console.log(`[Director] Result: action=${result.decision.action}, phase=${result.newState.phase}, dayCompleted=${dayCompleted}`);
+      } else {
+        // Legacy system - for journeys without mentorStyle
+        console.log(`[Phase] Using legacy phase system, current phase: ${currentPhase}`);
+        
+        // Pre-transition detection (without bot response - based on user message only)
+        const transitionResult = await detectPhaseTransition(
+          currentPhase,
+          content.trim(),
+          "", // Empty bot response - we're detecting based on user input only
           dayGoal,
-          dayTask,
-          dayExplanation: step.explanation || undefined,
-          dayClosingMessage: step.closingMessage || undefined,
-          contentBlocks,
-          mentorName,
-          mentorToneOfVoice: mentor?.toneOfVoice || undefined,
-          mentorMethodDescription: mentor?.methodDescription || undefined,
-          mentorBehavioralRules: mentor?.behavioralRules || undefined,
-          participantName,
-          recentMessages,
-          messageCount: history.length,
-          userSummary: previousDaySummary ? {
-            challenge: previousDaySummary.summaryChallenge || undefined,
-            emotionalTone: previousDaySummary.summaryEmotionalTone || undefined,
-            insight: previousDaySummary.summaryInsight || undefined,
-            resistance: previousDaySummary.summaryResistance || undefined,
-          } : undefined,
-          language: journey.language || undefined,
-          currentPhase: phaseForResponse, // Use the NEW phase after transition
-        },
-        content.trim()
-      );
-
-      // Check if AI marked the day as complete
-      if (botResponse.includes("[DAY_COMPLETE]")) {
-        dayCompleted = true;
-        // Remove the marker from the visible message
-        botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
-      } else if (!dayCompleted) {
-        // Secondary detection: farewell patterns (AI sometimes forgets the marker)
-        const farewellPatterns = [
-          /see you tomorrow/i,
-          /I'll see you in Day/i,
-          /see you in day/i,
-          /until tomorrow/i,
-          /see you next time/i,
-          /נתראה מחר/i,
-          /נפגש מחר/i,
-          /להתראות מחר/i,
-        ];
-        const hasFarewell = farewellPatterns.some(pattern => pattern.test(botResponse));
+          dayTask
+        );
+        console.log(`[Phase] Pre-response transition check:`, transitionResult);
         
-        // Also check if we're in integration phase
-        if (hasFarewell || phaseForResponse === 'integration') {
+        if (transitionResult.shouldTransition && transitionResult.nextPhase) {
+          phaseForResponse = transitionResult.nextPhase;
+          console.log(`[Phase] Transitioning BEFORE response: ${currentPhase} -> ${phaseForResponse} (${transitionResult.reason})`);
+          
+          // Update participant's current phase before generating response
+          await storage.updateParticipant(participantId, { currentPhase: phaseForResponse });
+        } else if (transitionResult.shouldTransition && !transitionResult.nextPhase) {
+          // Day is complete (integration phase finished)
           dayCompleted = true;
-          console.log("Day completion detected via farewell pattern or integration phase");
+          console.log(`Day completion via phase transition: ${transitionResult.reason}`);
+        }
+
+        // Generate response using the NEW phase (after transition)
+        botResponse = await generateChatResponse(
+          {
+            journeyName: journey.name,
+            dayNumber: step.dayNumber,
+            totalDays,
+            dayTitle: step.title,
+            dayGoal,
+            dayTask,
+            dayExplanation: step.explanation || undefined,
+            dayClosingMessage: step.closingMessage || undefined,
+            contentBlocks,
+            mentorName,
+            mentorToneOfVoice: mentor?.toneOfVoice || undefined,
+            mentorMethodDescription: mentor?.methodDescription || undefined,
+            mentorBehavioralRules: mentor?.behavioralRules || undefined,
+            participantName,
+            recentMessages,
+            messageCount: history.length,
+            userSummary: previousDaySummary ? {
+              challenge: previousDaySummary.summaryChallenge || undefined,
+              emotionalTone: previousDaySummary.summaryEmotionalTone || undefined,
+              insight: previousDaySummary.summaryInsight || undefined,
+              resistance: previousDaySummary.summaryResistance || undefined,
+            } : undefined,
+            language: journey.language || undefined,
+            currentPhase: phaseForResponse, // Use the NEW phase after transition
+          },
+          content.trim()
+        );
+
+        // Check if AI marked the day as complete
+        if (botResponse.includes("[DAY_COMPLETE]")) {
+          dayCompleted = true;
+          // Remove the marker from the visible message
+          botResponse = botResponse.replace("[DAY_COMPLETE]", "").trim();
+        } else if (!dayCompleted) {
+          // Secondary detection: farewell patterns (AI sometimes forgets the marker)
+          const farewellPatterns = [
+            /see you tomorrow/i,
+            /I'll see you in Day/i,
+            /see you in day/i,
+            /until tomorrow/i,
+            /see you next time/i,
+            /נתראה מחר/i,
+            /נפגש מחר/i,
+            /להתראות מחר/i,
+          ];
+          const hasFarewell = farewellPatterns.some(pattern => pattern.test(botResponse));
+          
+          // Also check if we're in integration phase
+          if (hasFarewell || phaseForResponse === 'integration') {
+            dayCompleted = true;
+            console.log("Day completion detected via farewell pattern or integration phase");
+          }
         }
       }
 
-      // Reset phase to intro if day completed (for next day)
+      // Reset phase and state counters if day completed (for next day)
       if (dayCompleted) {
-        await storage.updateParticipant(participantId, { currentPhase: 'intro' });
+        await storage.updateParticipant(participantId, { 
+          currentPhase: 'intro',
+          messageCountInPhase: 0,
+          questionsAskedInPhase: 0
+        });
       }
 
       const botMessage = await storage.createMessage({
