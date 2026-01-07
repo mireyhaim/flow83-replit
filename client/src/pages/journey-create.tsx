@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import JourneyIntentForm from "@/components/journey/JourneyIntentForm";
-import ContentUploadSection from "@/components/journey/ContentUploadSection";
-import { LayoutGrid, Globe, User, AlertCircle } from "lucide-react";
+import ConversationalJourneyWizard from "@/components/journey/ConversationalJourneyWizard";
+import { LayoutGrid, Globe, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,8 +13,6 @@ import {
 } from "@/components/ui/dialog";
 
 const JourneyCreatePage = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [journeyData, setJourneyData] = useState({});
   const { t, i18n } = useTranslation('dashboard');
   const { isProfileComplete } = useAuth();
   const [, navigate] = useLocation();
@@ -28,17 +24,8 @@ const JourneyCreatePage = () => {
     document.documentElement.dir = newLang === 'he' ? 'rtl' : 'ltr';
   };
 
-  const handleIntentComplete = (data: any) => {
-    setJourneyData(data);
-    setCurrentStep(2);
-  };
-
-  const handleBack = () => {
-    setCurrentStep(1);
-  };
-
   return (
-    <div className="min-h-screen bg-[#0f0f23]">
+    <div className="min-h-screen bg-[#0f0a1f]">
       <Dialog open={!isProfileComplete}>
         <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
@@ -72,22 +59,22 @@ const JourneyCreatePage = () => {
         </DialogContent>
       </Dialog>
 
-      <header className="bg-[#1a1a2e]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
+      <header className="fixed top-0 left-0 right-0 bg-[#0f0a1f]/80 backdrop-blur-xl border-b border-white/5 z-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-14">
             <div className="flex items-center">
               <Link href="/journeys" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="link-my-flows">
                 <LayoutGrid className="w-4 h-4" />
                 <span className="text-sm font-medium">{t('journeyCreate.myFlows')}</span>
               </Link>
-              <div className="h-5 w-px bg-white/10 mx-4" />
-              <h1 className="text-lg font-semibold text-white">{t('journeyCreate.createNewFlow')}</h1>
+              <div className="h-4 w-px bg-white/10 mx-4" />
+              <h1 className="text-sm font-medium text-white">{t('journeyCreate.createNewFlow')}</h1>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleLanguage}
-              className="text-white/60 hover:text-white hover:bg-white/10"
+              className="text-white/60 hover:text-white hover:bg-white/10 h-8"
               data-testid="button-toggle-language"
             >
               <Globe className="w-4 h-4 me-2" />
@@ -97,22 +84,8 @@ const JourneyCreatePage = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        {currentStep === 1 ? (
-          <JourneyIntentForm onComplete={handleIntentComplete} initialData={journeyData} />
-        ) : (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                {t('journeyCreate.uploadYourContent')}
-              </h2>
-              <p className="text-white/60">
-                {t('journeyCreate.shareYourTeachings')}
-              </p>
-            </div>
-            <ContentUploadSection journeyData={journeyData} onBack={handleBack} />
-          </div>
-        )}
+      <main className="pt-14">
+        <ConversationalJourneyWizard />
       </main>
     </div>
   );
