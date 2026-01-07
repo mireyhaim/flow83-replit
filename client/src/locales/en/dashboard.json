@@ -475,6 +475,20 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "viewLandingPage": "View Landing Page",
-    "done": "Done"
+    "done": "Done",
+    "publishNow": "Publish",
+    "successTitle": "Congratulations!",
+    "successDescription": "Your Flow has been published successfully",
+    "linkCopied": "Copied!",
+    "backToFlows": "Back to Flows",
+    "free": "Free",
+    "paymentLink": "Payment Link",
+    "growRecommended": "Recommended",
+    "connectToGrow": "Connect to Grow",
+    "openGrow": "Open Grow Account",
+    "growLinkPlaceholder": "https://pay.grow.link/...",
+    "otherPaymentOption": "Other payment method",
+    "otherPaymentDescription": "Use an existing payment link from PayPal, Stripe, bit, PayBox or any other provider",
+    "otherPaymentPlaceholder": "https://paypal.me/... or bit link"
   }
 }

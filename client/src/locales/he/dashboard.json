@@ -485,6 +485,13 @@
     "copyLink": "העתקו קישור",
     "copied": "הועתק!",
     "viewLandingPage": "צפו בדף הנחיתה",
-    "done": "סיום"
+    "done": "סיום",
+    "publishNow": "פרסם",
+    "successTitle": "מזל טוב!",
+    "successDescription": "ה-Flow שלכם פורסם בהצלחה",
+    "linkCopied": "הועתק!",
+    "backToFlows": "חזרה ל-Flows",
+    "free": "חינם",
+    "paymentLink": "קישור לתשלום"
   }
 }
