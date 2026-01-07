@@ -144,10 +144,9 @@ const JourneyPublishPage = () => {
 
   if (isLoading || isLoadingSubscription) {
     return (
-      <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-transparent to-fuchsia-600/20" />
-        <div className="absolute top-1/4 start-1/4 w-96 h-96 bg-violet-600/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 end-1/4 w-96 h-96 bg-fuchsia-600/20 rounded-full blur-3xl" />
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -164,9 +163,9 @@ const JourneyPublishPage = () => {
 
   if (!hasActiveSubscription) {
     return (
-      <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-transparent to-fuchsia-600/20" />
-        <div className="absolute top-1/4 start-1/4 w-96 h-96 bg-violet-600/30 rounded-full blur-3xl" />
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,9 +203,10 @@ const JourneyPublishPage = () => {
 
   if (!journeyData) {
     return (
-      <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-transparent to-fuchsia-600/20" />
-        <GlassPanel className="text-center max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] flex items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
+        <GlassPanel className="text-center max-w-md relative z-10">
           <h1 className="text-2xl font-bold text-white mb-4">{t('flowNotFound')}</h1>
           <Button onClick={() => setLocation("/journeys")} data-testid="button-back" className="bg-violet-600 hover:bg-violet-700">
             {t('backToFlows')}
@@ -217,13 +217,13 @@ const JourneyPublishPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-fuchsia-600/10" />
-      <div className="absolute top-0 start-1/4 w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 end-1/4 w-[500px] h-[500px] bg-fuchsia-600/15 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f] relative overflow-hidden">
+      <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 end-1/3 w-[300px] h-[300px] bg-fuchsia-600/5 rounded-full blur-[80px] pointer-events-none" />
       
       <div className="relative z-10">
-        <header className="bg-[#0a0a1a]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
+        <header className="bg-black/20 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
           <div className="max-w-4xl mx-auto px-4 md:px-6">
             <div className="flex items-center justify-between h-16">
               <Link 
