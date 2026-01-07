@@ -210,6 +210,7 @@
     "contentLimits": "מגבלות תוכן:",
     "contentLimitsFiles": "עד 10 קבצים, מקסימום 50MB לקובץ",
     "dropFilesHere": "גררו קבצים לכאן או לחצו לעיון",
+    "dropFilesNow": "שחררו את הקבצים כאן",
     "supportsFormats": "תומך ב-PDF, Word (DOC/DOCX) וקבצי טקסט",
     "uploadedFiles": "קבצים שהועלו:",
     "pasteExistingContent": "הדביקו תוכן קיים",
@@ -229,7 +230,9 @@
     "couldNotExtractDescription": "לא ניתן לקרוא את הקבצים. נסו להדביק את התוכן במקום.",
     "creatingFlow": "יוצר Flow...",
     "generationError": "יצירת ה-Flow נכשלה. נא לנסות שוב.",
-    "starting": "מתחיל..."
+    "starting": "מתחיל...",
+    "cancelGeneration": "ביטול",
+    "textExtractionNote": "הטקסט יחולץ מהקבצים לצורך יצירת ה-Flow"
   },
 
   "journeySettings": {

@@ -210,6 +210,7 @@
     "contentLimits": "Content limits:",
     "contentLimitsFiles": "Up to 10 files, max 50MB per file",
     "dropFilesHere": "Drop files here or click to browse",
+    "dropFilesNow": "Drop your files here",
     "supportsFormats": "Supports PDF, Word (DOC/DOCX), and text files",
     "uploadedFiles": "Uploaded Files:",
     "pasteExistingContent": "Paste Your Existing Content",
@@ -229,7 +230,9 @@
     "couldNotExtractDescription": "The files could not be read. Please try pasting the content instead.",
     "creatingFlow": "Creating flow...",
     "generationError": "Failed to generate flow. Please try again.",
-    "starting": "Starting..."
+    "starting": "Starting...",
+    "cancelGeneration": "Cancel",
+    "textExtractionNote": "Text will be extracted from files to generate your Flow"
   },
 
   "journeySettings": {

@@ -3,8 +3,20 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { 
+  ChevronLeft, 
+  Sparkles, 
+  Globe, 
+  UserCircle, 
+  Pencil, 
+  Users, 
+  Target, 
+  Calendar,
+  Heart,
+  MessageCircle,
+  FileText,
+  Check
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -32,32 +44,34 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
   });
 
   const languageOptions = [
-    { value: "he", label: t('journeyCreate.languageHebrew') },
-    { value: "en", label: t('journeyCreate.languageEnglish') },
+    { value: "he", label: t('journeyCreate.languageHebrew'), icon: "🇮🇱" },
+    { value: "en", label: t('journeyCreate.languageEnglish'), icon: "🇺🇸" },
   ];
 
   const professionOptions = [
-    { value: "therapist", label: t('journeyCreate.professionTherapist') },
-    { value: "coach", label: t('journeyCreate.professionCoach') },
-    { value: "healer", label: t('journeyCreate.professionHealer') },
-    { value: "mentor", label: t('journeyCreate.professionMentor') },
-    { value: "counselor", label: t('journeyCreate.professionCounselor') },
-    { value: "other", label: t('journeyCreate.professionOther') },
+    { value: "therapist", label: t('journeyCreate.professionTherapist'), icon: "🧠" },
+    { value: "coach", label: t('journeyCreate.professionCoach'), icon: "🎯" },
+    { value: "healer", label: t('journeyCreate.professionHealer'), icon: "✨" },
+    { value: "mentor", label: t('journeyCreate.professionMentor'), icon: "🌟" },
+    { value: "counselor", label: t('journeyCreate.professionCounselor'), icon: "💬" },
+    { value: "other", label: t('journeyCreate.professionOther'), icon: "🌀" },
   ];
 
   const toneOptions = [
-    { value: "warm", label: t('journeyCreate.toneWarm') },
-    { value: "professional", label: t('journeyCreate.toneProfessional') },
-    { value: "direct", label: t('journeyCreate.toneDirect') },
-    { value: "gentle", label: t('journeyCreate.toneGentle') },
-    { value: "motivating", label: t('journeyCreate.toneMotivating') },
-    { value: "spiritual", label: t('journeyCreate.toneSpiritual') },
+    { value: "warm", label: t('journeyCreate.toneWarm'), icon: "☀️" },
+    { value: "professional", label: t('journeyCreate.toneProfessional'), icon: "💼" },
+    { value: "direct", label: t('journeyCreate.toneDirect'), icon: "🎯" },
+    { value: "gentle", label: t('journeyCreate.toneGentle'), icon: "🌸" },
+    { value: "motivating", label: t('journeyCreate.toneMotivating'), icon: "🔥" },
+    { value: "spiritual", label: t('journeyCreate.toneSpiritual'), icon: "🕊️" },
   ];
 
   const durationOptions = [
-    { value: "3", label: t('journeyCreate.duration3Days'), description: t('journeyCreate.duration3DaysDesc') },
-    { value: "7", label: t('journeyCreate.duration7Days'), description: t('journeyCreate.duration7DaysDesc') },
+    { value: "3", label: t('journeyCreate.duration3Days'), description: t('journeyCreate.duration3DaysDesc'), icon: "⚡" },
+    { value: "7", label: t('journeyCreate.duration7Days'), description: t('journeyCreate.duration7DaysDesc'), icon: "🌈" },
   ];
+
+  const stepIcons = [Globe, UserCircle, Pencil, Users, Target, Target, Calendar, MessageCircle, Heart, FileText];
 
   const steps = [
     {
@@ -179,10 +193,6 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     return null;
   };
 
-  const canProceed = () => {
-    return validateStep() === null;
-  };
-
   const handleNext = () => {
     const validationError = validateStep();
     if (validationError) {
@@ -213,49 +223,80 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     switch (step.type) {
       case "language":
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              {step.options?.map((option) => (
-                <button
+              {step.options?.map((option, idx) => (
+                <motion.button
                   key={option.value}
                   type="button"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
                   onClick={() => updateField(step.field, option.value)}
-                  className={`p-6 rounded-xl border-2 transition-all text-center ${
+                  className={`group relative p-8 rounded-2xl border-2 transition-all duration-300 ${
                     value === option.value
-                      ? "border-violet-500 bg-violet-500/20"
-                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                      ? "border-violet-500 bg-gradient-to-br from-violet-500/20 to-violet-600/10 shadow-lg shadow-violet-500/20"
+                      : "border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10"
                   }`}
                   data-testid={`option-${step.field}-${option.value}`}
                 >
-                  <span className="text-white font-bold text-xl">{option.label}</span>
-                </button>
+                  {value === option.value && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-3 end-3 w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center"
+                    >
+                      <Check className="w-4 h-4 text-white" />
+                    </motion.div>
+                  )}
+                  <span className="text-4xl block mb-3">{(option as any).icon}</span>
+                  <span className="text-white font-bold text-xl block">{option.label}</span>
+                </motion.button>
               ))}
             </div>
             {"tip" in step && step.tip && (
-              <p className="text-center text-amber-400/80 text-sm mt-4">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-center text-amber-400/80 text-sm bg-amber-400/10 rounded-xl py-3 px-4"
+              >
                 💡 {step.tip}
-              </p>
+              </motion.p>
             )}
           </div>
         );
 
       case "select":
         return (
-          <div className="grid grid-cols-2 gap-3">
-            {step.options?.map((option) => (
-              <button
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {step.options?.map((option, idx) => (
+              <motion.button
                 key={option.value}
                 type="button"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
                 onClick={() => updateField(step.field, option.value)}
-                className={`p-4 rounded-xl border-2 transition-all text-center ${
+                className={`group relative p-5 rounded-xl border-2 transition-all duration-200 ${
                   value === option.value
-                    ? "border-violet-500 bg-violet-500/20"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                    ? "border-violet-500 bg-gradient-to-br from-violet-500/20 to-violet-600/10"
+                    : "border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10"
                 }`}
                 data-testid={`option-${step.field}-${option.value}`}
               >
-                <span className="text-white font-medium">{option.label}</span>
-              </button>
+                {value === option.value && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-2 end-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center"
+                  >
+                    <Check className="w-3 h-3 text-white" />
+                  </motion.div>
+                )}
+                <span className="text-2xl block mb-2">{(option as any).icon}</span>
+                <span className="text-white font-medium text-sm">{option.label}</span>
+              </motion.button>
             ))}
           </div>
         );
@@ -263,47 +304,70 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
       case "cards":
         return (
           <div className="grid grid-cols-2 gap-4">
-            {step.options?.map((option) => (
-              <button
+            {step.options?.map((option, idx) => (
+              <motion.button
                 key={option.value}
                 type="button"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
                 onClick={() => updateField(step.field, option.value)}
-                className={`p-6 rounded-xl border-2 transition-all text-center ${
+                className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 text-start ${
                   value === option.value
-                    ? "border-violet-500 bg-violet-500/20"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                    ? "border-violet-500 bg-gradient-to-br from-violet-500/20 to-violet-600/10 shadow-lg shadow-violet-500/20"
+                    : "border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10"
                 }`}
                 data-testid={`option-${step.field}-${option.value}`}
               >
-                <span className="text-white font-bold text-xl block">{option.label}</span>
+                {value === option.value && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-3 end-3 w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center"
+                  >
+                    <Check className="w-4 h-4 text-white" />
+                  </motion.div>
+                )}
+                <span className="text-3xl block mb-3">{(option as any).icon}</span>
+                <span className="text-white font-bold text-xl block mb-1">{option.label}</span>
                 {"description" in option && (
                   <span className="text-white/50 text-sm">{(option as any).description}</span>
                 )}
-              </button>
+              </motion.button>
             ))}
           </div>
         );
 
       case "text":
         return (
-          <Input
-            value={value}
-            onChange={(e) => updateField(step.field, e.target.value)}
-            placeholder={step.placeholder}
-            className="text-lg bg-white/5 border-white/10 text-white placeholder:text-white/40 h-14 rounded-xl"
-            data-testid={`input-${step.field}`}
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Input
+              value={value}
+              onChange={(e) => updateField(step.field, e.target.value)}
+              placeholder={step.placeholder}
+              className="text-lg bg-white/5 border-white/20 text-white placeholder:text-white/40 h-16 rounded-2xl px-6 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+              data-testid={`input-${step.field}`}
+            />
+          </motion.div>
         );
 
       case "textarea":
         return (
-          <Textarea
-            value={value}
-            onChange={(e) => updateField(step.field, e.target.value)}
-            placeholder={step.placeholder}
-            className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-xl text-lg"
-            data-testid={`textarea-${step.field}`}
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Textarea
+              value={value}
+              onChange={(e) => updateField(step.field, e.target.value)}
+              placeholder={step.placeholder}
+              className="min-h-[140px] bg-white/5 border-white/20 text-white placeholder:text-white/40 rounded-2xl text-lg p-5 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all resize-none"
+              data-testid={`textarea-${step.field}`}
+            />
+          </motion.div>
         );
 
       default:
@@ -311,63 +375,104 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
     }
   };
 
+  const StepIcon = stepIcons[currentStep] || Globe;
+
   return (
-    <div className="max-w-xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-white/50 text-sm">
-            {t('journeyCreate.stepOf', { current: currentStep + 1, total: totalSteps })}
-          </span>
-          <span className="text-white/50 text-sm">{Math.round(progress)}%</span>
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+              <StepIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-white/40 text-xs uppercase tracking-wider">
+                {t('journeyCreate.stepOf', { current: currentStep + 1, total: totalSteps })}
+              </span>
+              <div className="text-white font-medium text-sm">{currentStepData.id}</div>
+            </div>
+          </div>
+          <div className="text-violet-400 font-bold text-lg">
+            {Math.round(progress)}%
+          </div>
         </div>
-        <Progress value={progress} className="h-2 bg-white/10" />
+        
+        <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+          <motion.div
+            className="absolute inset-y-0 start-0 bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+        
+        <div className="flex justify-between mt-3">
+          {steps.map((step, idx) => (
+            <div
+              key={step.id}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                idx < currentStep 
+                  ? "bg-violet-500" 
+                  : idx === currentStep 
+                    ? "bg-violet-400 ring-4 ring-violet-500/20" 
+                    : "bg-white/20"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
           key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6"
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="space-y-8"
         >
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            <motion.h2 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-2xl md:text-3xl font-bold text-white mb-3"
+            >
               {currentStepData.title}
-            </h2>
-            <p className="text-white/60">{currentStepData.subtitle}</p>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-white/60 text-lg"
+            >
+              {currentStepData.subtitle}
+            </motion.p>
           </div>
 
           {renderStepContent()}
           
-          {(() => {
-            if (error) {
-              return (
-                <div className="text-red-400 text-sm text-center mt-4" data-testid="error-message">
-                  {error}
-                </div>
-              );
-            }
-            const validationError = validateStep();
-            if (validationError && formData[currentStepData.field as keyof typeof formData].length > 0) {
-              return (
-                <div className="text-amber-400 text-sm text-center mt-4" data-testid="validation-hint">
-                  {validationError}
-                </div>
-              );
-            }
-            return null;
-          })()}
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4"
+                data-testid="error-message"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex justify-between mt-10">
+      <div className="flex justify-between mt-12">
         <Button
           type="button"
           variant="ghost"
           onClick={handleBack}
-          className="text-white/60 hover:text-white hover:bg-white/10"
+          className="text-white/60 hover:text-white hover:bg-white/10 h-12 px-6 rounded-xl"
           data-testid="button-back"
         >
           <ChevronLeft className="w-4 h-4 me-2" />
@@ -377,7 +482,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
         <Button
           type="button"
           onClick={handleNext}
-          className="bg-violet-600 hover:bg-violet-700 px-8 disabled:opacity-50"
+          className="bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 h-12 px-8 rounded-xl font-medium shadow-lg shadow-violet-500/25 transition-all hover:shadow-violet-500/40"
           data-testid="button-next"
         >
           {currentStep === totalSteps - 1 ? (
@@ -386,9 +491,7 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
               {t('journeyCreate.continue')}
             </>
           ) : (
-            <>
-              {t('journeyCreate.next')}
-            </>
+            t('journeyCreate.next')
           )}
         </Button>
       </div>

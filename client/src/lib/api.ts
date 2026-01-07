@@ -48,12 +48,13 @@ export const journeyApi = {
     return handleResponse(res);
   },
 
-  create: async (data: InsertJourney): Promise<Journey> => {
+  create: async (data: InsertJourney, signal?: AbortSignal): Promise<Journey> => {
     const res = await fetch(`${API_BASE}/journeys`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
       credentials: "include",
+      signal,
     });
     return handleResponse(res);
   },
@@ -92,7 +93,8 @@ export const journeyApi = {
   generateContentWithProgress: (
     id: string, 
     content: string,
-    onProgress: (progress: number, message: string) => void
+    onProgress: (progress: number, message: string) => void,
+    signal?: AbortSignal
   ): Promise<{ success: boolean; daysGenerated: number }> => {
     return new Promise((resolve, reject) => {
       fetch(`${API_BASE}/journeys/${id}/generate-content`, {
@@ -103,6 +105,7 @@ export const journeyApi = {
         },
         body: JSON.stringify({ content }),
         credentials: "include",
+        signal,
       }).then(async response => {
         if (!response.ok) {
           reject(new Error("Failed to generate content"));
@@ -170,13 +173,14 @@ export const journeyApi = {
 };
 
 export const fileApi = {
-  parseFiles: async (files: File[]): Promise<{ text: string }> => {
+  parseFiles: async (files: File[], signal?: AbortSignal): Promise<{ text: string }> => {
     const formData = new FormData();
     files.forEach(file => formData.append("files", file));
     const res = await fetch(`${API_BASE}/parse-files`, {
       method: "POST",
       body: formData,
       credentials: "include",
+      signal,
     });
     return handleResponse(res);
   },
