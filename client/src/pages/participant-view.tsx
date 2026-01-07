@@ -1027,10 +1027,8 @@ export default function ParticipantView() {
                     className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 shadow-lg text-white py-6 text-lg"
                     data-testid="button-complete-day"
                   >
-                    {completeDayMutation.isPending ? (
+                    {completeDayMutation.isPending && (
                       <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 mr-2" />
                     )}
                     {currentDay < totalDays ? t('takeMeToDay', { number: currentDay + 1 }) : t('completeJourney')}
                   </Button>

@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  Calendar, ArrowRight, Check, Quote, Leaf,
+  Calendar, Check, Quote, Leaf,
   Heart, Compass, Sparkles, Moon, Sun, Star, User, Users 
 } from "lucide-react";
 import type { Journey, JourneyStep, JourneyBlock, User as UserType } from "@shared/schema";
@@ -618,7 +618,6 @@ export default function JourneyLandingPage() {
                   onClick={handleStartJourney}
                 >
                   {t('startYourTransformation')}
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             )}
@@ -733,7 +732,6 @@ export default function JourneyLandingPage() {
                     data-testid="button-start-journey-bottom"
                   >
                     {isFree ? t('beginYourJourney') : t('joinNowPrice', { price: `${currencySymbol}${price}` })}
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
                     size="lg"

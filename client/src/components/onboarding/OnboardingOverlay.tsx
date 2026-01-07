@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { X, ChevronLeft, Sparkles } from "lucide-react";
 import type { OnboardingStep } from "@/hooks/useOnboarding";
 
 interface OnboardingOverlayProps {
@@ -245,7 +245,6 @@ export function OnboardingOverlay({
                   data-testid="button-next-step"
                 >
                   {isLastStep ? "Finish" : "Next"}
-                  {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
                 </Button>
               </div>
             </CardFooter>

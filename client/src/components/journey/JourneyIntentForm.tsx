@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -388,7 +388,6 @@ const JourneyIntentForm = ({ onComplete, initialData }: JourneyIntentFormProps) 
           ) : (
             <>
               {t('journeyCreate.next')}
-              <ChevronRight className="w-4 h-4 ms-2" />
             </>
           )}
         </Button>

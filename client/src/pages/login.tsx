@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Users, Shield } from "lucide-react";
+import { Sparkles, Users, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_06_36_20_PM_1766994935586.png";
 
@@ -38,7 +38,6 @@ export default function LoginPage() {
               data-testid="button-login"
             >
               {t('continueWithReplit')}
-              <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
 
             <p className="text-center text-sm text-gray-500">

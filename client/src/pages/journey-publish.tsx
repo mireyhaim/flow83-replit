@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  ArrowLeft, ArrowRight, Check, CreditCard, Rocket, 
+  ArrowLeft, Check, CreditCard, Rocket, 
   CheckCircle, Copy, ExternalLink, Loader2, Sparkles,
   ChevronDown, ChevronUp, Lock, Crown
 } from "lucide-react";
@@ -317,7 +317,6 @@ const JourneyPublishPage = () => {
                   className="flex-1 bg-violet-600 hover:bg-violet-700 h-16 text-lg"
                   data-testid="button-next-step"
                 >
-                  <ArrowRight className="w-5 h-5 mx-2" />
                   {t('publishModal.continue')}
                 </Button>
               </div>
@@ -468,7 +467,6 @@ const JourneyPublishPage = () => {
                   data-testid="button-next-after-payment"
                   disabled={(parseFloat(publishPrice) || 0) > 0 && !externalPaymentUrl}
                 >
-                  <ArrowRight className="w-5 h-5 mx-2" />
                   {(parseFloat(publishPrice) || 0) === 0 
                     ? t('publishModal.skipAndContinue') 
                     : externalPaymentUrl 

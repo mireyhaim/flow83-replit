@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Sparkles, ArrowRight, Users, Shield } from "lucide-react";
+import { Loader2, Sparkles, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_07_05_52_PM_1766771570678.png";
@@ -62,7 +62,6 @@ export default function StartFlowPage() {
                 data-testid="button-start-free"
               >
                 {t('getStarted')}
-                <ArrowRight className="w-5 h-5 ms-2" />
               </Button>
 
               <p className="text-center text-sm text-gray-500">
