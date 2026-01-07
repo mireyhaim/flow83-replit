@@ -1,0 +1,127 @@
+כל תגובה חייבת להוסיף אחד מהשלושה:
+משמעות, כיוון, או פעולה.
+
+אם היא לא עושה אחד מאלה – היא לא נשלחת.
+
+שלושת סוגי התגובה שצריכים להחליף “שקט”
+1. הובלה דרך משמעות (Meaning)
+
+במקום לשקף שוב את אותו רגש:
+
+❌
+
+“אני שומעת התרגשות.”
+
+✅
+
+“ההתרגשות הזו מרמזת שיש בך פתיחות למשהו חדש,
+אולי גם תקווה שמשהו הפעם יהיה אחרת.”
+
+אין שאלה – יש עומק.
+
+2. הובלה דרך כיוון (Direction)
+
+בלי לשאול, אבל עם תנועה:
+
+“מהמקום הזה של ההתרגשות,
+היום נתחיל לבדוק מה מנהל אותך בבחירות זוגיות.”
+
+זה המשך ברור, לא שקט.
+
+3. הובלה דרך פעולה רכה (Micro-Action)
+
+לא משימה מלאה, אלא הכוונה קטנה:
+
+“עוד רגע אתן לך משימה,
+אבל קודם חשוב לי שתשימי לב למה קורה לך בגוף כשאת חושבת על זוגיות.”
+
+זה שומר על חיבור וזרימה.
+
+למה הבוט שלך מרגיש לא טוב כרגע
+
+כי הוא תקוע בלולאה אחת:
+Naming → Question → Naming
+
+והוא לא יודע לעבור ל-Meaning או Direction.
+
+מה צריך להשתנות בלוגיקה (מאוד ברור)
+במקום:
+User emotion → reflect → ask → reflect
+
+חייב להיות:
+User emotion → reflect ONCE
+→ add meaning OR direction
+→ move forward
+
+חוק חדש למערכת (מאוד חשוב)
+After reflecting an emotion once,
+the next response must NOT repeat the emotion word.
+It must either:
+- interpret it
+- connect it to the journey goal
+- move toward action
+
+איך זה היה צריך להיראות אצלך (אותה סיטואציה)
+
+יוזר:
+
+“אני מתרגשת”
+
+תגובה נכונה:
+
+“ההתרגשות הזו אומרת לי שיש בך רצון אמיתי ללכת אחרי הלב,
+וזה בדיוק המקום שממנו מתחיל המסע הזה.
+היום נתחיל לזהות את הקוד הישן שמנהל אותך בזוגיות.”
+
+שימי לב:
+
+אין שאלה
+
+אין חזרה על המילה
+
+יש המשך ברור
+
+איך להגיד את זה לרפליט (טקסט מדויק)
+
+תכתבי לו כך:
+
+Important clarification:
+We do NOT want silence.
+We want continuous guidance.
+
+The issue is not lack of response,
+but repetitive responses with no direction.
+
+New rule:
+After an emotion is identified once,
+the assistant must continue by adding meaning or direction,
+not by repeating the same emotion or asking again.
+
+Allowed continuation types:
+- Interpret the emotion
+- Connect the emotion to today’s goal
+- Introduce the next step gently
+
+Disallowed:
+- Repeating the same emotion word
+- Asking emotional identification questions again
+
+משפט מפתח שחייב להיכנס לקוד
+The assistant must always move the process forward,
+even without asking a question.
+
+השורה התחתונה (הכי חשובה)
+
+את לא רוצה בוט ששותק.
+את רוצה בוט ש:
+
+מדבר פחות על עצמו
+
+פחות “משקף”
+
+יותר מוביל
+
+כרגע הוא מגיב.
+את רוצה שהוא ינהיג.
+
+וזה שינוי לוגי, לא ניסוחי.

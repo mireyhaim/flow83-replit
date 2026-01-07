@@ -76,75 +76,77 @@ export default function ExternalPaymentPendingPage() {
         </div>
 
         <h1 className="text-2xl font-bold mb-4 text-gray-800">
-          השלמת התשלום
+          {paymentOpened ? 'אישור התשלום' : 'תשלום'}
         </h1>
         
         <div className="space-y-6">
-          <div className="text-right bg-gray-50 rounded-xl p-4">
-            <div className="flex items-start gap-3 mb-4">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${paymentOpened ? 'bg-green-500' : 'bg-purple-500'}`}>
-                {paymentOpened ? <CheckCircle className="w-5 h-5" /> : '1'}
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">פתח את עמוד התשלום</h3>
-                <p className="text-sm text-gray-600">לחץ על הכפתור למטה לפתיחת עמוד התשלום</p>
-              </div>
+          {!paymentOpened ? (
+            <div className="text-right bg-gray-50 rounded-xl p-4">
+              <p className="text-gray-600 mb-4">
+                לחץ על הכפתור למטה לפתיחת עמוד התשלום
+              </p>
+              
+              <Button 
+                onClick={handleOpenPayment}
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                size="lg"
+                data-testid="button-open-payment"
+              >
+                <ExternalLink className="w-5 h-5 ml-2" />
+                לתשלום
+              </Button>
             </div>
-            
-            <Button 
-              onClick={handleOpenPayment}
-              className="w-full bg-purple-600 hover:bg-purple-700"
-              size="lg"
-              data-testid="button-open-payment"
-            >
-              <ExternalLink className="w-5 h-5 ml-2" />
-              פתח עמוד תשלום
-            </Button>
-          </div>
+          ) : (
+            <>
+              <div className="text-right bg-green-50 rounded-xl p-4 border border-green-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                  <p className="text-green-700 font-medium">עמוד התשלום נפתח</p>
+                </div>
+              </div>
 
-          <div className="text-right bg-gray-50 rounded-xl p-4">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
-                2
+              <div className="text-right bg-gray-50 rounded-xl p-4">
+                <p className="text-gray-600 mb-4">
+                  לאחר שהשלמת את התשלום, לחץ על הכפתור המתאים:
+                </p>
+                
+                <div className="space-y-3">
+                  <Button 
+                    onClick={handleConfirmPayment}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    size="lg"
+                    disabled={isVerifying}
+                    data-testid="button-confirm-payment"
+                  >
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                        מאמת...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 ml-2" />
+                        שילמתי - התחל את ה-Flow
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleOpenPayment}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    data-testid="button-reopen-payment"
+                  >
+                    <ExternalLink className="w-5 h-5 ml-2" />
+                    פתח שוב את עמוד התשלום
+                  </Button>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">השלם את התשלום</h3>
-                <p className="text-sm text-gray-600">בצע את התשלום בחלון החדש שנפתח</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-right bg-gray-50 rounded-xl p-4">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
-                3
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">אישור והתחלה</h3>
-                <p className="text-sm text-gray-600">לאחר התשלום, לחץ כאן להתחלת המסע</p>
-              </div>
-            </div>
-            
-            <Button 
-              onClick={handleConfirmPayment}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              size="lg"
-              disabled={isVerifying}
-              data-testid="button-confirm-payment"
-            >
-              {isVerifying ? (
-                <>
-                  <Loader2 className="w-5 h-5 ml-2 animate-spin" />
-                  מאמת...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-5 h-5 ml-2" />
-                  שילמתי - התחל את המסע
-                </>
-              )}
-            </Button>
-          </div>
+            </>
+          )}
         </div>
 
         <p className="mt-6 text-xs text-gray-500">

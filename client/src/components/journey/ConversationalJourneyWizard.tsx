@@ -367,7 +367,7 @@ const ConversationalJourneyWizard = () => {
             </h3>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
             <div className="relative">
               <div className="absolute top-0 bottom-0 start-[18px] w-px bg-gradient-to-b from-violet-600/50 via-violet-600/20 to-transparent" />
               
