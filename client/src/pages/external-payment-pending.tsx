@@ -253,7 +253,7 @@ export default function ExternalPaymentPendingPage() {
                         id="idNumber"
                         value={formData.idNumber}
                         onChange={(e) => handleInputChange("idNumber", e.target.value.replace(/\D/g, "").slice(0, 9))}
-                        placeholder="123456789"
+                        placeholder="יש להזין 9 ספרות"
                         className={`text-right ${formErrors.idNumber ? "border-red-500" : ""}`}
                         dir="ltr"
                         data-testid="input-verify-id"
