@@ -512,7 +512,8 @@ function buildJourneyBlueprint(
     blueprint += `\nDAY ${day}:\n`;
     if (pillar) {
       blueprint += `- Focus Pillar: "${pillar.name}" - ${pillar.description}\n`;
-      blueprint += `- Key Teachings: ${pillar.keyTeachings.slice(0, 3).join("; ")}\n`;
+      const teachings = Array.isArray(pillar.keyTeachings) ? pillar.keyTeachings : [pillar.keyTeachings];
+      blueprint += `- Key Teachings: ${teachings.slice(0, 3).join("; ")}\n`;
     }
     if (stage) {
       blueprint += `- Transformation Stage: "${stage.name}" - ${stage.focus}\n`;
@@ -552,7 +553,10 @@ async function generateDaysBatch(
 === MENTOR'S METHODOLOGY MAP ===
 
 CORE PILLARS OF THE METHOD:
-${map.pillars.map((p, i) => `${i + 1}. ${p.name}: ${p.description}\n   Key Teachings: ${p.keyTeachings.join("; ")}`).join("\n")}
+${map.pillars.map((p, i) => {
+  const teachings = Array.isArray(p.keyTeachings) ? p.keyTeachings : [p.keyTeachings];
+  return `${i + 1}. ${p.name}: ${p.description}\n   Key Teachings: ${teachings.join("; ")}`;
+}).join("\n")}
 
 TRANSFORMATION STAGES:
 ${map.transformationStages.map(s => `Stage ${s.stage}: ${s.name} - ${s.focus}\n   Expected Shift: ${s.expectedShift}`).join("\n")}
