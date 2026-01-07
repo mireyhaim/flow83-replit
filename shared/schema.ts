@@ -77,6 +77,7 @@ export const journeys = pgTable("journeys", {
   clientChallenges: text("client_challenges"), // What challenges do the clients face?
   profession: text("profession"), // therapist, coach, healer, mentor, counselor, other
   tone: text("tone"), // warm, professional, direct, gentle, motivating, spiritual
+  mentorStyle: text("mentor_style"), // practical, emotional, spiritual, structured, custom
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({

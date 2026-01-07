@@ -22,7 +22,8 @@ import {
   Users,
   Target,
   MessageCircle,
-  FileUp
+  FileUp,
+  Heart
 } from "lucide-react";
 
 interface JourneyData {
@@ -33,11 +34,12 @@ interface JourneyData {
   duration: number[];
   profession: string;
   tone: string;
+  mentorStyle: string;
   clientChallenges: string;
   additionalNotes: string;
 }
 
-type StepId = 'language' | 'duration' | 'journeyName' | 'targetAudience' | 'mainGoal' | 'tone' | 'content';
+type StepId = 'language' | 'duration' | 'journeyName' | 'targetAudience' | 'mainGoal' | 'tone' | 'mentorStyle' | 'content';
 
 interface Step {
   id: StepId;
@@ -120,6 +122,21 @@ const steps: Step[] = [
     ]
   },
   {
+    id: 'mentorStyle',
+    icon: Heart,
+    labelEn: 'Style',
+    labelHe: 'סגנון',
+    questionEn: 'How would you describe your style as a mentor?',
+    questionHe: 'איך היית מתאר את הסגנון שלך כמלווה?',
+    type: 'options',
+    options: [
+      { value: 'practical', labelEn: '🎯 Practical - Exercises & Tasks', labelHe: '🎯 פרקטי - תרגילים ומשימות' },
+      { value: 'emotional', labelEn: '💭 Emotional - Deep Listening', labelHe: '💭 רגשי - הקשבה עמוקה' },
+      { value: 'spiritual', labelEn: '🌿 Spiritual - Metaphors & Imagery', labelHe: '🌿 רוחני - מטאפורות ודמיון' },
+      { value: 'structured', labelEn: '📋 Structured - Clear Process', labelHe: '📋 מובנה - תהליך מסודר' }
+    ]
+  },
+  {
     id: 'content',
     icon: FileUp,
     labelEn: 'Content',
@@ -146,6 +163,7 @@ const ConversationalJourneyWizard = () => {
     duration: [],
     profession: '',
     tone: '',
+    mentorStyle: '',
     clientChallenges: '',
     additionalNotes: ''
   });
@@ -304,6 +322,7 @@ const ConversationalJourneyWizard = () => {
         clientChallenges: journeyData.clientChallenges || "",
         profession: journeyData.profession || "",
         tone: journeyData.tone || "",
+        mentorStyle: journeyData.mentorStyle || "",
       }, signal);
 
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
