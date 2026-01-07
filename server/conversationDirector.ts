@@ -8,14 +8,16 @@
 
 // Action types the Director can command
 export type DirectorAction = 
-  | 'reflect'       // Mirror back what user said
-  | 'ask_question'  // Ask ONE deepening question
-  | 'validate'      // Simple acknowledgment (NOT praise)
-  | 'micro_task'    // Give a small, specific task
-  | 'summarize'     // Summarize what happened today
-  | 'silence'       // Just acknowledge, don't push
-  | 'give_task'     // Present the day's main task
-  | 'close_day';    // Warm closing, mark day complete
+  | 'reflect'        // Mirror back what user said (USE ONCE ONLY)
+  | 'add_meaning'    // Interpret emotion, connect to deeper insight
+  | 'give_direction' // Move toward today's goal, lead without asking
+  | 'ask_question'   // Ask ONE deepening question
+  | 'validate'       // Simple acknowledgment (NOT praise)
+  | 'micro_task'     // Give a small, specific task
+  | 'summarize'      // Summarize what happened today
+  | 'silence'        // Just acknowledge, don't push
+  | 'give_task'      // Present the day's main task
+  | 'close_day';     // Warm closing, mark day complete
 
 // The decision the Director makes
 export interface DirectorDecision {
@@ -31,6 +33,10 @@ export interface DirectorDecision {
     content?: string;
     // Whether this completes the day
     completesDay?: boolean;
+    // Emotion word that was reflected (to avoid repeating)
+    emotionToReflect?: string;
+    // Words to ban from response (to prevent repetition)
+    bannedWords?: string[];
   };
   reason: string;
 }
@@ -47,6 +53,8 @@ export interface MentorProfile {
 // Action weights determine probability of each action
 interface ActionWeights {
   reflect: number;
+  add_meaning: number;
+  give_direction: number;
   ask_question: number;
   validate: number;
   micro_task: number;
@@ -54,67 +62,85 @@ interface ActionWeights {
 }
 
 // Base weights per mentor style
+// Key insight: reflect is low because we only reflect ONCE, then move to meaning/direction
 const STYLE_WEIGHTS: Record<MentorProfile['style'], ActionWeights> = {
   practical: {
-    reflect: 0.2,
-    ask_question: 0.2,
+    reflect: 0.1,
+    add_meaning: 0.15,
+    give_direction: 0.25,
+    ask_question: 0.1,
     validate: 0.1,
-    micro_task: 0.4,
-    silence: 0.1
+    micro_task: 0.25,
+    silence: 0.05
   },
   emotional: {
-    reflect: 0.35,
-    ask_question: 0.3,
-    validate: 0.15,
+    reflect: 0.15,
+    add_meaning: 0.3,
+    give_direction: 0.2,
+    ask_question: 0.15,
+    validate: 0.1,
+    micro_task: 0.05,
+    silence: 0.05
+  },
+  spiritual: {
+    reflect: 0.1,
+    add_meaning: 0.35,
+    give_direction: 0.15,
+    ask_question: 0.1,
+    validate: 0.1,
     micro_task: 0.1,
     silence: 0.1
   },
-  spiritual: {
-    reflect: 0.3,
-    ask_question: 0.25,
+  structured: {
+    reflect: 0.1,
+    add_meaning: 0.15,
+    give_direction: 0.3,
+    ask_question: 0.15,
     validate: 0.1,
     micro_task: 0.15,
-    silence: 0.2
-  },
-  structured: {
-    reflect: 0.15,
-    ask_question: 0.25,
-    validate: 0.15,
-    micro_task: 0.35,
-    silence: 0.1
+    silence: 0.05
   }
 };
 
 // Tone modifiers - adjust base weights based on tone of voice
 const TONE_MODIFIERS: Record<string, Partial<ActionWeights>> = {
   warm: {
-    reflect: 0.1,      // More reflection
-    validate: 0.05,    // More validation
-    silence: 0.05      // More space
+    add_meaning: 0.1,    // More meaning
+    validate: 0.05,      // More validation
+    silence: 0.05        // More space
   },
   professional: {
-    micro_task: 0.1,   // More tasks
-    ask_question: 0.05 // More questions
+    give_direction: 0.1, // More direction
+    micro_task: 0.05     // More tasks
   },
   motivating: {
-    micro_task: 0.15,  // Much more tasks
-    validate: 0.05     // More validation
+    give_direction: 0.1, // More direction
+    micro_task: 0.1,     // More tasks
+    validate: 0.05       // More validation
   },
   spiritual: {
-    silence: 0.15,     // Much more silence/space
-    reflect: 0.1       // More reflection
+    add_meaning: 0.15,   // Much more meaning
+    silence: 0.1         // More space
   },
   direct: {
-    micro_task: 0.1,   // More tasks
-    reflect: -0.05,    // Less reflection
-    silence: -0.05     // Less silence
+    give_direction: 0.15, // Much more direction
+    micro_task: 0.1,      // More tasks
+    reflect: -0.05,       // Less reflection
+    silence: -0.05        // Less silence
   },
   gentle: {
-    silence: 0.1,      // More space
-    reflect: 0.1,      // More reflection
-    micro_task: -0.1   // Less tasks
+    add_meaning: 0.1,    // More meaning
+    silence: 0.1,        // More space
+    micro_task: -0.1     // Less tasks
   }
 };
+
+// Emotion detection result with both root and all related words
+export interface EmotionMatch {
+  root: string;           // The root for comparison (e.g., 'רגש')
+  surfaceWord: string;    // The actual word found (e.g., 'מתרגשת')
+  allForms: string[];     // All related words to ban (e.g., ['מתרגש', 'מתרגשת', 'התרגשות', ...])
+}
 
 // Conversation state for tracking
 export interface ConversationState {
@@ -122,6 +148,9 @@ export interface ConversationState {
   messageCountInPhase: number;
   totalMessageCount: number;
   questionsAskedInPhase: number;
+  reflectionsDone: number;           // Track how many times we reflected
+  lastReflectedEmotion: string | null; // Emotion ROOT we already reflected - for comparison
+  lastReflectedWords: string[];      // ALL forms of the emotion to ban - for prompts
   userSharedEmotion: boolean;
   userIndicatedCompletion: boolean;
   dayTask: string;
@@ -129,8 +158,36 @@ export interface ConversationState {
 }
 
 // Keywords for detecting user emotional sharing
-const EMOTION_KEYWORDS_HE = ['מרגיש', 'קשה', 'כואב', 'שמח', 'עצוב', 'מפחד', 'מתרגש', 'עייף', 'מתוסכל', 'לחוץ', 'בודד'];
-const EMOTION_KEYWORDS_EN = ['feel', 'feeling', 'hard', 'hurts', 'happy', 'sad', 'scared', 'excited', 'tired', 'frustrated', 'stressed', 'lonely'];
+// Hebrew emotion roots (3-letter roots) for better matching across inflections
+const EMOTION_ROOTS_HE = [
+  // Core emotion words - feel/feeling
+  { root: 'רגש', words: ['מרגיש', 'מרגישה', 'הרגשה', 'רגש', 'מרגישים'] },
+  { root: 'קשה', words: ['קשה', 'קשים', 'קשות'] },
+  { root: 'כאב', words: ['כואב', 'כואבת', 'כאב', 'מכאיב', 'מכאיבה'] },
+  { root: 'שמח', words: ['שמח', 'שמחה', 'שמחות', 'שמחים'] },
+  { root: 'עצב', words: ['עצוב', 'עצובה', 'עצב', 'עצובים', 'עצבני', 'עצבנית', 'עצבנות', 'עצבניים'] },
+  { root: 'פחד', words: ['מפחד', 'מפחדת', 'פחד', 'מפחדים', 'פוחד', 'פוחדת', 'פוחדים'] },
+  // Excitement - separate group for התרגש vs מרגיש
+  { root: 'התרגש', words: ['מתרגש', 'מתרגשת', 'התרגשות', 'מתרגשים', 'התרגשתי'] },
+  { root: 'עיף', words: ['עייף', 'עייפה', 'עייפות', 'עייפים'] },
+  { root: 'תסכל', words: ['מתוסכל', 'מתוסכלת', 'תסכול', 'מתוסכלים'] },
+  { root: 'לחץ', words: ['לחוץ', 'לחוצה', 'לחץ', 'לחוצים'] },
+  { root: 'בדד', words: ['בודד', 'בודדה', 'בדידות', 'בודדים'] },
+  { root: 'חרד', words: ['חרד', 'חרדה', 'חרדות', 'מחרידה', 'חרדתי'] },
+  { root: 'כעס', words: ['כועס', 'כועסת', 'כעס', 'כעסים', 'כעסתי'] },
+  { root: 'דאג', words: ['דואג', 'דואגת', 'דאגה', 'מודאג', 'מודאגת', 'מודאגים'] },
+  // Additional common emotion adjectives
+  { root: 'נרגש', words: ['נרגש', 'נרגשת', 'נרגשים', 'נרגשות'] },
+  { root: 'מבולבל', words: ['מבולבל', 'מבולבלת', 'בלבול', 'מבולבלים'] },
+  { root: 'מתוח', words: ['מתוח', 'מתוחה', 'מתח', 'מתוחים'] },
+  { root: 'אכזב', words: ['מאוכזב', 'מאוכזבת', 'אכזבה', 'מאוכזבים'] },
+  { root: 'תקוה', words: ['מקווה', 'מקווה', 'תקווה', 'מקווים'] },
+  { root: 'רגוע', words: ['רגוע', 'רגועה', 'רוגע', 'רגועים'] },
+  { root: 'נסער', words: ['נסער', 'נסערת', 'סערה', 'נסערים'] }
+];
+
+const EMOTION_KEYWORDS_HE = EMOTION_ROOTS_HE.flatMap(e => e.words);
+const EMOTION_KEYWORDS_EN = ['feel', 'feeling', 'hard', 'hurts', 'happy', 'sad', 'scared', 'excited', 'tired', 'frustrated', 'stressed', 'lonely', 'worried', 'anxious', 'angry'];
 
 // Keywords for detecting task completion
 const COMPLETION_KEYWORDS_HE = ['עשיתי', 'סיימתי', 'ניסיתי', 'הצלחתי', 'עבר', 'הבנתי', 'עובד'];
@@ -170,11 +227,55 @@ function normalizeWeights(weights: ActionWeights): ActionWeights {
   
   return {
     reflect: Math.max(0, weights.reflect) / total,
+    add_meaning: Math.max(0, weights.add_meaning) / total,
+    give_direction: Math.max(0, weights.give_direction) / total,
     ask_question: Math.max(0, weights.ask_question) / total,
     validate: Math.max(0, weights.validate) / total,
     micro_task: Math.max(0, weights.micro_task) / total,
     silence: Math.max(0, weights.silence) / total
   };
+}
+
+/**
+ * Extract full emotion match from user message
+ * Returns root (for comparison), surface word (for logging), and all forms (for banning)
+ */
+function extractEmotionMatch(message: string): EmotionMatch | null {
+  const lowerMessage = message.toLowerCase();
+  
+  // Check Hebrew emotion roots first
+  for (const emotionGroup of EMOTION_ROOTS_HE) {
+    for (const word of emotionGroup.words) {
+      if (message.includes(word)) {
+        return {
+          root: emotionGroup.root,
+          surfaceWord: word,
+          allForms: emotionGroup.words
+        };
+      }
+    }
+  }
+  
+  // Check English keywords
+  for (const keyword of EMOTION_KEYWORDS_EN) {
+    if (lowerMessage.includes(keyword)) {
+      return {
+        root: keyword,
+        surfaceWord: keyword,
+        allForms: [keyword]
+      };
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Simple check - just returns the root for backward compatibility
+ */
+function extractEmotionWord(message: string): string | null {
+  const match = extractEmotionMatch(message);
+  return match ? match.root : null;
 }
 
 /**
@@ -226,8 +327,30 @@ function selectWeightedAction(weights: ActionWeights): DirectorAction {
 }
 
 /**
+ * Get adjusted weights after reflection - block further reflection, boost meaning/direction
+ */
+function getPostReflectionWeights(baseWeights: ActionWeights): ActionWeights {
+  const adjusted = { ...baseWeights };
+  
+  // CRITICAL: After reflecting once, NEVER reflect again
+  adjusted.reflect = 0;
+  
+  // Boost meaning and direction - these are the forward-moving actions
+  adjusted.add_meaning = adjusted.add_meaning * 2;
+  adjusted.give_direction = adjusted.give_direction * 2;
+  
+  // Reduce questions - we want to lead, not ask
+  adjusted.ask_question = adjusted.ask_question * 0.5;
+  
+  return normalizeWeights(adjusted);
+}
+
+/**
  * The main Director function - decides what happens next
  * This is the SYSTEM making decisions, not the AI
+ * 
+ * KEY RULE: After reflecting an emotion ONCE, we NEVER repeat it.
+ * We must add MEANING or DIRECTION, not more reflection.
  */
 export function makeDecision(
   state: ConversationState,
@@ -235,22 +358,33 @@ export function makeDecision(
   mentorProfile: MentorProfile
 ): DirectorDecision {
   const hasEmotion = detectEmotionalContent(userMessage);
+  const emotionWord = extractEmotionWord(userMessage);
   const hasCompletion = detectCompletionIndicator(userMessage);
   const messageLength = userMessage.length;
+  
+  // Check if we already reflected this emotion
+  const alreadyReflectedThisEmotion = emotionWord && state.lastReflectedEmotion === emotionWord;
+  const hasReflectedEnough = state.reflectionsDone >= 1;
 
   // PHASE: INTRO
   if (state.phase === 'intro') {
-    // If user responds with more than minimal content, move to reflection
+    // If user responds with enough content, do ONE reflection then move on
     if (messageLength > 15 || hasEmotion) {
+      // Get full emotion match to pass all word forms as banned words
+      const currentMatch = extractEmotionMatch(userMessage);
+      
       return {
         action: 'reflect',
         phase: 'intro',
         nextPhase: 'reflection',
         context: {
           focusPoint: 'what the user just shared',
-          instruction: 'Mirror back their emotional state briefly'
+          instruction: 'Mirror back briefly - ONE sentence. Then immediately add meaning or direction. Do NOT echo their exact emotion words.',
+          emotionToReflect: emotionWord || undefined,
+          // Pass ALL word forms so AI doesn't echo them back
+          bannedWords: currentMatch ? currentMatch.allForms : undefined
         },
-        reason: 'User shared enough to begin reflection'
+        reason: 'User shared enough to begin - reflect once and move forward'
       };
     }
     
@@ -268,35 +402,98 @@ export function makeDecision(
 
   // PHASE: REFLECTION
   if (state.phase === 'reflection') {
-    // After 2-3 exchanges in reflection, or strong emotional share, move to task
-    if (state.messageCountInPhase >= 2 || (hasEmotion && messageLength > 40)) {
+    // Check if ready to move to task phase
+    const readyForTask = state.messageCountInPhase >= 2 || 
+                         (hasEmotion && messageLength > 40) ||
+                         state.reflectionsDone >= 2;
+    
+    if (readyForTask) {
       return {
         action: 'give_task',
         phase: 'reflection',
         nextPhase: 'task',
         context: {
           content: state.dayTask,
-          instruction: 'Present the task clearly, connect briefly to what they shared'
+          instruction: 'Connect briefly to what they shared, then present the task clearly. Lead forward.'
         },
         reason: 'Sufficient reflection, time to introduce task'
       };
     }
     
-    // Select weighted action based on mentor style
-    const action = selectWeightedAction(mentorProfile.actionWeights);
+    // CRITICAL RULE: If we already reflected, we MUST move forward
+    // No more mirroring the same emotion. Add meaning or direction.
+    if (hasReflectedEnough || alreadyReflectedThisEmotion) {
+      // Get weights that favor forward movement
+      const forwardWeights = getPostReflectionWeights(mentorProfile.actionWeights);
+      let action = selectWeightedAction(forwardWeights);
+      
+      // Force to meaning or direction if still getting reflect
+      if (action === 'reflect') {
+        action = Math.random() > 0.5 ? 'add_meaning' : 'give_direction';
+      }
+      
+      // Collect ALL banned words: previously reflected + current emotion forms
+      const currentMatch = extractEmotionMatch(userMessage);
+      const allBannedWords = new Set(state.lastReflectedWords);
+      if (currentMatch) {
+        currentMatch.allForms.forEach(w => allBannedWords.add(w));
+      }
+      const bannedWordsList = Array.from(allBannedWords);
+      
+      return {
+        action,
+        phase: 'reflection',
+        nextPhase: null,
+        context: {
+          focusPoint: state.dayGoal,
+          instruction: action === 'add_meaning'
+            ? `Interpret what they shared. Connect it to something deeper about their journey. NO questions. Do NOT repeat any emotion words they used.`
+            : action === 'give_direction'
+            ? `Move toward today's goal: "${state.dayGoal}". Lead them forward. NO questions. Do NOT repeat any emotion words they used.`
+            : action === 'micro_task'
+            ? 'Give one tiny immediate action (breathe, notice body). NO questions.'
+            : 'Acknowledge briefly and move forward. NO questions.',
+          bannedWords: bannedWordsList.length > 0 ? bannedWordsList : undefined
+        },
+        reason: `Already reflected - moving forward with ${action} (no more mirroring)`
+      };
+    }
     
-    // Limit questions per phase
-    if (action === 'ask_question' && state.questionsAskedInPhase >= 2) {
+    // First time seeing emotion - can reflect ONCE
+    if (hasEmotion && state.reflectionsDone === 0) {
+      // Get full emotion match to pass all word forms as banned words
+      const currentMatch = extractEmotionMatch(userMessage);
+      
       return {
         action: 'reflect',
         phase: 'reflection',
         nextPhase: null,
         context: {
-          focusPoint: 'what they just shared',
-          instruction: 'Simply mirror back, no question'
+          focusPoint: 'their emotion',
+          instruction: 'Mirror back briefly in ONE sentence, then IMMEDIATELY add meaning or direction in the next sentence. Do NOT ask a question. Do NOT echo their exact emotion words.',
+          emotionToReflect: emotionWord || undefined,
+          // Pass ALL word forms so AI doesn't echo them back
+          bannedWords: currentMatch ? currentMatch.allForms : undefined
         },
-        reason: 'Already asked enough questions in this phase'
+        reason: 'First emotional share - reflect once then add meaning'
       };
+    }
+    
+    // No emotion shared yet - select based on profile but never reflect
+    const weights = hasReflectedEnough 
+      ? getPostReflectionWeights(mentorProfile.actionWeights)
+      : mentorProfile.actionWeights;
+    
+    let action = selectWeightedAction(weights);
+    
+    // Prevent too many questions
+    if (action === 'ask_question' && state.questionsAskedInPhase >= 1) {
+      action = 'add_meaning';
+    }
+    
+    // Prevent reflect after already reflecting
+    if (action === 'reflect' && hasReflectedEnough) {
+      action = 'add_meaning';
     }
     
     return {
@@ -304,14 +501,18 @@ export function makeDecision(
       phase: 'reflection',
       nextPhase: null,
       context: {
-        focusPoint: 'their emotional state and words',
+        focusPoint: state.dayGoal,
         instruction: action === 'ask_question' 
-          ? 'Ask ONE deepening question' 
+          ? 'Ask ONE deepening question - make it about their experience, not their feelings'
+          : action === 'add_meaning'
+          ? `Interpret what they shared. Connect to today's goal: "${state.dayGoal}". NO questions.`
+          : action === 'give_direction'
+          ? `Lead toward today's goal: "${state.dayGoal}". NO questions.`
           : action === 'micro_task'
-          ? 'Suggest one tiny immediate action (breathe, notice, pause)'
-          : 'Mirror what they said without adding much'
+          ? 'Suggest one tiny action (breathe, notice body, pause). NO questions.'
+          : 'Simple acknowledgment and continue leading.'
       },
-      reason: `Selected ${action} based on mentor profile (${mentorProfile.style})`
+      reason: `Selected ${action} - leading the process forward`
     };
   }
 
@@ -324,7 +525,7 @@ export function makeDecision(
         phase: 'task',
         nextPhase: 'integration',
         context: {
-          instruction: 'Acknowledge their engagement with the task, prepare to close'
+          instruction: 'Acknowledge their engagement. Name what they did. Prepare to close.'
         },
         reason: 'User engaged with task, moving to integration'
       };
@@ -339,50 +540,48 @@ export function makeDecision(
         nextPhase: null,
         context: {
           content: state.dayTask,
-          instruction: 'Restate the task once, briefly. No apology.'
+          instruction: 'Restate the task clearly. No apology. Just the task.'
         },
         reason: 'User unclear on task, restating'
       };
     }
     
-    // Otherwise, select based on profile
-    const action = selectWeightedAction(mentorProfile.actionWeights);
-    
+    // In task phase, guide toward action
     return {
-      action: action === 'micro_task' ? 'validate' : action,
+      action: 'give_direction',
       phase: 'task',
       nextPhase: null,
       context: {
-        instruction: 'Acknowledge briefly, wait for them to engage with task'
+        content: state.dayTask,
+        instruction: 'Guide them to engage with the task. NO questions. Just direction.'
       },
-      reason: 'In task phase, minimal intervention'
+      reason: 'In task phase, guiding toward action'
     };
   }
 
   // PHASE: INTEGRATION
   if (state.phase === 'integration') {
-    // Always close the day in integration
     return {
       action: 'close_day',
       phase: 'integration',
       nextPhase: null,
       context: {
         completesDay: true,
-        instruction: 'Warm closing. Name one thing they did today. Brief.'
+        instruction: 'Warm closing. Name ONE thing they did today. Brief. No long summary.'
       },
       reason: 'Integration phase - closing day'
     };
   }
 
-  // Fallback
+  // Fallback - always move forward
   return {
-    action: 'validate',
+    action: 'give_direction',
     phase: state.phase,
     nextPhase: null,
     context: {
-      instruction: 'Simple acknowledgment'
+      instruction: 'Lead forward. Guide the process.'
     },
-    reason: 'Fallback decision'
+    reason: 'Fallback - leading forward'
   };
 }
 
@@ -405,6 +604,20 @@ export function updateState(
     newState.questionsAskedInPhase += 1;
   }
   
+  // Track reflections - CRITICAL for preventing reflection loops
+  if (decision.action === 'reflect') {
+    newState.reflectionsDone += 1;
+    // Track the emotion root AND all word forms so we don't repeat any of them
+    const emotionMatch = extractEmotionMatch(userMessage);
+    if (emotionMatch) {
+      newState.lastReflectedEmotion = emotionMatch.root;
+      // Accumulate all forms we've seen (don't replace, add to list)
+      const existingWords = new Set(newState.lastReflectedWords);
+      emotionMatch.allForms.forEach(w => existingWords.add(w));
+      newState.lastReflectedWords = Array.from(existingWords);
+    }
+  }
+  
   // Detect emotional sharing
   if (detectEmotionalContent(userMessage)) {
     newState.userSharedEmotion = true;
@@ -420,6 +633,8 @@ export function updateState(
     newState.phase = decision.nextPhase;
     newState.messageCountInPhase = 0;
     newState.questionsAskedInPhase = 0;
+    // IMPORTANT: Do NOT reset reflectionsDone - we want to track total reflections across all phases
+    // This prevents the loop where we reflect again after intro→reflection transition
   }
   
   return newState;
@@ -434,6 +649,9 @@ export function initializeState(dayTask: string, dayGoal: string): ConversationS
     messageCountInPhase: 0,
     totalMessageCount: 0,
     questionsAskedInPhase: 0,
+    reflectionsDone: 0,
+    lastReflectedEmotion: null,
+    lastReflectedWords: [],
     userSharedEmotion: false,
     userIndicatedCompletion: false,
     dayTask,

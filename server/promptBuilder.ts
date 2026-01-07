@@ -47,30 +47,52 @@ const BLACKLISTED_PHRASES_EN = [
 // Action-specific prompt templates
 const ACTION_PROMPTS: Record<DirectorAction, { he: string; en: string }> = {
   reflect: {
-    he: `המשימה שלך: להחזיר בקצרה את מה שהמשתתף שיתף, בלי לשפוט ובלי להוסיף.
-אמור 1-2 משפטים שמראים שאתה שומע. זה הכל.
-לא לשאול שאלה. לא להציע. רק לשקף.`,
-    en: `Your task: Briefly mirror back what the participant shared, without judging or adding.
-Say 1-2 sentences that show you heard them. That's it.
-Don't ask a question. Don't suggest. Just reflect.`
+    he: `המשימה שלך: להחזיר בקצרה את מה שהמשתתף שיתף.
+משפט אחד בלבד שמראה שאתה שומע.
+מיד אחרי - הוסף משמעות או כיוון (לא שאלה).`,
+    en: `Your task: Briefly mirror what they shared.
+One sentence only that shows you hear them.
+Immediately after - add meaning or direction (not a question).`
+  },
+  
+  add_meaning: {
+    he: `המשימה שלך: להוסיף משמעות למה שהם שיתפו.
+לפרש את מה שהם אמרו, לחבר למשהו עמוק יותר.
+לא לחזור על מילות הרגש שלהם - להמשיך הלאה.
+לא לשאול שאלה. רק לתת פרשנות שמקדמת.`,
+    en: `Your task: Add meaning to what they shared.
+Interpret what they said, connect to something deeper.
+Don't repeat their emotion words - move forward.
+Don't ask a question. Just give interpretation that advances.`
+  },
+  
+  give_direction: {
+    he: `המשימה שלך: להוביל קדימה.
+לחבר למטרת היום ולתהליך הכולל.
+לא לחזור על מה שהם אמרו - להתקדם.
+לא לשאול שאלה. רק לתת כיוון ברור.`,
+    en: `Your task: Lead forward.
+Connect to today's goal and the overall journey.
+Don't repeat what they said - move ahead.
+Don't ask a question. Just give clear direction.`
   },
   
   ask_question: {
     he: `המשימה שלך: לשאול שאלה אחת קצרה.
-שאלה שמזמינה להעמיק, לא שאלה סגורה.
-משפט אחד בלבד. לא יותר.`,
+שאלה על החוויה שלהם, לא על הרגש.
+משפט אחד בלבד.`,
     en: `Your task: Ask one short question.
-A question that invites deeper exploration, not a yes/no question.
-One sentence only. No more.`
+A question about their experience, not their feelings.
+One sentence only.`
   },
   
   validate: {
     he: `המשימה שלך: אישור קצר וקרקעי.
-לא שבחים. לא "נהדר". רק "אני שומע" או "זה לא פשוט" או "משהו זז פה".
-משפט אחד.`,
+לא שבחים. רק "אני שומע/ת" או "זה לא פשוט".
+משפט אחד ואז להמשיך להוביל.`,
     en: `Your task: Brief, grounded acknowledgment.
-No praise. Not "great". Just "I hear you" or "that's not easy" or "something is shifting".
-One sentence.`
+No praise. Just "I hear you" or "that's not easy".
+One sentence then continue leading.`
   },
   
   micro_task: {
@@ -91,33 +113,33 @@ Not a list. Not praise. Just one sentence that captures the essence.`
   
   silence: {
     he: `המשימה שלך: לתת מקום. אישור מינימלי.
-"אני פה" או "קח/י את הזמן" - משהו שמאפשר שקט.
+"אני פה" או "קח/י את הזמן".
 משפט אחד קצר מאוד.`,
     en: `Your task: Give space. Minimal acknowledgment.
-"I'm here" or "take your time" - something that allows quiet.
+"I'm here" or "take your time".
 One very short sentence.`
   },
   
   give_task: {
     he: `המשימה שלך: לתת את המשימה בבהירות.
-משפט אחד עם המשימה. משפט אחד שמחבר למה שהם שיתפו.
-לא להסביר למה. לא לשאול מה הם חושבים. רק לתת ולעצור.`,
+לחבר בקצרה למה שהם שיתפו, ואז לתת את המשימה.
+לא להסביר למה. לא לשאול. רק לתת ולעצור.`,
     en: `Your task: Give the task clearly.
-One sentence with the task. One sentence connecting to what they shared.
-Don't explain why. Don't ask what they think. Just give it and stop.`
+Connect briefly to what they shared, then give the task.
+Don't explain why. Don't ask. Just give it and stop.`
   },
   
   close_day: {
     he: `המשימה שלך: לסגור את היום בחום.
 להתחיל עם [DAY_COMPLETE]
 לציין דבר אחד ספציפי שהם עשו היום.
-לסיים בקצרה. "נתראה מחר" או משהו דומה.
-בלי שבחים מוגזמים. בלי סיכום ארוך.`,
+לסיים בקצרה. "נתראה מחר".
+בלי שבחים מוגזמים.`,
     en: `Your task: Close the day warmly.
 Start with [DAY_COMPLETE]
 Name one specific thing they did today.
-End briefly. "See you tomorrow" or similar.
-No excessive praise. No long summary.`
+End briefly. "See you tomorrow".
+No excessive praise.`
   }
 };
 
@@ -214,15 +236,30 @@ export function buildSystemPrompt(
     ? `1. מקסימום 80 מילים.
 2. כוונה אחת בלבד. לא שניים או שלושה דברים.
 3. לא להשתמש בביטויים האסורים.
-4. להישאר בשפה ${isHebrew ? 'עברית' : 'אנגלית'}.`
+4. להישאר בשפה ${isHebrew ? 'עברית' : 'אנגלית'}.
+5. לא לשאול שאלה אלא אם זו הפעולה המבוקשת.
+6. להוביל את התהליך, לא להגיב.`
     : `1. Maximum 80 words.
 2. One intention only. Not two or three things.
 3. Never use blacklisted phrases.
-4. Stay in ${isHebrew ? 'Hebrew' : 'English'}.`;
+4. Stay in ${isHebrew ? 'Hebrew' : 'English'}.
+5. Do NOT ask a question unless that's the requested action.
+6. Lead the process, don't just respond.`;
 
   // Blacklist
   prompt += `\n\n=== ${isHebrew ? 'ביטויים אסורים' : 'BANNED PHRASES'} ===\n`;
   prompt += blacklist.map(p => `- "${p}"`).join('\n');
+  
+  // Add banned emotion words if provided (to prevent repetition)
+  if (decision.context.bannedWords && decision.context.bannedWords.length > 0) {
+    prompt += isHebrew
+      ? `\n\n=== מילים לא לחזור עליהן ===\n`
+      : `\n\n=== WORDS NOT TO REPEAT ===\n`;
+    prompt += decision.context.bannedWords.map(w => `- "${w}"`).join('\n');
+    prompt += isHebrew
+      ? `\nחשוב: לא לחזור על מילות הרגש האלה. המשתתף כבר שיתף אותן. להתקדם.`
+      : `\nImportant: Do NOT repeat these emotion words. The participant already shared them. Move forward.`;
+  }
   
   // Alternatives
   prompt += `\n\n=== ${isHebrew ? 'השתמש במקום' : 'USE INSTEAD'} ===\n`;
