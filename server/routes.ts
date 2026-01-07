@@ -1978,18 +1978,41 @@ export async function registerRoutes(
   });
 
   // External payment verification - participant returns after paying via external link
-  app.get("/api/payment/external-verify/:token", async (req, res) => {
+  // POST method - requires identity verification (name, email, idNumber)
+  app.post("/api/payment/external-verify/:token", async (req, res) => {
     try {
       const { token } = req.params;
+      const { name, email, idNumber } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !idNumber) {
+        return res.status(400).json({ error: "missing_fields", message: "All fields are required" });
+      }
       
       const session = await storage.getExternalPaymentSessionByToken(token);
       
       if (!session) {
-        return res.status(404).json({ error: "Payment session not found" });
+        return res.status(404).json({ error: "session_not_found", message: "Payment session not found" });
+      }
+
+      // Check if session has expired
+      if (new Date() > session.expiresAt) {
+        return res.status(400).json({ error: "session_expired", message: "Payment session has expired" });
+      }
+
+      // Verify identity matches the session data
+      const emailMatch = session.email.toLowerCase() === email.toLowerCase();
+      const idMatch = session.idNumber === idNumber;
+      // Name comparison: case-insensitive and trim
+      // If session has no name stored, skip name check (verify by email + ID only)
+      const nameMatch = !session.name || session.name.toLowerCase().trim() === name.toLowerCase().trim();
+      
+      if (!emailMatch || !idMatch || !nameMatch) {
+        return res.status(400).json({ error: "identity_mismatch", message: "Identity verification failed" });
       }
 
       if (session.status === "completed") {
-        // Session already completed, find the participant by email
+        // Session already completed, find the participant
         const participant = await storage.getParticipantByEmail(session.email, session.journeyId);
         if (participant) {
           return res.json({ 
@@ -1997,12 +2020,7 @@ export async function registerRoutes(
             accessToken: participant.accessToken 
           });
         }
-        return res.status(400).json({ error: "Participant not found" });
-      }
-
-      // Check if session has expired
-      if (new Date() > session.expiresAt) {
-        return res.status(400).json({ error: "Payment session has expired" });
+        return res.status(400).json({ error: "participant_not_found", message: "Participant not found" });
       }
 
       // Complete the session and create participant
@@ -2010,7 +2028,7 @@ export async function registerRoutes(
       
       const journey = await storage.getJourney(session.journeyId);
       if (!journey) {
-        return res.status(404).json({ error: "Flow not found" });
+        return res.status(404).json({ error: "flow_not_found", message: "Flow not found" });
       }
 
       const participant = await storage.createExternalParticipant(
@@ -2049,7 +2067,42 @@ export async function registerRoutes(
       });
     } catch (error) {
       console.error("Error verifying external payment:", error);
-      res.status(500).json({ error: "Failed to verify payment" });
+      res.status(500).json({ error: "server_error", message: "Failed to verify payment" });
+    }
+  });
+
+  // Legacy GET method - redirects to proper flow (kept for backwards compatibility)
+  app.get("/api/payment/external-verify/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      const session = await storage.getExternalPaymentSessionByToken(token);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Payment session not found" });
+      }
+
+      if (session.status === "completed") {
+        // Session already completed, find the participant by email
+        const participant = await storage.getParticipantByEmail(session.email, session.journeyId);
+        if (participant) {
+          return res.json({ 
+            success: true, 
+            accessToken: participant.accessToken 
+          });
+        }
+        return res.status(400).json({ error: "Participant not found" });
+      }
+
+      // For pending sessions, return info that verification form is required
+      return res.json({ 
+        success: false, 
+        requiresVerification: true,
+        message: "Identity verification required" 
+      });
+    } catch (error) {
+      console.error("Error checking external payment:", error);
+      res.status(500).json({ error: "Failed to check payment status" });
     }
   });
 

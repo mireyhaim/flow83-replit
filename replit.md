@@ -72,12 +72,20 @@ Participants pay mentors directly via mentor's own payment links:
 
 **External Payment Flow:**
 1. Mentor configures `externalPaymentUrl` in journey settings (publish modal)
-2. When participant joins, API creates an `externalPaymentSession` with unique token
+2. When participant joins, API creates an `externalPaymentSession` with unique token storing name, email, and ID number
 3. Participant is redirected to mentor's external payment link (opens in new tab)
-4. Participant returns to `/payment/external-success?token=xxx`
-5. Token is verified, session is marked complete, and participant gains access
+4. Participant returns to `/payment/external-pending?token=xxx&paymentUrl=...`
+5. After clicking "שילמתי - התחל את ה-Flow", identity verification form appears
+6. Participant must enter name, email, and 9-digit ID number
+7. System verifies identity against stored session data (POST `/api/payment/external-verify/:token`)
+8. If identity matches, session is marked complete and participant gains access
 
-This approach allows mentors from any country to receive payments directly through their preferred payment provider.
+**Identity Verification:**
+- Email: case-insensitive comparison
+- ID Number: exact 9-digit match
+- Name: case-insensitive comparison (skipped if session has no stored name)
+
+This approach allows mentors from any country to receive payments directly through their preferred payment provider while ensuring only the actual paying customer can access the flow.
 
 ### Admin Dashboard
 
