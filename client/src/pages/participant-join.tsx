@@ -306,16 +306,6 @@ export default function ParticipantJoinPage() {
                 }
               </Button>
             </div>
-
-            <p 
-              className="text-xs text-center"
-              style={{ color: 'hsl(25 15% 55%)' }}
-            >
-              {isHebrew 
-                ? "בהמשכך, את/ה מסכימ/ה לקבל אימיילים על התקדמות המסע שלך."
-                : "By continuing, you agree to receive emails about your journey progress."
-              }
-            </p>
           </CardContent>
         </Card>
       </main>
