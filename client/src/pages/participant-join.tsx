@@ -35,8 +35,10 @@ export default function ParticipantJoinPage() {
   const journeyId = params?.journeyId;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; idNumber?: string}>({});
 
   const { data: journey, isLoading } = useQuery<JourneyBasic>({
     queryKey: ["/api/journeys", journeyId, "basic"],
@@ -66,9 +68,33 @@ export default function ParticipantJoinPage() {
     };
   }, [isHebrew]);
 
+  const validateForm = () => {
+    const errors: {name?: string; email?: string; idNumber?: string} = {};
+    
+    if (!name.trim()) {
+      errors.name = isHebrew ? "שם הוא שדה חובה" : "Name is required";
+    }
+    
+    if (!email.trim()) {
+      errors.email = isHebrew ? "אימייל הוא שדה חובה" : "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = isHebrew ? "כתובת אימייל לא תקינה" : "Invalid email address";
+    }
+    
+    if (!idNumber.trim()) {
+      errors.idNumber = isHebrew ? "תעודת זהות היא שדה חובה" : "ID number is required";
+    } else if (!/^\d{9}$/.test(idNumber.replace(/\D/g, ''))) {
+      errors.idNumber = isHebrew ? "תעודת זהות חייבת להכיל 9 ספרות" : "ID must be 9 digits";
+    }
+    
+    return errors;
+  };
+
   const handleEmailSignUp = async () => {
-    if (!email) {
-      setError("Please enter your email");
+    const errors = validateForm();
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
       return;
     }
     
@@ -79,7 +105,7 @@ export default function ParticipantJoinPage() {
       const res = await fetch(`/api/join/journey/${journeyId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ email, name, idNumber: idNumber.replace(/\D/g, '') }),
       });
       
       const data = await res.json();
@@ -237,16 +263,23 @@ export default function ParticipantJoinPage() {
                   htmlFor="name"
                   style={{ color: 'hsl(25 20% 20%)' }}
                 >
-                  {isHebrew ? "השם שלך" : "Your Name"}
+                  {isHebrew ? "השם שלך" : "Your Name"} *
                 </Label>
                 <Input
                   id="name"
                   type="text"
                   placeholder={isHebrew ? "הזינו את שמכם" : "Enter your name"}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (fieldErrors.name) setFieldErrors(prev => ({...prev, name: undefined}));
+                  }}
+                  className={fieldErrors.name ? "border-red-500" : ""}
                   data-testid="input-name"
                 />
+                {fieldErrors.name && (
+                  <p className="text-red-500 text-xs">{fieldErrors.name}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -254,16 +287,48 @@ export default function ParticipantJoinPage() {
                   htmlFor="email"
                   style={{ color: 'hsl(25 20% 20%)' }}
                 >
-                  {isHebrew ? "כתובת אימייל" : "Email Address"}
+                  {isHebrew ? "כתובת אימייל" : "Email Address"} *
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(prev => ({...prev, email: undefined}));
+                  }}
+                  className={fieldErrors.email ? "border-red-500" : ""}
                   data-testid="input-email"
                 />
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-xs">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label 
+                  htmlFor="idNumber"
+                  style={{ color: 'hsl(25 20% 20%)' }}
+                >
+                  {isHebrew ? "תעודת זהות" : "ID Number"} *
+                </Label>
+                <Input
+                  id="idNumber"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder={isHebrew ? "123456789" : "123456789"}
+                  value={idNumber}
+                  onChange={(e) => {
+                    setIdNumber(e.target.value);
+                    if (fieldErrors.idNumber) setFieldErrors(prev => ({...prev, idNumber: undefined}));
+                  }}
+                  className={fieldErrors.idNumber ? "border-red-500" : ""}
+                  data-testid="input-id-number"
+                />
+                {fieldErrors.idNumber && (
+                  <p className="text-red-500 text-xs">{fieldErrors.idNumber}</p>
+                )}
               </div>
 
               <p 

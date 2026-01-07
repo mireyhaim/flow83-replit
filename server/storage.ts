@@ -60,7 +60,7 @@ export interface IStorage {
   getParticipantByAccessToken(accessToken: string): Promise<Participant | undefined>;
   getParticipantByStripeSession(stripeSessionId: string): Promise<Participant | undefined>;
   createParticipant(participant: InsertParticipant): Promise<Participant>;
-  createExternalParticipant(journeyId: string, email: string, name?: string, stripeSessionId?: string): Promise<Participant>;
+  createExternalParticipant(journeyId: string, email: string, name?: string, idNumber?: string, stripeSessionId?: string): Promise<Participant>;
   updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined>;
 
   getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]>;
@@ -386,11 +386,12 @@ export class DatabaseStorage implements IStorage {
     return participant;
   }
 
-  async createExternalParticipant(journeyId: string, email: string, name?: string, stripeSessionId?: string): Promise<Participant> {
+  async createExternalParticipant(journeyId: string, email: string, name?: string, idNumber?: string, stripeSessionId?: string): Promise<Participant> {
     const [created] = await db.insert(participants).values({
       journeyId,
       email,
       name,
+      idNumber,
       stripeSessionId,
     }).returning();
     return created;

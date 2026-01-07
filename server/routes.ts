@@ -1830,10 +1830,18 @@ export async function registerRoutes(
   app.post("/api/join/journey/:journeyId", async (req, res) => {
     try {
       const { journeyId } = req.params;
-      const { email, name } = req.body;
+      const { email, name, idNumber } = req.body;
 
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
+      }
+      
+      if (!name) {
+        return res.status(400).json({ error: "Name is required" });
+      }
+      
+      if (!idNumber) {
+        return res.status(400).json({ error: "ID number is required" });
       }
 
       const journey = await storage.getJourney(journeyId);
@@ -1860,6 +1868,7 @@ export async function registerRoutes(
             journeyId,
             email,
             name: name || null,
+            idNumber: idNumber || null,
             token,
             status: "pending",
             expiresAt,
@@ -1932,7 +1941,8 @@ export async function registerRoutes(
         const participant = await storage.createExternalParticipant(
           journeyId,
           email,
-          name
+          name,
+          idNumber
         );
 
         if (journey.creatorId) {
@@ -1995,7 +2005,8 @@ export async function registerRoutes(
       const participant = await storage.createExternalParticipant(
         session.journeyId,
         session.email,
-        session.name || undefined
+        session.name || undefined,
+        session.idNumber || undefined
       );
 
       if (journey.creatorId) {

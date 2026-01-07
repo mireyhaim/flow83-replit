@@ -128,6 +128,7 @@ export const participants = pgTable("participants", {
   accessToken: varchar("access_token").unique().default(sql`gen_random_uuid()`),
   email: varchar("email"),
   name: varchar("name"),
+  idNumber: varchar("id_number"),
   stripeSessionId: varchar("stripe_session_id"),
   currentDay: integer("current_day").default(1),
   currentPhase: text("current_phase").default("intro"), // intro | reflection | task | integration
@@ -281,6 +282,7 @@ export const externalPaymentSessions = pgTable("external_payment_sessions", {
   journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
   email: varchar("email").notNull(),
   name: varchar("name"),
+  idNumber: varchar("id_number"),
   token: varchar("token").unique().notNull(), // Unique token to verify return
   status: text("status").default("pending"), // 'pending' | 'completed'
   expiresAt: timestamp("expires_at").notNull(), // Session expires after some time
