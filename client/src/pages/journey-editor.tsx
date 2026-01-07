@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Save, Eye, Loader2, Globe, GlobeLock, Target, 
-  LayoutGrid, Sparkles, ChevronDown, CheckCircle
+  LayoutGrid, Sparkles, ChevronDown, CheckCircle,
+  BookOpen, ListTodo, Users, Calendar
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -340,18 +341,71 @@ const JourneyEditorPage = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Target className="w-5 h-5 text-violet-400" />
-            <h2 className="text-xl font-semibold text-white">{t('flowGoal')}</h2>
+        {/* Hero Section with Glass Effect */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative mb-10 overflow-hidden"
+        >
+          {/* Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-fuchsia-600/10 to-transparent rounded-2xl" />
+          <div className="absolute -top-24 -end-24 w-48 h-48 bg-violet-600/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -start-12 w-32 h-32 bg-fuchsia-600/20 rounded-full blur-3xl" />
+          
+          {/* Glass Panel */}
+          <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-600/30">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">{t('flowGoal')}</h2>
+                <p className="text-white/70 text-base leading-relaxed">
+                  {journeyData.goal || t('noGoalSetYet')}
+                </p>
+              </div>
+            </div>
+            
+            {/* Meta Info */}
+            <div className="flex flex-wrap gap-3 md:gap-4 pt-4 border-t border-white/10">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
+                <Calendar className="w-4 h-4 text-violet-400" />
+                <span className="text-sm text-white/70">{t('days', { count: journeyData.duration || 7 })}</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
+                <Users className="w-4 h-4 text-fuchsia-400" />
+                <span className="text-sm text-white/70">{journeyData.audience || t('notSpecified')}</span>
+              </div>
+            </div>
           </div>
-          <p className="text-white/60 text-sm mb-4">
-            {journeyData.goal || t('noGoalSetYet')}
-          </p>
-          <div className="flex items-center gap-4 text-sm text-white/40">
-            <span>{t('days', { count: journeyData.duration || 7 })}</span>
-            <span>•</span>
-            <span>{t('for')}: {journeyData.audience || t('notSpecified')}</span>
+        </motion.div>
+
+        {/* Mobile Day Chips */}
+        <div className="md:hidden mb-6 -mx-4 px-4">
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+            {journeyData.steps.map((step, index) => {
+              const isExpanded = expandedDays.has(step.id);
+              const isComplete = step.goal && step.explanation && step.task;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    setExpandedDays(new Set([step.id]));
+                    setTimeout(() => {
+                      document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                  }}
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+                    isExpanded
+                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/30'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  }`}
+                >
+                  <span className="font-semibold">{step.dayNumber}</span>
+                  {isComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -367,6 +421,7 @@ const JourneyEditorPage = () => {
               return (
                 <motion.div
                   key={step.id}
+                  id={`day-${step.id}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -427,21 +482,25 @@ const JourneyEditorPage = () => {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <div className="pt-6 pb-4 space-y-6">
-                            <div>
+                          <div className="pt-6 pb-4 space-y-5">
+                            {/* Day Title */}
+                            <div className="relative">
                               <Input
                                 value={step.title}
                                 onChange={(e) => updateStepField(step.id, "title", e.target.value)}
-                                className="bg-transparent border-0 border-b border-white/10 rounded-none text-white text-lg font-medium placeholder:text-white/30 focus-visible:ring-0 focus-visible:border-violet-500 px-0"
+                                className="bg-white/5 border border-white/10 rounded-xl text-white text-lg font-medium placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 px-4 py-3"
                                 placeholder={t('dayTitlePlaceholder')}
                                 data-testid={`input-title-${step.dayNumber}`}
                               />
                             </div>
                             
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                                <span className="text-sm font-medium text-violet-400">{t('goal')}</span>
+                            {/* Goal Section */}
+                            <div className="group rounded-xl bg-white/5 border border-white/10 p-4 hover:border-violet-500/30 transition-colors">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                                  <Target className="w-4 h-4 text-violet-400" />
+                                </div>
+                                <span className="text-sm font-semibold text-violet-400">{t('goal')}</span>
                               </div>
                               <Textarea
                                 value={step.goal || ""}
@@ -452,12 +511,13 @@ const JourneyEditorPage = () => {
                               />
                             </div>
                             
-                            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400" />
-                                <span className="text-sm font-medium text-fuchsia-400">{t('explanation')}</span>
+                            {/* Explanation Section */}
+                            <div className="group rounded-xl bg-white/5 border border-white/10 p-4 hover:border-fuchsia-500/30 transition-colors">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 flex items-center justify-center">
+                                  <BookOpen className="w-4 h-4 text-fuchsia-400" />
+                                </div>
+                                <span className="text-sm font-semibold text-fuchsia-400">{t('explanation')}</span>
                               </div>
                               <Textarea
                                 value={step.explanation || ""}
@@ -468,12 +528,13 @@ const JourneyEditorPage = () => {
                               />
                             </div>
                             
-                            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                <span className="text-sm font-medium text-emerald-400">{t('task')}</span>
+                            {/* Task Section */}
+                            <div className="group rounded-xl bg-white/5 border border-white/10 p-4 hover:border-emerald-500/30 transition-colors">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                  <ListTodo className="w-4 h-4 text-emerald-400" />
+                                </div>
+                                <span className="text-sm font-semibold text-emerald-400">{t('task')}</span>
                               </div>
                               <Textarea
                                 value={step.task || ""}
