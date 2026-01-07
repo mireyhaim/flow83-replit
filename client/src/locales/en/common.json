@@ -22,6 +22,8 @@
   "settings": "Settings",
   "profile": "Profile",
   "logout": "Log Out",
+  "logoutConfirmTitle": "Log Out",
+  "logoutConfirmDescription": "Are you sure you want to log out?",
   "login": "Log In",
   "signUp": "Sign Up",
   "email": "Email",

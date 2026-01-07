@@ -22,6 +22,8 @@
   "settings": "הגדרות",
   "profile": "פרופיל",
   "logout": "התנתק",
+  "logoutConfirmTitle": "התנתקות",
+  "logoutConfirmDescription": "האם אתה בטוח שברצונך להתנתק?",
   "login": "התחבר",
   "signUp": "הרשמה",
   "email": "אימייל",

@@ -1,10 +1,13 @@
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { journeyApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, BookOpen, Link2 } from "lucide-react";
+import { 
+  Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, 
+  BookOpen, Link2, Clock, Users, Rocket, CheckCircle, FileEdit
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
@@ -22,16 +25,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { Journey } from "@shared/schema";
+import { motion } from "framer-motion";
+import { GlassPanel, GradientHeader } from "@/components/ui/glass-panel";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 export default function JourneysPage() {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteJourneyId, setDeleteJourneyId] = useState<string | null>(null);
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation(['dashboard', 'common']);
   
   const { data: journeys = [], isLoading } = useQuery<Journey[]>({
     queryKey: ["/api/journeys/my"],
@@ -47,7 +52,7 @@ export default function JourneysPage() {
       setDeleteJourneyId(null);
     },
     onError: () => {
-      toast({ title: t('error'), variant: "destructive" });
+      toast({ title: t('dashboard:error'), variant: "destructive" });
     },
   });
 
@@ -57,141 +62,198 @@ export default function JourneysPage() {
     }
   };
 
-  const handleCopyLink = (journeyId: string) => {
-    const url = `${window.location.origin}/j/${journeyId}`;
+  const handleCopyLink = (journey: Journey) => {
+    const url = journey.shortCode 
+      ? `${window.location.origin}/f/${journey.shortCode}`
+      : `${window.location.origin}/j/${journey.id}`;
     navigator.clipboard.writeText(url);
-    toast({ title: t('journeysPage.linkCopied') });
+    toast({ title: t('dashboard:journeysPage.linkCopied') });
   };
 
-
   return (
-    <DashboardLayout>
-      <header className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-journeys-title">{t('journeysPage.title')}</h1>
-          <p className="text-slate-500 text-sm mt-1">{t('journeysPage.subtitle')}</p>
-        </div>
-        <Link href="/journeys/new">
-          <Button data-testid="button-create-journey" className="bg-violet-600 hover:bg-violet-700">
-            <Plus className="me-2 h-4 w-4" />
-            {t('journeysPage.newFlow')}
-          </Button>
-        </Link>
-      </header>
+    <DashboardLayout variant="dark">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-8"
+      >
+        <GradientHeader
+          icon={<BookOpen className="w-full h-full" />}
+          title={t('dashboard:journeysPage.title')}
+          subtitle={t('dashboard:journeysPage.subtitle')}
+          size="lg"
+        />
+      </motion.div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-4 shadow-2xl shadow-violet-600/30">
+              <Loader2 className="w-8 h-8 animate-spin text-white" />
+            </div>
+            <p className="text-white/50">{t('dashboard:loadingFlow')}</p>
+          </div>
         </div>
       ) : journeys.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="h-8 w-8 text-violet-600" />
-          </div>
-          <p className="text-slate-600 mb-6">{t('journeysPage.noFlowsYet')}</p>
-          <Link href="/journeys/new">
-            <Button data-testid="button-create-first-journey" className="bg-violet-600 hover:bg-violet-700">
-              <Plus className="me-2 h-4 w-4" />
-              {t('journeysPage.createFirstFlow')}
-            </Button>
-          </Link>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <GlassPanel variant="highlight" padding="lg" className="text-center max-w-md mx-auto">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-6 shadow-xl shadow-violet-600/25">
+              <BookOpen className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-3">{t('dashboard:journeysPage.noFlowsYet')}</h3>
+            <p className="text-white/50 mb-6">{t('dashboard:journeysPage.subtitle')}</p>
+            <Link href="/journeys/new">
+              <Button 
+                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-12 px-8 shadow-lg shadow-violet-600/25"
+                data-testid="button-create-first-journey"
+              >
+                <Plus className="w-5 h-5 mx-2" />
+                {t('dashboard:journeysPage.createFirstFlow')}
+              </Button>
+            </Link>
+          </GlassPanel>
+        </motion.div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {journeys.map((journey) => (
-            <div 
-              key={journey.id} 
-              className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-violet-200 transition-all group"
-              data-testid={`card-journey-${journey.id}`}
+          {journeys.map((journey, index) => (
+            <motion.div
+              key={journey.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-slate-900 truncate" data-testid={`text-journey-name-${journey.id}`}>
-                    {journey.name}
-                  </h3>
-                  <span className={`inline-block mt-2 text-xs px-2.5 py-1 rounded-full font-medium ${
-                    journey.status === "published" 
-                      ? "bg-emerald-50 text-emerald-600" 
-                      : "bg-slate-100 text-slate-500"
-                  }`} data-testid={`badge-status-${journey.id}`}>
-                    {journey.status === "published" ? t('published') : t('draft')}
-                  </span>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-600 hover:bg-slate-100" data-testid={`button-menu-${journey.id}`}>
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-white border-slate-200">
-                    <Link href={`/journey/${journey.id}/edit`}>
-                      <DropdownMenuItem className="text-slate-700 focus:bg-slate-100 focus:text-slate-900" data-testid={`menu-edit-${journey.id}`}>
-                        <Pencil className="me-2 h-4 w-4" />
-                        {t('journeysPage.edit')}
-                      </DropdownMenuItem>
-                    </Link>
-                    {journey.status === "published" && (
-                      <Link href={`/j/${journey.id}`} target="_blank">
-                        <DropdownMenuItem className="text-slate-700 focus:bg-slate-100 focus:text-slate-900" data-testid={`menu-preview-${journey.id}`}>
-                          <Eye className="me-2 h-4 w-4" />
-                          {t('journeysPage.preview')}
+              <GlassPanel 
+                className="group hover:border-violet-500/30 transition-all duration-300"
+                data-testid={`card-journey-${journey.id}`}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-white text-lg truncate mb-2" data-testid={`text-journey-name-${journey.id}`}>
+                      {journey.name}
+                    </h3>
+                    <span 
+                      className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${
+                        journey.status === "published" 
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                          : "bg-white/10 text-white/50 border border-white/10"
+                      }`} 
+                      data-testid={`badge-status-${journey.id}`}
+                    >
+                      {journey.status === "published" ? (
+                        <><CheckCircle className="w-3 h-3" /> {t('dashboard:published')}</>
+                      ) : (
+                        <><FileEdit className="w-3 h-3" /> {t('dashboard:draft')}</>
+                      )}
+                    </span>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-white/40 hover:text-white hover:bg-white/10" 
+                        data-testid={`button-menu-${journey.id}`}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-white/10 text-white">
+                      <Link href={`/journey/${journey.id}/edit`}>
+                        <DropdownMenuItem className="text-white/80 focus:bg-white/10 focus:text-white" data-testid={`menu-edit-${journey.id}`}>
+                          <Pencil className="mx-2 h-4 w-4" />
+                          {t('dashboard:journeysPage.edit')}
                         </DropdownMenuItem>
                       </Link>
-                    )}
-                    <DropdownMenuItem 
-                      className="text-slate-700 focus:bg-slate-100 focus:text-slate-900"
-                      onClick={() => handleCopyLink(journey.id)}
-                      data-testid={`menu-copy-link-${journey.id}`}
+                      {journey.status === "published" && (
+                        <Link href={`/j/${journey.id}`} target="_blank">
+                          <DropdownMenuItem className="text-white/80 focus:bg-white/10 focus:text-white" data-testid={`menu-preview-${journey.id}`}>
+                            <Eye className="mx-2 h-4 w-4" />
+                            {t('dashboard:journeysPage.preview')}
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      <DropdownMenuItem 
+                        className="text-white/80 focus:bg-white/10 focus:text-white"
+                        onClick={() => handleCopyLink(journey)}
+                        data-testid={`menu-copy-link-${journey.id}`}
+                      >
+                        <Link2 className="mx-2 h-4 w-4" />
+                        {t('dashboard:journeysPage.copyLink')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                        onClick={() => setDeleteJourneyId(journey.id)}
+                        data-testid={`menu-delete-${journey.id}`}
+                      >
+                        <Trash2 className="mx-2 h-4 w-4" />
+                        {t('dashboard:journeysPage.delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                
+                {journey.description && (
+                  <p className="text-sm text-white/40 line-clamp-2 mb-4">
+                    {journey.description}
+                  </p>
+                )}
+                
+                <div className="flex items-center gap-4 text-xs text-white/30 mb-4">
+                  {journey.duration && (
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {t('dashboard:journeysPage.daysCount', { count: journey.duration })}
+                    </span>
+                  )}
+                  {journey.audience && (
+                    <span className="flex items-center gap-1.5 truncate">
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="truncate">{journey.audience}</span>
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Link href={`/journey/${journey.id}/edit`} className="flex-1">
+                    <Button 
+                      variant="ghost"
+                      className="w-full border border-white/10 text-white/70 hover:bg-white/5 hover:text-white hover:border-violet-500/30"
                     >
-                      <Link2 className="me-2 h-4 w-4" />
-                      {t('journeysPage.copyLink')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-red-600 focus:bg-red-50 focus:text-red-600"
-                      onClick={() => setDeleteJourneyId(journey.id)}
-                      data-testid={`menu-delete-${journey.id}`}
-                    >
-                      <Trash2 className="me-2 h-4 w-4" />
-                      {t('journeysPage.delete')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              {journey.description && (
-                <p className="text-sm text-slate-500 line-clamp-2 mb-3">
-                  {journey.description}
-                </p>
-              )}
-              {journey.duration && (
-                <p className="text-xs text-slate-400">
-                  {t('journeysPage.daysCount', { count: journey.duration })}
-                </p>
-              )}
-              <Link href={`/journey/${journey.id}/edit`}>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full mt-4 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-violet-200"
-                >
-                  <Pencil className="me-2 h-3 w-3" />
-                  {t('journeysPage.editFlow')}
-                </Button>
-              </Link>
-            </div>
+                      <Pencil className="w-4 h-4 mx-1" />
+                      {t('dashboard:journeysPage.editFlow')}
+                    </Button>
+                  </Link>
+                  {journey.status !== "published" && (
+                    <Link href={`/journey/${journey.id}/publish`}>
+                      <Button className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 shadow-lg shadow-violet-600/20">
+                        <Rocket className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </GlassPanel>
+            </motion.div>
           ))}
         </div>
       )}
 
       <AlertDialog open={!!deleteJourneyId} onOpenChange={(open) => !open && setDeleteJourneyId(null)}>
-        <AlertDialogContent className="bg-white border-slate-200">
+        <AlertDialogContent className="bg-[#1a1a2e] border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900">{t('journeysPage.deleteFlowTitle')}</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600">
-              {t('journeysPage.deleteFlowDescription')}
+            <AlertDialogTitle className="text-white">{t('dashboard:journeysPage.deleteFlowTitle')}</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              {t('dashboard:journeysPage.deleteFlowDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" data-testid="button-cancel-delete">{t('journeysPage.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/10 border-white/10 text-white hover:bg-white/20 hover:text-white" data-testid="button-cancel-delete">
+              {t('dashboard:journeysPage.cancel')}
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
               className="bg-red-600 text-white hover:bg-red-700"
@@ -200,7 +262,7 @@ export default function JourneysPage() {
               {deleteMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                t('journeysPage.delete')
+                t('dashboard:journeysPage.delete')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
