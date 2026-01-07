@@ -611,23 +611,22 @@ const JourneyPublishPage = () => {
                 </Button>
               </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setLocation(`/journey/${journeyData.id}/edit`)}
-                  className="flex-1 border-white/20 text-white hover:bg-white/10 h-16 text-lg"
-                  data-testid="button-back-to-editor-final"
-                >
-                  {t('journeySettings.backToEditor')}
-                </Button>
-                <Button
-                  onClick={() => setLocation('/journeys')}
-                  className="flex-1 bg-white/10 hover:bg-white/20 text-white h-16 text-lg"
-                  data-testid="button-to-journeys"
-                >
-                  {t('publishModal.done')}
-                </Button>
-              </div>
+              <Button
+                onClick={() => setLocation('/journeys')}
+                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 h-16 text-lg font-medium"
+                data-testid="button-to-journeys"
+              >
+                <Check className="w-5 h-5 mx-2" />
+                {t('publishModal.done')}
+              </Button>
+              
+              <button
+                onClick={() => setLocation(`/journey/${journeyData.id}/edit`)}
+                className="w-full text-white/50 hover:text-white/80 text-sm py-3 transition-colors"
+                data-testid="button-back-to-editor-final"
+              >
+                {t('journeySettings.backToEditor')}
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
