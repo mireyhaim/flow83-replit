@@ -46,6 +46,7 @@
   "published": "פורסם",
   "archived": "בארכיון",
   "days": "{{count}} ימים",
+  "day": "יום",
   "step": "שלב",
   "steps": "שלבים",
   "addStep": "הוסף יום",

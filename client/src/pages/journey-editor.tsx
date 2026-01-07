@@ -462,32 +462,42 @@ const JourneyEditorPage = () => {
           </div>
         </motion.div>
 
-        {/* Mobile Day Chips - Sticky */}
-        <div className="md:hidden sticky top-14 z-30 -mx-4 px-4 py-2 bg-[#0f0f23]/95 backdrop-blur-md border-b border-white/5">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {journeyData.steps.map((step, index) => {
-              const isExpanded = expandedDays.has(step.id);
-              const isComplete = step.goal && step.explanation && step.task;
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => {
-                    setExpandedDays(new Set([step.id]));
-                    setTimeout(() => {
-                      document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                  }}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-sm ${
-                    isExpanded
-                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md shadow-violet-600/20'
-                      : 'bg-white/10 text-white/70 hover:bg-white/15'
-                  }`}
-                >
-                  <span className="font-semibold">{step.dayNumber}</span>
-                  {isComplete && <CheckCircle className="w-3 h-3 text-emerald-400" />}
-                </button>
-              );
-            })}
+        {/* Mobile Day Navigation - Modern Segmented Control */}
+        <div className="md:hidden sticky top-14 z-30 -mx-4 bg-[#0f0f23] border-b border-white/10">
+          <div className="px-3 py-3">
+            <div 
+              dir={isHebrew ? 'rtl' : 'ltr'}
+              className="flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+              style={{ scrollPaddingInline: '12px' }}
+            >
+              {journeyData.steps.map((step, index) => {
+                const isExpanded = expandedDays.has(step.id);
+                const isComplete = step.goal && step.explanation && step.task;
+                return (
+                  <button
+                    key={step.id}
+                    data-testid={`mobile-day-chip-${step.dayNumber}`}
+                    onClick={() => {
+                      setExpandedDays(new Set([step.id]));
+                      setTimeout(() => {
+                        document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    }}
+                    className={`snap-center flex-shrink-0 min-w-[52px] h-11 flex flex-col items-center justify-center rounded-xl transition-all ${
+                      isExpanded
+                        ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/30 scale-105'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <span className={`text-[10px] ${isExpanded ? 'text-white/80' : 'text-white/40'}`}>{t('day')}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-base font-bold">{step.dayNumber}</span>
+                      {isComplete && <CheckCircle className="w-3 h-3 text-emerald-400" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

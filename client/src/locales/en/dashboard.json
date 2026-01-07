@@ -46,6 +46,7 @@
   "published": "Published",
   "archived": "Archived",
   "days": "{{count}} days",
+  "day": "Day",
   "step": "Step",
   "steps": "Steps",
   "addStep": "Add Day",
