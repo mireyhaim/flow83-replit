@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { 
   Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, 
-  BookOpen, Link2, Clock, Users, Rocket, CheckCircle, FileEdit
+  Link2, Clock, Users, Rocket
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -71,36 +71,21 @@ export default function JourneysPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-600/20">
-            <BookOpen className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              {t('dashboard:journeysPage.title')}
-            </h1>
-            <p className="text-slate-500 text-sm">
-              {t('dashboard:journeysPage.subtitle')}
-            </p>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">
+          {t('dashboard:journeysPage.title')}
+        </h1>
+        <p className="text-slate-500 text-sm">
+          {t('dashboard:journeysPage.subtitle')}
+        </p>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-4 shadow-lg shadow-violet-600/20">
-              <Loader2 className="w-7 h-7 animate-spin text-white" />
-            </div>
-            <p className="text-slate-500">{t('dashboard:loadingFlow')}</p>
-          </div>
+          <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
         </div>
       ) : journeys.length === 0 ? (
         <div className="flex items-center justify-center py-16">
           <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center max-w-md shadow-sm">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 mx-auto flex items-center justify-center mb-6 shadow-lg shadow-violet-600/20">
-              <BookOpen className="w-10 h-10 text-white" />
-            </div>
             <h3 className="text-xl font-semibold text-slate-900 mb-3">
               {t('dashboard:journeysPage.noFlowsYet')}
             </h3>
@@ -109,7 +94,7 @@ export default function JourneysPage() {
             </p>
             <Link href="/journeys/new">
               <Button 
-                className="h-12 px-8 bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/20"
+                className="h-12 px-8 bg-violet-600 hover:bg-violet-700"
                 data-testid="button-create-first-journey"
               >
                 <Plus className="w-5 h-5 mx-2" />
@@ -123,39 +108,24 @@ export default function JourneysPage() {
           {journeys.map((journey) => (
             <div 
               key={journey.id}
-              className="group bg-white rounded-xl border border-slate-200 p-5 transition-all duration-200 hover:shadow-lg hover:border-violet-200"
+              className="group bg-white rounded-xl border border-slate-200 p-5 transition-all duration-200 hover:shadow-md hover:border-violet-200"
               data-testid={`card-journey-${journey.id}`}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div 
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-slate-900 truncate" data-testid={`text-journey-name-${journey.id}`}>
+                    {journey.name}
+                  </h3>
+                  <span 
+                    className={`inline-block text-xs mt-1 px-2 py-0.5 rounded-full ${
                       journey.status === "published" 
-                        ? "bg-emerald-100 text-emerald-600" 
-                        : "bg-violet-100 text-violet-600"
-                    }`}
+                        ? "bg-emerald-100 text-emerald-700" 
+                        : "bg-slate-100 text-slate-500"
+                    }`} 
+                    data-testid={`badge-status-${journey.id}`}
                   >
-                    {journey.status === "published" ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <FileEdit className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate" data-testid={`text-journey-name-${journey.id}`}>
-                      {journey.name}
-                    </h3>
-                    <span 
-                      className={`inline-flex items-center gap-1 text-xs mt-1 ${
-                        journey.status === "published" 
-                          ? "text-emerald-600" 
-                          : "text-slate-400"
-                      }`} 
-                      data-testid={`badge-status-${journey.id}`}
-                    >
-                      {journey.status === "published" ? t('dashboard:published') : t('dashboard:draft')}
-                    </span>
-                  </div>
+                    {journey.status === "published" ? t('dashboard:published') : t('dashboard:draft')}
+                  </span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -203,20 +173,20 @@ export default function JourneysPage() {
               </div>
               
               {journey.description && (
-                <p className="text-sm text-slate-500 line-clamp-2 mb-4">
+                <p className="text-sm text-slate-500 line-clamp-2 mb-3">
                   {journey.description}
                 </p>
               )}
               
-              <div className="flex items-center gap-4 text-xs text-slate-400 mb-4">
+              <div className="flex items-center gap-3 text-xs text-slate-400 mb-4">
                 {journey.duration && (
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
                     {t('dashboard:journeysPage.daysCount', { count: journey.duration })}
                   </span>
                 )}
                 {journey.audience && (
-                  <span className="flex items-center gap-1.5 truncate">
+                  <span className="flex items-center gap-1 truncate">
                     <Users className="w-3.5 h-3.5" />
                     <span className="truncate">{journey.audience}</span>
                   </span>
@@ -229,7 +199,6 @@ export default function JourneysPage() {
                     variant="outline"
                     className="w-full"
                   >
-                    <Pencil className="w-4 h-4 mx-1" />
                     {t('dashboard:journeysPage.editFlow')}
                   </Button>
                 </Link>
