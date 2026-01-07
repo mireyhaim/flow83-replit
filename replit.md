@@ -98,6 +98,37 @@ Internal admin dashboard for platform monitoring (accessible at `/admin`):
 - `systemErrors` table stores platform errors for monitoring
 - `role` field on users table (`user` | `super_admin`)
 
+### Journey Creation Wizard
+
+The journey creation experience uses a modern conversational wizard design (similar to Linear/Vercel onboarding):
+
+**Component**: `client/src/components/journey/ConversationalJourneyWizard.tsx`
+
+**Design:**
+- Split-screen layout: vertical timeline sidebar (desktop) + centered question area
+- Gradient mesh background with glassmorphism panels
+- Violet/indigo color scheme with smooth Framer Motion animations
+
+**Steps:**
+1. `language` - Choose Hebrew or English
+2. `duration` - Select 3 or 7 day journey
+3. `journeyName` - Enter journey name
+4. `targetAudience` - Define target audience
+5. `mainGoal` - Specify transformation goal
+6. `tone` - Select tone of voice (warm, professional, etc.)
+7. `content` - Upload teaching materials (PDF, Word, text)
+
+**Key Features:**
+- Clickable timeline steps to edit previous answers (works on desktop and mobile)
+- Live preview panel showing journey structure as it's built
+- Progress bar during AI generation phase
+- Mobile-responsive with interactive step icons at bottom
+- All inputs pre-populate when editing previous steps
+
+**Files:**
+- `client/src/components/journey/ConversationalJourneyWizard.tsx` - Main wizard component
+- `client/src/pages/journey-create.tsx` - Page wrapper
+
 ### Conversation Phase System
 
 The chat experience uses a state machine to create authentic 1:1 mentor conversations (not content delivery):
