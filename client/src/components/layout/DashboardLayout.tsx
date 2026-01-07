@@ -86,10 +86,10 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
       dialogCancel: "",
     },
     dark: {
-      wrapper: "min-h-screen bg-[#0a0a1a] text-white flex font-sans relative",
-      sidebar: "bg-[#0a0a1a]/80 backdrop-blur-xl border-e border-white/5",
-      mobileSidebar: "bg-[#0a0a1a] border-e border-white/5",
-      mobileHeader: "bg-[#0a0a1a]/90 backdrop-blur-xl border-b border-white/5",
+      wrapper: "min-h-screen text-white flex font-sans relative overflow-hidden",
+      sidebar: "bg-black/20 backdrop-blur-xl border-e border-white/5",
+      mobileSidebar: "bg-[#0f0a1f] border-e border-white/5",
+      mobileHeader: "bg-[#0f0a1f]/90 backdrop-blur-xl border-b border-white/5",
       logo: "bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent",
       closeBtn: "text-white/40 hover:text-white",
       menuBtn: "text-white/60 hover:text-white",
@@ -224,12 +224,12 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
   );
 
   return (
-    <div className={s.wrapper}>
+    <div className={cn(s.wrapper, isDark && "bg-gradient-to-br from-[#0f0a1f] via-[#1a1030] to-[#0f0a1f]")}>
       {isDark && (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-fuchsia-600/10 pointer-events-none" />
-          <div className="absolute top-0 start-1/3 w-[700px] h-[700px] bg-violet-600/15 rounded-full blur-[150px] pointer-events-none" />
-          <div className="absolute bottom-0 end-1/4 w-[500px] h-[500px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-1/2 end-1/3 w-[300px] h-[300px] bg-fuchsia-600/5 rounded-full blur-[80px] pointer-events-none" />
         </>
       )}
       
