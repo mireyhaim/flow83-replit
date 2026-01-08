@@ -461,14 +461,9 @@ export default function Dashboard() {
                       {/* Card header - always visible */}
                       <button 
                         onClick={() => setExpandedParticipant(isExpanded ? null : p.id)}
-                        className="w-full p-3 flex items-center gap-3 min-h-[56px]"
+                        className="w-full p-3 flex items-center gap-3 min-h-[48px]"
                         data-testid={`toggle-participant-${p.id}`}
                       >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-sm font-medium">
-                            {(p.name || p.email || '?')[0].toUpperCase()}
-                          </span>
-                        </div>
                         <div className="flex-1 min-w-0 text-start">
                           <p className="text-sm font-medium text-slate-900 truncate" data-testid={`text-name-${p.id}`}>
                             {p.name || p.email?.split('@')[0] || '-'}
