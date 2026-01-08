@@ -236,9 +236,6 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
       <div className={cn("relative z-10 flex w-full", isDark && "")}>
         {/* Mobile Header */}
         <div className={cn("md:hidden fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between", s.mobileHeader)}>
-          <Link href="/" className={cn("text-lg font-bold", s.logo)}>
-            Flow 83
-          </Link>
           <button 
             onClick={() => setMobileMenuOpen(true)}
             className={cn("p-2", s.menuBtn)}
@@ -246,6 +243,9 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
           >
             <Menu size={24} />
           </button>
+          <Link href="/" className={cn("text-lg font-bold", s.logo)}>
+            Flow 83
+          </Link>
         </div>
 
         {/* Mobile Menu Overlay */}
