@@ -234,18 +234,18 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
       )}
       
       <div className={cn("relative z-10 flex w-full", isDark && "")}>
-        {/* Mobile Header */}
-        <div className={cn("md:hidden fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between", s.mobileHeader)}>
-          <Link href="/" className={cn("text-lg font-bold", s.logo)}>
-            Flow 83
-          </Link>
+        {/* Mobile Header - hamburger first for RTL (appears on right in RTL mode) */}
+        <div className={cn("md:hidden fixed top-0 inset-x-0 z-20 px-4 py-3 flex items-center justify-between", s.mobileHeader)}>
           <button 
             onClick={() => setMobileMenuOpen(true)}
-            className={cn("p-2", s.menuBtn)}
+            className={cn("p-2 order-last rtl:order-first", s.menuBtn)}
             aria-label="Open menu"
           >
             <Menu size={24} />
           </button>
+          <Link href="/" className={cn("text-lg font-bold order-first rtl:order-last", s.logo)}>
+            Flow 83
+          </Link>
         </div>
 
         {/* Mobile Menu Overlay */}

@@ -63,7 +63,7 @@ const Header = () => {
         </div>
 
         <button 
-          className="md:hidden text-gray-600 hover:text-gray-900"
+          className="md:hidden text-gray-600 hover:text-gray-900 order-last rtl:order-first"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
