@@ -78,14 +78,14 @@ const Header = () => {
           <Link href="/pricing" className="block text-gray-600 hover:text-gray-900 py-2">{t('pricing')}</Link>
           <Link href="/community" className="block text-gray-600 hover:text-gray-900 py-2">{t('community')}</Link>
           <Link href="/contact" className="block text-gray-600 hover:text-gray-900 py-2">{t('contact')}</Link>
-          <div className="pt-4 space-y-3">
+          <div className="pt-4 flex flex-col gap-3">
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard">
+                <Link href="/dashboard" className="block">
                   <Button className="w-full bg-violet-600 hover:bg-violet-700 rounded-full">{t('dashboard:title')}</Button>
                 </Link>
-                <a href="/api/logout">
-                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">{t('common:logout')}</Button>
+                <a href="/api/logout" className="block">
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100 rounded-full">{t('common:logout')}</Button>
                 </a>
               </>
             ) : (
