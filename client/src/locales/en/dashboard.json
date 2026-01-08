@@ -7,6 +7,7 @@
   "recentActivity": "Recent Activity",
   "noActivity": "No activity yet",
   "activityWillAppear": "Activity will appear when participants join",
+  "andMoreActivities": "and {{count}} more activities",
   "participants": "Participants",
   "activeParticipants": "Active Now",
   "totalParticipants": "Total Participants",

@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, Eye, EyeOff, CreditCard } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, Eye, EyeOff, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent, Participant } from "@shared/schema";
@@ -14,13 +15,16 @@ import { formatDistanceToNow } from "date-fns";
 
 interface ParticipantWithJourney extends Participant {
   journeyName: string;
+  paymentVerified?: boolean;
 }
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading: authLoading, isProfileComplete } = useAuth();
   const onboarding = useOnboarding();
+  const isMobile = useIsMobile();
   const [, navigate] = useLocation();
+  const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
 
   // Check if user is super_admin and redirect to admin dashboard
   const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
@@ -383,7 +387,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {recentActivity.slice(0, 5).map((event) => (
+                  {recentActivity.slice(0, isMobile ? 3 : 5).map((event) => (
                     <div key={event.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors">
                       <div className="mt-0.5">{getActivityIcon(event.eventType)}</div>
                       <div className="flex-1 min-w-0">
@@ -394,12 +398,17 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
+                  {isMobile && recentActivity.length > 3 && (
+                    <p className="text-center text-xs text-slate-400 pt-2">
+                      {t('andMoreActivities', { count: recentActivity.length - 3 })}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Participants Table */}
+          {/* Participants Section */}
           <div className="mt-6 md:mt-8 bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-participants-table">
             <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center gap-3">
@@ -419,7 +428,130 @@ export default function Dashboard() {
                 <p className="text-sm text-slate-500">{t('participantsTable.empty')}</p>
                 <p className="text-xs text-slate-400 mt-1">{t('participantsTable.emptyHint')}</p>
               </div>
+            ) : isMobile ? (
+              /* Mobile: Card-based accordion layout */
+              <div className="space-y-3">
+                {/* Summary strip */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="text-center p-2 rounded-lg bg-sky-50">
+                    <div className="text-lg font-bold text-sky-700">{participants.filter(p => !p.completedAt && (!p.lastActiveAt || Math.floor((Date.now() - new Date(p.lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)) <= 3)).length}</div>
+                    <div className="text-[10px] text-sky-600">{t('participantStatus.active')}</div>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-amber-50">
+                    <div className="text-lg font-bold text-amber-700">{participants.filter(p => !p.completedAt && p.lastActiveAt && Math.floor((Date.now() - new Date(p.lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)) > 3).length}</div>
+                    <div className="text-[10px] text-amber-600">{t('participantStatus.stuck')}</div>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-emerald-50">
+                    <div className="text-lg font-bold text-emerald-700">{participants.filter(p => p.completedAt).length}</div>
+                    <div className="text-[10px] text-emerald-600">{t('participantStatus.completed')}</div>
+                  </div>
+                </div>
+
+                {/* Participant cards */}
+                {participants.slice(0, 5).map((p) => {
+                  const status = getParticipantStatus(p);
+                  const isExpanded = expandedParticipant === p.id;
+                  
+                  return (
+                    <div 
+                      key={p.id} 
+                      className={`rounded-xl border transition-all ${isExpanded ? 'border-violet-300 bg-violet-50/30' : 'border-slate-200 bg-white'}`}
+                      data-testid={`card-participant-${p.id}`}
+                    >
+                      {/* Card header - always visible */}
+                      <button 
+                        onClick={() => setExpandedParticipant(isExpanded ? null : p.id)}
+                        className="w-full p-3 flex items-center gap-3 min-h-[56px]"
+                        data-testid={`toggle-participant-${p.id}`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-sm font-medium">
+                            {(p.name || p.email || '?')[0].toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0 text-start">
+                          <p className="text-sm font-medium text-slate-900 truncate" data-testid={`text-name-${p.id}`}>
+                            {p.name || p.email?.split('@')[0] || '-'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${status.color}`}>
+                              {status.label}
+                            </span>
+                            <span className="text-xs text-slate-400">{t('participantsTable.dayNumber', { day: p.currentDay || 1 })}</span>
+                          </div>
+                        </div>
+                        {p.paymentVerified ? (
+                          <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                        ) : (
+                          <CreditCard className="h-4 w-4 text-slate-300 flex-shrink-0" />
+                        )}
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                        )}
+                      </button>
+                      
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <div className="px-3 pb-3 pt-1 border-t border-slate-100 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-slate-500">{t('participantsTable.email')}</span>
+                            <span className="text-xs text-slate-700" data-testid={`text-email-${p.id}`}>{p.email || '-'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-slate-500">{t('participantsTable.idNumber')}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-slate-700 font-mono" data-testid={`text-id-${p.id}`}>
+                                {maskIdNumber(p.idNumber, p.id)}
+                              </span>
+                              {p.idNumber && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleIdReveal(p.id); }}
+                                  className="p-1 hover:bg-slate-200 rounded"
+                                  data-testid={`button-toggle-id-${p.id}`}
+                                >
+                                  {revealedIds.has(p.id) ? (
+                                    <EyeOff className="h-3 w-3 text-slate-400" />
+                                  ) : (
+                                    <Eye className="h-3 w-3 text-slate-400" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-slate-500">{t('participantsTable.flow')}</span>
+                            <span className="text-xs text-slate-700" data-testid={`text-flow-${p.id}`}>{p.journeyName}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-slate-500">{t('participantsTable.payment')}</span>
+                            {p.paymentVerified ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-600 text-xs">
+                                <CheckCircle className="h-3 w-3" />
+                                {t('participantsTable.paid')}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-slate-400 text-xs">
+                                <CreditCard className="h-3 w-3" />
+                                {t('participantsTable.pending')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                
+                {participants.length > 5 && (
+                  <p className="text-center text-xs text-slate-400 pt-2">
+                    {t('participantsTable.showingOf', { shown: 5, total: participants.length })}
+                  </p>
+                )}
+              </div>
             ) : (
+              /* Desktop: Table layout */
               <div className="overflow-x-auto">
                 <table className="w-full" data-testid="table-participants">
                   <thead>

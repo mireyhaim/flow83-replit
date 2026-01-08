@@ -7,6 +7,7 @@
   "recentActivity": "פעילות אחרונה",
   "noActivity": "אין פעילות עדיין",
   "activityWillAppear": "פעילות תופיע כאשר משתתפים יצטרפו",
+  "andMoreActivities": "ועוד {{count}} פעילויות",
   "participants": "משתתפים",
   "activeParticipants": "פעילים כעת",
   "totalParticipants": "סה\"כ משתתפים",
