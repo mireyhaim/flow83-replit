@@ -462,46 +462,169 @@ const JourneyEditorPage = () => {
           </div>
         </motion.div>
 
-        {/* Mobile Day Navigation - Modern Segmented Control */}
-        <div className="md:hidden sticky top-14 z-30 -mx-4 bg-[#0f0f23] border-b border-white/10">
-          <div className="px-3 py-3">
-            <div 
-              dir={isHebrew ? 'rtl' : 'ltr'}
-              className="flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-              style={{ scrollPaddingInline: '12px' }}
-            >
-              {journeyData.steps.map((step, index) => {
-                const isExpanded = expandedDays.has(step.id);
-                const isComplete = step.goal && step.explanation && step.task;
-                return (
-                  <button
-                    key={step.id}
-                    data-testid={`mobile-day-chip-${step.dayNumber}`}
-                    onClick={() => {
+        {/* Mobile Day Cards - Accordion Style */}
+        <div className="md:hidden space-y-3" dir={isHebrew ? 'rtl' : 'ltr'}>
+          {journeyData.steps.map((step, index) => {
+            const isExpanded = expandedDays.has(step.id);
+            const isComplete = step.goal && step.explanation && step.task;
+            
+            return (
+              <motion.div
+                key={step.id}
+                id={`day-${step.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, type: "spring", stiffness: 300, damping: 30 }}
+                className={`rounded-2xl overflow-hidden transition-all duration-300 ${
+                  isExpanded 
+                    ? 'bg-gradient-to-br from-[#1a1a2e] to-[#1f1f3a] ring-2 ring-violet-600/50 shadow-xl shadow-violet-600/10' 
+                    : 'bg-[#1a1a2e]/80 border border-white/5 hover:border-violet-600/30'
+                }`}
+                data-testid={`mobile-day-card-${step.dayNumber}`}
+              >
+                {/* Card Header - Always Visible */}
+                <button
+                  onClick={() => {
+                    if (isExpanded) {
+                      setExpandedDays(new Set());
+                    } else {
                       setExpandedDays(new Set([step.id]));
-                      setTimeout(() => {
-                        document.getElementById(`day-${step.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }, 100);
-                    }}
-                    className={`snap-center flex-shrink-0 min-w-[52px] h-11 flex flex-col items-center justify-center rounded-xl transition-all ${
-                      isExpanded
-                        ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/30 scale-105'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
-                    }`}
+                    }
+                  }}
+                  className="w-full p-4 flex items-center gap-4 min-h-[72px]"
+                  data-testid={`toggle-day-${step.dayNumber}`}
+                >
+                  {/* Day Number Badge */}
+                  <div className={`relative flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center transition-all ${
+                    isExpanded 
+                      ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-600/30' 
+                      : 'bg-white/5 border border-white/10'
+                  }`}>
+                    <span className={`text-[10px] font-medium ${isExpanded ? 'text-white/80' : 'text-white/40'}`}>
+                      {t('day')}
+                    </span>
+                    <span className={`text-xl font-bold ${isExpanded ? 'text-white' : 'text-white/70'}`}>
+                      {step.dayNumber}
+                    </span>
+                    {isComplete && (
+                      <div className="absolute -end-1 -bottom-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Card Content Preview */}
+                  <div className="flex-1 min-w-0 text-start">
+                    <h3 className={`font-semibold truncate transition-colors ${
+                      isExpanded ? 'text-white' : 'text-white/80'
+                    }`}>
+                      {step.title}
+                    </h3>
+                    {!isExpanded && (
+                      <p className="text-sm text-white/40 line-clamp-1 mt-0.5">
+                        {step.goal || t('clickToEditDay')}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Expand Icon */}
+                  <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="flex-shrink-0"
                   >
-                    <span className={`text-[10px] ${isExpanded ? 'text-white/80' : 'text-white/40'}`}>{t('day')}</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-base font-bold">{step.dayNumber}</span>
-                      {isComplete && <CheckCircle className="w-3 h-3 text-emerald-400" />}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                    <ChevronDown className={`w-5 h-5 transition-colors ${
+                      isExpanded ? 'text-violet-400' : 'text-white/30'
+                    }`} />
+                  </motion.div>
+                </button>
+                
+                {/* Expanded Content */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-5 space-y-5">
+                        {/* Gradient Divider */}
+                        <div className="h-px bg-gradient-to-r from-violet-600/30 via-white/10 to-violet-600/30" />
+                        
+                        {/* Day Title Input */}
+                        <div className="space-y-2">
+                          <Input
+                            value={step.title}
+                            onChange={(e) => updateStepField(step.id, "title", e.target.value)}
+                            className="bg-white/5 border-white/10 rounded-xl text-white text-base font-medium placeholder:text-white/30 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 h-12"
+                            placeholder={t('dayTitlePlaceholder')}
+                            data-testid={`input-title-${step.dayNumber}`}
+                          />
+                        </div>
+                        
+                        {/* Goal Section */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-violet-600/20 flex items-center justify-center">
+                              <Target className="w-3.5 h-3.5 text-violet-400" />
+                            </div>
+                            <span className="text-sm font-medium text-violet-400">{t('goal')}</span>
+                          </div>
+                          <Textarea
+                            value={step.goal || ""}
+                            onChange={(e) => updateStepField(step.id, "goal", e.target.value)}
+                            placeholder={t('goalPlaceholder')}
+                            className="bg-white/5 border-white/10 rounded-xl text-white placeholder:text-white/30 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 resize-none min-h-[80px]"
+                            data-testid={`textarea-goal-${step.dayNumber}`}
+                          />
+                        </div>
+                        
+                        {/* Explanation Section */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-violet-600/20 flex items-center justify-center">
+                              <BookOpen className="w-3.5 h-3.5 text-violet-400" />
+                            </div>
+                            <span className="text-sm font-medium text-violet-400">{t('explanation')}</span>
+                          </div>
+                          <Textarea
+                            value={step.explanation || ""}
+                            onChange={(e) => updateStepField(step.id, "explanation", e.target.value)}
+                            placeholder={t('explanationPlaceholder')}
+                            className="bg-white/5 border-white/10 rounded-xl text-white placeholder:text-white/30 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 resize-none min-h-[120px]"
+                            data-testid={`textarea-explanation-${step.dayNumber}`}
+                          />
+                        </div>
+                        
+                        {/* Task Section */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-violet-600/20 flex items-center justify-center">
+                              <ListTodo className="w-3.5 h-3.5 text-violet-400" />
+                            </div>
+                            <span className="text-sm font-medium text-violet-400">{t('task')}</span>
+                          </div>
+                          <Textarea
+                            value={step.task || ""}
+                            onChange={(e) => updateStepField(step.id, "task", e.target.value)}
+                            placeholder={t('taskPlaceholder')}
+                            className="bg-white/5 border-white/10 rounded-xl text-white placeholder:text-white/30 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 resize-none min-h-[80px]"
+                            data-testid={`textarea-task-${step.dayNumber}`}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
 
-        <div className="relative">
+        {/* Desktop Timeline View */}
+        <div className="hidden md:block relative">
           {/* Timeline spine */}
           <div className="absolute start-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-600/50 via-fuchsia-600/50 to-violet-600/30" />
           
@@ -513,7 +636,7 @@ const JourneyEditorPage = () => {
               return (
                 <motion.div
                   key={step.id}
-                  id={`day-${step.id}`}
+                  id={`desktop-day-${step.id}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -523,7 +646,7 @@ const JourneyEditorPage = () => {
                   <button
                     onClick={() => toggleDay(step.id)}
                     className="absolute start-0 top-0 z-10 group"
-                    data-testid={`toggle-day-${step.dayNumber}`}
+                    data-testid={`desktop-toggle-day-${step.dayNumber}`}
                   >
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isExpanded 
@@ -581,7 +704,7 @@ const JourneyEditorPage = () => {
                               onChange={(e) => updateStepField(step.id, "title", e.target.value)}
                               className="bg-transparent border-0 border-b border-white/10 rounded-none text-white text-lg font-medium placeholder:text-white/30 focus-visible:ring-0 focus-visible:border-violet-500 px-0 pb-3"
                               placeholder={t('dayTitlePlaceholder')}
-                              data-testid={`input-title-${step.dayNumber}`}
+                              data-testid={`desktop-input-title-${step.dayNumber}`}
                             />
                             
                             {/* Goal Section */}
@@ -595,7 +718,7 @@ const JourneyEditorPage = () => {
                                 onChange={(e) => updateStepField(step.id, "goal", e.target.value)}
                                 placeholder={t('goalPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[60px]"
-                                data-testid={`textarea-goal-${step.dayNumber}`}
+                                data-testid={`desktop-textarea-goal-${step.dayNumber}`}
                               />
                             </div>
                             
@@ -612,7 +735,7 @@ const JourneyEditorPage = () => {
                                 onChange={(e) => updateStepField(step.id, "explanation", e.target.value)}
                                 placeholder={t('explanationPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[120px]"
-                                data-testid={`textarea-explanation-${step.dayNumber}`}
+                                data-testid={`desktop-textarea-explanation-${step.dayNumber}`}
                               />
                             </div>
                             
@@ -629,7 +752,7 @@ const JourneyEditorPage = () => {
                                 onChange={(e) => updateStepField(step.id, "task", e.target.value)}
                                 placeholder={t('taskPlaceholder')}
                                 className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 px-0 resize-none min-h-[80px]"
-                                data-testid={`textarea-task-${step.dayNumber}`}
+                                data-testid={`desktop-textarea-task-${step.dayNumber}`}
                               />
                             </div>
                           </div>
