@@ -78,6 +78,9 @@ export const journeys = pgTable("journeys", {
   profession: text("profession"), // therapist, coach, healer, mentor, counselor, other
   tone: text("tone"), // warm, professional, direct, gentle, motivating, spiritual
   mentorStyle: text("mentor_style"), // practical, emotional, spiritual, structured, custom
+  // Soft delete / archive functionality
+  archivedAt: timestamp("archived_at"), // When the journey was archived (null = not archived)
+  archivedBy: varchar("archived_by").references(() => users.id), // Who archived it
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({

@@ -73,6 +73,26 @@ export const journeyApi = {
     return handleResponse(res);
   },
 
+  archive: async (id: string): Promise<Journey> => {
+    const res = await fetch(`${API_BASE}/journeys/${id}/archive`, { method: "POST" });
+    return handleResponse(res);
+  },
+
+  restore: async (id: string): Promise<Journey> => {
+    const res = await fetch(`${API_BASE}/journeys/${id}/restore`, { method: "POST" });
+    return handleResponse(res);
+  },
+
+  getArchived: async (): Promise<Journey[]> => {
+    const res = await fetch(`${API_BASE}/journeys/archived`);
+    return handleResponse(res);
+  },
+
+  getParticipantCount: async (id: string): Promise<{ count: number }> => {
+    const res = await fetch(`${API_BASE}/journeys/${id}/participant-count`);
+    return handleResponse(res);
+  },
+
   generateContent: async (id: string, content: string): Promise<{ success: boolean; daysGenerated: number }> => {
     const res = await fetch(`${API_BASE}/journeys/${id}/generate-content`, {
       method: "POST",

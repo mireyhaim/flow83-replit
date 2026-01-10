@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { 
   Plus, Loader2, MoreVertical, Pencil, Trash2, Eye, 
-  Link2, Clock, Users, Rocket
+  Link2, Clock, Users, Rocket, Archive, RotateCcw
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import type { Journey } from "@shared/schema";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -34,11 +35,20 @@ export default function JourneysPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteJourneyId, setDeleteJourneyId] = useState<string | null>(null);
+  const [showArchivePrompt, setShowArchivePrompt] = useState(false);
+  const [archiveJourneyId, setArchiveJourneyId] = useState<string | null>(null);
+  const [participantCount, setParticipantCount] = useState(0);
   const { t } = useTranslation(['dashboard', 'common']);
   
   const { data: journeys = [], isLoading } = useQuery<Journey[]>({
     queryKey: ["/api/journeys/my"],
     queryFn: journeyApi.getMy,
+    enabled: isAuthenticated,
+  });
+
+  const { data: archivedJourneys = [], isLoading: isLoadingArchived } = useQuery<Journey[]>({
+    queryKey: ["/api/journeys/archived"],
+    queryFn: journeyApi.getArchived,
     enabled: isAuthenticated,
   });
 
@@ -54,9 +64,58 @@ export default function JourneysPage() {
     },
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: journeyApi.archive,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/journeys/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/journeys/archived"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats/dashboard"] });
+      setArchiveJourneyId(null);
+      setShowArchivePrompt(false);
+      toast({ title: t('dashboard:journeysPage.flowArchived') });
+    },
+    onError: () => {
+      toast({ title: t('dashboard:error'), variant: "destructive" });
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: journeyApi.restore,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/journeys/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/journeys/archived"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats/dashboard"] });
+      toast({ title: t('dashboard:journeysPage.flowRestored') });
+    },
+    onError: () => {
+      toast({ title: t('dashboard:error'), variant: "destructive" });
+    },
+  });
+
+  const handleDeleteClick = async (journeyId: string) => {
+    try {
+      const { count } = await journeyApi.getParticipantCount(journeyId);
+      if (count > 0) {
+        setParticipantCount(count);
+        setArchiveJourneyId(journeyId);
+        setShowArchivePrompt(true);
+      } else {
+        setDeleteJourneyId(journeyId);
+      }
+    } catch {
+      setDeleteJourneyId(journeyId);
+    }
+  };
+
   const handleDelete = () => {
     if (deleteJourneyId) {
       deleteMutation.mutate(deleteJourneyId);
+    }
+  };
+
+  const handleArchive = () => {
+    if (archiveJourneyId) {
+      archiveMutation.mutate(archiveJourneyId);
     }
   };
 
@@ -162,7 +221,7 @@ export default function JourneysPage() {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-red-600 focus:text-red-600"
-                      onClick={() => setDeleteJourneyId(journey.id)}
+                      onClick={() => handleDeleteClick(journey.id)}
                       data-testid={`menu-delete-${journey.id}`}
                     >
                       <Trash2 className="mx-2 h-4 w-4" />
@@ -215,6 +274,57 @@ export default function JourneysPage() {
         </div>
       )}
 
+      {archivedJourneys.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <Archive className="w-5 h-5" />
+            {t('dashboard:journeysPage.archivedFlows')}
+          </h2>
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {archivedJourneys.map((journey) => (
+              <div 
+                key={journey.id}
+                className="group bg-slate-50 rounded-xl border border-slate-200 p-4 md:p-5 opacity-75"
+                data-testid={`card-archived-journey-${journey.id}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-slate-700 truncate">
+                      {journey.name}
+                    </h3>
+                    <span className="inline-block text-xs mt-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                      {t('dashboard:journeysPage.archived')}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => restoreMutation.mutate(journey.id)}
+                    disabled={restoreMutation.isPending}
+                    className="text-violet-600 border-violet-200 hover:bg-violet-50"
+                    data-testid={`button-restore-${journey.id}`}
+                  >
+                    {restoreMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <RotateCcw className="w-4 h-4 mx-1" />
+                        {t('dashboard:journeysPage.restore')}
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {journey.description && (
+                  <p className="text-sm text-slate-500 line-clamp-2">
+                    {journey.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <AlertDialog open={!!deleteJourneyId} onOpenChange={(open) => !open && setDeleteJourneyId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -236,6 +346,36 @@ export default function JourneysPage() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 t('dashboard:journeysPage.delete')
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showArchivePrompt} onOpenChange={(open) => { if (!open) { setShowArchivePrompt(false); setArchiveJourneyId(null); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('dashboard:journeysPage.cannotDeleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('dashboard:journeysPage.cannotDeleteDescription', { count: participantCount })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-archive">
+              {t('dashboard:journeysPage.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleArchive}
+              className="bg-violet-600 text-white hover:bg-violet-700"
+              data-testid="button-confirm-archive"
+            >
+              {archiveMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Archive className="w-4 h-4 mx-1" />
+                  {t('dashboard:journeysPage.archiveInstead')}
+                </>
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

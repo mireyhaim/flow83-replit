@@ -140,7 +140,15 @@
     "deleteFlowDescription": "This will permanently delete this flow and all its content. This action cannot be undone.",
     "cancel": "Cancel",
     "editFlow": "Edit Flow",
-    "daysCount": "{{count}} days"
+    "daysCount": "{{count}} days",
+    "archivedFlows": "Archived Flows",
+    "archived": "Archived",
+    "restore": "Restore",
+    "flowArchived": "Flow has been archived",
+    "flowRestored": "Flow has been restored",
+    "cannotDeleteTitle": "Cannot Delete This Flow",
+    "cannotDeleteDescription": "This flow has {{count}} active participants. To protect their access, you can archive it instead. Archived flows are hidden from your dashboard but participants can still continue their journey.",
+    "archiveInstead": "Archive Instead"
   },
 
   "journeyCreate": {

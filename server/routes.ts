@@ -532,16 +532,125 @@ export async function registerRoutes(
   app.delete("/api/journeys/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete flows." });
-        }
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
       }
+      
+      // Check ownership first
+      const journey = await storage.getJourney(req.params.id);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      if (journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Not authorized to delete this flow" });
+      }
+      
+      const trialStatus = await storage.getUserTrialStatus(userId);
+      if (!trialStatus.isActive) {
+        return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete flows." });
+      }
+      
+      // Check if this flow has participants - if so, block hard delete
+      const participantCount = await storage.getJourneyParticipantCount(req.params.id);
+      if (participantCount > 0) {
+        return res.status(400).json({ 
+          error: "has_participants", 
+          participantCount,
+          message: "Cannot delete a flow with participants. Archive it instead to protect their access."
+        });
+      }
+      
       await storage.deleteJourney(req.params.id);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete flow" });
+    }
+  });
+
+  // Archive a journey (soft delete - participants keep access)
+  app.post("/api/journeys/:id/archive", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const journey = await storage.getJourney(req.params.id);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      
+      if (journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Not authorized to archive this flow" });
+      }
+      
+      const archived = await storage.archiveJourney(req.params.id, userId);
+      res.json(archived);
+    } catch (error) {
+      console.error("Failed to archive flow:", error);
+      res.status(500).json({ error: "Failed to archive flow" });
+    }
+  });
+
+  // Restore an archived journey
+  app.post("/api/journeys/:id/restore", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const journey = await storage.getJourney(req.params.id);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      
+      if (journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Not authorized to restore this flow" });
+      }
+      
+      const restored = await storage.restoreJourney(req.params.id);
+      res.json(restored);
+    } catch (error) {
+      console.error("Failed to restore flow:", error);
+      res.status(500).json({ error: "Failed to restore flow" });
+    }
+  });
+
+  // Get archived journeys for a mentor
+  app.get("/api/journeys/archived", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const archived = await storage.getArchivedJourneysByCreator(userId);
+      res.json(archived);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch archived flows" });
+    }
+  });
+
+  // Get participant count for a journey
+  app.get("/api/journeys/:id/participant-count", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const journey = await storage.getJourney(req.params.id);
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      if (journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Not authorized to access this flow" });
+      }
+      
+      const count = await storage.getJourneyParticipantCount(req.params.id);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get participant count" });
     }
   });
 

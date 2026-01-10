@@ -140,7 +140,15 @@
     "deleteFlowDescription": "פעולה זו תמחק לצמיתות את ה-Flow הזה ואת כל התוכן שלו. לא ניתן לבטל פעולה זו.",
     "cancel": "ביטול",
     "editFlow": "ערוך Flow",
-    "daysCount": "{{count}} ימים"
+    "daysCount": "{{count}} ימים",
+    "archivedFlows": "Flows בארכיון",
+    "archived": "בארכיון",
+    "restore": "שחזר",
+    "flowArchived": "ה-Flow הועבר לארכיון",
+    "flowRestored": "ה-Flow שוחזר",
+    "cannotDeleteTitle": "לא ניתן למחוק Flow זה",
+    "cannotDeleteDescription": "ל-Flow זה יש {{count}} משתתפים פעילים. כדי להגן על הגישה שלהם, ניתן להעביר אותו לארכיון במקום. Flows בארכיון מוסתרים מלוח הבקרה אבל המשתתפים ממשיכים את המסע שלהם.",
+    "archiveInstead": "העבר לארכיון"
   },
 
   "journeyCreate": {

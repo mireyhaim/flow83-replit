@@ -32,11 +32,15 @@ export interface IStorage {
 
   getJourneys(): Promise<Journey[]>;
   getJourneysByCreator(creatorId: string): Promise<Journey[]>;
+  getArchivedJourneysByCreator(creatorId: string): Promise<Journey[]>;
   getJourney(id: string): Promise<Journey | undefined>;
   getJourneyByShortCode(shortCode: string): Promise<Journey | undefined>;
   createJourney(journey: InsertJourney): Promise<Journey>;
   updateJourney(id: string, journey: Partial<InsertJourney>): Promise<Journey | undefined>;
   deleteJourney(id: string): Promise<void>;
+  archiveJourney(id: string, archivedBy: string): Promise<Journey | undefined>;
+  restoreJourney(id: string): Promise<Journey | undefined>;
+  getJourneyParticipantCount(journeyId: string): Promise<number>;
 
   getJourneySteps(journeyId: string): Promise<JourneyStep[]>;
   getJourneyStep(id: string): Promise<JourneyStep | undefined>;
@@ -250,7 +254,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getJourneysByCreator(creatorId: string): Promise<Journey[]> {
-    return db.select().from(journeys).where(eq(journeys.creatorId, creatorId));
+    return db.select().from(journeys).where(
+      and(
+        eq(journeys.creatorId, creatorId),
+        isNull(journeys.archivedAt)
+      )
+    );
+  }
+
+  async getArchivedJourneysByCreator(creatorId: string): Promise<Journey[]> {
+    return db.select().from(journeys).where(
+      and(
+        eq(journeys.creatorId, creatorId),
+        sql`${journeys.archivedAt} IS NOT NULL`
+      )
+    );
   }
 
   async getJourney(id: string): Promise<Journey | undefined> {
@@ -275,6 +293,35 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJourney(id: string): Promise<void> {
     await db.delete(journeys).where(eq(journeys.id, id));
+  }
+
+  async archiveJourney(id: string, archivedBy: string): Promise<Journey | undefined> {
+    const [updated] = await db.update(journeys)
+      .set({ 
+        archivedAt: new Date(),
+        archivedBy: archivedBy
+      })
+      .where(eq(journeys.id, id))
+      .returning();
+    return updated;
+  }
+
+  async restoreJourney(id: string): Promise<Journey | undefined> {
+    const [updated] = await db.update(journeys)
+      .set({ 
+        archivedAt: null,
+        archivedBy: null
+      })
+      .where(eq(journeys.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getJourneyParticipantCount(journeyId: string): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(participants)
+      .where(eq(participants.journeyId, journeyId));
+    return result[0]?.count || 0;
   }
 
   async getJourneySteps(journeyId: string): Promise<JourneyStep[]> {
