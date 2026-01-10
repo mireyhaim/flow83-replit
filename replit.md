@@ -167,8 +167,13 @@ The user's response is saved to `userIntentAnchor` for context throughout the jo
 **Style Adaptation:**
 - `addressing_style` affects Hebrew grammar (feminine/masculine/neutral verb forms)
 - `tone_preference` affects sentence brevity and warmth
-- `depth_preference` affects framing length and depth
-- `pace_preference` affects explanation detail
+
+**Bot Conversation Guidelines:**
+- Bot speaks AS the mentor, never says "אני X הדיגיטלי" or "פיתחו אותי"
+- Maximum 60 words per message
+- Ask ONE question, then STOP and wait for response
+- Reflect user's actual words before giving next instruction
+- Short, focused, actionable - like a real mentor in conversation
 
 ### Conversation Director System
 
