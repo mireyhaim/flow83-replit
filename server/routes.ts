@@ -7,6 +7,7 @@ import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema,
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
+import { sendJourneyAccessEmail } from "./email";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -2059,6 +2060,28 @@ export async function registerRoutes(
           customerEmail: session.email,
           customerName: session.name,
         });
+
+        // Send welcome email with journey access link
+        const mentor = await storage.getUser(journey.creatorId);
+        const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+          ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+          : 'https://flow83.replit.app';
+        const journeyLink = `${baseUrl}/flow/${participant.accessToken}`;
+        
+        try {
+          await sendJourneyAccessEmail({
+            participantEmail: session.email,
+            participantName: session.name || session.email.split('@')[0],
+            journeyName: journey.name,
+            journeyLink,
+            mentorName: mentor?.firstName ? `${mentor.firstName} ${mentor.lastName || ''}`.trim() : undefined,
+            language: (journey.language as 'he' | 'en') || 'he'
+          });
+          console.log(`Welcome email sent to ${session.email} for journey ${journey.name}`);
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't fail the whole flow if email fails
+        }
       }
 
       res.json({ 
