@@ -142,12 +142,10 @@ The journey creation experience uses a modern conversational wizard design (simi
 The participant onboarding uses a two-phase model to personalize the chat experience:
 
 **Phase A: Pre-Chat UI Configuration**
-Before the first message, participants complete 4 configuration screens:
+Before the first message, participants complete 2 configuration screens:
 
 1. `addressing_style` - How to be addressed (female/male/neutral)
 2. `tone_preference` - Preferred tone (direct/balanced/soft)
-3. `depth_preference` - Preferred depth (practical/deep)
-4. `pace_preference` - Preferred pace (fast/normal)
 
 **Component**: `client/src/components/participant/PreChatOnboarding.tsx`
 

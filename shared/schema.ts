@@ -152,8 +152,6 @@ export const participants = pgTable("participants", {
   userOnboardingConfig: jsonb("user_onboarding_config").$type<{
     addressing_style: "female" | "male" | "neutral";
     tone_preference: "direct" | "balanced" | "soft";
-    depth_preference: "practical" | "deep";
-    pace_preference: "fast" | "normal";
   }>(),
   userIntentAnchor: text("user_intent_anchor"), // Micro onboarding answer - WHY user entered the process
 });

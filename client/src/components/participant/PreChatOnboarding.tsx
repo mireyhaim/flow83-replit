@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft, User, MessageSquare, Sparkles, Zap } from "lucide-react";
+import { ChevronRight, ChevronLeft, User, MessageSquare } from "lucide-react";
 
 export interface OnboardingConfig {
   addressing_style: "female" | "male" | "neutral";
   tone_preference: "direct" | "balanced" | "soft";
-  depth_preference: "practical" | "deep";
-  pace_preference: "fast" | "normal";
 }
 
 interface PreChatOnboardingProps {
@@ -41,24 +39,6 @@ const steps: OnboardingStep[] = [
       { value: "direct", label: "ישיר וקצר" },
       { value: "balanced", label: "מאוזן" },
       { value: "soft", label: "רך ותומך" },
-    ],
-  },
-  {
-    id: "depth_preference",
-    icon: Sparkles,
-    question: "איך נוח לך לעבוד כאן?",
-    options: [
-      { value: "practical", label: "צעדים קצרים ומעשיים" },
-      { value: "deep", label: "חקירה עמוקה יותר" },
-    ],
-  },
-  {
-    id: "pace_preference",
-    icon: Zap,
-    question: "איזה קצב מתאים לך?",
-    options: [
-      { value: "fast", label: "מהיר, בלי הרבה הסברים" },
-      { value: "normal", label: "קצב רגיל" },
     ],
   },
 ];

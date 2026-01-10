@@ -915,8 +915,6 @@ export async function registerRoutes(
   const onboardingConfigSchema = z.object({
     addressing_style: z.enum(["female", "male", "neutral"]),
     tone_preference: z.enum(["direct", "balanced", "soft"]),
-    depth_preference: z.enum(["practical", "deep"]),
-    pace_preference: z.enum(["fast", "normal"]),
   });
 
   app.post("/api/participants/:id/onboarding-config", isAuthenticated, async (req: any, res) => {
