@@ -1700,20 +1700,27 @@ export async function generateDayOpeningMessage(context: Omit<ChatContext, "rece
   const languageName = isHebrew ? "Hebrew" : "English";
   
   if (isFirstDay) {
-    // Day 1: Generate introduction in the journey's language
+    // Day 1: Short intro, then straight to day focus + one question
+    // NO self-introduction as "digital" or "developed by" - speak AS the mentor
     if (isHebrew) {
       const greeting = participantFirstName ? `היי ${participantFirstName}` : "היי";
-      return `${greeting}, אני ${mentorFirstName} הדיגיטלי.
-פיתחו אותי עם כל התוכן והידע של ${mentorFirstName} ואני אשמח להעביר אותך את התהליך "${context.journeyName}".
-היום אנחנו ביום הראשון לתהליך ואשמח להכיר אותך קצת.
-אז קודם כל, מה שלומך?`;
+      return `${greeting}, טוב שהגעת.
+
+יום 1.
+היום מתמקדים ב: ${context.dayGoal}.
+הכלל להיום: מזהים, לא פותרים.
+
+מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?`;
     } else {
       // English version
       const greeting = participantFirstName ? `Hi ${participantFirstName}` : "Hi";
-      return `${greeting}, I'm ${mentorFirstName}'s digital mentor.
-I was created with all of ${mentorFirstName}'s content and knowledge, and I'm excited to guide you through "${context.journeyName}".
-Today is Day 1 of your journey, and I'd love to get to know you a little.
-So first of all, how are you doing?`;
+      return `${greeting}, glad you're here.
+
+Day 1.
+Today we focus on: ${context.dayGoal}.
+The rule for today: Identify, don't solve.
+
+What made you choose to start this process now?`;
     }
   }
   
@@ -2422,6 +2429,7 @@ export async function generateChatResponseWithFacilitator(
     const isHebrew = dayPlan.language === "hebrew";
     const fallbacks: Record<FacilitatorState, { he: string; en: string }> = {
       START: { he: "בואי נתחיל.", en: "Let's begin." },
+      MICRO_ONBOARDING: { he: "מה הדבר שגרם לך להתחיל את התהליך הזה עכשיו?", en: "What made you choose to start this process now?" },
       ORIENTATION: { he: `יום ${dayPlan.day}. ${dayPlan.day_goal}`, en: `Day ${dayPlan.day}. ${dayPlan.day_goal}` },
       CORE_QUESTION: { he: dayPlan.core_question.question, en: dayPlan.core_question.question },
       CLARIFY: { he: "נסביר בצורה אחרת.", en: "Let me explain differently." },
