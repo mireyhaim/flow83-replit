@@ -44,6 +44,7 @@ async function getUncachableResendClient() {
 interface JourneyAccessEmailParams {
   participantEmail: string;
   participantName: string;
+  participantIdNumber?: string;
   journeyName: string;
   journeyLink: string;
   mentorName?: string;
@@ -51,7 +52,7 @@ interface JourneyAccessEmailParams {
 }
 
 export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): Promise<boolean> {
-  const { participantEmail, participantName, journeyName, journeyLink, mentorName, language = 'he' } = params;
+  const { participantEmail, participantName, participantIdNumber, journeyName, journeyLink, mentorName, language = 'he' } = params;
 
   try {
     const { client, fromEmail } = await getUncachableResendClient();
@@ -83,6 +84,25 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
             <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
               <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">הקישור שלך לתהליך:</p>
               <a href="${journeyLink}" style="color: #7c3aed; font-size: 14px; word-break: break-all;">${journeyLink}</a>
+            </div>
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">פרטי ההתחברות שלך:</p>
+              <table style="width: 100%; font-size: 14px; color: #64748b;">
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">שם:</td>
+                  <td style="padding: 4px 0;">${participantName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">אימייל:</td>
+                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantEmail}</td>
+                </tr>
+                ${participantIdNumber ? `
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">ת.ז.:</td>
+                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantIdNumber}</td>
+                </tr>
+                ` : ''}
+              </table>
             </div>
             <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
               התחל את המסע שלך
@@ -117,6 +137,25 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
             <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
               <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">Your journey link:</p>
               <a href="${journeyLink}" style="color: #7c3aed; font-size: 14px; word-break: break-all;">${journeyLink}</a>
+            </div>
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">Your login details:</p>
+              <table style="width: 100%; font-size: 14px; color: #64748b;">
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">Name:</td>
+                  <td style="padding: 4px 0;">${participantName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">Email:</td>
+                  <td style="padding: 4px 0;">${participantEmail}</td>
+                </tr>
+                ${participantIdNumber ? `
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">ID:</td>
+                  <td style="padding: 4px 0;">${participantIdNumber}</td>
+                </tr>
+                ` : ''}
+              </table>
             </div>
             <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
               Start Your Journey

@@ -2084,6 +2084,7 @@ export async function registerRoutes(
           await sendJourneyAccessEmail({
             participantEmail: session.email,
             participantName: session.name || session.email.split('@')[0],
+            participantIdNumber: session.idNumber || undefined,
             journeyName: journey.name,
             journeyLink,
             mentorName: mentor?.firstName ? `${mentor.firstName} ${mentor.lastName || ''}`.trim() : undefined,
