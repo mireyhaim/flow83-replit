@@ -137,6 +137,41 @@ The journey creation experience uses a modern conversational wizard design (simi
 - `client/src/components/journey/ConversationalJourneyWizard.tsx` - Main wizard component
 - `client/src/pages/journey-create.tsx` - Page wrapper
 
+### Two-Phase Participant Onboarding
+
+The participant onboarding uses a two-phase model to personalize the chat experience:
+
+**Phase A: Pre-Chat UI Configuration**
+Before the first message, participants complete 4 configuration screens:
+
+1. `addressing_style` - How to be addressed (female/male/neutral)
+2. `tone_preference` - Preferred tone (direct/balanced/soft)
+3. `depth_preference` - Preferred depth (practical/deep)
+4. `pace_preference` - Preferred pace (fast/normal)
+
+**Component**: `client/src/components/participant/PreChatOnboarding.tsx`
+
+**Phase B: Intent Anchoring (MICRO_ONBOARDING state)**
+After Phase A completes, the bot enters MICRO_ONBOARDING state and asks:
+"מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
+
+The user's response is saved to `userIntentAnchor` for context throughout the journey.
+
+**Data Models:**
+- `participants.userOnboardingConfig` - JSONB field storing Phase A preferences
+- `participants.userIntentAnchor` - TEXT field storing Phase B response
+- `participants.conversationState` - State field transitioning START → MICRO_ONBOARDING → ORIENTATION
+
+**API Endpoints:**
+- POST `/api/participants/:id/onboarding-config` - Authenticated endpoint
+- POST `/api/participant/token/:accessToken/onboarding-config` - Token-based endpoint
+
+**Style Adaptation:**
+- `addressing_style` affects Hebrew grammar (feminine/masculine/neutral verb forms)
+- `tone_preference` affects sentence brevity and warmth
+- `depth_preference` affects framing length and depth
+- `pace_preference` affects explanation detail
+
 ### Conversation Director System
 
 The chat experience uses a **Conversation Director** architecture where deterministic logic controls the conversation flow (WHAT to do) while AI only phrases responses (HOW to say it). This ensures consistent, human-feeling conversations that don't feel like generic AI.

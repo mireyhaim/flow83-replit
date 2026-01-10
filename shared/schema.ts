@@ -144,10 +144,18 @@ export const participants = pgTable("participants", {
   lastActiveAt: timestamp("last_active_at").defaultNow(),
   completedAt: timestamp("completed_at"),
   // ProcessFacilitator state machine
-  conversationState: text("conversation_state").default("START"), // START|ORIENTATION|CORE_QUESTION|CLARIFY|INTERPRET|TASK|TASK_SUPPORT|CLOSURE|DONE
+  conversationState: text("conversation_state").default("START"), // START|MICRO_ONBOARDING|ORIENTATION|CORE_QUESTION|CLARIFY|INTERPRET|TASK|TASK_SUPPORT|CLOSURE|DONE
   clarifyCount: integer("clarify_count").default(0), // Max 2 per day
   taskSupportCount: integer("task_support_count").default(0), // Max 1 per day
   lastBotMessage: text("last_bot_message"), // For no-repetition check
+  // Two-Phase Onboarding (from BOT SPEC)
+  userOnboardingConfig: jsonb("user_onboarding_config").$type<{
+    addressing_style: "female" | "male" | "neutral";
+    tone_preference: "direct" | "balanced" | "soft";
+    depth_preference: "practical" | "deep";
+    pace_preference: "fast" | "normal";
+  }>(),
+  userIntentAnchor: text("user_intent_anchor"), // Micro onboarding answer - WHY user entered the process
 });
 
 export const activityEvents = pgTable("activity_events", {

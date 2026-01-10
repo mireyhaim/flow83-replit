@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { chatApi, type DaySummary } from "@/lib/api";
 import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage, User } from "@shared/schema";
+import { PreChatOnboarding, type OnboardingConfig } from "@/components/participant/PreChatOnboarding";
 
 interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
@@ -46,6 +47,7 @@ export default function ParticipantView() {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [selectedSummaryDay, setSelectedSummaryDay] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showPreChatOnboarding, setShowPreChatOnboarding] = useState(false);
 
   const isUuidFormat = tokenFromRoute && isAccessToken(tokenFromRoute);
 
@@ -285,9 +287,46 @@ export default function ParticipantView() {
     setShowFeedbackModal(false);
   };
 
+  const saveOnboardingConfigMutation = useMutation({
+    mutationFn: async (config: OnboardingConfig) => {
+      if (!resolvedParticipant?.id) throw new Error("Missing participant");
+      const endpoint = isExternalAccess && tokenFromRoute
+        ? `/api/participant/token/${tokenFromRoute}/onboarding-config`
+        : `/api/participants/${resolvedParticipant.id}/onboarding-config`;
+      
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(config),
+      });
+      
+      if (!res.ok) throw new Error("Failed to save onboarding config");
+      return res.json();
+    },
+    onSuccess: () => {
+      setShowPreChatOnboarding(false);
+      if (isExternalAccess) {
+        queryClient.invalidateQueries({ queryKey: ["/api/participant/token", tokenFromRoute] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["/api/participants/journey", journeyId] });
+      }
+    },
+  });
+
+  const handleOnboardingComplete = (config: OnboardingConfig) => {
+    saveOnboardingConfigMutation.mutate(config);
+  };
+
   useEffect(() => {
     setDayReadyForCompletion(false);
   }, [currentDay]);
+
+  useEffect(() => {
+    if (resolvedParticipant && !resolvedParticipant.userOnboardingConfig && resolvedParticipant.currentDay === 1) {
+      setShowPreChatOnboarding(true);
+    }
+  }, [resolvedParticipant]);
 
   useLayoutEffect(() => {
     requestAnimationFrame(() => {
@@ -452,6 +491,15 @@ export default function ParticipantView() {
           </Link>
         </div>
       </div>
+    );
+  }
+
+  if (showPreChatOnboarding) {
+    return (
+      <PreChatOnboarding 
+        onComplete={handleOnboardingComplete}
+        journeyName={resolvedJourney.name}
+      />
     );
   }
 

@@ -1,0 +1,286 @@
+FLOW83 — FULL ONBOARDING + BOT PROCESS SPEC
+(Designed for AI-to-AI implementation in Replit)
+
+This document DEFINES:
+- How onboarding works
+- What questions are asked
+- Where each question is asked
+- How answers are stored and used
+- How the bot behaves afterward
+
+============================================================
+0) CORE PRINCIPLE
+============================================================
+
+Flow83 onboarding is NOT a questionnaire.
+It is a controlled setup process that enables a human-like,
+confident, process-leading bot.
+
+The onboarding has TWO DISTINCT PHASES:
+- Phase A: UI-based configuration (before chat)
+- Phase B: Bot-based intent anchoring (inside chat)
+
+These phases must NEVER be merged.
+
+============================================================
+1) PHASE A — PRE-CHAT ONBOARDING (UI SCREENS)
+============================================================
+
+Purpose:
+Configure HOW the bot speaks and leads the process.
+
+Characteristics:
+- Happens before chat initialization
+- Button-based only (no text input)
+- Fast (30–45 seconds total)
+- No emotional processing
+
+------------------------------------------------------------
+1.1 Pre-Chat Onboarding Schema
+------------------------------------------------------------
+
+Save under: userOnboardingConfig (scoped per flow)
+
+{
+  "addressing_style": "female|male|neutral",
+  "tone_preference": "direct|balanced|soft",
+  "depth_preference": "practical|deep",
+  "pace_preference": "fast|normal"
+}
+
+------------------------------------------------------------
+1.2 Screen Definitions (WITH EXACT QUESTIONS)
+------------------------------------------------------------
+
+SCREEN 1 — Addressing Style
+
+Question text:
+"איך נוח לך שאדבר אלייך בתהליך הזה?"
+
+Options (buttons):
+- "בלשון נקבה"
+- "בלשון זכר"
+- "לא משנה"
+
+Store:
+addressing_style = female | male | neutral
+
+--------------------------------------
+
+SCREEN 2 — Tone Preference
+
+Question text:
+"איזה סגנון הכי מדויק לך לתהליך כזה?"
+
+Options:
+- "ישיר וקצר"
+- "מאוזן"
+- "רך ותומך"
+
+Store:
+tone_preference = direct | balanced | soft
+
+--------------------------------------
+
+SCREEN 3 — Depth Preference
+
+Question text:
+"איך נוח לך לעבוד כאן?"
+
+Options:
+- "צעדים קצרים ומעשיים"
+- "חקירה עמוקה יותר"
+
+Store:
+depth_preference = practical | deep
+
+--------------------------------------
+
+SCREEN 4 (Optional but recommended) — Pace
+
+Question text:
+"איזה קצב מתאים לך?"
+
+Options:
+- "מהיר, בלי הרבה הסברים"
+- "קצב רגיל"
+
+Store:
+pace_preference = fast | normal
+
+------------------------------------------------------------
+1.3 Phase A Completion Rules
+------------------------------------------------------------
+
+- User must complete all screens
+- No skipping
+- No back-and-forth
+- After final screen:
+  - Persist userOnboardingConfig
+  - Initialize chat session
+  - Enter chat in state: MICRO_ONBOARDING
+
+============================================================
+2) PHASE B — MICRO ONBOARDING (INSIDE THE BOT)
+============================================================
+
+Purpose:
+Anchor WHY the user entered the process.
+Create emotional relevance without therapy.
+
+------------------------------------------------------------
+2.1 State Definition
+------------------------------------------------------------
+
+Add new state:
+
+STATE = "MICRO_ONBOARDING"
+
+Flow:
+START → MICRO_ONBOARDING → DAY_1.ORIENTATION
+
+------------------------------------------------------------
+2.2 Bot Rules in MICRO_ONBOARDING
+------------------------------------------------------------
+
+Rules:
+- One short welcome message (1–2 sentences)
+- Exactly ONE question
+- Question is open-text BUT focused
+- No follow-up questions
+- No analysis
+- No reflection loop
+
+------------------------------------------------------------
+2.3 Micro Onboarding Question (DEFAULT)
+------------------------------------------------------------
+
+Primary version (recommended):
+
+"לפני שמתחילים — מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
+
+Alternative (configurable per flow):
+
+"אם התהליך הזה יעבוד כמו שצריך, מה הדבר הכי חשוב שהיית רוצה שיזוז אצלך?"
+
+Only ONE question is allowed.
+
+------------------------------------------------------------
+2.4 Storage
+------------------------------------------------------------
+
+Save response as:
+
+{
+  "userIntentAnchor": "string"
+}
+
+Usage rules:
+- Never shown back to the user
+- Never analyzed emotionally
+- Never triggers extra questions
+- Used only to subtly adapt language/examples
+
+If user skips or answers with very short text:
+- Save empty string
+- Continue normally
+
+============================================================
+3) TRANSITION TO DAY 1
+============================================================
+
+After user answers Micro Onboarding question:
+
+Bot response:
+- 1 short acknowledgment sentence (no empathy script)
+- Immediate transition to Day 1 Orientation
+
+Example:
+"תודה. נתחיל עכשיו את היום הראשון של התהליך."
+
+Then:
+STATE → DAY_1.ORIENTATION
+
+============================================================
+4) HOW ONBOARDING DATA IS USED BY THE BOT
+============================================================
+
+------------------------------------------------------------
+4.1 Runtime Context Injection
+------------------------------------------------------------
+
+Every bot generation receives:
+
+- userOnboardingConfig
+- userIntentAnchor
+- dayPlan
+- current STATE
+
+------------------------------------------------------------
+4.2 Language Adaptation Rules
+------------------------------------------------------------
+
+addressing_style:
+- Controls grammatical gender
+- Never mentioned explicitly
+
+tone_preference:
+- direct → shorter sentences, fewer softeners
+- soft → warmer transitions, gentler phrasing
+- balanced → default
+
+depth_preference:
+- practical → minimal framing, quick task transition
+- deep → slightly longer framing before task
+
+pace_preference:
+- fast → minimal explanations
+- normal → standard explanations
+
+------------------------------------------------------------
+4.3 Hard Restrictions
+------------------------------------------------------------
+
+The bot MUST NOT:
+- Ask onboarding questions again
+- Reference onboarding answers explicitly
+- Say “based on what you told me earlier”
+- Turn onboarding into a conversation
+
+============================================================
+5) FAILURE HANDLING
+============================================================
+
+If Phase A is incomplete:
+- Chat must not start
+- Redirect user to onboarding screens
+
+If Micro Onboarding question is ignored:
+- Do not retry
+- Proceed to Day 1
+
+============================================================
+6) SYSTEM PROMPT ADDITION (APPEND)
+============================================================
+
+Append this to the existing system prompt:
+
+"You operate within a two-phase onboarding system.
+Phase A configures your communication style.
+Phase B anchors user intent.
+Once Day 1 begins, onboarding is complete and must never be revisited."
+
+============================================================
+7) WHY THIS SPEC IS IMPORTANT
+============================================================
+
+This ensures:
+- Fast, clean entry into any flow
+- Human-feeling conversation
+- Zero therapy drift
+- Deterministic behavior for AI
+- Full scalability across domains
+
+============================================================
+END OF SPEC
+============================================================

@@ -911,6 +911,42 @@ export async function registerRoutes(
     }
   });
 
+  // Validation schema for onboarding config
+  const onboardingConfigSchema = z.object({
+    addressing_style: z.enum(["female", "male", "neutral"]),
+    tone_preference: z.enum(["direct", "balanced", "soft"]),
+    depth_preference: z.enum(["practical", "deep"]),
+    pace_preference: z.enum(["fast", "normal"]),
+  });
+
+  app.post("/api/participants/:id/onboarding-config", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { id } = req.params;
+      
+      const parseResult = onboardingConfigSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ error: "Invalid onboarding config", details: parseResult.error.errors });
+      }
+      const config = parseResult.data;
+      
+      const participant = await storage.getParticipantById(id);
+      if (!participant || participant.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      await storage.updateParticipant(id, {
+        userOnboardingConfig: config,
+        conversationState: "MICRO_ONBOARDING",
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error saving onboarding config:", error);
+      res.status(500).json({ error: "Failed to save onboarding config" });
+    }
+  });
+
   app.post("/api/participants/:id/complete-day", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
@@ -1035,6 +1071,34 @@ export async function registerRoutes(
       res.json(participant);
     } catch (error) {
       res.status(500).json({ error: "Failed to complete day" });
+    }
+  });
+
+  // External participant onboarding config - uses access token instead of auth
+  app.post("/api/participant/token/:accessToken/onboarding-config", async (req: any, res) => {
+    try {
+      const { accessToken } = req.params;
+      
+      const parseResult = onboardingConfigSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ error: "Invalid onboarding config", details: parseResult.error.errors });
+      }
+      const config = parseResult.data;
+      
+      const participant = await storage.getParticipantByAccessToken(accessToken);
+      if (!participant) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      await storage.updateParticipant(participant.id, {
+        userOnboardingConfig: config,
+        conversationState: "MICRO_ONBOARDING",
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error saving onboarding config:", error);
+      res.status(500).json({ error: "Failed to save onboarding config" });
     }
   });
 
@@ -1618,6 +1682,14 @@ export async function registerRoutes(
         role: "user",
         content: content.trim(),
       });
+
+      // Persist userIntentAnchor when in MICRO_ONBOARDING state
+      if (participant.conversationState === "MICRO_ONBOARDING" && !participant.userIntentAnchor) {
+        await storage.updateParticipant(participantId, {
+          userIntentAnchor: content.trim() || "", // Allow empty string for skip
+        });
+        console.log(`[Onboarding] Saved userIntentAnchor for participant ${participantId}`);
+      }
 
       // PRD 7.1 - Get only last 5 messages for short-term memory
       const history = await storage.getMessages(participantId, stepId);

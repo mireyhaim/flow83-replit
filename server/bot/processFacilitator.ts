@@ -2,6 +2,7 @@ import type { Journey, JourneyStep, Participant } from "@shared/schema";
 
 export type ConversationState = 
   | "START" 
+  | "MICRO_ONBOARDING"
   | "ORIENTATION" 
   | "CORE_QUESTION" 
   | "CLARIFY" 
@@ -756,6 +757,12 @@ export function detectUserIntent(
     return "checkin";
   }
   
+  // MICRO_ONBOARDING state: any response (including skip) moves forward
+  // The user's answer becomes userIntentAnchor
+  if (currentState === "MICRO_ONBOARDING") {
+    return "checkin"; // Any response moves to ORIENTATION
+  }
+  
   // INTERPRET state: just pass through to TASK
   if (currentState === "INTERPRET") {
     return "other";
@@ -798,6 +805,10 @@ export function determineNextState(
   
   switch (currentState) {
     case "START":
+      return "MICRO_ONBOARDING";
+    
+    case "MICRO_ONBOARDING":
+      // After user answers the micro onboarding question, move to ORIENTATION
       return "ORIENTATION";
     
     case "ORIENTATION":
@@ -877,6 +888,13 @@ FLOW: ${journey.name}
 LANGUAGE: ${language}
 TONE: ${dayPlan.tone_profile.style}
 
+You are a process facilitator operating within a two-phase onboarding system.
+Phase A configures how you speak (addressing style, tone, depth, pace).
+Phase B anchors user intent (why they started this process).
+You must follow the daily structure strictly.
+You do not provide therapy.
+You always move the user forward.
+
 NON-NEGOTIABLE RULES:
 1) Follow the daily sequence strictly.
 2) One Core Question per day. Additional questions only for clarification.
@@ -905,9 +923,48 @@ export function buildStatePrompt(
   state: ConversationState,
   dayPlan: DayPlan,
   userMessage: string,
-  intent: FacilitatorOutput["log"]["detected_intent"]
+  intent: FacilitatorOutput["log"]["detected_intent"],
+  participant?: { userOnboardingConfig?: { addressing_style: string; tone_preference: string; depth_preference: string; pace_preference: string } | null }
 ): string {
+  // Style modifiers based on userOnboardingConfig
+  const config = participant?.userOnboardingConfig;
+  const addressingNote = config?.addressing_style === 'female' 
+    ? 'Use feminine Hebrew forms (את, לך, שלך, etc.)' 
+    : config?.addressing_style === 'male' 
+      ? 'Use masculine Hebrew forms (אתה, לך, שלך, etc.)' 
+      : 'Use neutral forms where possible';
+  const toneNote = config?.tone_preference === 'direct' 
+    ? 'Be very brief and direct. Short sentences.'
+    : config?.tone_preference === 'soft' 
+      ? 'Be warm and supportive. Add gentle transitions.'
+      : 'Use balanced tone.';
+  const depthNote = config?.depth_preference === 'practical' 
+    ? 'Skip extra framing. Get straight to action.'
+    : 'Add 1-2 framing sentences for context.';
+  
   switch (state) {
+    case "START":
+      return `Generate a short welcome message.
+Say: "שלום! טוב שהתחלת."
+Keep it to ONE sentence. Do not ask questions yet.
+${addressingNote}
+${toneNote}`;
+
+    case "MICRO_ONBOARDING":
+      return `Generate the MICRO_ONBOARDING message.
+This is a single question to understand WHY the user started this process.
+
+EXACT MESSAGE:
+"לפני שמתחילים — מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
+
+RULES:
+- Ask EXACTLY this question (adjust gender forms if needed based on addressing_style)
+- No follow-up questions
+- No emotional analysis
+- Do NOT reflect on their answer
+${addressingNote}
+${toneNote}`;
+
     case "ORIENTATION":
       return `Generate an ORIENTATION message (2-4 sentences max).
 Include: day number (${dayPlan.day}), day_goal, context, and rule_of_today.
