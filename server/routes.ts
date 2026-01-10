@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, type ConversationPhase } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sendJourneyAccessEmail } from "./email";
@@ -1665,10 +1665,38 @@ export async function registerRoutes(
       let dayCompleted = false;
       let phaseForResponse = currentPhase;
 
-      // Use Director system if journey has mentorStyle set
-      const useDirector = !!journey.mentorStyle;
+      // Use ProcessFacilitator (new state machine) for all flows
+      // This provides human, confident, non-robotic facilitation
+      const useFacilitator = true; // Always use new system
+      const useDirector = !!journey.mentorStyle && !useFacilitator; // Fallback to Director if not using Facilitator
       
-      if (useDirector) {
+      if (useFacilitator) {
+        console.log(`[Facilitator] Using ProcessFacilitator system`);
+        
+        // Generate response using ProcessFacilitator
+        const result = await generateChatResponseWithFacilitator(
+          {
+            participant,
+            journey,
+            step,
+            recentMessages
+          },
+          content.trim()
+        );
+        
+        botResponse = result.response;
+        dayCompleted = result.dayCompleted;
+        
+        // Persist conversation state to participant record
+        await storage.updateParticipant(participantId, { 
+          conversationState: result.nextState,
+          clarifyCount: result.clarifyCount,
+          taskSupportCount: result.taskSupportCount,
+          lastBotMessage: result.response
+        });
+        
+        console.log(`[Facilitator] Result: state=${result.nextState}, intent=${result.log.detected_intent}, dayCompleted=${dayCompleted}`);
+      } else if (useDirector) {
         console.log(`[Director] Using Director system for journey with mentorStyle: ${journey.mentorStyle}`);
         
         // Restore conversation state from participant record

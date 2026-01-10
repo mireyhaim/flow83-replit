@@ -2307,3 +2307,162 @@ export function toDirectorPhase(phase: ConversationPhase | string): DirectorPhas
   const validPhases: DirectorPhase[] = ['intro', 'reflection', 'task', 'integration'];
   return validPhases.includes(phase as DirectorPhase) ? phase as DirectorPhase : 'intro';
 }
+
+// ============================================================
+// PROCESS FACILITATOR SYSTEM (New State Machine)
+// ============================================================
+
+import {
+  type ConversationState as FacilitatorState,
+  type DayPlan,
+  type FacilitatorOutput,
+  detectUserIntent,
+  determineNextState,
+  validateMessage,
+  buildSystemPrompt as buildFacilitatorSystemPrompt,
+  buildStatePrompt,
+  createDayPlanFromStep
+} from "./bot/processFacilitator";
+import type { Journey, JourneyStep, Participant } from "@shared/schema";
+
+export interface FacilitatorChatContext {
+  participant: Participant;
+  journey: Journey;
+  step: JourneyStep;
+  recentMessages: { role: string; content: string }[];
+}
+
+export interface FacilitatorChatResult {
+  response: string;
+  nextState: FacilitatorState;
+  dayCompleted: boolean;
+  log: FacilitatorOutput["log"];
+  clarifyCount: number;
+  taskSupportCount: number;
+}
+
+/**
+ * Generate chat response using the Process Facilitator system (new state machine)
+ * 
+ * This system:
+ * - Follows a strict state machine: START -> ORIENTATION -> CORE_QUESTION -> INTERPRET -> TASK -> CLOSURE -> DONE
+ * - Uses structured dayPlan JSON for content
+ * - Has universal behavior rules (non-therapeutic, confident, practical)
+ * - Outputs validated messages with quality checks
+ */
+export async function generateChatResponseWithFacilitator(
+  context: FacilitatorChatContext,
+  userMessage: string
+): Promise<FacilitatorChatResult> {
+  const { participant, journey, step, recentMessages } = context;
+  
+  // Get current state from participant or default to START
+  const currentState = (participant.conversationState as FacilitatorState) || "START";
+  const clarifyCount = participant.clarifyCount || 0;
+  const taskSupportCount = participant.taskSupportCount || 0;
+  
+  // Get or create dayPlan
+  const dayPlan = createDayPlanFromStep(step, journey);
+  if (!dayPlan) {
+    throw new Error("Could not create day plan from step");
+  }
+  
+  // Detect user intent
+  const intent = detectUserIntent(userMessage, currentState);
+  
+  // Determine next state based on current state and intent
+  let nextState = determineNextState(currentState, intent, clarifyCount, taskSupportCount);
+  
+  // Update counters
+  let newClarifyCount = clarifyCount;
+  let newTaskSupportCount = taskSupportCount;
+  
+  if (nextState === "CLARIFY") {
+    newClarifyCount = clarifyCount + 1;
+  }
+  if (nextState === "TASK_SUPPORT") {
+    newTaskSupportCount = taskSupportCount + 1;
+  }
+  
+  console.log(`[Facilitator] State transition:`, {
+    from: currentState,
+    to: nextState,
+    intent,
+    clarifyCount: newClarifyCount,
+    taskSupportCount: newTaskSupportCount
+  });
+  
+  // Build prompts
+  const systemPrompt = buildFacilitatorSystemPrompt(dayPlan, journey);
+  const statePrompt = buildStatePrompt(nextState, dayPlan, userMessage, intent);
+  
+  // Build messages array
+  const messages: OpenAI.ChatCompletionMessageParam[] = [
+    { role: "system", content: systemPrompt },
+    ...recentMessages.slice(-6).map(m => ({
+      role: m.role as "user" | "assistant",
+      content: m.content
+    })),
+    { role: "user", content: userMessage },
+    { role: "system", content: `STATE: ${nextState}\n\n${statePrompt}` }
+  ];
+  
+  // Generate AI response
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    max_tokens: 200,
+    temperature: 0.7,
+  });
+  
+  let aiContent = response.choices[0].message.content || "";
+  
+  // Fallback messages
+  if (!aiContent) {
+    const isHebrew = dayPlan.language === "hebrew";
+    const fallbacks: Record<FacilitatorState, { he: string; en: string }> = {
+      START: { he: "בואי נתחיל.", en: "Let's begin." },
+      ORIENTATION: { he: `יום ${dayPlan.day}. ${dayPlan.day_goal}`, en: `Day ${dayPlan.day}. ${dayPlan.day_goal}` },
+      CORE_QUESTION: { he: dayPlan.core_question.question, en: dayPlan.core_question.question },
+      CLARIFY: { he: "נסביר בצורה אחרת.", en: "Let me explain differently." },
+      INTERPRET: { he: "בואי נעבור למשימה.", en: "Let's move to the task." },
+      TASK: { he: dayPlan.task.instruction, en: dayPlan.task.instruction },
+      TASK_SUPPORT: { he: "נעשה את זה פשוט.", en: "Let's simplify." },
+      CLOSURE: { he: dayPlan.closure.acknowledge, en: dayPlan.closure.acknowledge },
+      DONE: { he: "נתראה מחר.", en: "See you tomorrow." }
+    };
+    aiContent = isHebrew ? fallbacks[nextState].he : fallbacks[nextState].en;
+  }
+  
+  // Validate and clean message
+  let processedContent = validateMessage(aiContent, nextState);
+  
+  // Check for no-repetition
+  if (participant.lastBotMessage && processedContent === participant.lastBotMessage) {
+    processedContent = processedContent + " " + (dayPlan.language === "hebrew" ? "ממשיכים." : "Moving on.");
+  }
+  
+  // Check for day completion
+  const dayCompleted = nextState === "CLOSURE" || nextState === "DONE";
+  
+  console.log(`[Facilitator] Response generated:`, {
+    state: nextState,
+    responseLength: processedContent.length,
+    dayCompleted,
+    intent
+  });
+  
+  return {
+    response: processedContent,
+    nextState,
+    dayCompleted,
+    log: {
+      day: dayPlan.day,
+      flow_id: journey.id,
+      state_reason: `Transitioned from ${currentState} to ${nextState}`,
+      detected_intent: intent
+    },
+    clarifyCount: newClarifyCount,
+    taskSupportCount: newTaskSupportCount
+  };
+}
