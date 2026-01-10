@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle, ArrowLeft, RefreshCw, ExternalLink, CreditCard } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, CheckCircle, XCircle, ArrowLeft, RefreshCw, ExternalLink, CreditCard, AlertCircle } from "lucide-react";
 
 export default function GrowPaymentIframePage() {
   const [, navigate] = useLocation();
@@ -12,6 +14,19 @@ export default function GrowPaymentIframePage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [paymentOpened, setPaymentOpened] = useState(false);
+  const [showVerificationForm, setShowVerificationForm] = useState(false);
+  
+  // Verification form fields
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    idNumber: ""
+  });
+  const [formErrors, setFormErrors] = useState<{
+    name?: string;
+    email?: string;
+    idNumber?: string;
+  }>({});
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,29 +68,73 @@ export default function GrowPaymentIframePage() {
     return () => window.removeEventListener('message', handleMessage);
   }, [token]);
 
-  const handlePaymentComplete = async () => {
-    if (!token || isVerifying) return;
+  const handlePaymentComplete = () => {
+    setShowVerificationForm(true);
+    setVerificationError(null);
+  };
+
+  const validateForm = () => {
+    const errors: typeof formErrors = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = "שדה חובה";
+    }
+    
+    if (!formData.email.trim()) {
+      errors.email = "שדה חובה";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "כתובת אימייל לא תקינה";
+    }
+    
+    if (!formData.idNumber.trim()) {
+      errors.idNumber = "שדה חובה";
+    } else if (!/^\d{9}$/.test(formData.idNumber)) {
+      errors.idNumber = "תעודת זהות חייבת להכיל 9 ספרות";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmitVerification = async () => {
+    if (!token || !validateForm()) return;
     
     setIsVerifying(true);
     setVerificationError(null);
     
     try {
-      const res = await fetch(`/api/payment/external-verify/${token}`);
+      const res = await fetch(`/api/payment/external-verify/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          idNumber: formData.idNumber.trim()
+        })
+      });
       const data = await res.json();
       
       if (data.success && data.accessToken) {
-        // Only navigate on successful verification
         navigate(`/p/${data.accessToken}`);
+      } else if (data.error === "identity_mismatch") {
+        setVerificationError("הפרטים שהזנת לא תואמים לפרטי ההרשמה. אנא בדוק ונסה שוב.");
       } else {
-        // Verification failed - show error and allow retry
-        setVerificationError(data.error || "לא הצלחנו לאמת את התשלום. נסה שוב.");
-        setIsVerifying(false);
+        setVerificationError("לא הצלחנו לאמת את התשלום. נסה שוב.");
       }
     } catch (error) {
       console.error('Verification error:', error);
       setVerificationError("שגיאה באימות התשלום. נסה שוב.");
+    } finally {
       setIsVerifying(false);
     }
+  };
+
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+    setVerificationError(null);
   };
 
   if (isLoading) {
@@ -151,38 +210,22 @@ export default function GrowPaymentIframePage() {
                 עבור לתשלום
               </Button>
             </>
-          ) : (
+          ) : !showVerificationForm ? (
             <>
               <h2 className="text-2xl font-bold text-gray-800 mb-3">התשלום נפתח בחלון חדש</h2>
               <p className="text-gray-600 mb-4">
                 השלם את התשלום בחלון שנפתח, ואז חזור לכאן ולחץ על הכפתור
               </p>
               
-              {verificationError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{verificationError}</p>
-                </div>
-              )}
-              
               <div className="space-y-3">
                 <Button 
                   onClick={handlePaymentComplete}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   size="lg"
-                  disabled={isVerifying}
                   data-testid="button-payment-complete"
                 >
-                  {verificationError ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 ml-2" />
-                      נסה שוב
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-5 h-5 ml-2" />
-                      שילמתי - התחל את המסע
-                    </>
-                  )}
+                  <CheckCircle className="w-5 h-5 ml-2" />
+                  שילמתי - התחל את המסע
                 </Button>
                 
                 <Button 
@@ -195,6 +238,108 @@ export default function GrowPaymentIframePage() {
                   <ExternalLink className="w-5 h-5 ml-2" />
                   פתח שוב את עמוד התשלום
                 </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">אימות פרטים</h2>
+              <p className="text-gray-600 mb-4">
+                הזן את הפרטים שלך כדי להתחבר לתהליך
+              </p>
+              
+              <div className="space-y-4 text-right">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-right block text-gray-700">
+                    שם ושם משפחה
+                  </Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="ישראל ישראלי"
+                    className={`text-right ${formErrors.name ? "border-red-500" : ""}`}
+                    data-testid="input-verify-name"
+                  />
+                  {formErrors.name && (
+                    <p className="text-red-500 text-sm">{formErrors.name}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-right block text-gray-700">
+                    אימייל
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="israel@example.com"
+                    className={`text-right ${formErrors.email ? "border-red-500" : ""}`}
+                    dir="ltr"
+                    data-testid="input-verify-email"
+                  />
+                  {formErrors.email && (
+                    <p className="text-red-500 text-sm">{formErrors.email}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="idNumber" className="text-right block text-gray-700">
+                    תעודת זהות
+                  </Label>
+                  <Input
+                    id="idNumber"
+                    value={formData.idNumber}
+                    onChange={(e) => handleInputChange("idNumber", e.target.value.replace(/\D/g, "").slice(0, 9))}
+                    placeholder="יש להזין 9 ספרות"
+                    className={`text-right ${formErrors.idNumber ? "border-red-500" : ""}`}
+                    dir="ltr"
+                    data-testid="input-verify-id"
+                  />
+                  {formErrors.idNumber && (
+                    <p className="text-red-500 text-sm">{formErrors.idNumber}</p>
+                  )}
+                </div>
+
+                {verificationError && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <p className="text-red-700 text-sm">{verificationError}</p>
+                  </div>
+                )}
+                
+                <div className="space-y-3 pt-2">
+                  <Button 
+                    onClick={handleSubmitVerification}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    size="lg"
+                    disabled={isVerifying}
+                    data-testid="button-submit-verification"
+                  >
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                        מאמת...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 ml-2" />
+                        התחבר לתהליך
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => setShowVerificationForm(false)}
+                    variant="ghost"
+                    className="w-full text-gray-500"
+                    size="sm"
+                    data-testid="button-back-to-payment"
+                  >
+                    חזרה
+                  </Button>
+                </div>
               </div>
             </>
           )}
