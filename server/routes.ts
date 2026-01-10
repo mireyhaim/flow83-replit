@@ -2003,12 +2003,24 @@ export async function registerRoutes(
 
       // Verify identity matches the session data
       const emailMatch = session.email.toLowerCase() === email.toLowerCase();
-      const idMatch = session.idNumber === idNumber;
+      // ID comparison: if session has no ID stored, skip check (backwards compatibility)
+      // Also normalize by removing leading zeros for comparison
+      const normalizeId = (id: string | null) => id ? id.replace(/^0+/, '') : null;
+      const idMatch = !session.idNumber || normalizeId(session.idNumber) === normalizeId(idNumber);
       // Name comparison: case-insensitive and trim
       // If session has no name stored, skip name check (verify by email + ID only)
       const nameMatch = !session.name || session.name.toLowerCase().trim() === name.toLowerCase().trim();
       
       if (!emailMatch || !idMatch || !nameMatch) {
+        console.log("Identity verification failed:", { 
+          emailMatch, 
+          idMatch, 
+          nameMatch,
+          sessionEmail: session.email,
+          inputEmail: email,
+          sessionId: session.idNumber,
+          inputId: idNumber
+        });
         return res.status(400).json({ error: "identity_mismatch", message: "Identity verification failed" });
       }
 
