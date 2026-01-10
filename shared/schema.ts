@@ -100,6 +100,8 @@ export const journeySteps = pgTable("journey_steps", {
   explanation: text("explanation"),
   task: text("task"),
   closingMessage: text("closing_message"),
+  // Structured day plan for ProcessFacilitator bot
+  dayPlan: jsonb("day_plan"),
 });
 
 export const insertJourneyStepSchema = createInsertSchema(journeySteps).omit({
@@ -141,6 +143,11 @@ export const participants = pgTable("participants", {
   startedAt: timestamp("started_at").defaultNow(),
   lastActiveAt: timestamp("last_active_at").defaultNow(),
   completedAt: timestamp("completed_at"),
+  // ProcessFacilitator state machine
+  conversationState: text("conversation_state").default("START"), // START|ORIENTATION|CORE_QUESTION|CLARIFY|INTERPRET|TASK|TASK_SUPPORT|CLOSURE|DONE
+  clarifyCount: integer("clarify_count").default(0), // Max 2 per day
+  taskSupportCount: integer("task_support_count").default(0), // Max 1 per day
+  lastBotMessage: text("last_bot_message"), // For no-repetition check
 });
 
 export const activityEvents = pgTable("activity_events", {
