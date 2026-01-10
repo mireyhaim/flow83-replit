@@ -228,7 +228,10 @@ const ConversationalJourneyWizard = () => {
     setTimeout(() => {
       if (editingStep !== null) {
         setEditingStep(null);
-        setCurrentStepIndex(steps.length - 1);
+        // Go to next step after the edited one, not to the end
+        if (currentStepIndex < steps.length - 1) {
+          setCurrentStepIndex(prev => prev + 1);
+        }
       } else if (currentStepIndex < steps.length - 1) {
         setCurrentStepIndex(prev => prev + 1);
       }
@@ -245,7 +248,10 @@ const ConversationalJourneyWizard = () => {
     setTimeout(() => {
       if (editingStep !== null) {
         setEditingStep(null);
-        setCurrentStepIndex(steps.length - 1);
+        // Go to next step after the edited one, not to the end
+        if (currentStepIndex < steps.length - 1) {
+          setCurrentStepIndex(prev => prev + 1);
+        }
       } else if (currentStepIndex < steps.length - 1) {
         setCurrentStepIndex(prev => prev + 1);
       }
