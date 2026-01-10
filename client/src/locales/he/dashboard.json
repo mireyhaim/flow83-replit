@@ -141,6 +141,7 @@
     "cancel": "ביטול",
     "editFlow": "ערוך Flow",
     "daysCount": "{{count}} ימים",
+    "archive": "העבר לארכיון",
     "archivedFlows": "Flows בארכיון",
     "archived": "בארכיון",
     "restore": "שחזר",

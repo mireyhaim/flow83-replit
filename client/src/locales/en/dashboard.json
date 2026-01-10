@@ -141,6 +141,7 @@
     "cancel": "Cancel",
     "editFlow": "Edit Flow",
     "daysCount": "{{count}} days",
+    "archive": "Archive",
     "archivedFlows": "Archived Flows",
     "archived": "Archived",
     "restore": "Restore",

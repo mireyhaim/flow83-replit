@@ -220,6 +220,13 @@ export default function JourneysPage() {
                       {t('dashboard:journeysPage.copyLink')}
                     </DropdownMenuItem>
                     <DropdownMenuItem 
+                      onClick={() => archiveMutation.mutate(journey.id)}
+                      data-testid={`menu-archive-${journey.id}`}
+                    >
+                      <Archive className="mx-2 h-4 w-4" />
+                      {t('dashboard:journeysPage.archive')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
                       className="text-red-600 focus:text-red-600"
                       onClick={() => handleDeleteClick(journey.id)}
                       data-testid={`menu-delete-${journey.id}`}

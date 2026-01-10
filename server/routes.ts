@@ -129,6 +129,20 @@ export async function registerRoutes(
     }
   });
 
+  // Get archived journeys for a mentor (must be before :id route)
+  app.get("/api/journeys/archived", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const archived = await storage.getArchivedJourneysByCreator(userId);
+      res.json(archived);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch archived flows" });
+    }
+  });
+
   // Get trial/subscription status for current user
   app.get("/api/trial-status", isAuthenticated, async (req: any, res) => {
     try {
@@ -614,20 +628,6 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Failed to restore flow:", error);
       res.status(500).json({ error: "Failed to restore flow" });
-    }
-  });
-
-  // Get archived journeys for a mentor
-  app.get("/api/journeys/archived", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      const archived = await storage.getArchivedJourneysByCreator(userId);
-      res.json(archived);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch archived flows" });
     }
   });
 
