@@ -2401,7 +2401,10 @@ export async function generateChatResponseWithFacilitator(
   
   // Build prompts
   const systemPrompt = buildFacilitatorSystemPrompt(dayPlan, journey);
-  const statePrompt = buildStatePrompt(nextState, dayPlan, userMessage, intent);
+  const statePrompt = buildStatePrompt(nextState, dayPlan, userMessage, intent, {
+    firstName: participant.name || undefined,
+    userOnboardingConfig: participant.userOnboardingConfig as any
+  });
   
   // Build messages array
   const messages: OpenAI.ChatCompletionMessageParam[] = [

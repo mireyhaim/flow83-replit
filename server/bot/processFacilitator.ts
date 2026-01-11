@@ -942,8 +942,12 @@ export function buildStatePrompt(
   dayPlan: DayPlan,
   userMessage: string,
   intent: FacilitatorOutput["log"]["detected_intent"],
-  participant?: { userOnboardingConfig?: { addressing_style: string; tone_preference: string; depth_preference: string; pace_preference: string } | null }
+  participant?: { 
+    firstName?: string;
+    userOnboardingConfig?: { addressing_style: string; tone_preference: string; depth_preference: string; pace_preference: string } | null 
+  }
 ): string {
+  const participantName = participant?.firstName || '';
   // Style modifiers based on userOnboardingConfig
   const config = participant?.userOnboardingConfig;
   const addressingNote = config?.addressing_style === 'female' 
@@ -969,10 +973,11 @@ ${addressingNote}
 ${toneNote}`;
 
     case "MICRO_ONBOARDING":
+      const nameGreeting = participantName ? `היי ${participantName}` : 'היי';
       return `Generate the MICRO_ONBOARDING welcome message.
 
 STRUCTURE (write EXACTLY in this order):
-1. Warm welcome line: "היי [name], טוב שהגעת."
+1. Warm welcome line: "${nameGreeting}, טוב שהגעת."
 2. Brief intro (1-2 sentences): "אני כאן כדי ללוות אותך בתהליך הזה, צעד־צעד, בצורה ברורה ומעשית. כל יום נתמקד בדבר אחד בלבד — כדי ליצור תנועה אמיתית."
 3. Transition line: "לפני שמתחילים, שאלה קצרה שתעזור לי להוביל אותך בצורה מדויקת."
 4. The intent question: "מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
