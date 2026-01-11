@@ -969,36 +969,49 @@ ${addressingNote}
 ${toneNote}`;
 
     case "MICRO_ONBOARDING":
-      return `Generate the MICRO_ONBOARDING message.
-This is a single question to understand WHY the user started this process.
+      return `Generate the MICRO_ONBOARDING welcome message.
 
-EXACT MESSAGE:
-"לפני שמתחילים — מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
+STRUCTURE (write EXACTLY in this order):
+1. Warm welcome line: "היי [name], טוב שהגעת."
+2. Brief intro (1-2 sentences): "אני כאן כדי ללוות אותך בתהליך הזה, צעד־צעד, בצורה ברורה ומעשית. כל יום נתמקד בדבר אחד בלבד — כדי ליצור תנועה אמיתית."
+3. Transition line: "לפני שמתחילים, שאלה קצרה שתעזור לי להוביל אותך בצורה מדויקת."
+4. The intent question: "מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?"
 
-RULES:
-- Ask EXACTLY this question (adjust gender forms if needed based on addressing_style)
-- No follow-up questions
-- No emotional analysis
-- Do NOT reflect on their answer
+CRITICAL RULES:
+- NO day number (אין "יום 1")
+- NO theories or concepts (אין "דפוסים", אין "מודעות")
+- NO content dump
+- Keep it warm and human
+- End with the intent question and WAIT for response
+
 ${addressingNote}
 ${toneNote}`;
 
     case "ORIENTATION":
-      return `Generate an ORIENTATION message (MAX 50 WORDS).
+      const coreChoicesText = dayPlan.core_question.choices 
+        ? `\nאפשרויות: ${dayPlan.core_question.choices.join(' / ')}`
+        : '';
+      return `Generate ORIENTATION message - this is Day 1 introduction + core question.
 
-Structure:
-"יום ${dayPlan.day}.
-היום מתמקדים ב: [goal in 1 sentence].
-הכלל להיום: ${dayPlan.orientation.rule_of_today}."
+STRUCTURE (write EXACTLY in this order):
+1. Day number: "יום ${dayPlan.day}."
+2. Day focus (1-2 sentences): "${dayPlan.day_goal}"
+3. Rule of today: "הכלל להיום: ${dayPlan.orientation.rule_of_today}."
+4. Empty line
+5. Core question: "${dayPlan.core_question.question}"${coreChoicesText}
 
-Then ask ONE question and STOP. Wait for user response.
+EXAMPLE OUTPUT:
+"יום 1.
+היום אנחנו מתמקדים בזיהוי דפוס אחד שמנהל אותך באופן אוטומטי.
+לא מנתחים, לא משנים — רק מזהים.
+הכלל להיום: מזהים, לא פותרים.
+
+${dayPlan.core_question.question}"
 
 CRITICAL RULES:
-- Maximum 50 words total
-- NO long explanations
-- NO content dump
-- ONE question only
-- Then SILENCE - wait for response
+- Keep it short and clean
+- NO long explanations or theories
+- End with the core question and WAIT for response
 
 ${addressingNote}
 ${toneNote}`;
