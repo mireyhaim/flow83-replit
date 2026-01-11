@@ -745,10 +745,20 @@ export function detectUserIntent(
     return "confused";
   }
   
-  // ORIENTATION state: always move forward to CORE_QUESTION
-  // No confusion handling here - that only happens after the core question is asked
+  // ORIENTATION state: detect if user is answering the core question or just acknowledging
   if (currentState === "ORIENTATION") {
-    // Any response moves forward - we don't clarify until after CORE_QUESTION
+    // Check for confusion first
+    if (CONFUSION_TRIGGERS_HEBREW.some(t => msg.includes(t)) ||
+        CONFUSION_TRIGGERS_ENGLISH.some(t => msg.includes(t))) {
+      return "confused";
+    }
+    
+    // Long messages (>30 chars) are emotional/substantive answers
+    if (msg.length > 30) {
+      return "emotional";
+    }
+    
+    // Short acknowledgments
     return "checkin";
   }
   
@@ -812,9 +822,17 @@ export function determineNextState(
       return "ORIENTATION";
     
     case "ORIENTATION":
-      return "CORE_QUESTION";
+      // ORIENTATION already includes the core question, so when user responds
+      // with a substantive answer, go straight to INTERPRET
+      if (intent === "answer_core" || intent === "emotional") {
+        return "INTERPRET";
+      }
+      // For simple checkins/acknowledgments, also go to INTERPRET
+      // since the core question was already asked in ORIENTATION
+      return "INTERPRET";
     
     case "CORE_QUESTION":
+      // Legacy state - kept for backward compatibility
       if (intent === "answer_core" || intent === "emotional") {
         return "INTERPRET";
       }
