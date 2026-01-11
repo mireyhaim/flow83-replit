@@ -1012,23 +1012,23 @@ Example format:
 Do NOT repeat the original question word-for-word.`;
 
     case "INTERPRET":
-      return `Generate an INTERPRET message (MAX 60 WORDS).
+      return `Generate an INTERPRET message (MAX 40 WORDS).
 
 User said: "${userMessage}"
 
+CRITICAL RULES:
+- DO NOT repeat day info (NO "יום 1", NO "היום מתמקדים", NO "הכלל להיום")
+- Start with brief acknowledgment using the user's actual words
+- Then bridge to task in 1 sentence
+
 Structure:
-1. Brief acknowledgment of what they said (1 sentence, use their actual words)
-2. Short bridge to task (1 sentence)
-3. Then give the task
+"[Reflect user's words briefly] - זה לא פשוט.
+[Bridge to task in 1 sentence]"
 
-Example:
-"${dayPlan.language === 'hebrew' ? 'מעולה.' : 'Great.'}
-[Brief reflection on their answer]
+Example for user who said "אני מרגישה תקועה":
+"תקועה - זה מקום לא נעים להיות בו.
+בוא נתחיל עם משימה קטנה."
 
-${dayPlan.language === 'hebrew' ? 'משימה:' : 'Task:'}
-[Clear task instruction]"
-
-CRITICAL: Reflect what the USER actually said. No generic responses.
 ${addressingNote}
 ${toneNote}`;
 
