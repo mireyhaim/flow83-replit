@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import {
   makeDecision,
   updateState,
@@ -17,6 +18,11 @@ import {
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+
+const anthropic = new Anthropic({
+  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
 interface JourneyIntent {
@@ -2406,26 +2412,28 @@ export async function generateChatResponseWithFacilitator(
     userOnboardingConfig: participant.userOnboardingConfig as any
   });
   
-  // Build messages array
-  const messages: OpenAI.ChatCompletionMessageParam[] = [
-    { role: "system", content: systemPrompt },
+  // Build messages array for Claude
+  const claudeMessages: Anthropic.MessageParam[] = [
     ...recentMessages.slice(-6).map(m => ({
       role: m.role as "user" | "assistant",
       content: m.content
     })),
-    { role: "user", content: userMessage },
-    { role: "system", content: `STATE: ${nextState}\n\n${statePrompt}` }
+    { role: "user", content: userMessage }
   ];
   
-  // Generate AI response
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages,
+  // Combine system prompt with state prompt for Claude
+  const fullSystemPrompt = `${systemPrompt}\n\n---\n\nSTATE: ${nextState}\n\n${statePrompt}`;
+  
+  // Generate AI response using Claude
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    system: fullSystemPrompt,
+    messages: claudeMessages,
     max_tokens: 200,
-    temperature: 0.7,
   });
   
-  let aiContent = response.choices[0].message.content || "";
+  const firstBlock = response.content[0];
+  let aiContent = firstBlock.type === "text" ? firstBlock.text : "";
   
   // Fallback messages
   if (!aiContent) {
