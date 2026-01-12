@@ -851,16 +851,12 @@ export function determineNextState(
       return "TASK";
     
     case "TASK_SUPPORT":
-      // If user is still confused after support, stay in TASK_SUPPORT
-      // to provide additional help (up to limit)
       if (intent === "task_help") {
-        return "TASK_SUPPORT"; // Stay in support mode
+        return "TASK_SUPPORT";
       }
-      // If user indicates completion, go to CLOSURE
       if (intent === "completed") {
         return "CLOSURE";
       }
-      // Otherwise, return to TASK
       return "TASK";
     
     case "CLOSURE":
@@ -1154,16 +1150,52 @@ Structure:
 Offer simpler steps OR example answer OR format template.`;
 
     case "CLOSURE":
-      return `Generate a CLOSURE message (2 sentences max).
+      const isHebrewClosure = dayPlan.language === "hebrew";
+      return `Generate a meaningful CLOSURE message that wraps up Day ${dayPlan.day}.
 
-Acknowledge: ${dayPlan.closure.acknowledge}
-Preview: ${dayPlan.closure.preview}
+The user just completed the task. Their response: "${userMessage}"
 
-Structure:
-"${dayPlan.closure.acknowledge}
-${dayPlan.closure.preview}"
+YOUR JOB (in order):
+1. REFLECT what they discovered - mirror their actual words
+2. NAME the insight - what pattern or truth did they uncover?
+3. VALIDATE their work - acknowledge the effort without being cheesy
+4. PREVIEW tomorrow - one soft sentence about what's next
 
-Keep it warm but brief.`;
+${isHebrewClosure ? `
+GOOD EXAMPLE:
+User said: "שמתי לב שאני תמיד אומרת לעצמי שזה לא שווה את זה"
+Response: "שימי לב מה גילית היום - את זיהית את הקול הפנימי שאומר 'לא שווה את זה'. זו הבחנה חשובה.
+
+ביום 2 ניקח את הזיהוי הזה צעד קדימה - נבחן מאיפה הקול הזה מגיע ומתי הוא הכי חזק."
+
+BAD EXAMPLE:
+"נהדר! סיימנו את יום 1. מחר נמשיך."
+"עבודה מצוינת! עכשיו לך לנוח."
+` : `
+GOOD EXAMPLE:
+User said: "I noticed I always tell myself it's not worth it"
+Response: "Notice what you discovered today - you identified the inner voice that says 'not worth it'. That's an important distinction.
+
+Tomorrow we'll take this insight a step forward - we'll look at where that voice comes from and when it's strongest."
+
+BAD EXAMPLE:
+"Great! Day 1 complete. See you tomorrow."
+"Excellent work! Now go rest."
+`}
+
+CONTENT TO WEAVE:
+- Day goal: ${dayPlan.day_goal}
+- Tomorrow's preview: ${dayPlan.closure.preview}
+
+RULES:
+- Mirror user's ACTUAL words from their task response
+- Name the specific insight they uncovered
+- MAX 80 words (this is the day wrap-up, can be slightly longer)
+- End with soft preview of tomorrow
+- NO generic praise ("נהדר", "מצוין", "great work")
+
+${addressingNote}
+${toneNote}`;
 
     case "DONE":
       return `The day is complete. Generate a brief closing that encourages the user to return tomorrow.`;
