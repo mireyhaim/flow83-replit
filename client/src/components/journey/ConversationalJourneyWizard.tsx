@@ -130,10 +130,10 @@ const steps: Step[] = [
     questionHe: 'איך היית מתאר את הסגנון שלך כמלווה?',
     type: 'options',
     options: [
-      { value: 'practical', labelEn: '🎯 Practical - Exercises & Tasks', labelHe: '🎯 פרקטי - תרגילים ומשימות' },
-      { value: 'emotional', labelEn: '💭 Emotional - Deep Listening', labelHe: '💭 רגשי - הקשבה עמוקה' },
-      { value: 'spiritual', labelEn: '🌿 Spiritual - Metaphors & Imagery', labelHe: '🌿 רוחני - מטאפורות ודמיון' },
-      { value: 'structured', labelEn: '📋 Structured - Clear Process', labelHe: '📋 מובנה - תהליך מסודר' }
+      { value: 'practical', labelEn: 'Practical - Exercises & Tasks', labelHe: 'פרקטי - תרגילים ומשימות' },
+      { value: 'emotional', labelEn: 'Emotional - Deep Listening', labelHe: 'רגשי - הקשבה עמוקה' },
+      { value: 'spiritual', labelEn: 'Spiritual - Metaphors & Imagery', labelHe: 'רוחני - מטאפורות ודמיון' },
+      { value: 'structured', labelEn: 'Structured - Clear Process', labelHe: 'מובנה - תהליך מסודר' }
     ]
   },
   {
