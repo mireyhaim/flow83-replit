@@ -410,6 +410,21 @@ export async function registerRoutes(
     }
   });
 
+  // Monthly report endpoint
+  app.get("/api/mentor/monthly-report", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+      
+      const report = await storage.getMonthlyReport(userId, year, month);
+      res.json(report);
+    } catch (error) {
+      console.error("Error fetching monthly report:", error);
+      res.status(500).json({ error: "Failed to fetch monthly report" });
+    }
+  });
+
   // Mentor invoices endpoints
   app.get("/api/mentor/invoices", isAuthenticated, async (req: any, res) => {
     try {

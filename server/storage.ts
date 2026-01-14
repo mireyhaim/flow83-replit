@@ -140,6 +140,13 @@ export interface IStorage {
   // Wallet transactions
   createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction>;
   getWalletTransactions(walletId: string, limit?: number): Promise<WalletTransaction[]>;
+  getMonthlyReport(mentorId: string, year: number, month: number): Promise<{
+    period: { year: number; month: number };
+    totalDeposits: number;
+    totalWithdrawals: number;
+    transactionCount: number;
+    transactions: WalletTransaction[];
+  }>;
   
   // Invoices
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
@@ -924,6 +931,45 @@ export class DatabaseStorage implements IStorage {
       .where(eq(walletTransactions.walletId, walletId))
       .orderBy(desc(walletTransactions.createdAt))
       .limit(limit);
+  }
+
+  async getMonthlyReport(mentorId: string, year: number, month: number): Promise<{
+    period: { year: number; month: number };
+    totalDeposits: number;
+    totalWithdrawals: number;
+    transactionCount: number;
+    transactions: WalletTransaction[];
+  }> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+    
+    const transactions = await db.select()
+      .from(walletTransactions)
+      .where(and(
+        eq(walletTransactions.mentorId, mentorId),
+        gte(walletTransactions.createdAt, startDate),
+        lt(walletTransactions.createdAt, new Date(year, month, 1))
+      ))
+      .orderBy(desc(walletTransactions.createdAt));
+    
+    let totalDeposits = 0;
+    let totalWithdrawals = 0;
+    
+    for (const tx of transactions) {
+      if (tx.amount > 0) {
+        totalDeposits += tx.amount;
+      } else {
+        totalWithdrawals += Math.abs(tx.amount);
+      }
+    }
+    
+    return {
+      period: { year, month },
+      totalDeposits,
+      totalWithdrawals,
+      transactionCount: transactions.length,
+      transactions,
+    };
   }
 
   // Invoices

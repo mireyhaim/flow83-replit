@@ -20,7 +20,10 @@ import {
   AlertCircle,
   FileText,
   CreditCard,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import {
   Select,
@@ -83,6 +86,14 @@ type Invoice = {
   createdAt: string;
 };
 
+type MonthlyReport = {
+  period: { year: number; month: number };
+  totalDeposits: number;
+  totalWithdrawals: number;
+  transactionCount: number;
+  transactions: WalletTransaction[];
+};
+
 export default function PaymentsPage() {
   const { t, i18n } = useTranslation(['dashboard', 'common']);
   const { toast } = useToast();
@@ -90,6 +101,10 @@ export default function PaymentsPage() {
   const isHebrew = i18n.language === 'he';
   const [activeTab, setActiveTab] = useState("wallet");
   const [isSaving, setIsSaving] = useState(false);
+  const [reportMonth, setReportMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  });
 
   const [businessForm, setBusinessForm] = useState({
     businessName: "",
@@ -139,6 +154,15 @@ export default function PaymentsPage() {
 
   const { data: invoices, isLoading: invoicesLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/mentor/invoices"],
+  });
+
+  const { data: monthlyReport, isLoading: reportLoading } = useQuery<MonthlyReport>({
+    queryKey: ["/api/mentor/monthly-report", reportMonth.year, reportMonth.month],
+    queryFn: async () => {
+      const response = await fetch(`/api/mentor/monthly-report?year=${reportMonth.year}&month=${reportMonth.month}`);
+      if (!response.ok) throw new Error("Failed to fetch report");
+      return response.json();
+    },
   });
 
   const saveBusinessProfileMutation = useMutation({
@@ -210,6 +234,29 @@ export default function PaymentsPage() {
       currency: wallet?.currency || 'ILS',
       minimumFractionDigits: 0,
     }).format(amount / 100);
+  };
+
+  const getMonthName = (month: number) => {
+    const monthNames = isHebrew
+      ? ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר']
+      : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return monthNames[month - 1];
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setReportMonth(prev => {
+      if (direction === 'prev') {
+        if (prev.month === 1) {
+          return { year: prev.year - 1, month: 12 };
+        }
+        return { year: prev.year, month: prev.month - 1 };
+      } else {
+        if (prev.month === 12) {
+          return { year: prev.year + 1, month: 1 };
+        }
+        return { year: prev.year, month: prev.month + 1 };
+      }
+    });
   };
 
   const handleSaveBusinessProfile = async () => {
@@ -409,6 +456,110 @@ export default function PaymentsPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-violet-600" />
+                    {isHebrew ? "דו\"ח חודשי" : "Monthly Report"}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => navigateMonth('prev')}
+                      data-testid="button-prev-month"
+                    >
+                      {isHebrew ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                    </Button>
+                    <span className="font-medium min-w-[140px] text-center">
+                      {getMonthName(reportMonth.month)} {reportMonth.year}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => navigateMonth('next')}
+                      disabled={reportMonth.year === new Date().getFullYear() && reportMonth.month === new Date().getMonth() + 1}
+                      data-testid="button-next-month"
+                    >
+                      {isHebrew ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {reportLoading ? (
+                  <div className="text-center py-8 text-slate-500">
+                    {isHebrew ? "טוען..." : "Loading..."}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                        <p className="text-sm text-green-700 mb-1">
+                          {isHebrew ? "הכנסות" : "Deposits"}
+                        </p>
+                        <p className="text-xl font-bold text-green-800" data-testid="text-monthly-deposits">
+                          {formatCurrency(monthlyReport?.totalDeposits || 0)}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <p className="text-sm text-blue-700 mb-1">
+                          {isHebrew ? "משיכות" : "Withdrawals"}
+                        </p>
+                        <p className="text-xl font-bold text-blue-800" data-testid="text-monthly-withdrawals">
+                          {formatCurrency(monthlyReport?.totalWithdrawals || 0)}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <p className="text-sm text-slate-600 mb-1">
+                          {isHebrew ? "מספר עסקאות" : "Transactions"}
+                        </p>
+                        <p className="text-xl font-bold text-slate-800" data-testid="text-monthly-count">
+                          {monthlyReport?.transactionCount || 0}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {monthlyReport?.transactions && monthlyReport.transactions.length > 0 && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="font-medium text-slate-700 mb-3">
+                            {isHebrew ? "עסקאות בחודש" : "Transactions this month"}
+                          </h4>
+                          <div className="space-y-2">
+                            {monthlyReport.transactions.map((tx) => (
+                              <div 
+                                key={tx.id}
+                                className="flex items-center justify-between p-2 bg-slate-50 rounded text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={tx.amount > 0 ? 'text-green-600' : 'text-blue-600'}>
+                                    {tx.type === 'deposit' ? '↑' : '↓'}
+                                  </span>
+                                  <span className="text-slate-700">{tx.description}</span>
+                                </div>
+                                <span className={`font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-slate-700'}`}>
+                                  {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {(!monthlyReport?.transactions || monthlyReport.transactions.length === 0) && (
+                      <div className="text-center py-4 text-slate-500">
+                        <p>{isHebrew ? "אין עסקאות בחודש זה" : "No transactions this month"}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
