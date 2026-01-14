@@ -70,6 +70,19 @@ type WalletTransaction = {
   participantName?: string;
 };
 
+type Invoice = {
+  id: string;
+  invoiceNumber: string;
+  type: string;
+  total: number;
+  currency: string;
+  status: string;
+  recipientName: string | null;
+  issuerName: string | null;
+  issuedAt: string | null;
+  createdAt: string;
+};
+
 export default function PaymentsPage() {
   const { t, i18n } = useTranslation(['dashboard', 'common']);
   const { toast } = useToast();
@@ -124,6 +137,10 @@ export default function PaymentsPage() {
     queryKey: ["/api/mentor/wallet/transactions"],
   });
 
+  const { data: invoices, isLoading: invoicesLoading } = useQuery<Invoice[]>({
+    queryKey: ["/api/mentor/invoices"],
+  });
+
   const saveBusinessProfileMutation = useMutation({
     mutationFn: async (data: typeof businessForm) => {
       const response = await fetch("/api/mentor/business-profile", {
@@ -145,6 +162,43 @@ export default function PaymentsPage() {
       toast({
         title: isHebrew ? "שגיאה" : "Error",
         description: isHebrew ? "לא הצלחנו לשמור את הפרופיל העסקי" : "Failed to save business profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const withdrawalMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/mentor/withdrawals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create withdrawal");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/mentor/wallet"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mentor/wallet/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mentor/invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mentor/withdrawals"] });
+      toast({
+        title: isHebrew ? "בקשת המשיכה נוצרה" : "Withdrawal request created",
+        description: isHebrew 
+          ? `חשבונית מספר ${data.invoice?.invoiceNumber} הופקה. העברה בנקאית תבוצע בימים הקרובים.`
+          : `Invoice ${data.invoice?.invoiceNumber} generated. Bank transfer will be processed soon.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: isHebrew ? "שגיאה" : "Error",
+        description: error.message === "Self-billing agreement required"
+          ? (isHebrew ? "נדרש אישור הסכם Self-Billing בפרופיל העסקי" : "Self-billing agreement required in business profile")
+          : error.message === "Business profile required for withdrawal"
+          ? (isHebrew ? "נדרש להשלים את הפרופיל העסקי" : "Business profile required for withdrawal")
+          : (isHebrew ? "לא הצלחנו ליצור את בקשת המשיכה" : "Failed to create withdrawal request"),
         variant: "destructive",
       });
     },
@@ -269,11 +323,14 @@ export default function PaymentsPage() {
                     </CardDescription>
                   </div>
                   <Button 
-                    disabled={!wallet?.balance || wallet.balance < 100 || !businessProfile?.businessId}
+                    disabled={!wallet?.balance || wallet.balance < 100 || !businessProfile?.businessId || withdrawalMutation.isPending}
+                    onClick={() => withdrawalMutation.mutate()}
                     data-testid="button-withdraw"
                   >
                     <ArrowDownToLine className="h-4 w-4 me-2" />
-                    {isHebrew ? "בקש משיכה" : "Request Withdrawal"}
+                    {withdrawalMutation.isPending 
+                      ? (isHebrew ? "מעבד..." : "Processing...") 
+                      : (isHebrew ? "בקש משיכה" : "Request Withdrawal")}
                   </Button>
                 </div>
               </CardHeader>
@@ -635,15 +692,70 @@ export default function PaymentsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-slate-500">
-                  <Receipt className="h-12 w-12 mx-auto mb-3 text-slate-300" />
-                  <p>{isHebrew ? "אין חשבוניות עדיין" : "No invoices yet"}</p>
-                  <p className="text-sm mt-1">
-                    {isHebrew 
-                      ? "חשבוניות יופקו אוטומטית כאשר תהיה פעילות" 
-                      : "Invoices will be generated automatically when there's activity"}
-                  </p>
-                </div>
+                {invoicesLoading ? (
+                  <div className="text-center py-8 text-slate-500">
+                    {isHebrew ? "טוען..." : "Loading..."}
+                  </div>
+                ) : !invoices?.length ? (
+                  <div className="text-center py-12 text-slate-500">
+                    <Receipt className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                    <p>{isHebrew ? "אין חשבוניות עדיין" : "No invoices yet"}</p>
+                    <p className="text-sm mt-1">
+                      {isHebrew 
+                        ? "חשבוניות יופקו אוטומטית כאשר תהיה פעילות" 
+                        : "Invoices will be generated automatically when there's activity"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {invoices.map((invoice) => (
+                      <div 
+                        key={invoice.id}
+                        className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
+                        data-testid={`invoice-${invoice.id}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2 rounded-full ${
+                            invoice.type === 'self_billing' ? 'bg-violet-100' : 'bg-green-100'
+                          }`}>
+                            <FileText className={`h-4 w-4 ${
+                              invoice.type === 'self_billing' ? 'text-violet-600' : 'text-green-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-slate-900">{invoice.invoiceNumber}</p>
+                              <Badge variant={invoice.type === 'self_billing' ? 'secondary' : 'default'}>
+                                {invoice.type === 'self_billing' 
+                                  ? (isHebrew ? 'Self-Billing' : 'Self-Billing')
+                                  : (isHebrew ? 'משתתף' : 'Participant')}
+                              </Badge>
+                              <Badge variant={
+                                invoice.status === 'paid' ? 'default' :
+                                invoice.status === 'issued' ? 'secondary' : 'outline'
+                              }>
+                                {invoice.status === 'paid' 
+                                  ? (isHebrew ? 'שולם' : 'Paid')
+                                  : invoice.status === 'issued'
+                                  ? (isHebrew ? 'הופק' : 'Issued')
+                                  : (isHebrew ? 'טיוטה' : 'Draft')}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-slate-500">
+                              {invoice.recipientName || invoice.issuerName || '-'} • {' '}
+                              {new Date(invoice.issuedAt || invoice.createdAt).toLocaleDateString(isHebrew ? 'he-IL' : 'en-US')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="font-semibold text-slate-900">
+                            {formatCurrency(invoice.total)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

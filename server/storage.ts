@@ -150,6 +150,17 @@ export interface IStorage {
   createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
   getWithdrawalRequestsByMentor(mentorId: string): Promise<WithdrawalRequest[]>;
   updateWithdrawalRequest(id: string, updates: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
+  
+  // Transactional withdrawal (atomic operation)
+  processWithdrawal(params: {
+    userId: string;
+    wallet: MentorWallet;
+    profile: MentorBusinessProfile;
+  }): Promise<{
+    withdrawal: WithdrawalRequest;
+    invoice: Invoice;
+    transaction: WalletTransaction;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -965,6 +976,159 @@ export class DatabaseStorage implements IStorage {
       .where(eq(withdrawalRequests.id, id))
       .returning();
     return updated;
+  }
+
+  async processWithdrawal(params: {
+    userId: string;
+    wallet: MentorWallet;
+    profile: MentorBusinessProfile;
+  }): Promise<{
+    withdrawal: WithdrawalRequest;
+    invoice: Invoice;
+    transaction: WalletTransaction;
+  }> {
+    const { userId, wallet, profile } = params;
+    
+    // Retry logic for handling unique constraint violations on invoice numbers
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await this.executeWithdrawalTransaction(userId, wallet, profile);
+      } catch (error: any) {
+        // Check if it's a unique constraint violation (PostgreSQL error code 23505)
+        // Drizzle may expose this via different paths depending on driver
+        const isUniqueViolation = error.code === '23505' || 
+          error.originalError?.code === '23505' ||
+          (error.message && error.message.includes('duplicate key') && error.message.includes('invoice_number'));
+        
+        if (isUniqueViolation) {
+          lastError = error;
+          // Wait briefly before retrying to allow other transaction to complete
+          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+          continue;
+        }
+        throw error;
+      }
+    }
+    
+    throw lastError || new Error("Failed to create withdrawal after retries");
+  }
+  
+  private async executeWithdrawalTransaction(
+    userId: string,
+    wallet: MentorWallet,
+    profile: MentorBusinessProfile
+  ): Promise<{
+    withdrawal: WithdrawalRequest;
+    invoice: Invoice;
+    transaction: WalletTransaction;
+  }> {
+    return await db.transaction(async (tx) => {
+      // Re-fetch wallet with lock to get current balance
+      const [currentWallet] = await tx
+        .select()
+        .from(mentorWallets)
+        .where(eq(mentorWallets.id, wallet.id))
+        .for('update'); // Row-level lock
+      
+      const currentBalance = currentWallet?.balance ?? 0;
+      
+      if (currentBalance <= 0) {
+        throw new Error("Insufficient balance");
+      }
+      
+      const amountToWithdraw = currentBalance;
+      
+      // Get next invoice number with lock to prevent duplicate numbers
+      const year = new Date().getFullYear();
+      const [lastInvoice] = await tx
+        .select({ invoiceNumber: invoices.invoiceNumber })
+        .from(invoices)
+        .where(sql`${invoices.invoiceNumber} LIKE ${`F83-${year}-%`}`)
+        .orderBy(desc(invoices.invoiceNumber))
+        .limit(1)
+        .for('update'); // Lock invoice rows to prevent duplicate numbering
+      
+      const invoiceNumber = lastInvoice
+        ? `F83-${year}-${String(parseInt(lastInvoice.invoiceNumber.split('-')[2], 10) + 1).padStart(4, '0')}`
+        : `F83-${year}-0001`;
+      
+      // Create self-billing invoice
+      const [selfBillingInvoice] = await tx.insert(invoices).values({
+        invoiceNumber,
+        type: "self_billing",
+        issuerId: null,
+        recipientId: userId,
+        mentorId: userId,
+        subtotal: amountToWithdraw,
+        vatAmount: 0,
+        total: amountToWithdraw,
+        currency: "ILS",
+        recipientName: profile.businessName || profile.bankAccountName,
+        recipientEmail: null,
+        recipientAddress: profile.businessAddress ? `${profile.businessAddress}, ${profile.businessCity || ''}` : null,
+        recipientBusinessId: profile.businessId,
+        issuerName: "Flow 83 Ltd",
+        issuerBusinessId: "516840145",
+        issuerAddress: "Israel",
+        lineItems: [{
+          description: "הכנסות מ-Flows - Self-Billing Invoice",
+          quantity: 1,
+          unitPrice: amountToWithdraw,
+          total: amountToWithdraw,
+        }],
+        notes: `Self-Billing Invoice for period earnings`,
+        status: "issued",
+        issuedAt: new Date(),
+      }).returning();
+      
+      // Create withdrawal request
+      const [withdrawal] = await tx.insert(withdrawalRequests).values({
+        mentorId: userId,
+        walletId: wallet.id,
+        amount: amountToWithdraw,
+        currency: "ILS",
+        bankName: profile.bankName,
+        bankBranch: profile.bankBranch,
+        bankAccountNumber: profile.bankAccountNumber,
+        bankAccountName: profile.bankAccountName,
+        selfBillingInvoiceId: selfBillingInvoice.id,
+        status: "pending",
+        periodStart: null,
+        periodEnd: null,
+      }).returning();
+      
+      // Update wallet balance (atomic)
+      const newBalance = currentBalance - amountToWithdraw;
+      await tx
+        .update(mentorWallets)
+        .set({
+          balance: newBalance,
+          totalWithdrawn: sql`${mentorWallets.totalWithdrawn} + ${amountToWithdraw}`,
+          lastTransactionAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(mentorWallets.id, wallet.id));
+      
+      // Create wallet transaction
+      const [walletTransaction] = await tx.insert(walletTransactions).values({
+        walletId: wallet.id,
+        mentorId: userId,
+        type: "withdrawal",
+        amount: -amountToWithdraw,
+        balanceAfter: newBalance,
+        description: `משיכה - ${invoiceNumber}`,
+        withdrawalRequestId: withdrawal.id,
+      }).returning();
+      
+      return {
+        withdrawal,
+        invoice: selfBillingInvoice,
+        transaction: walletTransaction,
+      };
+    });
   }
 }
 

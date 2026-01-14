@@ -422,6 +422,68 @@ export async function registerRoutes(
     }
   });
 
+  // Withdrawal request endpoints
+  app.get("/api/mentor/withdrawals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const withdrawals = await storage.getWithdrawalRequestsByMentor(userId);
+      res.json(withdrawals);
+    } catch (error) {
+      console.error("Error fetching withdrawals:", error);
+      res.status(500).json({ error: "Failed to fetch withdrawals" });
+    }
+  });
+
+  app.post("/api/mentor/withdrawals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      
+      // Get wallet and verify balance
+      const wallet = await storage.getMentorWallet(userId);
+      const walletBalance = wallet?.balance ?? 0;
+      if (!wallet || walletBalance <= 0) {
+        return res.status(400).json({ error: "Insufficient balance" });
+      }
+
+      // Get business profile for bank details
+      const profile = await storage.getMentorBusinessProfile(userId);
+      if (!profile) {
+        return res.status(400).json({ error: "Business profile required for withdrawal" });
+      }
+
+      if (!profile.selfBillingAgreedAt) {
+        return res.status(400).json({ error: "Self-billing agreement required" });
+      }
+
+      if (!profile.bankAccountNumber || !profile.bankName) {
+        return res.status(400).json({ error: "Bank details required for withdrawal" });
+      }
+
+      // Process withdrawal atomically in a transaction
+      const result = await storage.processWithdrawal({
+        userId,
+        wallet,
+        profile,
+      });
+
+      res.json({ 
+        withdrawal: result.withdrawal, 
+        invoice: result.invoice,
+        message: "Withdrawal request created successfully" 
+      });
+    } catch (error: any) {
+      console.error("Error creating withdrawal:", error);
+      if (error.message === "Insufficient balance") {
+        return res.status(409).json({ error: "Insufficient balance - concurrent withdrawal detected" });
+      }
+      // Handle unique constraint violations after retry exhaustion
+      if (error.code === '23505' || error.message?.includes('duplicate key')) {
+        return res.status(409).json({ error: "Concurrent withdrawal - please try again" });
+      }
+      res.status(500).json({ error: "Failed to create withdrawal request" });
+    }
+  });
+
   // Mentor feedback endpoint - get all feedback with journey/participant details
   app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
     try {
