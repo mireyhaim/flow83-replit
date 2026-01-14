@@ -55,6 +55,7 @@ import StartFlowPage from "@/pages/start-flow";
 import AdminPage from "@/pages/admin";
 import PaymentsPage from "@/pages/payments";
 import SelfBillingTermsPage from "@/pages/self-billing-terms";
+import ParticipantsPage from "@/pages/participants";
 
 function Router() {
   return (
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/profile" component={ProfilePage} />
       <Route path="/payments" component={PaymentsPage} />
       <Route path="/payments/self-billing-terms" component={SelfBillingTermsPage} />
+      <Route path="/participants" component={ParticipantsPage} />
       <Route path="/feedback" component={FeedbackPage} />
       <Route path="/settings/notifications" component={NotificationSettingsPage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />
