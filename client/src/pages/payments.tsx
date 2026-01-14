@@ -757,12 +757,12 @@ export default function PaymentsPage() {
                       </h4>
                       <p className="text-sm text-violet-700 mt-1">
                         {isHebrew 
-                          ? "בסימון התיבה אני מאשר/ת ל-Flow 83 להפיק עבורי חשבוניות ומסמכים חשבונאיים בשמי, בהתאם להסכם Self-Billing, ולנהל את הגבייה והארנק הווירטואלי עבורי."
-                          : "By checking the box, I authorize Flow 83 to issue invoices and accounting documents on my behalf, in accordance with the Self-Billing agreement, and to manage collection and virtual wallet on my behalf."}
+                          ? "בסימון התיבות להלן, אני מאשר/ת ל-Flow 83 להפיק בשמי חשבוניות ומסמכים חשבונאיים, בהתאם להסכם ה-Self-Billing, וכן לנהל עבורי את הגבייה והארנק הווירטואלי."
+                          : "By checking the boxes below, I authorize Flow 83 to issue invoices and accounting documents on my behalf, in accordance with the Self-Billing agreement, and to manage collection and virtual wallet on my behalf."}
                       </p>
                       <p className="text-sm text-violet-700 mt-1">
                         {isHebrew 
-                          ? "אני מבין/ה שהאחריות לדיווח ולתשלום מיסים חלה עליי בלבד."
+                          ? "ידוע לי כי האחריות לדיווח ותשלום המיסים חלה עליי בלבד."
                           : "I understand that the responsibility for tax reporting and payment lies solely with me."}
                       </p>
                       
