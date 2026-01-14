@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, Eye, EyeOff, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, Eye, EyeOff, CreditCard, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent, Participant } from "@shared/schema";
@@ -25,6 +25,8 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const [, navigate] = useLocation();
   const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Check if user is super_admin and redirect to admin dashboard
   const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
@@ -541,7 +543,7 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {participants.slice(0, 10).map((p) => {
+                    {participants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p) => {
                       const status = getParticipantStatus(p);
                       return (
                         <tr 
@@ -616,9 +618,48 @@ export default function Dashboard() {
                     })}
                   </tbody>
                 </table>
-                {participants.length > 10 && (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-slate-400">{t('participantsTable.showingOf', { shown: 10, total: participants.length })}</p>
+                {participants.length > ITEMS_PER_PAGE && (
+                  <div className="flex items-center justify-between py-4 px-2 border-t border-slate-100">
+                    <p className="text-sm text-slate-400">
+                      {t('participantsTable.showingOf', { 
+                        shown: Math.min(currentPage * ITEMS_PER_PAGE, participants.length), 
+                        total: participants.length 
+                      })}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0"
+                        data-testid="button-prev-page"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      {Array.from({ length: Math.ceil(participants.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className={`h-8 w-8 p-0 ${currentPage === page ? 'bg-violet-600 hover:bg-violet-700' : ''}`}
+                          data-testid={`button-page-${page}`}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(participants.length / ITEMS_PER_PAGE), p + 1))}
+                        disabled={currentPage === Math.ceil(participants.length / ITEMS_PER_PAGE)}
+                        className="h-8 w-8 p-0"
+                        data-testid="button-next-page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
