@@ -748,10 +748,10 @@ export default function PaymentsPage() {
 
                 <Separator />
 
-                <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
+                <div className="bg-violet-50 border border-violet-200 rounded-lg p-4" dir={isHebrew ? "rtl" : "ltr"}>
+                  <div className={`flex items-start gap-3 ${isHebrew ? "flex-row-reverse" : ""}`}>
                     <FileText className="h-5 w-5 text-violet-600 mt-0.5" />
-                    <div className="flex-1">
+                    <div className={`flex-1 ${isHebrew ? "text-right" : "text-left"}`}>
                       <h4 className="font-medium text-violet-900">
                         {isHebrew ? "אישור הפקת חשבוניות (Self-Billing)" : "Invoice Generation Authorization (Self-Billing)"}
                       </h4>
@@ -784,7 +784,7 @@ export default function PaymentsPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <div className="flex items-start gap-2">
+                        <div className={`flex items-start gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
                           <Checkbox
                             id="selfBillingAgreed"
                             checked={businessForm.selfBillingAgreed}
@@ -803,7 +803,7 @@ export default function PaymentsPage() {
                           </Label>
                         </div>
                         
-                        <div className="flex items-start gap-2">
+                        <div className={`flex items-start gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
                           <Checkbox
                             id="understandsLegalBinding"
                             checked={businessForm.understandsLegalBinding}
@@ -822,7 +822,7 @@ export default function PaymentsPage() {
                           </Label>
                         </div>
                         
-                        <div className="flex items-start gap-2">
+                        <div className={`flex items-start gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
                           <Checkbox
                             id="authorizesCollection"
                             checked={businessForm.authorizesCollection}
