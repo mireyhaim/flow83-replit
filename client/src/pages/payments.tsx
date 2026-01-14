@@ -753,12 +753,17 @@ export default function PaymentsPage() {
                     <FileText className="h-5 w-5 text-violet-600 mt-0.5" />
                     <div className="flex-1">
                       <h4 className="font-medium text-violet-900">
-                        {isHebrew ? "הסכם Self-Billing (חשבונית עצמית)" : "Self-Billing Agreement"}
+                        {isHebrew ? "אישור הפקת חשבוניות (Self-Billing)" : "Invoice Generation Authorization (Self-Billing)"}
                       </h4>
                       <p className="text-sm text-violet-700 mt-1">
                         {isHebrew 
-                          ? "על ידי סימון התיבה למטה, את/ה מאשר/ת ל-Flow 83 להפיק חשבוניות בשמך עבור תשלומים מהמשתתפים שלך, וכן להפיק חשבונית בשמך כלפי Flow 83 בזמן משיכת כספים (Self-Billing Invoice)."
-                          : "By checking the box below, you authorize Flow 83 to issue invoices on your behalf for payments from your participants, and to issue a Self-Billing Invoice on your behalf when you withdraw funds."}
+                          ? "בסימון התיבה אני מאשר/ת ל-Flow 83 להפיק עבורי חשבוניות ומסמכים חשבונאיים בשמי, בהתאם להסכם Self-Billing, ולנהל את הגבייה והארנק הווירטואלי עבורי."
+                          : "By checking the box, I authorize Flow 83 to issue invoices and accounting documents on my behalf, in accordance with the Self-Billing agreement, and to manage collection and virtual wallet on my behalf."}
+                      </p>
+                      <p className="text-sm text-violet-700 mt-1">
+                        {isHebrew 
+                          ? "אני מבין/ה שהאחריות לדיווח ולתשלום מיסים חלה עליי בלבד."
+                          : "I understand that the responsibility for tax reporting and payment lies solely with me."}
                       </p>
                       
                       <div className="mt-3 mb-3">
@@ -771,7 +776,7 @@ export default function PaymentsPage() {
                           data-testid="link-read-terms"
                         >
                           <ExternalLink className="h-4 w-4" />
-                          {isHebrew ? "לקריאת ההסכם המלא (חובה)" : "Read the full agreement (required)"}
+                          {isHebrew ? "לקריאת ההסכם המלא" : "Read the full agreement"}
                         </a>
                         {(hasReadTerms || businessProfile?.selfBillingAgreedAt) && (
                           <span className="text-green-600 text-sm mr-2 ml-2">✓</span>
