@@ -169,7 +169,7 @@ export default function SelfBillingTermsPage() {
                       <ul className="list-disc pr-6 mt-2 space-y-1 text-slate-700">
                         <li>סכום מינימלי למשיכה: ₪100</li>
                         <li>המנטור מילא פרטי עסק תקינים ואושר הסכם ה-Self-Billing</li>
-                        <li>העברה בנקאית תבוצע בתוך 5-7 ימי עסקים</li>
+                        <li>העברה בנקאית תבוצע בתחילת החודש העוקב למועד בקשת המשיכה</li>
                       </ul>
                     </div>
                     <div>
@@ -348,7 +348,7 @@ export default function SelfBillingTermsPage() {
                       <ul className="list-disc pl-6 mt-2 space-y-1 text-slate-700">
                         <li>Minimum withdrawal amount: ₪100</li>
                         <li>The Mentor has completed valid business details and approved the Self-Billing agreement</li>
-                        <li>Bank transfer will be processed within 5-7 business days</li>
+                        <li>Bank transfer will be processed at the beginning of the month following the withdrawal request</li>
                       </ul>
                     </div>
                     <div>
