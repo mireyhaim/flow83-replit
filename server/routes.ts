@@ -336,6 +336,92 @@ export async function registerRoutes(
     }
   });
 
+  // Mentor business profile endpoints
+  app.get("/api/mentor/business-profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const profile = await storage.getMentorBusinessProfile(userId);
+      res.json(profile || null);
+    } catch (error) {
+      console.error("Error fetching business profile:", error);
+      res.status(500).json({ error: "Failed to fetch business profile" });
+    }
+  });
+
+  app.post("/api/mentor/business-profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { 
+        businessName, businessType, businessId, vatRegistered,
+        businessAddress, businessCity, businessPostalCode,
+        bankName, bankBranch, bankAccountNumber, bankAccountName,
+        selfBillingAgreed
+      } = req.body;
+
+      const profile = await storage.upsertMentorBusinessProfile({
+        userId,
+        businessName,
+        businessType,
+        businessId,
+        vatRegistered: !!vatRegistered,
+        businessAddress,
+        businessCity,
+        businessPostalCode,
+        bankName,
+        bankBranch,
+        bankAccountNumber,
+        bankAccountName,
+        selfBillingAgreedAt: selfBillingAgreed ? new Date() : null,
+        selfBillingAgreementVersion: selfBillingAgreed ? "1.0" : null,
+        verificationStatus: "pending",
+      });
+
+      res.json(profile);
+    } catch (error) {
+      console.error("Error saving business profile:", error);
+      res.status(500).json({ error: "Failed to save business profile" });
+    }
+  });
+
+  // Mentor wallet endpoints
+  app.get("/api/mentor/wallet", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const wallet = await storage.getOrCreateMentorWallet(userId);
+      res.json(wallet);
+    } catch (error) {
+      console.error("Error fetching wallet:", error);
+      res.status(500).json({ error: "Failed to fetch wallet" });
+    }
+  });
+
+  app.get("/api/mentor/wallet/transactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const wallet = await storage.getMentorWallet(userId);
+      if (!wallet) {
+        return res.json([]);
+      }
+      const transactions = await storage.getWalletTransactions(wallet.id);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+  });
+
+  // Mentor invoices endpoints
+  app.get("/api/mentor/invoices", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const invoiceList = await storage.getInvoicesByMentor(userId);
+      res.json(invoiceList);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({ error: "Failed to fetch invoices" });
+    }
+  });
+
   // Mentor feedback endpoint - get all feedback with journey/participant details
   app.get("/api/feedback", isAuthenticated, async (req: any, res) => {
     try {

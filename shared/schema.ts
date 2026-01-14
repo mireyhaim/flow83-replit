@@ -315,6 +315,183 @@ export const insertExternalPaymentSessionSchema = createInsertSchema(externalPay
 export type InsertExternalPaymentSession = z.infer<typeof insertExternalPaymentSessionSchema>;
 export type ExternalPaymentSession = typeof externalPaymentSessions.$inferSelect;
 
+// Mentor business profiles for Self-Billing invoices
+export const mentorBusinessProfiles = pgTable("mentor_business_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  // Business identification
+  businessName: varchar("business_name"), // שם העסק
+  businessType: varchar("business_type"), // 'osek_murshe' | 'osek_patur' | 'company' | 'amuta'
+  businessId: varchar("business_id"), // ח"פ / עוסק מורשה number (9 digits)
+  vatRegistered: boolean("vat_registered").default(false), // האם רשום למע"מ
+  // Address for invoices
+  businessAddress: text("business_address"),
+  businessCity: varchar("business_city"),
+  businessPostalCode: varchar("business_postal_code"),
+  businessCountry: varchar("business_country").default("IL"),
+  // Bank details for withdrawals
+  bankName: varchar("bank_name"),
+  bankBranch: varchar("bank_branch"), // סניף
+  bankAccountNumber: varchar("bank_account_number"),
+  bankAccountName: varchar("bank_account_name"), // שם בעל החשבון
+  // Self-billing authorization
+  selfBillingAgreedAt: timestamp("self_billing_agreed_at"), // When they agreed to self-billing terms
+  selfBillingAgreementVersion: varchar("self_billing_agreement_version"), // Version of agreement signed
+  // Status
+  verificationStatus: varchar("verification_status").default("pending"), // 'pending' | 'verified' | 'rejected'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMentorBusinessProfileSchema = createInsertSchema(mentorBusinessProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMentorBusinessProfile = z.infer<typeof insertMentorBusinessProfileSchema>;
+export type MentorBusinessProfile = typeof mentorBusinessProfiles.$inferSelect;
+
+// Virtual wallet for mentor earnings
+export const mentorWallets = pgTable("mentor_wallets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  balance: integer("balance").default(0), // Current balance in agorot (cents)
+  currency: varchar("currency").default("ILS"),
+  totalEarned: integer("total_earned").default(0), // Total lifetime earnings
+  totalWithdrawn: integer("total_withdrawn").default(0), // Total withdrawn
+  lastTransactionAt: timestamp("last_transaction_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMentorWalletSchema = createInsertSchema(mentorWallets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMentorWallet = z.infer<typeof insertMentorWalletSchema>;
+export type MentorWallet = typeof mentorWallets.$inferSelect;
+
+// Wallet transactions (deposits from payments, withdrawals)
+export const walletTransactions = pgTable("wallet_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletId: varchar("wallet_id").references(() => mentorWallets.id, { onDelete: "cascade" }).notNull(),
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  type: varchar("type").notNull(), // 'deposit' | 'withdrawal' | 'refund' | 'fee'
+  amount: integer("amount").notNull(), // Amount in agorot (positive for deposits, negative for withdrawals)
+  balanceAfter: integer("balance_after").notNull(), // Balance after this transaction
+  description: text("description"),
+  // References
+  paymentId: varchar("payment_id").references(() => payments.id, { onDelete: "set null" }),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "set null" }),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "set null" }),
+  withdrawalRequestId: varchar("withdrawal_request_id"), // Reference to withdrawal if applicable
+  // Metadata
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWalletTransactionSchema = createInsertSchema(walletTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWalletTransaction = z.infer<typeof insertWalletTransactionSchema>;
+export type WalletTransaction = typeof walletTransactions.$inferSelect;
+
+// Invoices (for participants and self-billing)
+export const invoices = pgTable("invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceNumber: varchar("invoice_number").unique().notNull(), // Sequential invoice number
+  type: varchar("type").notNull(), // 'participant' | 'self_billing' | 'platform_fee'
+  // Who is issuing / receiving
+  issuerId: varchar("issuer_id").references(() => users.id, { onDelete: "set null" }), // Who is issuing (mentor for participant, platform for self-billing)
+  recipientId: varchar("recipient_id").references(() => users.id, { onDelete: "set null" }), // Who receives (participant email or mentor)
+  // For participant invoices - issued in mentor's name
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }),
+  // Amounts
+  subtotal: integer("subtotal").notNull(), // Before VAT
+  vatAmount: integer("vat_amount").default(0), // VAT if applicable
+  total: integer("total").notNull(), // Final amount
+  currency: varchar("currency").default("ILS"),
+  // Recipient details (for PDF)
+  recipientName: varchar("recipient_name"),
+  recipientEmail: varchar("recipient_email"),
+  recipientAddress: text("recipient_address"),
+  recipientBusinessId: varchar("recipient_business_id"), // ח"פ if business
+  // Issuer details (for PDF - snapshot at time of invoice)
+  issuerName: varchar("issuer_name"),
+  issuerBusinessId: varchar("issuer_business_id"),
+  issuerAddress: text("issuer_address"),
+  // References
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "set null" }),
+  paymentId: varchar("payment_id").references(() => payments.id, { onDelete: "set null" }),
+  withdrawalRequestId: varchar("withdrawal_request_id"),
+  // Invoice content
+  lineItems: jsonb("line_items").$type<Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>>(),
+  notes: text("notes"),
+  // PDF storage
+  pdfUrl: text("pdf_url"),
+  // Status
+  status: varchar("status").default("draft"), // 'draft' | 'issued' | 'paid' | 'cancelled'
+  issuedAt: timestamp("issued_at"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+
+// Withdrawal requests from mentors
+export const withdrawalRequests = pgTable("withdrawal_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  walletId: varchar("wallet_id").references(() => mentorWallets.id, { onDelete: "cascade" }).notNull(),
+  amount: integer("amount").notNull(), // Amount to withdraw in agorot
+  currency: varchar("currency").default("ILS"),
+  // Bank details snapshot at time of request
+  bankName: varchar("bank_name"),
+  bankBranch: varchar("bank_branch"),
+  bankAccountNumber: varchar("bank_account_number"),
+  bankAccountName: varchar("bank_account_name"),
+  // Self-billing invoice reference
+  selfBillingInvoiceId: varchar("self_billing_invoice_id").references(() => invoices.id, { onDelete: "set null" }),
+  // Status tracking
+  status: varchar("status").default("pending"), // 'pending' | 'approved' | 'processing' | 'completed' | 'rejected'
+  rejectionReason: text("rejection_reason"),
+  // Dates
+  requestedAt: timestamp("requested_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  processedAt: timestamp("processed_at"),
+  completedAt: timestamp("completed_at"),
+  // Period covered (for monthly summaries)
+  periodStart: timestamp("period_start"),
+  periodEnd: timestamp("period_end"),
+  // Transaction details
+  transactionReference: varchar("transaction_reference"), // Bank transfer reference
+  metadata: jsonb("metadata"),
+});
+
+export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).omit({
+  id: true,
+  requestedAt: true,
+});
+
+export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSchema>;
+export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+
 // System errors for admin monitoring
 export const systemErrors = pgTable("system_errors", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

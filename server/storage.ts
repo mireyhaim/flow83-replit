@@ -12,7 +12,12 @@ import {
   type JourneyFeedback, type InsertJourneyFeedback,
   type ExternalPaymentSession, type InsertExternalPaymentSession,
   type SystemError, type InsertSystemError,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors
+  type MentorBusinessProfile, type InsertMentorBusinessProfile,
+  type MentorWallet, type InsertMentorWallet,
+  type WalletTransaction, type InsertWalletTransaction,
+  type Invoice, type InsertInvoice,
+  type WithdrawalRequest, type InsertWithdrawalRequest,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors, mentorBusinessProfiles, mentorWallets, walletTransactions, invoices, withdrawalRequests
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or, sum, gte, count, sql } from "drizzle-orm";
@@ -122,6 +127,29 @@ export interface IStorage {
   }>;
   createSystemError(error: InsertSystemError): Promise<SystemError>;
   getSystemErrors(limit?: number): Promise<SystemError[]>;
+
+  // Mentor business profile (for Self-Billing)
+  getMentorBusinessProfile(userId: string): Promise<MentorBusinessProfile | undefined>;
+  upsertMentorBusinessProfile(profile: InsertMentorBusinessProfile): Promise<MentorBusinessProfile>;
+
+  // Mentor wallet
+  getMentorWallet(userId: string): Promise<MentorWallet | undefined>;
+  getOrCreateMentorWallet(userId: string): Promise<MentorWallet>;
+  updateMentorWalletBalance(walletId: string, amount: number): Promise<MentorWallet>;
+  
+  // Wallet transactions
+  createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction>;
+  getWalletTransactions(walletId: string, limit?: number): Promise<WalletTransaction[]>;
+  
+  // Invoices
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  getInvoicesByMentor(mentorId: string): Promise<Invoice[]>;
+  getNextInvoiceNumber(): Promise<string>;
+  
+  // Withdrawal requests
+  createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
+  getWithdrawalRequestsByMentor(mentorId: string): Promise<WithdrawalRequest[]>;
+  updateWithdrawalRequest(id: string, updates: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -821,6 +849,122 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(systemErrors)
       .orderBy(desc(systemErrors.createdAt))
       .limit(limit);
+  }
+
+  // Mentor business profile
+  async getMentorBusinessProfile(userId: string): Promise<MentorBusinessProfile | undefined> {
+    const [profile] = await db.select().from(mentorBusinessProfiles).where(eq(mentorBusinessProfiles.userId, userId));
+    return profile;
+  }
+
+  async upsertMentorBusinessProfile(profile: InsertMentorBusinessProfile): Promise<MentorBusinessProfile> {
+    const [result] = await db
+      .insert(mentorBusinessProfiles)
+      .values(profile)
+      .onConflictDoUpdate({
+        target: mentorBusinessProfiles.userId,
+        set: {
+          ...profile,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  // Mentor wallet
+  async getMentorWallet(userId: string): Promise<MentorWallet | undefined> {
+    const [wallet] = await db.select().from(mentorWallets).where(eq(mentorWallets.userId, userId));
+    return wallet;
+  }
+
+  async getOrCreateMentorWallet(userId: string): Promise<MentorWallet> {
+    const existing = await this.getMentorWallet(userId);
+    if (existing) return existing;
+    
+    const [wallet] = await db.insert(mentorWallets).values({ userId }).returning();
+    return wallet;
+  }
+
+  async updateMentorWalletBalance(walletId: string, amount: number): Promise<MentorWallet> {
+    const [wallet] = await db
+      .update(mentorWallets)
+      .set({
+        balance: sql`${mentorWallets.balance} + ${amount}`,
+        totalEarned: amount > 0 ? sql`${mentorWallets.totalEarned} + ${amount}` : mentorWallets.totalEarned,
+        totalWithdrawn: amount < 0 ? sql`${mentorWallets.totalWithdrawn} + ${Math.abs(amount)}` : mentorWallets.totalWithdrawn,
+        lastTransactionAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(mentorWallets.id, walletId))
+      .returning();
+    return wallet;
+  }
+
+  // Wallet transactions
+  async createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction> {
+    const [created] = await db.insert(walletTransactions).values(transaction).returning();
+    return created;
+  }
+
+  async getWalletTransactions(walletId: string, limit = 50): Promise<WalletTransaction[]> {
+    return db.select()
+      .from(walletTransactions)
+      .where(eq(walletTransactions.walletId, walletId))
+      .orderBy(desc(walletTransactions.createdAt))
+      .limit(limit);
+  }
+
+  // Invoices
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    const [created] = await db.insert(invoices).values(invoice).returning();
+    return created;
+  }
+
+  async getInvoicesByMentor(mentorId: string): Promise<Invoice[]> {
+    return db.select()
+      .from(invoices)
+      .where(eq(invoices.mentorId, mentorId))
+      .orderBy(desc(invoices.createdAt));
+  }
+
+  async getNextInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const [lastInvoice] = await db
+      .select({ invoiceNumber: invoices.invoiceNumber })
+      .from(invoices)
+      .where(sql`${invoices.invoiceNumber} LIKE ${`F83-${year}-%`}`)
+      .orderBy(desc(invoices.invoiceNumber))
+      .limit(1);
+    
+    if (!lastInvoice) {
+      return `F83-${year}-0001`;
+    }
+    
+    const lastNum = parseInt(lastInvoice.invoiceNumber.split('-')[2], 10);
+    return `F83-${year}-${String(lastNum + 1).padStart(4, '0')}`;
+  }
+
+  // Withdrawal requests
+  async createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+    const [created] = await db.insert(withdrawalRequests).values(request).returning();
+    return created;
+  }
+
+  async getWithdrawalRequestsByMentor(mentorId: string): Promise<WithdrawalRequest[]> {
+    return db.select()
+      .from(withdrawalRequests)
+      .where(eq(withdrawalRequests.mentorId, mentorId))
+      .orderBy(desc(withdrawalRequests.requestedAt));
+  }
+
+  async updateWithdrawalRequest(id: string, updates: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined> {
+    const [updated] = await db
+      .update(withdrawalRequests)
+      .set(updates)
+      .where(eq(withdrawalRequests.id, id))
+      .returning();
+    return updated;
   }
 }
 

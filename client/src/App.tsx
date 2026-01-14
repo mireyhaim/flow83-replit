@@ -53,6 +53,7 @@ import FeedbackPage from "@/pages/feedback";
 import FlowDemoPage from "@/pages/flow-demo";
 import StartFlowPage from "@/pages/start-flow";
 import AdminPage from "@/pages/admin";
+import PaymentsPage from "@/pages/payments";
 
 function Router() {
   return (
@@ -62,6 +63,7 @@ function Router() {
       <Route path="/method" component={MethodPage} />
       <Route path="/journeys" component={JourneysPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/payments" component={PaymentsPage} />
       <Route path="/feedback" component={FeedbackPage} />
       <Route path="/settings/notifications" component={NotificationSettingsPage} />
       <Route path="/journeys/new" component={JourneyCreatePage} />

@@ -1,6 +1,7 @@
 {
   "title": "Dashboard",
   "myFlows": "My Flows",
+  "payments": "Payments",
   "createFlow": "Create New Flow",
   "noFlows": "No flows yet",
   "noFlowsDescription": "Create your first transformational journey",

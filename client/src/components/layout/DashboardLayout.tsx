@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle, Crown, AlertCircle, BookOpen } from "lucide-react";
+import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle, Crown, AlertCircle, BookOpen, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
@@ -54,6 +54,7 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
   const navItems = [
     { icon: LayoutGrid, label: t('dashboard:title'), href: "/dashboard" },
     { icon: BookOpen, label: t('dashboard:myFlows'), href: "/journeys" },
+    { icon: Wallet, label: t('dashboard:payments'), href: "/payments" },
     { icon: MessageCircle, label: t('participant:feedback'), href: "/feedback" },
     { icon: User, label: t('common:profile'), href: "/profile" },
   ];
