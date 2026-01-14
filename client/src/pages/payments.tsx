@@ -23,7 +23,8 @@ import {
   TrendingUp,
   Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ExternalLink
 } from "lucide-react";
 import {
   Select,
@@ -105,6 +106,7 @@ export default function PaymentsPage() {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1 };
   });
+  const [hasReadTerms, setHasReadTerms] = useState(false);
 
   const [businessForm, setBusinessForm] = useState({
     businessName: "",
@@ -754,19 +756,46 @@ export default function PaymentsPage() {
                           ? "על ידי סימון התיבה למטה, את/ה מאשר/ת ל-Flow 83 להפיק חשבוניות בשמך עבור תשלומים מהמשתתפים שלך, וכן להפיק חשבונית בשמך כלפי Flow 83 בזמן משיכת כספים (Self-Billing Invoice)."
                           : "By checking the box below, you authorize Flow 83 to issue invoices on your behalf for payments from your participants, and to issue a Self-Billing Invoice on your behalf when you withdraw funds."}
                       </p>
-                      <div className="flex items-center gap-2 mt-3">
+                      
+                      <div className="mt-3 mb-3">
+                        <a
+                          href="/payments/self-billing-terms"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setHasReadTerms(true)}
+                          className="inline-flex items-center gap-2 text-violet-700 hover:text-violet-900 font-medium text-sm underline"
+                          data-testid="link-read-terms"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          {isHebrew ? "לקריאת ההסכם המלא (חובה)" : "Read the full agreement (required)"}
+                        </a>
+                        {(hasReadTerms || businessProfile?.selfBillingAgreedAt) && (
+                          <span className="text-green-600 text-sm mr-2 ml-2">✓</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="selfBillingAgreed"
                           checked={businessForm.selfBillingAgreed}
+                          disabled={!hasReadTerms && !businessProfile?.selfBillingAgreedAt}
                           onCheckedChange={(checked) => setBusinessForm({ ...businessForm, selfBillingAgreed: !!checked })}
                           data-testid="checkbox-self-billing"
                         />
-                        <Label htmlFor="selfBillingAgreed" className="cursor-pointer text-sm text-violet-800">
+                        <Label 
+                          htmlFor="selfBillingAgreed" 
+                          className={`text-sm ${(!hasReadTerms && !businessProfile?.selfBillingAgreedAt) ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer text-violet-800'}`}
+                        >
                           {isHebrew 
-                            ? "אני מאשר/ת את הסכם ה-Self-Billing ומייפה את כוחה של Flow 83 להפיק חשבוניות בשמי"
-                            : "I agree to the Self-Billing agreement and authorize Flow 83 to issue invoices on my behalf"}
+                            ? "קראתי את ההסכם ואני מאשר/ת את הסכם ה-Self-Billing ומייפה את כוחה של Flow 83 להפיק חשבוניות בשמי"
+                            : "I have read and agree to the Self-Billing agreement and authorize Flow 83 to issue invoices on my behalf"}
                         </Label>
                       </div>
+                      {!hasReadTerms && !businessProfile?.selfBillingAgreedAt && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          {isHebrew ? "⚠️ יש לקרוא את ההסכם המלא לפני האישור" : "⚠️ Please read the full agreement before confirming"}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
