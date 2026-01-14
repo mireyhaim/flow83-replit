@@ -121,6 +121,8 @@ export default function PaymentsPage() {
     bankAccountNumber: "",
     bankAccountName: "",
     selfBillingAgreed: false,
+    understandsLegalBinding: false,
+    authorizesCollection: false,
   });
 
   const { data: businessProfile, isLoading: profileLoading } = useQuery<MentorBusinessProfile>({
@@ -142,6 +144,8 @@ export default function PaymentsPage() {
         bankAccountNumber: businessProfile.bankAccountNumber || "",
         bankAccountName: businessProfile.bankAccountName || "",
         selfBillingAgreed: !!businessProfile.selfBillingAgreedAt,
+        understandsLegalBinding: !!businessProfile.selfBillingAgreedAt,
+        authorizesCollection: !!businessProfile.selfBillingAgreedAt,
       });
     }
   }, [businessProfile]);
@@ -262,10 +266,10 @@ export default function PaymentsPage() {
   };
 
   const handleSaveBusinessProfile = async () => {
-    if (!businessForm.selfBillingAgreed) {
+    if (!businessForm.selfBillingAgreed || !businessForm.understandsLegalBinding || !businessForm.authorizesCollection) {
       toast({
         title: isHebrew ? "נדרש אישור" : "Approval required",
-        description: isHebrew ? "יש לאשר את הסכם ה-Self-Billing" : "You must agree to the Self-Billing agreement",
+        description: isHebrew ? "יש לסמן את כל התיבות לאישור הסכם ה-Self-Billing" : "You must check all boxes to agree to the Self-Billing agreement",
         variant: "destructive",
       });
       return;
@@ -774,25 +778,67 @@ export default function PaymentsPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="selfBillingAgreed"
-                          checked={businessForm.selfBillingAgreed}
-                          disabled={!hasReadTerms && !businessProfile?.selfBillingAgreedAt}
-                          onCheckedChange={(checked) => setBusinessForm({ ...businessForm, selfBillingAgreed: !!checked })}
-                          data-testid="checkbox-self-billing"
-                        />
-                        <Label 
-                          htmlFor="selfBillingAgreed" 
-                          className={`text-sm ${(!hasReadTerms && !businessProfile?.selfBillingAgreedAt) ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer text-violet-800'}`}
-                        >
-                          {isHebrew 
-                            ? "קראתי את ההסכם ואני מאשר/ת את הסכם ה-Self-Billing ומייפה את כוחה של Flow 83 להפיק חשבוניות בשמי"
-                            : "I have read and agree to the Self-Billing agreement and authorize Flow 83 to issue invoices on my behalf"}
-                        </Label>
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-2">
+                          <Checkbox
+                            id="selfBillingAgreed"
+                            checked={businessForm.selfBillingAgreed}
+                            disabled={!hasReadTerms && !businessProfile?.selfBillingAgreedAt}
+                            onCheckedChange={(checked) => setBusinessForm({ ...businessForm, selfBillingAgreed: !!checked })}
+                            data-testid="checkbox-self-billing"
+                            className="mt-0.5"
+                          />
+                          <Label 
+                            htmlFor="selfBillingAgreed" 
+                            className={`text-sm ${(!hasReadTerms && !businessProfile?.selfBillingAgreedAt) ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer text-violet-800'}`}
+                          >
+                            {isHebrew 
+                              ? "קראתי, הבנתי ואני מסכים/ה לכל תנאי השימוש והסכם Self-Billing"
+                              : "I have read, understood and agree to all terms of use and the Self-Billing agreement"}
+                          </Label>
+                        </div>
+                        
+                        <div className="flex items-start gap-2">
+                          <Checkbox
+                            id="understandsLegalBinding"
+                            checked={businessForm.understandsLegalBinding}
+                            disabled={!hasReadTerms && !businessProfile?.selfBillingAgreedAt}
+                            onCheckedChange={(checked) => setBusinessForm({ ...businessForm, understandsLegalBinding: !!checked })}
+                            data-testid="checkbox-legal-binding"
+                            className="mt-0.5"
+                          />
+                          <Label 
+                            htmlFor="understandsLegalBinding" 
+                            className={`text-sm ${(!hasReadTerms && !businessProfile?.selfBillingAgreedAt) ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer text-violet-800'}`}
+                          >
+                            {isHebrew 
+                              ? "אני מבין/ה כי אישור זה מהווה חתימה משפטית מחייבת"
+                              : "I understand that this approval constitutes a legally binding signature"}
+                          </Label>
+                        </div>
+                        
+                        <div className="flex items-start gap-2">
+                          <Checkbox
+                            id="authorizesCollection"
+                            checked={businessForm.authorizesCollection}
+                            disabled={!hasReadTerms && !businessProfile?.selfBillingAgreedAt}
+                            onCheckedChange={(checked) => setBusinessForm({ ...businessForm, authorizesCollection: !!checked })}
+                            data-testid="checkbox-authorizes-collection"
+                            className="mt-0.5"
+                          />
+                          <Label 
+                            htmlFor="authorizesCollection" 
+                            className={`text-sm ${(!hasReadTerms && !businessProfile?.selfBillingAgreedAt) ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer text-violet-800'}`}
+                          >
+                            {isHebrew 
+                              ? "אני מאשר/ת הפעלת גבייה דרך Flow 83"
+                              : "I authorize payment collection through Flow 83"}
+                          </Label>
+                        </div>
                       </div>
+                      
                       {!hasReadTerms && !businessProfile?.selfBillingAgreedAt && (
-                        <p className="text-xs text-amber-600 mt-2">
+                        <p className="text-xs text-amber-600 mt-3">
                           {isHebrew ? "⚠️ יש לקרוא את ההסכם המלא לפני האישור" : "⚠️ Please read the full agreement before confirming"}
                         </p>
                       )}
@@ -803,12 +849,13 @@ export default function PaymentsPage() {
                 <div className="flex justify-end">
                   <Button 
                     onClick={handleSaveBusinessProfile}
-                    disabled={isSaving}
+                    disabled={isSaving || !businessForm.selfBillingAgreed || !businessForm.understandsLegalBinding || !businessForm.authorizesCollection}
+                    className="bg-violet-600 hover:bg-violet-700"
                     data-testid="button-save-business"
                   >
                     {isSaving 
                       ? (isHebrew ? "שומר..." : "Saving...") 
-                      : (isHebrew ? "שמור פרטים" : "Save Details")}
+                      : (isHebrew ? "אני מאשר/ת ומפעיל/ה גבייה" : "I approve and activate collection")}
                   </Button>
                 </div>
               </CardContent>
