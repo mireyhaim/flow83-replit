@@ -350,27 +350,7 @@ export default function Dashboard() {
               <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1 md:mb-2" data-testid="text-earnings">
                 {formatCurrency(earnings?.totalEarnings ?? 0)}
               </div>
-              <p className="text-xs md:text-sm text-slate-400 mb-4 md:mb-6">{t('totalEarningsFromFlows')}</p>
-              {(earnings?.recentPayments?.length ?? 0) > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-400 mb-2">{t('recentSales')}</p>
-                  {earnings?.recentPayments.slice(0, 3).map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      <div>
-                        <p className="text-sm text-slate-900">{payment.customerName || payment.customerEmail}</p>
-                        <p className="text-xs text-slate-400">{new Date(payment.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <span className="text-emerald-600 font-semibold">{formatCurrency(payment.amount)}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                  <p className="text-sm text-slate-600">
-                    {t('noEarningsYet')}
-                  </p>
-                </div>
-              )}
+              <p className="text-xs md:text-sm text-slate-400">{t('totalEarningsFromFlows')}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-recent-activity">
