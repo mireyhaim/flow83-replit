@@ -33,6 +33,36 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // Test email endpoint (for verifying Resend connection)
+  app.post('/api/test-email', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.email) {
+        return res.status(400).json({ success: false, error: 'No email found for user' });
+      }
+
+      const result = await sendJourneyAccessEmail({
+        participantEmail: user.email,
+        participantName: user.firstName || 'Test User',
+        journeyName: 'Test Flow',
+        journeyLink: `${process.env.REPLIT_DOMAINS?.split(',')[0] ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'https://flow83.replit.app'}/dashboard`,
+        mentorName: 'Flow 83 Team',
+        language: 'he'
+      });
+
+      if (result) {
+        res.json({ success: true, message: `Test email sent to ${user.email}` });
+      } else {
+        res.status(500).json({ success: false, error: 'Failed to send email' });
+      }
+    } catch (error: any) {
+      console.error('Test email error:', error);
+      res.status(500).json({ success: false, error: error.message || 'Unknown error' });
+    }
+  });
+
   // Update user profile
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
