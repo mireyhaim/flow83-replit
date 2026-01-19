@@ -1,0 +1,273 @@
+import { storage } from './storage';
+import { Participant, Journey } from '@shared/schema';
+import {
+  sendDailyReminderEmail,
+  sendInactivityReminderEmail,
+  sendCompletionEmail,
+  sendWeeklyMentorReport
+} from './email';
+
+const BASE_URL = process.env.REPLIT_DEV_DOMAIN 
+  ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+  : process.env.REPLIT_DOMAINS?.split(',')[0] 
+    ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+    : 'https://flow83.com';
+
+export async function processEmailNotifications(): Promise<{
+  dailyReminders: number;
+  inactivityReminders: number;
+  completionEmails: number;
+}> {
+  console.log('[EmailCron] Starting email notification processing...');
+  
+  const results = {
+    dailyReminders: 0,
+    inactivityReminders: 0,
+    completionEmails: 0
+  };
+
+  try {
+    const allJourneys = await storage.getJourneys();
+    const now = new Date();
+
+    for (const journey of allJourneys) {
+      if (!journey.creatorId) continue;
+      
+      const steps = await storage.getJourneySteps(journey.id);
+      const totalSteps = steps.length;
+      
+      const mentorUser = await storage.getUser(journey.creatorId);
+      const participants = await storage.getParticipants(journey.id);
+
+      for (const participant of participants) {
+        if (!participant.email) continue;
+
+        const journeyLink = `${BASE_URL}/flow/${participant.accessToken}`;
+        const lastActive = participant.lastActiveAt || participant.startedAt || new Date();
+        const daysSinceActive = Math.floor((now.getTime() - new Date(lastActive).getTime()) / (24 * 60 * 60 * 1000));
+        
+        const currentDay = participant.currentDay || 1;
+
+        if (participant.completedAt) {
+          continue;
+        }
+
+        if (daysSinceActive >= 2 && daysSinceActive <= 5) {
+          try {
+            await sendInactivityReminderEmail({
+              participantEmail: participant.email,
+              participantName: participant.name || 'משתתף/ת',
+              journeyName: journey.name,
+              journeyLink,
+              daysSinceActive,
+              currentDay,
+              mentorName: mentorUser?.firstName || undefined,
+              language: (journey.language as 'he' | 'en') || 'he'
+            });
+            results.inactivityReminders++;
+            console.log(`[EmailCron] Sent inactivity reminder to ${participant.email}`);
+          } catch (error) {
+            console.error(`[EmailCron] Failed to send inactivity reminder to ${participant.email}:`, error);
+          }
+        } else if (daysSinceActive < 2) {
+          try {
+            await sendDailyReminderEmail({
+              participantEmail: participant.email,
+              participantName: participant.name || 'משתתף/ת',
+              journeyName: journey.name,
+              journeyLink,
+              currentDay,
+              totalDays: totalSteps,
+              mentorName: mentorUser?.firstName || undefined,
+              language: (journey.language as 'he' | 'en') || 'he'
+            });
+            results.dailyReminders++;
+            console.log(`[EmailCron] Sent daily reminder to ${participant.email}`);
+          } catch (error) {
+            console.error(`[EmailCron] Failed to send daily reminder to ${participant.email}:`, error);
+          }
+        }
+      }
+    }
+
+    console.log(`[EmailCron] Completed: ${results.dailyReminders} daily, ${results.inactivityReminders} inactivity reminders sent`);
+    return results;
+  } catch (error) {
+    console.error('[EmailCron] Error processing email notifications:', error);
+    throw error;
+  }
+}
+
+export async function sendCompletionNotification(participantId: string): Promise<boolean> {
+  try {
+    const participant = await storage.getParticipantById(participantId);
+    if (!participant?.email) return false;
+
+    const journey = await storage.getJourney(participant.journeyId);
+    if (!journey) return false;
+
+    const steps = await storage.getJourneySteps(journey.id);
+    const mentorUser = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
+
+    await sendCompletionEmail({
+      participantEmail: participant.email,
+      participantName: participant.name || 'משתתף/ת',
+      journeyName: journey.name,
+      totalDays: steps.length,
+      mentorName: mentorUser?.firstName || undefined,
+      language: (journey.language as 'he' | 'en') || 'he'
+    });
+
+    console.log(`[EmailCron] Sent completion email to ${participant.email}`);
+    return true;
+  } catch (error) {
+    console.error('[EmailCron] Failed to send completion notification:', error);
+    return false;
+  }
+}
+
+export async function sendWeeklyReports(): Promise<number> {
+  console.log('[EmailCron] Starting weekly mentor reports...');
+  let reportsSent = 0;
+
+  try {
+    const allUsers = await storage.getAllUsers();
+    const mentors = allUsers.filter(u => u.role !== 'super_admin');
+    
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    for (const mentor of mentors) {
+      if (!mentor.email) continue;
+
+      const journeys = await storage.getJourneysByCreator(mentor.id);
+      if (journeys.length === 0) continue;
+
+      let totalParticipants = 0;
+      let activeParticipants = 0;
+      let completedThisWeek = 0;
+      let newThisWeek = 0;
+      const journeyStats: { name: string; participants: number; completed: number }[] = [];
+
+      for (const journey of journeys) {
+        const participants = await storage.getParticipants(journey.id);
+        const journeyParticipantCount = participants.length;
+        const journeyCompletedCount = participants.filter((p: Participant) => p.completedAt).length;
+        
+        totalParticipants += journeyParticipantCount;
+        
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+        
+        for (const p of participants) {
+          const lastActive = p.lastActiveAt || p.startedAt || new Date();
+          if (new Date(lastActive) > twoDaysAgo && !p.completedAt) {
+            activeParticipants++;
+          }
+          if (p.completedAt && new Date(p.completedAt) > oneWeekAgo) {
+            completedThisWeek++;
+          }
+          if (p.startedAt && new Date(p.startedAt) > oneWeekAgo) {
+            newThisWeek++;
+          }
+        }
+
+        journeyStats.push({
+          name: journey.name,
+          participants: journeyParticipantCount,
+          completed: journeyCompletedCount
+        });
+      }
+
+      if (totalParticipants === 0 && journeys.length === 0) continue;
+
+      try {
+        await sendWeeklyMentorReport({
+          mentorEmail: mentor.email,
+          mentorName: mentor.firstName || 'מנטור',
+          totalParticipants,
+          activeParticipants,
+          completedThisWeek,
+          newThisWeek,
+          journeys: journeyStats,
+          language: 'he'
+        });
+        reportsSent++;
+        console.log(`[EmailCron] Sent weekly report to ${mentor.email}`);
+      } catch (error) {
+        console.error(`[EmailCron] Failed to send weekly report to ${mentor.email}:`, error);
+      }
+    }
+
+    console.log(`[EmailCron] Completed: ${reportsSent} weekly reports sent`);
+    return reportsSent;
+  } catch (error) {
+    console.error('[EmailCron] Error sending weekly reports:', error);
+    throw error;
+  }
+}
+
+let dailyCronInterval: NodeJS.Timeout | null = null;
+let weeklyCronInterval: NodeJS.Timeout | null = null;
+
+export function startEmailCron(): void {
+  console.log('[EmailCron] Initializing email cron jobs...');
+
+  const runDailyAt9AM = () => {
+    const now = new Date();
+    const next9AM = new Date();
+    next9AM.setHours(9, 0, 0, 0);
+    
+    if (now >= next9AM) {
+      next9AM.setDate(next9AM.getDate() + 1);
+    }
+    
+    const msUntil9AM = next9AM.getTime() - now.getTime();
+    
+    console.log(`[EmailCron] Next daily email run scheduled for ${next9AM.toISOString()}`);
+    
+    setTimeout(() => {
+      processEmailNotifications().catch(console.error);
+      dailyCronInterval = setInterval(() => {
+        processEmailNotifications().catch(console.error);
+      }, 24 * 60 * 60 * 1000);
+    }, msUntil9AM);
+  };
+
+  const runWeeklyOnSunday = () => {
+    const now = new Date();
+    const nextSunday = new Date();
+    nextSunday.setDate(now.getDate() + (7 - now.getDay()));
+    nextSunday.setHours(10, 0, 0, 0);
+    
+    if (now.getDay() === 0 && now.getHours() < 10) {
+      nextSunday.setDate(now.getDate());
+    }
+    
+    const msUntilSunday = nextSunday.getTime() - now.getTime();
+    
+    console.log(`[EmailCron] Next weekly report scheduled for ${nextSunday.toISOString()}`);
+    
+    setTimeout(() => {
+      sendWeeklyReports().catch(console.error);
+      weeklyCronInterval = setInterval(() => {
+        sendWeeklyReports().catch(console.error);
+      }, 7 * 24 * 60 * 60 * 1000);
+    }, msUntilSunday);
+  };
+
+  runDailyAt9AM();
+  runWeeklyOnSunday();
+}
+
+export function stopEmailCron(): void {
+  if (dailyCronInterval) {
+    clearInterval(dailyCronInterval);
+    dailyCronInterval = null;
+  }
+  if (weeklyCronInterval) {
+    clearInterval(weeklyCronInterval);
+    weeklyCronInterval = null;
+  }
+  console.log('[EmailCron] Email cron jobs stopped');
+}

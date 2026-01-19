@@ -5,6 +5,7 @@ import { createServer } from "http";
 import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
+import { startEmailCron } from "./emailCron";
 
 const app = express();
 const httpServer = createServer(app);
@@ -160,6 +161,9 @@ async function initStripe() {
     },
     () => {
       log(`serving on port ${port}`);
+      
+      // Start email cron jobs
+      startEmailCron();
     },
   );
 })();

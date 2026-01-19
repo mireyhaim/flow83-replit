@@ -7,7 +7,8 @@ import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema,
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
-import { sendJourneyAccessEmail } from "./email";
+import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
+import { processEmailNotifications, sendWeeklyReports, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -1241,6 +1242,11 @@ export async function registerRoutes(
                 journeyName: journey.name,
               },
             });
+            
+            // Send completion email to participant
+            sendCompletionNotification(participant.id).catch(err => 
+              console.error('Failed to send completion email:', err)
+            );
           } else {
             await storage.createActivityEvent({
               creatorId: journey.creatorId,
@@ -1389,6 +1395,11 @@ export async function registerRoutes(
                 journeyName: journey.name,
               },
             });
+            
+            // Send completion email to participant
+            sendCompletionNotification(participant.id).catch(err => 
+              console.error('Failed to send completion email:', err)
+            );
           } else {
             await storage.createActivityEvent({
               creatorId: journey.creatorId,
@@ -2493,7 +2504,23 @@ export async function registerRoutes(
           console.log(`Welcome email sent to ${session.email} for journey ${journey.name}`);
         } catch (emailError) {
           console.error('Failed to send welcome email:', emailError);
-          // Don't fail the whole flow if email fails
+        }
+
+        // Send notification to mentor about new participant
+        if (mentor?.email) {
+          try {
+            await sendNewParticipantNotification({
+              mentorEmail: mentor.email,
+              mentorName: mentor.firstName || 'מנטור',
+              participantName: session.name || session.email.split('@')[0],
+              participantEmail: session.email,
+              journeyName: journey.name,
+              language: (journey.language as 'he' | 'en') || 'he'
+            });
+            console.log(`Mentor notification sent to ${mentor.email} for new participant ${session.email}`);
+          } catch (emailError) {
+            console.error('Failed to send mentor notification:', emailError);
+          }
         }
       }
 
@@ -3403,6 +3430,53 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Webhook error:", error);
       res.status(500).json({ error: "Webhook processing failed" });
+    }
+  });
+
+  // Email API endpoints (admin only)
+  app.post("/api/admin/email/trigger-daily", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      console.log("[Admin] Manually triggering daily email notifications...");
+      const results = await processEmailNotifications();
+      res.json({ 
+        success: true, 
+        message: "Daily email notifications sent",
+        results 
+      });
+    } catch (error) {
+      console.error("Error triggering daily emails:", error);
+      res.status(500).json({ error: "Failed to send daily emails" });
+    }
+  });
+
+  app.post("/api/admin/email/trigger-weekly-reports", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      console.log("[Admin] Manually triggering weekly mentor reports...");
+      const reportsSent = await sendWeeklyReports();
+      res.json({ 
+        success: true, 
+        message: `Weekly reports sent to ${reportsSent} mentors`,
+        reportsSent 
+      });
+    } catch (error) {
+      console.error("Error triggering weekly reports:", error);
+      res.status(500).json({ error: "Failed to send weekly reports" });
+    }
+  });
+
+  // Send completion email for a specific participant
+  app.post("/api/admin/email/send-completion/:participantId", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { participantId } = req.params;
+      const success = await sendCompletionNotification(participantId);
+      if (success) {
+        res.json({ success: true, message: "Completion email sent" });
+      } else {
+        res.status(400).json({ error: "Could not send completion email" });
+      }
+    } catch (error) {
+      console.error("Error sending completion email:", error);
+      res.status(500).json({ error: "Failed to send completion email" });
     }
   });
 

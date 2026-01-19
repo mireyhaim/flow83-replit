@@ -185,3 +185,628 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
     return false;
   }
 }
+
+// Daily reminder email - sent to active participants
+interface DailyReminderEmailParams {
+  participantEmail: string;
+  participantName: string;
+  journeyName: string;
+  journeyLink: string;
+  currentDay: number;
+  totalDays: number;
+  mentorName?: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendDailyReminderEmail(params: DailyReminderEmailParams): Promise<boolean> {
+  const { participantEmail, participantName, journeyName, journeyLink, currentDay, totalDays, mentorName, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const encouragements = isHebrew ? [
+      'אתה עושה עבודה מדהימה!',
+      'כל יום הוא צעד קדימה',
+      'המשך כך, אתה בדרך הנכונה!',
+      'היום מחכה לך עוד גילוי',
+      'התהליך שלך ממשיך להתפתח'
+    ] : [
+      'You\'re doing amazing!',
+      'Every day is a step forward',
+      'Keep going, you\'re on the right path!',
+      'Today holds new discoveries for you',
+      'Your journey continues to unfold'
+    ];
+    const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+
+    const subject = isHebrew
+      ? `יום ${currentDay} מחכה לך ב${journeyName} ✨`
+      : `Day ${currentDay} awaits you in ${journeyName} ✨`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🌅 בוקר טוב!</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              ${encouragement}<br><br>
+              היום <strong style="color: #7c3aed;">יום ${currentDay} מתוך ${totalDays}</strong> ב<strong>${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} מחכה לך.
+            </p>
+            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 8px;">📖</div>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">התוכן של היום כבר מוכן</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              המשך לתהליך שלי
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🌅 Good Morning!</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              ${encouragement}<br><br>
+              <strong style="color: #7c3aed;">Day ${currentDay} of ${totalDays}</strong> in <strong>${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} is waiting for you.
+            </p>
+            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 8px;">📖</div>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">Today's content is ready</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              Continue My Journey
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: participantEmail,
+      subject,
+      html
+    });
+
+    console.log('Daily reminder email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send daily reminder email:', error);
+    return false;
+  }
+}
+
+// Inactivity reminder - sent after 2-3 days of no activity
+interface InactivityReminderEmailParams {
+  participantEmail: string;
+  participantName: string;
+  journeyName: string;
+  journeyLink: string;
+  daysSinceActive: number;
+  currentDay: number;
+  mentorName?: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendInactivityReminderEmail(params: InactivityReminderEmailParams): Promise<boolean> {
+  const { participantEmail, participantName, journeyName, journeyLink, daysSinceActive, currentDay, mentorName, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `חסר לנו אותך ב${journeyName} 💜`
+      : `We miss you in ${journeyName} 💜`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">💜 חסר לנו אותך</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              שמנו לב שלא נכנסת לתהליך כבר ${daysSinceActive} ימים.<br><br>
+              זה בסדר גמור לקחת הפסקה, אבל רצינו להזכיר לך ש<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} עדיין מחכה לך.<br><br>
+              אתה ביום ${currentDay} - והמשך המסע מחכה!
+            </p>
+            <div style="background: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 8px;">🌟</div>
+              <p style="color: #92400e; font-size: 14px; margin: 0;">כל צעד קטן הוא התקדמות</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              חזרה לתהליך
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">💜 We Miss You</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              We noticed you haven't visited in ${daysSinceActive} days.<br><br>
+              It's perfectly okay to take a break, but we wanted to remind you that <strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} is still waiting for you.<br><br>
+              You're on day ${currentDay} - your journey continues!
+            </p>
+            <div style="background: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 8px;">🌟</div>
+              <p style="color: #92400e; font-size: 14px; margin: 0;">Every small step is progress</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              Return to My Journey
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: participantEmail,
+      subject,
+      html
+    });
+
+    console.log('Inactivity reminder email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send inactivity reminder email:', error);
+    return false;
+  }
+}
+
+// Completion congratulations email
+interface CompletionEmailParams {
+  participantEmail: string;
+  participantName: string;
+  journeyName: string;
+  totalDays: number;
+  mentorName?: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendCompletionEmail(params: CompletionEmailParams): Promise<boolean> {
+  const { participantEmail, participantName, journeyName, totalDays, mentorName, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `🎉 סיימת את ${journeyName}! מזל טוב!`
+      : `🎉 You completed ${journeyName}! Congratulations!`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px; text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+            <h1 style="color: white; margin: 0; font-size: 28px;">מזל טוב!</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              עשית את זה! 🌟<br><br>
+              סיימת בהצלחה את <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} - כל ${totalDays} הימים!<br><br>
+              זה הישג משמעותי. השקעת בעצמך, התמדת, והגעת לסוף. זה לא מובן מאליו.
+            </p>
+            <div style="background: #ecfdf5; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 24px; color: #059669; font-weight: bold; margin-bottom: 8px;">${totalDays} ימים</div>
+              <p style="color: #047857; font-size: 14px; margin: 0;">של צמיחה והתפתחות</p>
+            </div>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">
+              קח רגע לחגוג את עצמך. מגיע לך. 💜
+            </p>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px; text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Congratulations!</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              You did it! 🌟<br><br>
+              You successfully completed <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} - all ${totalDays} days!<br><br>
+              This is a significant achievement. You invested in yourself, persevered, and made it to the end.
+            </p>
+            <div style="background: #ecfdf5; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 24px; color: #059669; font-weight: bold; margin-bottom: 8px;">${totalDays} days</div>
+              <p style="color: #047857; font-size: 14px; margin: 0;">of growth and development</p>
+            </div>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">
+              Take a moment to celebrate yourself. You deserve it. 💜
+            </p>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: participantEmail,
+      subject,
+      html
+    });
+
+    console.log('Completion email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send completion email:', error);
+    return false;
+  }
+}
+
+// Mentor notification - new participant joined
+interface NewParticipantNotificationParams {
+  mentorEmail: string;
+  mentorName: string;
+  participantName: string;
+  participantEmail: string;
+  journeyName: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendNewParticipantNotification(params: NewParticipantNotificationParams): Promise<boolean> {
+  const { mentorEmail, mentorName, participantName, participantEmail, journeyName, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `🎊 משתתף חדש נרשם ל${journeyName}!`
+      : `🎊 New participant joined ${journeyName}!`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🎊 משתתף חדש!</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              יש לך משתתף חדש! 🎉<br><br>
+              <strong style="color: #7c3aed;">${participantName}</strong> נרשם/ה לתהליך <strong>${journeyName}</strong>.
+            </p>
+            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">פרטי המשתתף:</p>
+              <table style="width: 100%; font-size: 14px; color: #64748b;">
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">שם:</td>
+                  <td style="padding: 4px 0;">${participantName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">אימייל:</td>
+                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantEmail}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🎊 New Participant!</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              You have a new participant! 🎉<br><br>
+              <strong style="color: #7c3aed;">${participantName}</strong> joined your journey <strong>${journeyName}</strong>.
+            </p>
+            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">Participant details:</p>
+              <table style="width: 100%; font-size: 14px; color: #64748b;">
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">Name:</td>
+                  <td style="padding: 4px 0;">${participantName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; font-weight: 500;">Email:</td>
+                  <td style="padding: 4px 0;">${participantEmail}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: mentorEmail,
+      subject,
+      html
+    });
+
+    console.log('New participant notification sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send new participant notification:', error);
+    return false;
+  }
+}
+
+// Weekly mentor report
+interface WeeklyReportParams {
+  mentorEmail: string;
+  mentorName: string;
+  totalParticipants: number;
+  activeParticipants: number;
+  completedThisWeek: number;
+  newThisWeek: number;
+  journeys: { name: string; participants: number; completed: number }[];
+  language?: 'he' | 'en';
+}
+
+export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promise<boolean> {
+  const { mentorEmail, mentorName, totalParticipants, activeParticipants, completedThisWeek, newThisWeek, journeys, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `📊 הדוח השבועי שלך - Flow 83`
+      : `📊 Your Weekly Report - Flow 83`;
+
+    const journeyRows = journeys.map(j => `
+      <tr>
+        <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${j.name}</td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: center;">${j.participants}</td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: center;">${j.completed}</td>
+      </tr>
+    `).join('');
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">📊 הדוח השבועי שלך</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 24px;">שלום ${mentorName},</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
+              <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #7c3aed;">${totalParticipants}</div>
+                <div style="color: #64748b; font-size: 14px;">סה"כ משתתפים</div>
+              </div>
+              <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #059669;">${activeParticipants}</div>
+                <div style="color: #64748b; font-size: 14px;">פעילים</div>
+              </div>
+              <div style="background: #fef3c7; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #d97706;">${newThisWeek}</div>
+                <div style="color: #64748b; font-size: 14px;">חדשים השבוע</div>
+              </div>
+              <div style="background: #dbeafe; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #2563eb;">${completedThisWeek}</div>
+                <div style="color: #64748b; font-size: 14px;">סיימו השבוע</div>
+              </div>
+            </div>
+
+            ${journeys.length > 0 ? `
+            <h3 style="color: #1e1b4b; margin: 0 0 16px;">פירוט לפי תהליכים:</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background: #f1f5f9;">
+                  <th style="padding: 12px 8px; text-align: right;">תהליך</th>
+                  <th style="padding: 12px 8px; text-align: center;">משתתפים</th>
+                  <th style="padding: 12px 8px; text-align: center;">סיימו</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${journeyRows}
+              </tbody>
+            </table>
+            ` : ''}
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">📊 Your Weekly Report</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 24px;">Hello ${mentorName},</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
+              <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #7c3aed;">${totalParticipants}</div>
+                <div style="color: #64748b; font-size: 14px;">Total Participants</div>
+              </div>
+              <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #059669;">${activeParticipants}</div>
+                <div style="color: #64748b; font-size: 14px;">Active</div>
+              </div>
+              <div style="background: #fef3c7; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #d97706;">${newThisWeek}</div>
+                <div style="color: #64748b; font-size: 14px;">New This Week</div>
+              </div>
+              <div style="background: #dbeafe; border-radius: 12px; padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #2563eb;">${completedThisWeek}</div>
+                <div style="color: #64748b; font-size: 14px;">Completed This Week</div>
+              </div>
+            </div>
+
+            ${journeys.length > 0 ? `
+            <h3 style="color: #1e1b4b; margin: 0 0 16px;">Breakdown by Journey:</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background: #f1f5f9;">
+                  <th style="padding: 12px 8px; text-align: left;">Journey</th>
+                  <th style="padding: 12px 8px; text-align: center;">Participants</th>
+                  <th style="padding: 12px 8px; text-align: center;">Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${journeyRows}
+              </tbody>
+            </table>
+            ` : ''}
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: mentorEmail,
+      subject,
+      html
+    });
+
+    console.log('Weekly report sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send weekly report:', error);
+    return false;
+  }
+}
