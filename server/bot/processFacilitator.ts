@@ -961,9 +961,18 @@ export function buildStatePrompt(
   // Style modifiers based on userOnboardingConfig
   const config = participant?.userOnboardingConfig;
   const addressingNote = config?.addressing_style === 'female' 
-    ? 'Use feminine Hebrew forms (את, לך, שלך, etc.)' 
+    ? `CRITICAL - FEMININE HEBREW FORMS REQUIRED:
+- ALWAYS use את (never אתה)
+- Use feminine verb forms: גילית, עשית, הרגשת, ראית, אמרת
+- Use feminine possessives: שלך
+- Examples: "את מוזמנת", "איך את מרגישה", "מה גרם לך"
+- NEVER use masculine forms like אתה, גילית (masc), עשית (masc)` 
     : config?.addressing_style === 'male' 
-      ? 'Use masculine Hebrew forms (אתה, לך, שלך, etc.)' 
+      ? `CRITICAL - MASCULINE HEBREW FORMS REQUIRED:
+- ALWAYS use אתה (never את)
+- Use masculine verb forms: גילית, עשית, הרגשת, ראית, אמרת
+- Use masculine possessives: שלך
+- Examples: "אתה מוזמן", "איך אתה מרגיש", "מה גרם לך"` 
       : 'Use neutral forms where possible';
   const toneNote = config?.tone_preference === 'direct' 
     ? 'Be very brief and direct. Short sentences.'

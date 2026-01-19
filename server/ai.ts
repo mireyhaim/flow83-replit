@@ -2404,6 +2404,30 @@ export async function generateChatResponseWithFacilitator(
     userOnboardingConfig: participant.userOnboardingConfig as any
   });
   
+  // Build addressing style prefix for system prompt
+  const config = participant.userOnboardingConfig as any;
+  let addressingPrefix = '';
+  if (config?.addressing_style === 'female') {
+    addressingPrefix = `⚠️ CRITICAL GENDER RULE ⚠️
+The participant is FEMALE. You MUST use feminine Hebrew forms in EVERY message:
+- Use את (never אתה)
+- Use feminine verbs: גילית, עשית, הרגשת, ראית, אמרת, התחלת, הגעת
+- Use "את מוזמנת", "איך את מרגישה", "כשאת חושבת"
+- NEVER use אתה or masculine verb forms
+This is mandatory for every single response.
+
+`;
+  } else if (config?.addressing_style === 'male') {
+    addressingPrefix = `⚠️ CRITICAL GENDER RULE ⚠️
+The participant is MALE. You MUST use masculine Hebrew forms in EVERY message:
+- Use אתה (never את)
+- Use masculine verbs: גילית, עשית, הרגשת, ראית, אמרת, התחלת, הגעת
+- Use "אתה מוזמן", "איך אתה מרגיש", "כשאתה חושב"
+This is mandatory for every single response.
+
+`;
+  }
+  
   // Build messages array for Claude
   const claudeMessages: Anthropic.MessageParam[] = [
     ...recentMessages.slice(-6).map(m => ({
@@ -2414,7 +2438,7 @@ export async function generateChatResponseWithFacilitator(
   ];
   
   // Combine system prompt with state prompt for Claude
-  const fullSystemPrompt = `${systemPrompt}\n\n---\n\nSTATE: ${nextState}\n\n${statePrompt}`;
+  const fullSystemPrompt = `${addressingPrefix}${systemPrompt}\n\n---\n\nSTATE: ${nextState}\n\n${statePrompt}`;
   
   // Generate AI response using Claude
   const response = await anthropic.messages.create({
