@@ -172,7 +172,7 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: participantEmail,
       subject,
       html
@@ -295,7 +295,7 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: participantEmail,
       subject,
       html
@@ -405,7 +405,7 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: participantEmail,
       subject,
       html
@@ -515,7 +515,7 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: participantEmail,
       subject,
       html
@@ -633,7 +633,7 @@ export async function sendNewParticipantNotification(params: NewParticipantNotif
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: mentorEmail,
       subject,
       html
@@ -797,7 +797,7 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: mentorEmail,
       subject,
       html
@@ -953,7 +953,7 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
       to: mentorEmail,
       subject,
       html
