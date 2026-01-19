@@ -19,12 +19,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -182,6 +184,9 @@ export default function ProfilePage() {
         title: t('profilePage.profileSaved'),
         description: t('profilePage.profileSavedDesc'),
       });
+      
+      // Redirect to dashboard home
+      setLocation("/dashboard");
     } catch (error) {
       toast({
         title: t('error'),
