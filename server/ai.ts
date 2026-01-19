@@ -1706,27 +1706,19 @@ export async function generateDayOpeningMessage(context: Omit<ChatContext, "rece
   const languageName = isHebrew ? "Hebrew" : "English";
   
   if (isFirstDay) {
-    // Day 1: Short intro, then straight to day focus + one question
-    // NO self-introduction as "digital" or "developed by" - speak AS the mentor
+    // Day 1: Simple, warm greeting + ONE question only
+    // NO content dump, NO rules, NO goal explanation - just a human welcome
+    // The goal/task details come AFTER the participant responds
     if (isHebrew) {
       const greeting = participantFirstName ? `היי ${participantFirstName}` : "היי";
       return `${greeting}, טוב שהגעת.
 
-יום 1.
-היום מתמקדים ב: ${context.dayGoal}.
-הכלל להיום: מזהים, לא פותרים.
-
 מה הדבר שגרם לך לבחור להתחיל את התהליך הזה עכשיו?`;
     } else {
-      // English version
       const greeting = participantFirstName ? `Hi ${participantFirstName}` : "Hi";
       return `${greeting}, glad you're here.
 
-Day 1.
-Today we focus on: ${context.dayGoal}.
-The rule for today: Identify, don't solve.
-
-What made you choose to start this process now?`;
+What made you choose to start this journey now?`;
     }
   }
   
