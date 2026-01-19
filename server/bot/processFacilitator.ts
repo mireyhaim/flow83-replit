@@ -1151,54 +1151,83 @@ Offer simpler steps OR example answer OR format template.`;
 
     case "CLOSURE":
       const isHebrewClosure = dayPlan.language === "hebrew";
-      return `Generate a meaningful CLOSURE message that wraps up Day ${dayPlan.day}.
+      return `Generate a warm CLOSURE message for Day ${dayPlan.day}.
 
 The user just completed the task. Their response: "${userMessage}"
 
-YOUR JOB (in order):
-1. REFLECT what they discovered - mirror their actual words
-2. NAME the insight - what pattern or truth did they uncover?
-3. VALIDATE their work - acknowledge the effort without being cheesy
-4. PREVIEW tomorrow - one soft sentence about what's next
+YOUR JOB - TWO PARTS:
+
+PART 1 - SUMMARY (start with excitement):
+${isHebrewClosure ? '"מעולה!"' : '"Great!"'} + summarize what THEY discovered today using THEIR words.
+Be specific - mirror their exact phrases and insights.
+
+PART 2 - INVITATION TO ADD MORE:
+End with an open question: ${isHebrewClosure ? '"יש לך מה להוסיף?"' : '"Is there anything you\'d like to add?"'}
 
 ${isHebrewClosure ? `
 GOOD EXAMPLE:
-User said: "שמתי לב שאני תמיד אומרת לעצמי שזה לא שווה את זה"
-Response: "שימי לב מה גילית היום - את זיהית את הקול הפנימי שאומר 'לא שווה את זה'. זו הבחנה חשובה.
+User said: "שמתי לב שכשחברה שלי קונה בגדים אני מרגישה ריקנות"
+Response: "מעולה! וזה מה שגילינו היום - את זיהית שכש'חברה קונה בגדים ואת לא' זה לא סתם רגע של קנאה. זו תחושת ריקנות שעולה. כאילו הכסף שלה קונה משהו שאת מרגישה שחסר לך.
 
-ביום 2 ניקח את הזיהוי הזה צעד קדימה - נבחן מאיפה הקול הזה מגיע ומתי הוא הכי חזק."
+לשים לב לזה ולהגיד את זה בקול רם - זו עבודה לא פשוטה. ועשית אותה היום.
+
+יש לך מה להוסיף?"
 
 BAD EXAMPLE:
 "נהדר! סיימנו את יום 1. מחר נמשיך."
-"עבודה מצוינת! עכשיו לך לנוח."
 ` : `
 GOOD EXAMPLE:
-User said: "I noticed I always tell myself it's not worth it"
-Response: "Notice what you discovered today - you identified the inner voice that says 'not worth it'. That's an important distinction.
+User said: "I noticed when my friend buys clothes I feel empty"
+Response: "Great! Here's what we discovered today - you identified that when 'a friend buys clothes and you don't', it's not just a moment of envy. It's a feeling of emptiness. As if her money buys something you feel you're missing.
 
-Tomorrow we'll take this insight a step forward - we'll look at where that voice comes from and when it's strongest."
+Noticing this and saying it out loud - that's not easy work. And you did it today.
 
-BAD EXAMPLE:
-"Great! Day 1 complete. See you tomorrow."
-"Excellent work! Now go rest."
+Is there anything you'd like to add?"
 `}
 
 CONTENT TO WEAVE:
 - Day goal: ${dayPlan.day_goal}
-- Tomorrow's preview: ${dayPlan.closure.preview}
 
 RULES:
-- Mirror user's ACTUAL words from their task response
-- Name the specific insight they uncovered
-- MAX 80 words (this is the day wrap-up, can be slightly longer)
-- End with soft preview of tomorrow
-- NO generic praise ("נהדר", "מצוין", "great work")
+- Start with excitement (מעולה/Great)
+- Mirror user's ACTUAL words from their response
+- Acknowledge the emotional effort they made
+- MAX 120 words
+- End with invitation to add more
+- NO fake praise, NO "great job" at the end
 
 ${addressingNote}
 ${toneNote}`;
 
     case "DONE":
-      return `The day is complete. Generate a brief closing that encourages the user to return tomorrow.`;
+      const isHebrewDone = dayPlan.language === "hebrew";
+      return `The user responded to "Is there anything you'd like to add?" Their response: "${userMessage}"
+
+YOUR JOB:
+1. If they shared something new - briefly acknowledge it warmly (1-2 sentences)
+2. Give a soft preview of tomorrow
+3. Close with warmth
+
+${isHebrewDone ? `
+EXAMPLES:
+If user shared more: "תודה ששיתפת גם את זה. זה מעמיק את מה שגילינו היום. מחר נמשיך - נבחן מאיפה הקול הזה מגיע ומתי הוא הכי חזק. נתראה 💜"
+If user said "לא" or nothing to add: "מושלם. מחר נמשיך - נבחן מאיפה הקול הזה מגיע ומתי הוא הכי חזק. נתראה 💜"
+` : `
+EXAMPLES:
+If user shared more: "Thank you for sharing that too. It deepens what we discovered today. Tomorrow we'll continue - we'll look at where that voice comes from. See you 💜"
+If user said "no" or nothing to add: "Perfect. Tomorrow we'll continue - we'll look at where that voice comes from. See you 💜"
+`}
+
+CONTENT:
+- Tomorrow's preview: ${dayPlan.closure.preview}
+
+RULES:
+- MAX 40 words
+- Warm, brief, forward-looking
+- End with 💜 or similar warmth
+
+${addressingNote}
+${toneNote}`;
 
     default:
       return `Continue the conversation naturally based on the current context.`;
