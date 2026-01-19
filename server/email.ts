@@ -31,13 +31,28 @@ async function getCredentials() {
   return { apiKey: connectionSettings.settings.api_key, fromEmail: connectionSettings.settings.from_email };
 }
 
+// Format the from address with display name
+function formatFromAddress(fromEmail: string | undefined): string {
+  const defaultFrom = 'Flow 83 <support@send.flow83.com>';
+  if (!fromEmail) return defaultFrom;
+  
+  // If already has display name format (contains <), use as-is but ensure Flow 83 name
+  if (fromEmail.includes('<')) {
+    // Replace any existing name with Flow 83
+    return fromEmail.replace(/^[^<]*</, 'Flow 83 <');
+  }
+  
+  // Just an email address, wrap with Flow 83 name
+  return `Flow 83 <${fromEmail}>`;
+}
+
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
 async function getUncachableResendClient() {
   const { apiKey, fromEmail } = await getCredentials();
   return {
     client: new Resend(apiKey),
-    fromEmail
+    fromEmail: formatFromAddress(fromEmail)
   };
 }
 
@@ -172,7 +187,7 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: participantEmail,
       subject,
       html
@@ -295,7 +310,7 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: participantEmail,
       subject,
       html
@@ -405,7 +420,7 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: participantEmail,
       subject,
       html
@@ -515,7 +530,7 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: participantEmail,
       subject,
       html
@@ -633,7 +648,7 @@ export async function sendNewParticipantNotification(params: NewParticipantNotif
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: mentorEmail,
       subject,
       html
@@ -797,7 +812,7 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: mentorEmail,
       subject,
       html
@@ -953,7 +968,7 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail ? `Flow 83 <${fromEmail}>` : 'Flow 83 <support@send.flow83.com>',
+      from: fromEmail,
       to: mentorEmail,
       subject,
       html
