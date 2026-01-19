@@ -277,6 +277,11 @@ export default function ParticipantView() {
         }),
       });
       setShowFeedbackModal(false);
+      // Show summary modal after feedback
+      if (completedDayNumber) {
+        setSelectedSummaryDay(completedDayNumber);
+        setTimeout(() => setShowSummaryModal(true), 300);
+      }
     } catch (error) {
       console.error("Error submitting feedback:", error);
     } finally {
@@ -286,6 +291,11 @@ export default function ParticipantView() {
 
   const handleSkipFeedback = () => {
     setShowFeedbackModal(false);
+    // Show summary modal after skipping feedback
+    if (completedDayNumber) {
+      setSelectedSummaryDay(completedDayNumber);
+      setTimeout(() => setShowSummaryModal(true), 300);
+    }
   };
 
   const saveOnboardingConfigMutation = useMutation({
@@ -727,6 +737,7 @@ export default function ParticipantView() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
+              dir="rtl"
               className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[80vh] overflow-y-auto"
             >
               <div className="text-center mb-6">
@@ -742,8 +753,8 @@ export default function ParticipantView() {
               </div>
 
               {/* Summary Content */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 text-right">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-right" style={{ direction: 'rtl', unicodeBidi: 'embed' }}>
                   {getSummaryForDay(selectedSummaryDay)?.participantSummary || 
                     t('noSummaryAvailable')}
                 </p>
