@@ -810,3 +810,159 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
     return false;
   }
 }
+
+// Welcome email for new mentors
+interface MentorWelcomeEmailParams {
+  mentorEmail: string;
+  mentorName: string;
+  dashboardLink: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): Promise<boolean> {
+  const { mentorEmail, mentorName, dashboardLink, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `ברוכים הבאים ל-Flow 83! 🎉`
+      : `Welcome to Flow 83! 🎉`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+            <h1 style="color: white; margin: 0; font-size: 28px;">ברוכים הבאים ל-Flow 83!</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 20px;">שלום ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              שמחים שהצטרפת! 💜<br><br>
+              Flow 83 היא הפלטפורמה שתעזור לך להפוך את הידע והמתודולוגיה שלך לתהליכי טרנספורמציה דיגיטליים - חוויות יומיות מותאמות אישית שמועברות בצ'אט AI חכם.
+            </p>
+
+            <div style="background: #f8f7ff; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+              <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">🚀 מה תמצא בדשבורד שלך:</h3>
+              <ul style="color: #475569; font-size: 15px; line-height: 2; margin: 0; padding-right: 20px;">
+                <li><strong>יצירת Flow חדש</strong> - בנה תהליכים של 3 או 7 ימים מהתוכן שלך</li>
+                <li><strong>ניהול משתתפים</strong> - עקוב אחרי ההתקדמות של כל משתתף</li>
+                <li><strong>עריכת תוכן</strong> - התאם את התוכן והמסרים בכל עת</li>
+                <li><strong>דפי נחיתה</strong> - דפי מכירה מותאמים לכל תהליך</li>
+                <li><strong>תשלומים</strong> - קבל תשלומים ישירות מהמשתתפים</li>
+                <li><strong>סטטיסטיקות</strong> - נתונים על התקדמות ומעורבות</li>
+              </ul>
+            </div>
+
+            <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <h3 style="color: #059669; margin: 0 0 12px; font-size: 16px;">💡 טיפ להתחלה מהירה:</h3>
+              <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.6;">
+                לחץ על "צור Flow חדש" בדשבורד, העלה מסמך עם התוכן שלך, והמערכת תייצר עבורך תהליך שלם תוך דקות!
+              </p>
+            </div>
+
+            <a href="${dashboardLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px; margin-bottom: 24px;">
+              כניסה לדשבורד שלי
+            </a>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center;">
+              <p style="color: #475569; font-size: 14px; margin: 0 0 8px;">
+                <strong>יש לך שאלות? נשמח לעזור!</strong>
+              </p>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">
+                שלח לנו מייל ל: <a href="mailto:support@flow83.com" style="color: #7c3aed; text-decoration: none;">support@flow83.com</a>
+              </p>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Flow 83!</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 20px;">Hello ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              We're thrilled you joined us! 💜<br><br>
+              Flow 83 is the platform that helps you transform your knowledge and methodology into digital transformation journeys - personalized daily experiences delivered through smart AI chat.
+            </p>
+
+            <div style="background: #f8f7ff; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+              <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">🚀 What you'll find in your dashboard:</h3>
+              <ul style="color: #475569; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px;">
+                <li><strong>Create New Flow</strong> - Build 3 or 7-day journeys from your content</li>
+                <li><strong>Participant Management</strong> - Track each participant's progress</li>
+                <li><strong>Content Editing</strong> - Customize content and messages anytime</li>
+                <li><strong>Landing Pages</strong> - Customized sales pages for each journey</li>
+                <li><strong>Payments</strong> - Receive payments directly from participants</li>
+                <li><strong>Analytics</strong> - Data on progress and engagement</li>
+              </ul>
+            </div>
+
+            <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <h3 style="color: #059669; margin: 0 0 12px; font-size: 16px;">💡 Quick Start Tip:</h3>
+              <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.6;">
+                Click "Create New Flow" in your dashboard, upload a document with your content, and the system will generate a complete journey for you in minutes!
+              </p>
+            </div>
+
+            <a href="${dashboardLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px; margin-bottom: 24px;">
+              Go to My Dashboard
+            </a>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center;">
+              <p style="color: #475569; font-size: 14px; margin: 0 0 8px;">
+                <strong>Have questions? We're here to help!</strong>
+              </p>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">
+                Email us at: <a href="mailto:support@flow83.com" style="color: #7c3aed; text-decoration: none;">support@flow83.com</a>
+              </p>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
+      to: mentorEmail,
+      subject,
+      html
+    });
+
+    console.log('Mentor welcome email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send mentor welcome email:', error);
+    return false;
+  }
+}

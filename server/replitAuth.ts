@@ -7,6 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { sendMentorWelcomeEmail } from "./email";
 
 const getOidcConfig = memoize(
   async () => {
@@ -51,13 +52,36 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
+  const userId = claims["sub"];
+  const email = claims["email"];
+  const firstName = claims["first_name"];
+  const lastName = claims["last_name"];
+  
+  // Check if user already exists (to detect first-time signup)
+  const existingUser = await storage.getUser(userId);
+  const isNewUser = !existingUser;
+  
   await storage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
+    id: userId,
+    email,
+    firstName,
+    lastName,
     profileImageUrl: claims["profile_image_url"],
   });
+  
+  // Send welcome email to new mentors
+  if (isNewUser && email) {
+    const dashboardLink = process.env.REPLIT_DOMAINS?.split(',')[0] 
+      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/dashboard`
+      : 'https://flow83.replit.app/dashboard';
+    
+    sendMentorWelcomeEmail({
+      mentorEmail: email,
+      mentorName: firstName || 'מנטור',
+      dashboardLink,
+      language: 'he'
+    }).catch(err => console.error('Failed to send mentor welcome email:', err));
+  }
 }
 
 export async function setupAuth(app: Express) {
