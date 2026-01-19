@@ -2477,8 +2477,9 @@ This is mandatory for every single response.
     processedContent = processedContent + " " + (dayPlan.language === "hebrew" ? "ממשיכים." : "Moving on.");
   }
   
-  // Check for day completion
-  const dayCompleted = nextState === "CLOSURE" || nextState === "DONE";
+  // Check for day completion - only DONE state completes the day
+  // CLOSURE is still a conversation state where we ask "יש לך מה להוסיף?"
+  const dayCompleted = nextState === "DONE";
   
   console.log(`[Facilitator] Response generated:`, {
     state: nextState,

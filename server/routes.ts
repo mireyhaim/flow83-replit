@@ -1218,6 +1218,9 @@ export async function registerRoutes(
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
         currentPhase: 'intro', // Reset phase for new day
+        conversationState: 'ORIENTATION', // Reset ProcessFacilitator state for new day
+        clarifyCount: 0, // Reset clarify counter
+        taskSupportCount: 0, // Reset task support counter
         lastActiveAt: new Date(),
         ...(isJourneyComplete ? { completedAt: new Date() } : {}),
       });
@@ -1372,6 +1375,9 @@ export async function registerRoutes(
       const participant = await storage.updateParticipant(id, {
         currentDay: nextDay,
         currentPhase: 'intro', // Reset phase for new day
+        conversationState: 'ORIENTATION', // Reset ProcessFacilitator state for new day
+        clarifyCount: 0, // Reset clarify counter
+        taskSupportCount: 0, // Reset task support counter
         lastActiveAt: new Date(),
         ...(isJourneyComplete ? { completedAt: new Date() } : {}),
       });
