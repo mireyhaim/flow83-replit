@@ -172,7 +172,7 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
     `;
 
     const result = await client.emails.send({
-      from: fromEmail || 'Flow 83 <onboarding@resend.dev>',
+      from: fromEmail || 'Flow 83 <support@send.flow83.com>',
       to: participantEmail,
       subject,
       html
