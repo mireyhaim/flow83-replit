@@ -1344,7 +1344,7 @@ What you know about this person:`;
   const response = await openai.chat.completions.create({
     model: "gpt-5.2",
     messages,
-    max_tokens: 200, // ~120 words max for conversational responses
+    max_tokens: 400, // Allow longer responses to avoid truncation
   });
 
   let aiContent = response.choices[0].message.content;
@@ -2421,7 +2421,7 @@ export async function generateChatResponseWithFacilitator(
     model: "claude-sonnet-4-5",
     system: fullSystemPrompt,
     messages: claudeMessages,
-    max_tokens: 200,
+    max_tokens: 400, // Allow longer responses to avoid truncation
   });
   
   const firstBlock = response.content[0];
