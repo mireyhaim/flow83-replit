@@ -47,6 +47,7 @@ export default function ParticipantView() {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [selectedSummaryDay, setSelectedSummaryDay] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [showPreChatOnboarding, setShowPreChatOnboarding] = useState(false);
 
   const isUuidFormat = tokenFromRoute && isAccessToken(tokenFromRoute);
@@ -383,6 +384,10 @@ export default function ParticipantView() {
       await sendMessageMutation.mutateAsync(content);
     } finally {
       setIsSending(false);
+      // Auto-focus input after sending message
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -1038,11 +1043,13 @@ export default function ParticipantView() {
               >
                 <div className="flex-1 relative">
                   <Input 
+                    ref={inputRef}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder={t('typeMessage')}
                     className="w-full rounded-full bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 focus-visible:ring-violet-500 pr-12 py-6"
                     disabled={isSending}
+                    autoFocus
                     data-testid="input-chat"
                   />
                   <Button 
