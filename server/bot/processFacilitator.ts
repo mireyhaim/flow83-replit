@@ -822,14 +822,16 @@ export function determineNextState(
       return "ORIENTATION";
     
     case "ORIENTATION":
-      // ORIENTATION already includes the core question, so when user responds
-      // with a substantive answer, go straight to INTERPRET
+      // ORIENTATION asks the opening question for the day
+      // Only move forward if user gives a substantive answer (not just "ok" or "אוקיי")
       if (intent === "answer_core" || intent === "emotional") {
         return "INTERPRET";
       }
-      // For simple checkins/acknowledgments, also go to INTERPRET
-      // since the core question was already asked in ORIENTATION
-      return "INTERPRET";
+      // Simple acknowledgments like "ok", "אוקיי" - stay in ORIENTATION and ask again
+      if (intent === "checkin" || intent === "other") {
+        return "ORIENTATION"; // Stay and ask a meaningful question
+      }
+      return "ORIENTATION";
     
     case "CORE_QUESTION":
       // Legacy state - kept for backward compatibility
@@ -842,6 +844,11 @@ export function determineNextState(
       return "CORE_QUESTION";
     
     case "INTERPRET":
+      // After interpreting what the user shared, move to TASK
+      // But if user just gives minimal acknowledgment, stay and go deeper
+      if (intent === "checkin" || intent === "other") {
+        return "INTERPRET"; // Stay and reflect more
+      }
       return "TASK";
     
     case "TASK":
@@ -1016,6 +1023,45 @@ ${toneNote}`;
         ? ` (${dayPlan.core_question.choices.join(' / ')})`
         : '';
       const isHebrewLang = dayPlan.language === "hebrew";
+      
+      // Check if user gave a minimal response (staying in ORIENTATION)
+      const isMinimalResponse = intent === "checkin" || intent === "other";
+      
+      if (isMinimalResponse) {
+        // User said something like "ok" or "אוקיי" - gently encourage engagement
+        return `The user responded with a minimal acknowledgment: "${userMessage}"
+
+You need to gently encourage them to engage with the core question.
+
+DO NOT repeat the full orientation. Instead:
+1. Acknowledge briefly (one short sentence)
+2. Rephrase the core question in a more personal, inviting way
+
+${isHebrewLang ? `
+Core question to rephrase: ${dayPlan.core_question.question}${coreChoicesText}
+
+GOOD EXAMPLES:
+"אני שמח/ה שהגעת. בוא/י נתחיל - ${dayPlan.core_question.question}${coreChoicesText}"
+"מעולה שבחרת להתחיל. אז ספר/י לי - ${dayPlan.core_question.question}"
+"יופי. אז מה עולה לך כשאני שואל/ת - ${dayPlan.core_question.question}"
+` : `
+Core question to rephrase: ${dayPlan.core_question.question}${coreChoicesText}
+
+GOOD EXAMPLES:
+"Glad you're here. Let's begin - ${dayPlan.core_question.question}${coreChoicesText}"
+"Great that you started. So tell me - ${dayPlan.core_question.question}"
+`}
+
+RULES:
+- MAX 30 words
+- End with a question
+- Sound human, not robotic
+
+${addressingNote}
+${toneNote}`;
+      }
+      
+      // First time in ORIENTATION - full introduction
       return `Generate ORIENTATION message - introduce Day ${dayPlan.day} in a CONVERSATIONAL way.
 
 The user just shared why they're here. Now you're transitioning to Day ${dayPlan.day}.
@@ -1078,6 +1124,37 @@ Do NOT repeat the original question word-for-word.`;
 
     case "INTERPRET":
       const isHebrewInterp = dayPlan.language === "hebrew";
+      
+      // Check if user gave a minimal response (staying in INTERPRET)
+      const isMinimalInterpret = intent === "checkin" || intent === "other";
+      
+      if (isMinimalInterpret) {
+        // User gave minimal response - encourage sharing more
+        return `The user responded minimally: "${userMessage}"
+
+They haven't shared enough for you to reflect meaningfully. Encourage them to share more.
+
+${isHebrewInterp ? `
+GOOD EXAMPLES:
+"אני שומע/ת אותך. תספר/י לי עוד - מה עולה לך כשאת/ה חושב/ת על זה?"
+"אוקיי. בוא/י ננסה יחד - מה הדבר הראשון שעולה לך?"
+"אין לחץ. שתף/י אותי - איפה את/ה מרגיש/ה את זה הכי חזק?"
+` : `
+GOOD EXAMPLES:
+"I hear you. Tell me more - what comes up when you think about this?"
+"Okay. Let's try together - what's the first thing that comes to mind?"
+`}
+
+RULES:
+- MAX 25 words
+- Ask ONE open question
+- Be warm, not pushy
+
+${addressingNote}
+${toneNote}`;
+      }
+      
+      // User gave substantive answer - validate and bridge to task
       return `Generate an INTERPRET message with EMOTIONAL VALIDATION.
 
 User just answered the core question: "${userMessage}"
