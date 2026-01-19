@@ -46,7 +46,7 @@ async function sendTestEmail() {
     const resend = new Resend(apiKey);
     
     const result = await resend.emails.send({
-      from: fromEmail || 'Flow 83 <onboarding@resend.dev>',
+      from: 'Flow 83 <support@send.flow83.com>',
       to: 'mireymol@gmail.com',
       subject: 'בדיקת מערכת המיילים - Flow 83',
       html: `
