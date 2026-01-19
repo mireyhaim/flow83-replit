@@ -228,7 +228,7 @@ async function analyzeContentChunkDeep(content: string, chunkNumber: number, tot
   beliefs: string[];
 }> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -392,7 +392,7 @@ Make this detailed and specific to THIS mentor's actual methodology, not generic
 Respond in JSON.`;
 
   const synthesisResponse = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -757,7 +757,7 @@ Respond in JSON:
     : `Expert transformational course designer. Fill ALL fields with meaningful content in ${language}. Each block MUST have a "type" field. Respond with valid JSON only.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
@@ -1342,7 +1342,7 @@ What you know about this person:`;
   }));
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages,
     max_tokens: 200, // ~120 words max for conversational responses
   });
@@ -1616,7 +1616,7 @@ JSON: {"days": [{"dayNumber": ${startDay}, "title": "Full title here", "goal": "
     : `Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
@@ -1739,7 +1739,7 @@ Write a warm, personal opening for today. The message should:
 - CRITICAL: Write the entire response in ${languageName}. This is a ${languageName}-language journey.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: "Open this day for me" },
@@ -1802,7 +1802,7 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -1881,7 +1881,7 @@ REQUIREMENTS:
 - End with an encouraging note about tomorrow`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -1943,7 +1943,7 @@ REQUIREMENTS:
 - Write in flowing paragraphs, not bullet points`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -2105,7 +2105,7 @@ IMPORTANT: Write ALL content in ${language}. The journey content is in ${languag
 Return valid JSON matching this structure exactly.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages: [
       { 
         role: "system", 
@@ -2214,7 +2214,7 @@ export async function generateChatResponseWithDirector(
   
   // Generate AI response with tight constraints
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.2",
     messages,
     max_tokens: 150, // ~80 words max
     temperature: 0.7, // Some creativity in phrasing
