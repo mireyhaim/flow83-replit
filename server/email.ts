@@ -434,6 +434,115 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
   }
 }
 
+// Not started reminder - sent to participants who registered but haven't entered the flow
+interface NotStartedReminderEmailParams {
+  participantEmail: string;
+  participantName: string;
+  journeyName: string;
+  journeyLink: string;
+  daysSinceRegistration: number;
+  mentorName?: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendNotStartedReminderEmail(params: NotStartedReminderEmailParams): Promise<boolean> {
+  const { participantEmail, participantName, journeyName, journeyLink, daysSinceRegistration, mentorName, language = 'he' } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const isHebrew = language === 'he';
+
+    const subject = isHebrew
+      ? `יום 1 מחכה לך ב${journeyName} ✨`
+      : `Day 1 is waiting for you in ${journeyName} ✨`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">✨ יום 1 מחכה לך</h1>
+          </div>
+          <div style="padding: 32px; text-align: right;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              שמנו לב שנרשמת ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} אבל עדיין לא התחלת.<br><br>
+              המסע שלך מחכה! יום 1 כבר מוכן עבורך, עם תוכן מותאם אישית שיעזור לך להתחיל את השינוי.<br><br>
+              זה הזמן להתחיל 💜
+            </p>
+            <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
+              <p style="color: #166534; font-size: 14px; margin: 0;">הצעד הראשון הוא תמיד הקשה ביותר - אבל גם הכי משמעותי</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              להתחיל את יום 1
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">✨ Day 1 is Waiting</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+              We noticed you signed up for <strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} but haven't started yet.<br><br>
+              Your journey is waiting! Day 1 is ready for you, with personalized content to help you begin your transformation.<br><br>
+              Now is the time to start 💜
+            </p>
+            <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
+              <p style="color: #166534; font-size: 14px; margin: 0;">The first step is always the hardest - but also the most meaningful</p>
+            </div>
+            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+              Start Day 1
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: participantEmail,
+      subject,
+      html
+    });
+
+    console.log('Not started reminder email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send not started reminder email:', error);
+    return false;
+  }
+}
+
 // Completion congratulations email
 interface CompletionEmailParams {
   participantEmail: string;

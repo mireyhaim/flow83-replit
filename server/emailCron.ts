@@ -3,6 +3,7 @@ import { Participant, Journey } from '@shared/schema';
 import {
   sendDailyReminderEmail,
   sendInactivityReminderEmail,
+  sendNotStartedReminderEmail,
   sendCompletionEmail,
   sendWeeklyMentorReport
 } from './email';
@@ -16,6 +17,7 @@ const BASE_URL = process.env.REPLIT_DEV_DOMAIN
 export async function processEmailNotifications(): Promise<{
   dailyReminders: number;
   inactivityReminders: number;
+  notStartedReminders: number;
   completionEmails: number;
 }> {
   console.log('[EmailCron] Starting email notification processing...');
@@ -23,6 +25,7 @@ export async function processEmailNotifications(): Promise<{
   const results = {
     dailyReminders: 0,
     inactivityReminders: 0,
+    notStartedReminders: 0,
     completionEmails: 0
   };
 
@@ -43,6 +46,8 @@ export async function processEmailNotifications(): Promise<{
         if (!participant.email) continue;
 
         const journeyLink = `${BASE_URL}/flow/${participant.accessToken}`;
+        const registeredAt = participant.startedAt || new Date();
+        const daysSinceRegistration = Math.floor((now.getTime() - new Date(registeredAt).getTime()) / (24 * 60 * 60 * 1000));
         const lastActive = participant.lastActiveAt || participant.startedAt || new Date();
         const daysSinceActive = Math.floor((now.getTime() - new Date(lastActive).getTime()) / (24 * 60 * 60 * 1000));
         
@@ -52,7 +57,28 @@ export async function processEmailNotifications(): Promise<{
           continue;
         }
 
-        if (daysSinceActive >= 2 && daysSinceActive <= 5) {
+        // Check if participant never actually started the flow (conversationState is still START)
+        const hasNeverStarted = participant.conversationState === 'START';
+        
+        if (hasNeverStarted && daysSinceRegistration >= 2) {
+          // Send "not started" reminder for participants who registered 2+ days ago but never entered
+          try {
+            await sendNotStartedReminderEmail({
+              participantEmail: participant.email,
+              participantName: participant.name || 'משתתף/ת',
+              journeyName: journey.name,
+              journeyLink,
+              daysSinceRegistration,
+              mentorName: mentorUser?.firstName || undefined,
+              language: (journey.language as 'he' | 'en') || 'he'
+            });
+            results.notStartedReminders++;
+            console.log(`[EmailCron] Sent not-started reminder to ${participant.email}`);
+          } catch (error) {
+            console.error(`[EmailCron] Failed to send not-started reminder to ${participant.email}:`, error);
+          }
+        } else if (!hasNeverStarted && daysSinceActive >= 2 && daysSinceActive <= 5) {
+          // Send inactivity reminder for participants who started but haven't been active
           try {
             await sendInactivityReminderEmail({
               participantEmail: participant.email,
@@ -69,7 +95,8 @@ export async function processEmailNotifications(): Promise<{
           } catch (error) {
             console.error(`[EmailCron] Failed to send inactivity reminder to ${participant.email}:`, error);
           }
-        } else if (daysSinceActive < 2) {
+        } else if (!hasNeverStarted && daysSinceActive < 2) {
+          // Send daily reminder for active participants
           try {
             await sendDailyReminderEmail({
               participantEmail: participant.email,
@@ -90,7 +117,7 @@ export async function processEmailNotifications(): Promise<{
       }
     }
 
-    console.log(`[EmailCron] Completed: ${results.dailyReminders} daily, ${results.inactivityReminders} inactivity reminders sent`);
+    console.log(`[EmailCron] Completed: ${results.dailyReminders} daily, ${results.inactivityReminders} inactivity, ${results.notStartedReminders} not-started reminders sent`);
     return results;
   } catch (error) {
     console.error('[EmailCron] Error processing email notifications:', error);
