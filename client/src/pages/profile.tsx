@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
@@ -30,6 +30,7 @@ export default function ProfilePage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const { t, i18n } = useTranslation('dashboard');
+  const hasInitializedForm = useRef(false);
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -43,7 +44,7 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasInitializedForm.current) {
       setFormData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
@@ -55,6 +56,7 @@ export default function ProfilePage() {
         uniqueApproach: (user as any).uniqueApproach || "",
       });
       setProfileImage((user as any).profileImageUrl || null);
+      hasInitializedForm.current = true;
     }
   }, [user]);
 
