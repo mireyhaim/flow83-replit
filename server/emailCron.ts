@@ -45,7 +45,7 @@ export async function processEmailNotifications(): Promise<{
       for (const participant of participants) {
         if (!participant.email) continue;
 
-        const journeyLink = `${BASE_URL}/flow/${participant.accessToken}`;
+        const journeyLink = `${BASE_URL}/p/${participant.accessToken}`;
         const registeredAt = participant.startedAt || new Date();
         const daysSinceRegistration = Math.floor((now.getTime() - new Date(registeredAt).getTime()) / (24 * 60 * 60 * 1000));
         const lastActive = participant.lastActiveAt || participant.startedAt || new Date();

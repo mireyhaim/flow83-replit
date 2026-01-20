@@ -85,47 +85,43 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Flow 83</h1>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+          <div style="background: #7c3aed; padding: 28px 32px;">
+            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Flow 83</h1>
           </div>
           <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">שלום ${participantName || 'לך'},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-              התשלום שלך התקבל בהצלחה! 🎉<br><br>
+            <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600;">שלום ${participantName || 'לך'},</h2>
+            <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px;">
+              התשלום שלך התקבל בהצלחה.<br><br>
               הגישה שלך ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} מוכנה.
             </p>
-            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-              <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">הקישור שלך לתהליך:</p>
-              <a href="${journeyLink}" style="color: #7c3aed; font-size: 14px; word-break: break-all;">${journeyLink}</a>
-            </div>
-            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">פרטי ההתחברות שלך:</p>
-              <table style="width: 100%; font-size: 14px; color: #64748b;">
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px; font-weight: 500;">פרטי הכניסה שלך:</p>
+              <table style="width: 100%; font-size: 14px; color: #374151;">
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">שם:</td>
-                  <td style="padding: 4px 0;">${participantName}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">שם:</td>
+                  <td style="padding: 6px 0;">${participantName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">אימייל:</td>
-                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantEmail}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">אימייל:</td>
+                  <td style="padding: 6px 0; direction: ltr; text-align: right;">${participantEmail}</td>
                 </tr>
                 ${participantIdNumber ? `
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">ת.ז.:</td>
-                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantIdNumber}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">ת.ז.:</td>
+                  <td style="padding: 6px 0; direction: ltr; text-align: right;">${participantIdNumber}</td>
                 </tr>
                 ` : ''}
               </table>
             </div>
-            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
-              התחל את המסע שלך
+            <a href="${journeyLink}" style="display: block; background: #7c3aed; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; text-align: center; font-weight: 600; font-size: 15px;">
+              התחל את התהליך
             </a>
           </div>
-          <div style="background: #f8fafc; padding: 20px; text-align: center;">
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+          <div style="background: #f9fafb; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0; text-align: center;">
+              Flow 83 | פלטפורמה לתהליכי טרנספורמציה
             </p>
           </div>
         </div>
@@ -138,47 +134,43 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Flow 83</h1>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+          <div style="background: #7c3aed; padding: 28px 32px;">
+            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Flow 83</h1>
           </div>
           <div style="padding: 32px;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hello ${participantName || 'there'},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-              Your payment was successful! 🎉<br><br>
+            <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600;">Hello ${participantName || 'there'},</h2>
+            <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px;">
+              Your payment was successful.<br><br>
               Your access to <strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} is ready.
             </p>
-            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-              <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">Your journey link:</p>
-              <a href="${journeyLink}" style="color: #7c3aed; font-size: 14px; word-break: break-all;">${journeyLink}</a>
-            </div>
-            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">Your login details:</p>
-              <table style="width: 100%; font-size: 14px; color: #64748b;">
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px; font-weight: 500;">Your login details:</p>
+              <table style="width: 100%; font-size: 14px; color: #374151;">
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">Name:</td>
-                  <td style="padding: 4px 0;">${participantName}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">Name:</td>
+                  <td style="padding: 6px 0;">${participantName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">Email:</td>
-                  <td style="padding: 4px 0;">${participantEmail}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">Email:</td>
+                  <td style="padding: 6px 0;">${participantEmail}</td>
                 </tr>
                 ${participantIdNumber ? `
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">ID:</td>
-                  <td style="padding: 4px 0;">${participantIdNumber}</td>
+                  <td style="padding: 6px 0; color: #6b7280;">ID:</td>
+                  <td style="padding: 6px 0;">${participantIdNumber}</td>
                 </tr>
                 ` : ''}
               </table>
             </div>
-            <a href="${journeyLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 16px;">
+            <a href="${journeyLink}" style="display: block; background: #7c3aed; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; text-align: center; font-weight: 600; font-size: 15px;">
               Start Your Journey
             </a>
           </div>
-          <div style="background: #f8fafc; padding: 20px; text-align: center;">
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-              © Flow 83 - Transformational Journey Platform
+          <div style="background: #f9fafb; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0; text-align: center;">
+              Flow 83 | Transformational Journey Platform
             </p>
           </div>
         </div>

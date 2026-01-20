@@ -2521,7 +2521,7 @@ export async function registerRoutes(
         const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
           ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
           : 'https://flow83.replit.app';
-        const journeyLink = `${baseUrl}/flow/${participant.accessToken}`;
+        const journeyLink = `${baseUrl}/p/${participant.accessToken}`;
         
         try {
           await sendJourneyAccessEmail({
