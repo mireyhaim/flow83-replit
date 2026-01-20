@@ -44,6 +44,7 @@ export default function ParticipantView() {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [completedDayNumber, setCompletedDayNumber] = useState(0);
+  const [isSidebarFeedback, setIsSidebarFeedback] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [selectedSummaryDay, setSelectedSummaryDay] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -244,7 +245,8 @@ export default function ParticipantView() {
       setDayReadyForCompletion(false);
       setTimeout(() => {
         setShowCelebration(false);
-        // Show feedback modal after celebration
+        // Show feedback modal after celebration (this is day completion feedback, not sidebar)
+        setIsSidebarFeedback(false);
         setShowFeedbackModal(true);
         setFeedbackRating(0);
         setFeedbackComment("");
@@ -277,11 +279,12 @@ export default function ParticipantView() {
         }),
       });
       setShowFeedbackModal(false);
-      // Show summary modal after feedback
-      if (completedDayNumber) {
+      // Only show summary modal if this was day completion feedback (not sidebar feedback)
+      if (completedDayNumber && !isSidebarFeedback) {
         setSelectedSummaryDay(completedDayNumber);
         setTimeout(() => setShowSummaryModal(true), 300);
       }
+      setIsSidebarFeedback(false);
     } catch (error) {
       console.error("Error submitting feedback:", error);
     } finally {
@@ -291,11 +294,12 @@ export default function ParticipantView() {
 
   const handleSkipFeedback = () => {
     setShowFeedbackModal(false);
-    // Show summary modal after skipping feedback
-    if (completedDayNumber) {
+    // Only show summary modal if this was day completion feedback (not sidebar feedback)
+    if (completedDayNumber && !isSidebarFeedback) {
       setSelectedSummaryDay(completedDayNumber);
       setTimeout(() => setShowSummaryModal(true), 300);
     }
+    setIsSidebarFeedback(false);
   };
 
   const saveOnboardingConfigMutation = useMutation({
@@ -890,6 +894,7 @@ export default function ParticipantView() {
         <div className="p-4 border-t border-white/10">
           <button
             onClick={() => {
+              setIsSidebarFeedback(true);
               setCompletedDayNumber(currentDay);
               setShowFeedbackModal(true);
               setFeedbackRating(0);
