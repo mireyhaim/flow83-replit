@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useQuery } from "@tanstack/react-query";
-import { Users, CheckCircle, Eye, EyeOff, CreditCard, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Users, CheckCircle, Eye, EyeOff, CreditCard, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Mail, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 import type { Participant } from "@shared/schema";
 
 interface ParticipantWithJourney extends Participant {
@@ -16,9 +18,13 @@ export default function ParticipantsPage() {
   const { t, i18n } = useTranslation('dashboard');
   const isMobile = useIsMobile();
   const isHebrew = i18n.language === 'he';
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sendingEmailTo, setSendingEmailTo] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 10;
 
   const { data: participants = [], isLoading } = useQuery<ParticipantWithJourney[]>({
@@ -58,7 +64,49 @@ export default function ParticipantsPage() {
     return { label: t('participantStatus.active'), color: 'bg-sky-100 text-sky-700' };
   };
 
-  const totalPages = Math.ceil(participants.length / ITEMS_PER_PAGE);
+  const handleResendEmail = async (participantId: string) => {
+    setSendingEmailTo(participantId);
+    try {
+      const res = await fetch(`/api/participants/${participantId}/resend-email`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        toast({
+          title: isHebrew ? "המייל נשלח בהצלחה" : "Email sent successfully",
+          description: isHebrew ? "מייל עם הקישור לתהליך נשלח למשתתף" : "Access email was sent to the participant",
+        });
+      } else {
+        const data = await res.json();
+        toast({
+          title: isHebrew ? "שגיאה בשליחת המייל" : "Failed to send email",
+          description: data.error || (isHebrew ? "נסה שוב מאוחר יותר" : "Please try again later"),
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "לא ניתן לשלוח את המייל" : "Could not send email",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingEmailTo(null);
+    }
+  };
+
+  // Filter participants by search query (name, email, or ID number)
+  const filteredParticipants = participants.filter(p => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    return (
+      (p.name?.toLowerCase() || '').includes(query) ||
+      (p.email?.toLowerCase() || '').includes(query) ||
+      (p.idNumber || '').includes(query)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredParticipants.length / ITEMS_PER_PAGE);
   const activeCount = participants.filter(p => !p.completedAt && (!p.lastActiveAt || Math.floor((Date.now() - new Date(p.lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)) <= 3)).length;
   const stuckCount = participants.filter(p => !p.completedAt && p.lastActiveAt && Math.floor((Date.now() - new Date(p.lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)) > 3).length;
   const completedCount = participants.filter(p => p.completedAt).length;
@@ -85,6 +133,19 @@ export default function ParticipantsPage() {
           </p>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative max-w-sm">
+          <Search className={`absolute ${isHebrew ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400`} />
+          <Input
+            type="text"
+            placeholder={isHebrew ? "חפש לפי שם, אימייל או ת.ז..." : "Search by name, email or ID..."}
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className={`${isHebrew ? 'pr-10 text-right' : 'pl-10'} h-10`}
+            data-testid="input-search-participants"
+          />
+        </div>
+
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 text-center" data-testid="card-active-count">
             <div className="text-2xl font-bold text-sky-700" data-testid="value-active-count">{activeCount}</div>
@@ -107,9 +168,15 @@ export default function ParticipantsPage() {
               <p className="text-sm text-slate-500">{t('participantsTable.empty')}</p>
               <p className="text-xs text-slate-400 mt-1">{t('participantsTable.emptyHint')}</p>
             </div>
+          ) : filteredParticipants.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-sm text-slate-500">{isHebrew ? "לא נמצאו תוצאות" : "No results found"}</p>
+              <p className="text-xs text-slate-400 mt-1">{isHebrew ? "נסה לחפש במונחים אחרים" : "Try searching with different terms"}</p>
+            </div>
           ) : isMobile ? (
             <div className="space-y-3">
-              {participants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p) => {
+              {filteredParticipants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p) => {
                 const status = getParticipantStatus(p);
                 const isExpanded = expandedParticipant === p.id;
                 
@@ -192,6 +259,22 @@ export default function ParticipantsPage() {
                             </span>
                           )}
                         </div>
+                        {/* Resend Email Button - Mobile */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleResendEmail(p.id); }}
+                          disabled={!p.email || sendingEmailTo === p.id}
+                          className="w-full mt-2 text-violet-600 border-violet-200 hover:bg-violet-50"
+                          data-testid={`button-resend-email-${p.id}`}
+                        >
+                          {sendingEmailTo === p.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin me-1" />
+                          ) : (
+                            <Mail className="h-3 w-3 me-1" />
+                          )}
+                          {isHebrew ? "שלח מייל גישה מחדש" : "Resend access email"}
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -210,10 +293,11 @@ export default function ParticipantsPage() {
                     <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.day')}</th>
                     <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.status')}</th>
                     <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{t('participantsTable.payment')}</th>
+                    <th className="text-start text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">{isHebrew ? "פעולות" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {participants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p) => {
+                  {filteredParticipants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p) => {
                     const status = getParticipantStatus(p);
                     return (
                       <tr 
@@ -283,6 +367,23 @@ export default function ParticipantsPage() {
                             </span>
                           )}
                         </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleResendEmail(p.id)}
+                            disabled={!p.email || sendingEmailTo === p.id}
+                            className="text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                            data-testid={`button-resend-email-${p.id}`}
+                            title={isHebrew ? "שלח מייל גישה מחדש" : "Resend access email"}
+                          >
+                            {sendingEmailTo === p.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Mail className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -291,12 +392,12 @@ export default function ParticipantsPage() {
             </div>
           )}
 
-          {participants.length > ITEMS_PER_PAGE && (
+          {filteredParticipants.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between py-4 px-2 border-t border-slate-100 mt-4">
               <p className="text-sm text-slate-400">
                 {isHebrew 
-                  ? `מציג ${Math.min(currentPage * ITEMS_PER_PAGE, participants.length)} מתוך ${participants.length}`
-                  : `Showing ${Math.min(currentPage * ITEMS_PER_PAGE, participants.length)} of ${participants.length}`}
+                  ? `מציג ${Math.min(currentPage * ITEMS_PER_PAGE, filteredParticipants.length)} מתוך ${filteredParticipants.length}`
+                  : `Showing ${Math.min(currentPage * ITEMS_PER_PAGE, filteredParticipants.length)} of ${filteredParticipants.length}`}
               </p>
               <div className="flex items-center gap-1">
                 <Button

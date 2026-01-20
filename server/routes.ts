@@ -311,6 +311,53 @@ export async function registerRoutes(
     }
   });
 
+  // Resend journey access email to participant
+  app.post("/api/participants/:id/resend-email", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const participantId = req.params.id;
+      
+      const participant = await storage.getParticipantById(participantId);
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      
+      if (!participant.email) {
+        return res.status(400).json({ error: "Participant has no email" });
+      }
+      
+      const journey = await storage.getJourney(participant.journeyId);
+      if (!journey || journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const mentor = await storage.getUser(userId);
+      const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+        : 'https://flow83.replit.app';
+      const journeyLink = `${baseUrl}/p/${participant.accessToken}`;
+      
+      const success = await sendJourneyAccessEmail({
+        participantEmail: participant.email,
+        participantName: participant.name || participant.email.split('@')[0],
+        participantIdNumber: participant.idNumber || undefined,
+        journeyName: journey.name,
+        journeyLink,
+        mentorName: mentor?.firstName || undefined,
+        language: (journey.language as 'he' | 'en') || 'he'
+      });
+      
+      if (success) {
+        res.json({ success: true, message: "Email sent successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to send email" });
+      }
+    } catch (error) {
+      console.error("Error resending email:", error);
+      res.status(500).json({ error: "Failed to resend email" });
+    }
+  });
+
   // Notification settings routes
   app.get("/api/notification-settings", isAuthenticated, async (req: any, res) => {
     try {
