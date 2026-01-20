@@ -1028,34 +1028,46 @@ ${toneNote}`;
       const isMinimalResponse = intent === "checkin" || intent === "other";
       
       if (isMinimalResponse) {
-        // User said something like "ok" or "אוקיי" - gently encourage engagement
-        return `The user responded with a minimal acknowledgment: "${userMessage}"
+        // User said something like "ok" or "אוקיי" - respond warmly and invite engagement
+        return `The user responded with: "${userMessage}"
 
-You need to gently encourage them to engage with the core question.
-
-DO NOT repeat the full orientation. Instead:
-1. Acknowledge briefly (one short sentence)
-2. Rephrase the core question in a more personal, inviting way
+Respond like a real mentor would - warm, present, understanding. Don't just ask a question.
 
 ${isHebrewLang ? `
-Core question to rephrase: ${dayPlan.core_question.question}${coreChoicesText}
+YOUR APPROACH:
+1. Acknowledge them warmly (show you see them)
+2. Share something brief and grounding about this day's focus
+3. Then gently invite them to share
 
-GOOD EXAMPLES:
-"אני שמח/ה שהגעת. בוא/י נתחיל - ${dayPlan.core_question.question}${coreChoicesText}"
-"מעולה שבחרת להתחיל. אז ספר/י לי - ${dayPlan.core_question.question}"
-"יופי. אז מה עולה לך כשאני שואל/ת - ${dayPlan.core_question.question}"
+Core question for this day: ${dayPlan.core_question.question}${coreChoicesText}
+Day focus: ${dayPlan.day_goal}
+
+GOOD EXAMPLE:
+"נעים שהגעת. אני יודעת שלפעמים קשה לדעת מאיפה להתחיל - וזה בסדר גמור. 
+ביום הזה אנחנו פשוט מתבוננים, בלי לנסות לתקן שום דבר.
+אז בוא נתחיל ברוגע: ${dayPlan.core_question.question}${coreChoicesText}"
+
+BAD EXAMPLE (too short, robotic):
+"יופי. ${dayPlan.core_question.question}"
 ` : `
-Core question to rephrase: ${dayPlan.core_question.question}${coreChoicesText}
+YOUR APPROACH:
+1. Acknowledge them warmly
+2. Share something brief about today's focus
+3. Gently invite them to share
 
-GOOD EXAMPLES:
-"Glad you're here. Let's begin - ${dayPlan.core_question.question}${coreChoicesText}"
-"Great that you started. So tell me - ${dayPlan.core_question.question}"
+Core question: ${dayPlan.core_question.question}${coreChoicesText}
+
+GOOD EXAMPLE:
+"Glad you're here. I know sometimes it's hard to know where to start - and that's completely okay.
+Today we're simply observing, without trying to fix anything.
+So let's begin gently: ${dayPlan.core_question.question}${coreChoicesText}"
 `}
 
 RULES:
-- MAX 30 words
-- End with a question
-- Sound human, not robotic
+- Be warm and present, like a real mentor
+- MAX 60 words
+- Share something meaningful before asking
+- End with an invitation, not a demand
 
 ${addressingNote}
 ${toneNote}`;
@@ -1129,26 +1141,43 @@ Do NOT repeat the original question word-for-word.`;
       const isMinimalInterpret = intent === "checkin" || intent === "other";
       
       if (isMinimalInterpret) {
-        // User gave minimal response - encourage sharing more
-        return `The user responded minimally: "${userMessage}"
+        // User gave minimal response - respond like a mentor, then invite more
+        return `The user responded with: "${userMessage}"
 
-They haven't shared enough for you to reflect meaningfully. Encourage them to share more.
+Respond like a real mentor - acknowledge what they said, share something meaningful, then invite them to go deeper.
 
 ${isHebrewInterp ? `
-GOOD EXAMPLES:
-"אני שומע/ת אותך. תספר/י לי עוד - מה עולה לך כשאת/ה חושב/ת על זה?"
-"אוקיי. בוא/י ננסה יחד - מה הדבר הראשון שעולה לך?"
-"אין לחץ. שתף/י אותי - איפה את/ה מרגיש/ה את זה הכי חזק?"
+YOUR APPROACH:
+1. Accept where they are (no pressure)
+2. Share something grounding or normalizing 
+3. Offer a gentle opening to share more
+
+Day focus: ${dayPlan.day_goal}
+
+GOOD EXAMPLE:
+"אני שומעת. לפעמים המילים לא באות בקלות - וזה בסדר. 
+הרבה אנשים מגיעים לכאן בתחושה שהם לא בטוחים מאיפה להתחיל.
+אם היית צריכה לבחור דבר אחד קטן שמפריע לך - מה זה היה?"
+
+BAD EXAMPLE (too pushy):
+"ספרי לי עוד. מה את מרגישה?"
 ` : `
-GOOD EXAMPLES:
-"I hear you. Tell me more - what comes up when you think about this?"
-"Okay. Let's try together - what's the first thing that comes to mind?"
+YOUR APPROACH:
+1. Accept where they are
+2. Share something normalizing
+3. Offer gentle opening
+
+GOOD EXAMPLE:
+"I hear you. Sometimes the words don't come easily - and that's okay.
+Many people come here feeling unsure where to begin.
+If you had to pick one small thing that's been bothering you - what would it be?"
 `}
 
 RULES:
-- MAX 25 words
-- Ask ONE open question
-- Be warm, not pushy
+- Be warm and patient, like a real mentor
+- MAX 60 words
+- Normalize their experience
+- End with a soft invitation
 
 ${addressingNote}
 ${toneNote}`;
