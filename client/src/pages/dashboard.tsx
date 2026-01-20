@@ -253,14 +253,61 @@ export default function Dashboard() {
               <p className="text-xs md:text-sm text-slate-500">{t('myFlows')}</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-sky-200 transition-all" data-testid="card-total-participants">
+            <div className={`bg-white border rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md transition-all ${
+              stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
+                ? "border-red-300 hover:border-red-400" 
+                : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
+                  ? "border-amber-300 hover:border-amber-400"
+                  : "border-slate-200 hover:border-sky-200"
+            }`} data-testid="card-total-participants">
               <div className="flex items-center justify-between mb-2 md:mb-4">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-sky-50 flex items-center justify-center">
-                  <Users className="h-4 w-4 md:h-5 md:w-5 text-sky-600" />
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center ${
+                  stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
+                    ? "bg-red-50" 
+                    : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
+                      ? "bg-amber-50"
+                      : "bg-sky-50"
+                }`}>
+                  <Users className={`h-4 w-4 md:h-5 md:w-5 ${
+                    stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
+                      ? "text-red-600" 
+                      : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
+                        ? "text-amber-600"
+                        : "text-sky-600"
+                  }`} />
                 </div>
+                {stats?.participantLimit && (
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    stats.totalParticipants >= stats.participantLimit 
+                      ? "bg-red-100 text-red-700" 
+                      : stats.totalParticipants >= stats.participantLimit * 0.9
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-sky-100 text-sky-700"
+                  }`}>
+                    {stats.totalParticipants}/{stats.participantLimit}
+                  </span>
+                )}
               </div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-total-participants">{stats?.totalParticipants ?? 0}</div>
               <p className="text-xs md:text-sm text-slate-500">{t('participants')}</p>
+              {stats?.participantLimit && (
+                <div className="mt-2">
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        stats.totalParticipants >= stats.participantLimit 
+                          ? "bg-red-500" 
+                          : stats.totalParticipants >= stats.participantLimit * 0.9
+                            ? "bg-amber-500"
+                            : stats.totalParticipants >= stats.participantLimit * 0.75
+                              ? "bg-sky-400"
+                              : "bg-sky-500"
+                      }`}
+                      style={{ width: `${Math.min(100, (stats.totalParticipants / stats.participantLimit) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-emerald-200 transition-all" data-testid="card-active-participants">

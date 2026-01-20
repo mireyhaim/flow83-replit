@@ -10,7 +10,7 @@ import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { TRIAL_LIMITS } from "./subscriptionService";
-import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
+import { sendJourneyAccessEmail, sendNewParticipantNotification, sendParticipantLimitNotification } from "./email";
 import { processEmailNotifications, sendWeeklyReports, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -21,6 +21,51 @@ const pdf = require("pdf-parse");
 // Generate a unique 6-character short code for flow URLs
 function generateShortCode(): string {
   return Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2, 5);
+}
+
+// Thresholds for participant limit notifications
+const PARTICIPANT_THRESHOLDS = [15, 18, 20] as const;
+
+// Check if we should send a participant limit notification
+async function checkParticipantThresholdNotification(
+  mentorId: string, 
+  currentCount: number,
+  maxLimit: number,
+  baseUrl: string
+): Promise<void> {
+  try {
+    const mentor = await storage.getUser(mentorId);
+    if (!mentor?.email) return;
+
+    const lastNotifiedThreshold = mentor.lastParticipantThresholdNotified || 0;
+    
+    // Find the highest threshold that we've reached but haven't notified about yet
+    let thresholdToNotify: 15 | 18 | 20 | null = null;
+    for (const threshold of PARTICIPANT_THRESHOLDS) {
+      if (currentCount >= threshold && threshold > lastNotifiedThreshold) {
+        thresholdToNotify = threshold;
+      }
+    }
+    
+    if (thresholdToNotify) {
+      // Send notification
+      await sendParticipantLimitNotification({
+        mentorEmail: mentor.email,
+        mentorName: mentor.firstName || 'מנטור',
+        currentParticipants: currentCount,
+        maxParticipants: maxLimit,
+        threshold: thresholdToNotify,
+        dashboardLink: `${baseUrl}/dashboard`,
+        language: 'he',
+      });
+      
+      // Update the user's last notified threshold
+      await storage.updateUser(mentorId, { lastParticipantThresholdNotified: thresholdToNotify });
+      console.log(`[ParticipantLimit] Sent notification to ${mentor.email} for threshold ${thresholdToNotify}`);
+    }
+  } catch (error) {
+    console.error('[ParticipantLimit] Failed to check/send threshold notification:', error);
+  }
 }
 
 const upload = multer({ 
@@ -231,6 +276,8 @@ export async function registerRoutes(
           activeParticipants: 0,
           completedParticipants: 0,
           completionRate: 0,
+          participantLimit: TRIAL_LIMITS.maxParticipants,
+          publishedFlowLimit: TRIAL_LIMITS.maxPublishedFlows,
         });
       }
       
@@ -272,6 +319,8 @@ export async function registerRoutes(
         activeParticipants,
         completedParticipants,
         completionRate,
+        participantLimit: TRIAL_LIMITS.maxParticipants,
+        publishedFlowLimit: TRIAL_LIMITS.maxPublishedFlows,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch dashboard stats" });
@@ -1179,6 +1228,16 @@ export async function registerRoutes(
               journeyName: journey.name,
             },
           });
+          
+          // Check if we should notify mentor about reaching participant thresholds
+          const baseUrl = `https://${req.get("host")}`;
+          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
+          checkParticipantThresholdNotification(
+            journey.creatorId, 
+            mentorParticipants.length, 
+            TRIAL_LIMITS.maxParticipants,
+            baseUrl
+          );
         }
       }
       
@@ -2644,6 +2703,15 @@ export async function registerRoutes(
           } catch (emailError) {
             console.error('Failed to send mentor notification:', emailError);
           }
+          
+          // Check if we should notify mentor about reaching participant thresholds
+          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
+          checkParticipantThresholdNotification(
+            journey.creatorId, 
+            mentorParticipants.length, 
+            TRIAL_LIMITS.maxParticipants,
+            baseUrl
+          );
         }
       }
 

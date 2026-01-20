@@ -46,6 +46,7 @@ export const users = pgTable("users", {
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
   paymentFailedAt: timestamp("payment_failed_at"), // When payment failed - used for 5-day grace period
+  lastParticipantThresholdNotified: integer("last_participant_threshold_notified"), // 15, 18, or 20 - last threshold we notified about
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

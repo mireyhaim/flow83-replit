@@ -10,6 +10,8 @@ export interface DashboardStats {
   activeParticipants: number;
   completedParticipants: number;
   completionRate: number;
+  participantLimit: number;
+  publishedFlowLimit: number;
 }
 
 export interface InactiveParticipant extends Participant {

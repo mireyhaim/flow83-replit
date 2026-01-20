@@ -59,14 +59,19 @@ export default function ExternalPaymentSuccessPage() {
   }
 
   if (error || !verification?.success) {
-    const errorMessage = verification?.error || "לא הצלחנו לאמת את התשלום";
+    const isParticipantLimitError = verification?.error === "participant_limit_exceeded";
+    const errorMessage = isParticipantLimitError 
+      ? verification?.message || "הפלואו הזה הגיע למגבלת המשתתפים. אנא צור קשר עם המנטור."
+      : verification?.error || "לא הצלחנו לאמת את התשלום";
+    const errorTitle = isParticipantLimitError ? "הפלואו מלא" : "משהו השתבש";
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4" dir="rtl">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl">❌</span>
+          <div className={`w-16 h-16 ${isParticipantLimitError ? 'bg-amber-100' : 'bg-red-100'} rounded-full flex items-center justify-center mx-auto mb-6`}>
+            <span className="text-3xl">{isParticipantLimitError ? '⚠️' : '❌'}</span>
           </div>
-          <h1 className="text-2xl font-bold mb-4 text-gray-800">משהו השתבש</h1>
+          <h1 className="text-2xl font-bold mb-4 text-gray-800">{errorTitle}</h1>
           <p className="text-gray-600 mb-6">
             {errorMessage}
           </p>

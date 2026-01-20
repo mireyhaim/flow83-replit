@@ -1038,3 +1038,146 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
     return false;
   }
 }
+
+interface ParticipantLimitNotificationParams {
+  mentorEmail: string;
+  mentorName: string;
+  currentParticipants: number;
+  maxParticipants: number;
+  threshold: 15 | 18 | 20;
+  dashboardLink: string;
+  language?: 'he' | 'en';
+}
+
+export async function sendParticipantLimitNotification(params: ParticipantLimitNotificationParams): Promise<boolean> {
+  const { mentorEmail, mentorName, currentParticipants, maxParticipants, threshold, dashboardLink, language = 'he' } = params;
+
+  try {
+    // Platform notification - uses "Flow 83" as sender
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    const isHebrew = language === 'he';
+    const isAtLimit = currentParticipants >= maxParticipants;
+    
+    const subject = isHebrew
+      ? isAtLimit 
+        ? `⚠️ הגעת למגבלת המשתתפים - ${currentParticipants}/${maxParticipants}`
+        : `📊 התקרבת למגבלת המשתתפים - ${currentParticipants}/${maxParticipants}`
+      : isAtLimit
+        ? `⚠️ You've reached your participant limit - ${currentParticipants}/${maxParticipants}`
+        : `📊 You're approaching your participant limit - ${currentParticipants}/${maxParticipants}`;
+
+    const html = isHebrew ? `
+      <!DOCTYPE html>
+      <html lang="he" dir="rtl">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 20px;">${isAtLimit ? `${mentorName}, הגעת למגבלת המשתתפים!` : `היי ${mentorName}, התקרבת למגבלה!`}</h2>
+            
+            <div style="background: ${isAtLimit ? '#fef2f2' : '#fefce8'}; border: 2px solid ${isAtLimit ? '#ef4444' : '#f59e0b'}; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 48px; font-weight: bold; color: ${isAtLimit ? '#dc2626' : '#d97706'}; margin-bottom: 8px;">
+                ${currentParticipants}/${maxParticipants}
+              </div>
+              <div style="color: ${isAtLimit ? '#991b1b' : '#92400e'}; font-size: 16px;">
+                ${isAtLimit ? 'הגעת למגבלת המשתתפים בתוכנית שלך' : 'משתתפים מהמכסה שלך'}
+              </div>
+            </div>
+
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              ${isAtLimit 
+                ? 'משתתפים חדשים לא יוכלו להצטרף לפלואים שלך עד שתשדרג את החבילה. כדי להמשיך לקבל משתתפים חדשים, שדרג עכשיו!'
+                : `נשארו לך רק ${maxParticipants - currentParticipants} מקומות פנויים. כדי לא להפסיד משתתפים פוטנציאליים, כדאי לשקול שדרוג.`
+              }
+            </p>
+
+            <a href="${dashboardLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px; margin-bottom: 16px;">
+              ${isAtLimit ? 'שדרג עכשיו' : 'צפה בדשבורד'}
+            </a>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center;">
+              <p style="color: #475569; font-size: 14px; margin: 0 0 8px;">
+                <strong>יש לך שאלות? נשמח לעזור!</strong>
+              </p>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">
+                שלח לנו מייל ל: <a href="mailto:support@flow83.com" style="color: #7c3aed; text-decoration: none;">support@flow83.com</a>
+              </p>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ` : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="padding: 32px;">
+            <h2 style="color: #1e1b4b; margin: 0 0 20px;">${isAtLimit ? `${mentorName}, you've reached your participant limit!` : `Hey ${mentorName}, you're approaching your limit!`}</h2>
+            
+            <div style="background: ${isAtLimit ? '#fef2f2' : '#fefce8'}; border: 2px solid ${isAtLimit ? '#ef4444' : '#f59e0b'}; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 48px; font-weight: bold; color: ${isAtLimit ? '#dc2626' : '#d97706'}; margin-bottom: 8px;">
+                ${currentParticipants}/${maxParticipants}
+              </div>
+              <div style="color: ${isAtLimit ? '#991b1b' : '#92400e'}; font-size: 16px;">
+                ${isAtLimit ? 'You have reached your plan participant limit' : 'participants of your quota used'}
+              </div>
+            </div>
+
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              ${isAtLimit 
+                ? 'New participants cannot join your flows until you upgrade your plan. To continue receiving new participants, upgrade now!'
+                : `You only have ${maxParticipants - currentParticipants} spots left. Consider upgrading to avoid missing potential participants.`
+              }
+            </p>
+
+            <a href="${dashboardLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px; margin-bottom: 16px;">
+              ${isAtLimit ? 'Upgrade Now' : 'View Dashboard'}
+            </a>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center;">
+              <p style="color: #475569; font-size: 14px; margin: 0 0 8px;">
+                <strong>Have questions? We're here to help!</strong>
+              </p>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">
+                Email us at: <a href="mailto:support@flow83.com" style="color: #7c3aed; text-decoration: none;">support@flow83.com</a>
+              </p>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Transformational Journey Platform
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: mentorEmail,
+      subject,
+      html
+    });
+
+    console.log('Participant limit notification sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send participant limit notification:', error);
+    return false;
+  }
+}

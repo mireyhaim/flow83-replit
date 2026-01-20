@@ -105,7 +105,13 @@ export default function JourneyLandingPage() {
         body: JSON.stringify({ email, name }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to join");
+      if (!res.ok) {
+        // Handle participant limit exceeded with a friendly message
+        if (data.error === "participant_limit_exceeded") {
+          throw new Error(isHebrew ? data.message : data.messageEn);
+        }
+        throw new Error(data.error || "Failed to join");
+      }
       return data;
     },
     onSuccess: (data) => {
