@@ -1,47 +1,69 @@
 import { getUncachableStripeClient } from './stripeClient';
 import Stripe from 'stripe';
 
+// New pricing model: Commission-based with optional monthly subscription
+// Free: 0₪/month, 17% commission
+// Pro: 55₪/month, 15% commission  
+// Scale: 83₪/month, 11% commission
 export const SUBSCRIPTION_PLANS = {
-  starter: {
-    name: 'Starter',
-    priceId: '', // Will be set dynamically or from env
-    amount: 3800, // $38.00 in cents
-    trialDays: 21,
+  free: {
+    name: 'Free',
+    nameHe: 'חינם',
+    priceId: '', // No subscription needed
+    amount: 0, // 0₪ per month
+    currency: 'ILS',
+    commissionRate: 0.17, // 17%
     features: {
-      activeJourneys: 1, // Only 1 published flow allowed
-      includedUsers: 20, // Up to 20 participants total
-      overage: 0,
+      activeJourneys: -1, // unlimited
+      includedUsers: -1, // unlimited
     }
   },
   pro: {
     name: 'Pro',
+    nameHe: 'Pro',
     priceId: '',
-    amount: 8300, // $83.00 in cents
-    trialDays: 0,
-    features: {
-      activeJourneys: 5,
-      includedUsers: 300,
-      overage: 0.60,
-    }
-  },
-  business: {
-    name: 'Business',
-    priceId: '',
-    amount: 18300, // $183.00 in cents
-    trialDays: 0,
+    amount: 5500, // 55₪ in agorot
+    currency: 'ILS',
+    commissionRate: 0.15, // 15%
     features: {
       activeJourneys: -1, // unlimited
       includedUsers: -1, // unlimited
-      overage: 0,
+    }
+  },
+  scale: {
+    name: 'Scale',
+    nameHe: 'Scale',
+    priceId: '',
+    amount: 8300, // 83₪ in agorot
+    currency: 'ILS',
+    commissionRate: 0.11, // 11%
+    features: {
+      activeJourneys: -1, // unlimited
+      includedUsers: -1, // unlimited
     }
   }
 } as const;
 
-// Trial plan limits (same as starter for now)
-export const TRIAL_LIMITS = {
-  maxPublishedFlows: 1,
-  maxParticipants: 20,
-};
+// Calculate commission for a payment based on user's plan
+// paymentAmount should be in the same unit as desired output (e.g., ILS or cents)
+export function calculateCommission(paymentAmount: number, plan: PlanType): { 
+  grossAmount: number;
+  commissionRate: number;
+  commissionAmount: number;
+  netAmount: number;
+} {
+  const planDetails = SUBSCRIPTION_PLANS[plan];
+  const commissionRate = planDetails.commissionRate;
+  const commissionAmount = Math.round(paymentAmount * commissionRate * 100) / 100; // Round to 2 decimal places
+  const netAmount = Math.round((paymentAmount - commissionAmount) * 100) / 100;
+  
+  return {
+    grossAmount: paymentAmount,
+    commissionRate,
+    commissionAmount,
+    netAmount,
+  };
+}
 
 export type PlanType = keyof typeof SUBSCRIPTION_PLANS;
 
@@ -83,7 +105,7 @@ export class SubscriptionService {
     const price = await stripe.prices.create({
       product: productId,
       unit_amount: planDetails.amount,
-      currency: 'usd',
+      currency: planDetails.currency.toLowerCase(),
       recurring: { interval: 'month' },
       metadata: { plan },
     });
@@ -132,9 +154,7 @@ export class SubscriptionService {
       sessionParams.customer_email = params.email;
     }
 
-    if (planDetails.trialDays > 0) {
-      sessionParams.subscription_data!.trial_period_days = planDetails.trialDays;
-    }
+    // No trial periods in new pricing model - all plans are commission-based
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     
@@ -160,6 +180,27 @@ export class SubscriptionService {
     const stripe = await getUncachableStripeClient();
     return await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: false,
+    });
+  }
+
+  async changePlan(subscriptionId: string, newPlan: PlanType): Promise<Stripe.Subscription> {
+    const stripe = await getUncachableStripeClient();
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    
+    const productId = await this.getOrCreateProduct(stripe);
+    const newPriceId = await this.getOrCreatePrice(stripe, productId, newPlan);
+    
+    // Update the subscription to the new price
+    return await stripe.subscriptions.update(subscriptionId, {
+      items: [{
+        id: subscription.items.data[0].id,
+        price: newPriceId,
+      }],
+      metadata: {
+        ...subscription.metadata,
+        plan: newPlan,
+      },
+      proration_behavior: 'create_prorations', // Prorate the difference
     });
   }
 

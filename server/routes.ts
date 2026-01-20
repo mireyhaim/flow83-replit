@@ -9,8 +9,8 @@ import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema,
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
-import { TRIAL_LIMITS } from "./subscriptionService";
-import { sendJourneyAccessEmail, sendNewParticipantNotification, sendParticipantLimitNotification } from "./email";
+import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
+import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
 import { processEmailNotifications, sendWeeklyReports, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -21,51 +21,6 @@ const pdf = require("pdf-parse");
 // Generate a unique 6-character short code for flow URLs
 function generateShortCode(): string {
   return Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2, 5);
-}
-
-// Thresholds for participant limit notifications
-const PARTICIPANT_THRESHOLDS = [15, 18, 20] as const;
-
-// Check if we should send a participant limit notification
-async function checkParticipantThresholdNotification(
-  mentorId: string, 
-  currentCount: number,
-  maxLimit: number,
-  baseUrl: string
-): Promise<void> {
-  try {
-    const mentor = await storage.getUser(mentorId);
-    if (!mentor?.email) return;
-
-    const lastNotifiedThreshold = mentor.lastParticipantThresholdNotified || 0;
-    
-    // Find the highest threshold that we've reached but haven't notified about yet
-    let thresholdToNotify: 15 | 18 | 20 | null = null;
-    for (const threshold of PARTICIPANT_THRESHOLDS) {
-      if (currentCount >= threshold && threshold > lastNotifiedThreshold) {
-        thresholdToNotify = threshold;
-      }
-    }
-    
-    if (thresholdToNotify) {
-      // Send notification
-      await sendParticipantLimitNotification({
-        mentorEmail: mentor.email,
-        mentorName: mentor.firstName || 'מנטור',
-        currentParticipants: currentCount,
-        maxParticipants: maxLimit,
-        threshold: thresholdToNotify,
-        dashboardLink: `${baseUrl}/dashboard`,
-        language: 'he',
-      });
-      
-      // Update the user's last notified threshold
-      await storage.updateUser(mentorId, { lastParticipantThresholdNotified: thresholdToNotify });
-      console.log(`[ParticipantLimit] Sent notification to ${mentor.email} for threshold ${thresholdToNotify}`);
-    }
-  } catch (error) {
-    console.error('[ParticipantLimit] Failed to check/send threshold notification:', error);
-  }
 }
 
 const upload = multer({ 
@@ -198,24 +153,8 @@ export async function registerRoutes(
       // Only return published journeys for public access (security)
       const publishedJourneys = journeys.filter(j => j.status === "published");
       
-      // Filter out journeys from expired mentors
-      // This also triggers expireUserTrial() for any expired mentors on first access
-      const activeJourneys = [];
-      for (const journey of publishedJourneys) {
-        if (journey.creatorId) {
-          const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
-          if (mentorTrialStatus.isActive) {
-            activeJourneys.push(journey);
-          }
-          // If trial expired, getUserTrialStatus already called expireUserTrial
-          // which set this journey to draft, so it won't appear next time
-        } else {
-          // No creator - include it (system journey)
-          activeJourneys.push(journey);
-        }
-      }
-      
-      res.json(activeJourneys);
+      // No trial filtering in new pricing model - all published journeys are visible
+      res.json(publishedJourneys);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flows" });
     }
@@ -246,18 +185,31 @@ export async function registerRoutes(
     }
   });
 
-  // Get trial/subscription status for current user
-  app.get("/api/trial-status", isAuthenticated, async (req: any, res) => {
+  // Get subscription plan status for current user
+  app.get("/api/subscription-status", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
-      const trialStatus = await storage.getUserTrialStatus(userId);
-      res.json(trialStatus);
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      // New pricing model - return plan info
+      const plan = (user.subscriptionPlan as PlanType) || 'free';
+      const planDetails = SUBSCRIPTION_PLANS[plan] || SUBSCRIPTION_PLANS.free;
+      res.json({
+        plan,
+        planName: planDetails.name,
+        planNameHe: planDetails.nameHe,
+        commissionRate: planDetails.commissionRate,
+        monthlyFee: planDetails.amount / 100, // Convert from agorot to ILS
+        isActive: true, // All plans are active in new model
+      });
     } catch (error) {
-      console.error("Error fetching trial status:", error);
-      res.status(500).json({ error: "Failed to fetch trial status" });
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ error: "Failed to fetch subscription status" });
     }
   });
 
@@ -276,8 +228,6 @@ export async function registerRoutes(
           activeParticipants: 0,
           completedParticipants: 0,
           completionRate: 0,
-          participantLimit: TRIAL_LIMITS.maxParticipants,
-          publishedFlowLimit: TRIAL_LIMITS.maxPublishedFlows,
         });
       }
       
@@ -319,8 +269,6 @@ export async function registerRoutes(
         activeParticipants,
         completedParticipants,
         completionRate,
-        participantLimit: TRIAL_LIMITS.maxParticipants,
-        publishedFlowLimit: TRIAL_LIMITS.maxPublishedFlows,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch dashboard stats" });
@@ -474,21 +422,37 @@ export async function registerRoutes(
   app.get("/api/earnings", isAuthenticated, async (req: any, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
+      const user = await storage.getUser(userId);
       const totalCents = await storage.getTotalEarningsByMentor(userId);
       const payments = await storage.getPaymentsByMentor(userId);
+      
+      // Get user's plan and calculate commission breakdown
+      const plan = (user?.subscriptionPlan as PlanType) || 'free';
+      const grossAmount = totalCents / 100;
+      const commissionBreakdown = calculateCommission(grossAmount, plan);
+      
       res.json({ 
-        totalEarnings: totalCents / 100,
+        totalEarnings: commissionBreakdown.netAmount, // Net after commission
+        grossEarnings: grossAmount,
+        commissionFees: commissionBreakdown.commissionAmount,
+        commissionRate: commissionBreakdown.commissionRate,
+        plan,
         totalCents,
-        currency: "USD",
+        currency: "ILS",
         paymentCount: payments.length,
-        recentPayments: payments.slice(0, 10).map(p => ({
-          id: p.id,
-          amount: p.amount / 100,
-          currency: p.currency,
-          customerEmail: p.customerEmail,
-          customerName: p.customerName,
-          createdAt: p.createdAt,
-        })),
+        recentPayments: payments.slice(0, 10).map(p => {
+          const paymentCommission = calculateCommission(p.amount / 100, plan);
+          return {
+            id: p.id,
+            amount: p.amount / 100,
+            netAmount: paymentCommission.netAmount,
+            commissionFee: paymentCommission.commissionAmount,
+            currency: p.currency,
+            customerEmail: p.customerEmail,
+            customerName: p.customerName,
+            createdAt: p.createdAt,
+          };
+        }),
       });
     } catch (error) {
       console.error("Error fetching earnings:", error);
@@ -698,24 +662,7 @@ export async function registerRoutes(
       const userId = (req.user as any)?.claims?.sub;
       console.log("[journey] User ID:", userId);
       
-      // Check if this is user's first journey - start 21-day trial if so
-      if (userId) {
-        const user = await storage.getUser(userId);
-        if (user && !user.trialStartedAt && !user.subscriptionStatus) {
-          // Start the 21-day trial for new users creating their first flow
-          await storage.startUserTrial(userId);
-        } else {
-          // Check trial status for existing users
-          const trialStatus = await storage.getUserTrialStatus(userId);
-          if (!trialStatus.isActive) {
-            return res.status(402).json({ 
-              error: "trial_expired", 
-              message: "Your trial has expired. Please subscribe to create new flows.",
-              trialStatus: trialStatus.status
-            });
-          }
-        }
-      }
+      // No trial restrictions in new pricing model - anyone can create flows
       
       const data = { ...req.body, creatorId: userId };
       const parsed = insertJourneySchema.safeParse(data);
@@ -736,33 +683,8 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      // Check trial status for all edits
+      // No restrictions in new pricing model - unlimited edits and publishes for all plans
       const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ 
-            error: "trial_expired", 
-            message: "Your trial has expired. Please subscribe to edit flows.",
-            trialStatus: trialStatus.status
-          });
-        }
-      }
-
-      // Check publish limits when trying to publish
-      if (req.body.status === "published" && existingJourney.status !== "published") {
-        // Count how many flows this user has already published
-        const userJourneys = await storage.getJourneysByCreator(userId);
-        const publishedCount = userJourneys.filter(j => j.status === "published").length;
-        
-        if (publishedCount >= TRIAL_LIMITS.maxPublishedFlows) {
-          return res.status(403).json({ 
-            error: "limit_exceeded", 
-            message: `הגעת למגבלת הפלואים המפורסמים (${TRIAL_LIMITS.maxPublishedFlows}). שדרג את החבילה כדי לפרסם יותר פלואים.`,
-            messageEn: `You have reached the published flows limit (${TRIAL_LIMITS.maxPublishedFlows}). Upgrade your plan to publish more flows.`
-          });
-        }
-      }
 
       // Generate short code when publishing for the first time
       let updateData = { ...req.body };
@@ -810,14 +732,7 @@ export async function registerRoutes(
   // Regenerate landing page content on demand
   app.post("/api/journeys/:id/regenerate-landing", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to regenerate content." });
-        }
-      }
-      
+      // No restrictions in new pricing model
       const journey = await storage.getJourney(req.params.id);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
@@ -864,17 +779,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
       
-      // Always check mentor's trial status on public access
-      // This ensures expiration is triggered even without authenticated calls
-      if (journey.creatorId) {
-        const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
-        if (!mentorTrialStatus.isActive) {
-          // Trial expired - this triggers expireUserTrial which sets flows to draft
-          // Return 404 to hide the flow from public access
-          return res.status(404).json({ error: "Flow not found" });
-        }
-      }
-      
+      // No trial restrictions in new pricing model - all published flows are accessible
       res.json(journey);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch flow" });
@@ -897,10 +802,7 @@ export async function registerRoutes(
         return res.status(403).json({ error: "Not authorized to delete this flow" });
       }
       
-      const trialStatus = await storage.getUserTrialStatus(userId);
-      if (!trialStatus.isActive) {
-        return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete flows." });
-      }
+      // No trial restrictions in new pricing model
       
       // Check if this flow has participants - if so, block hard delete
       const participantCount = await storage.getJourneyParticipantCount(req.params.id);
@@ -1008,16 +910,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
       
-      // Always check mentor's trial status on public access
-      // This ensures expiration is triggered even without authenticated calls
-      if (journey.creatorId) {
-        const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
-        if (!mentorTrialStatus.isActive) {
-          // Trial expired - this triggers expireUserTrial which sets flows to draft
-          // Return 404 to hide the flow from public access
-          return res.status(404).json({ error: "Flow not found" });
-        }
-      }
+      // No trial restrictions in new pricing model - all published flows are accessible
       
       // Get mentor in parallel if needed
       const mentor = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
@@ -1053,13 +946,7 @@ export async function registerRoutes(
 
   app.post("/api/journeys/:journeyId/steps", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to add content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       const data = { ...req.body, journeyId: req.params.journeyId };
       const parsed = insertJourneyStepSchema.safeParse(data);
       if (!parsed.success) {
@@ -1074,13 +961,7 @@ export async function registerRoutes(
 
   app.put("/api/steps/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to edit content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       const step = await storage.updateJourneyStep(req.params.id, req.body);
       if (!step) {
         return res.status(404).json({ error: "Step not found" });
@@ -1093,13 +974,7 @@ export async function registerRoutes(
 
   app.delete("/api/steps/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       await storage.deleteJourneyStep(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -1119,13 +994,7 @@ export async function registerRoutes(
 
   app.post("/api/steps/:stepId/blocks", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to add content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       const data = { ...req.body, stepId: req.params.stepId };
       const parsed = insertJourneyBlockSchema.safeParse(data);
       if (!parsed.success) {
@@ -1140,13 +1009,7 @@ export async function registerRoutes(
 
   app.put("/api/blocks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to edit content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       const block = await storage.updateJourneyBlock(req.params.id, req.body);
       if (!block) {
         return res.status(404).json({ error: "Block not found" });
@@ -1159,13 +1022,7 @@ export async function registerRoutes(
 
   app.delete("/api/blocks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to delete content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       await storage.deleteJourneyBlock(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -1182,27 +1039,8 @@ export async function registerRoutes(
       let participant = await storage.getParticipant(userId, journeyId);
       
       if (!participant) {
-        // Check if the mentor's trial is still active before allowing new participants
+        // No participant limits in new pricing model - unlimited participants for all plans
         const journey = await storage.getJourney(journeyId);
-        if (journey?.creatorId) {
-          const mentorTrialStatus = await storage.getUserTrialStatus(journey.creatorId);
-          if (!mentorTrialStatus.isActive) {
-            return res.status(402).json({ 
-              error: "mentor_trial_expired", 
-              message: "This flow is currently unavailable. Please try again later." 
-            });
-          }
-          
-          // Check participant limit for mentor
-          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
-          if (mentorParticipants.length >= TRIAL_LIMITS.maxParticipants) {
-            return res.status(403).json({ 
-              error: "participant_limit_exceeded", 
-              message: "הפלואו הזה הגיע למגבלת המשתתפים. אנא צור קשר עם המנטור.",
-              messageEn: "This flow has reached its participant limit. Please contact the mentor."
-            });
-          }
-        }
         
         const parsed = insertParticipantSchema.safeParse({
           userId,
@@ -1229,15 +1067,6 @@ export async function registerRoutes(
             },
           });
           
-          // Check if we should notify mentor about reaching participant thresholds
-          const baseUrl = `https://${req.get("host")}`;
-          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
-          checkParticipantThresholdNotification(
-            journey.creatorId, 
-            mentorParticipants.length, 
-            TRIAL_LIMITS.maxParticipants,
-            baseUrl
-          );
         }
       }
       
@@ -1649,14 +1478,7 @@ export async function registerRoutes(
     const { content } = req.body;
     const useSSE = req.headers.accept === "text/event-stream";
     
-    // Check trial status before any processing
-    const userId = req.user?.claims?.sub;
-    if (userId) {
-      const trialStatus = await storage.getUserTrialStatus(userId);
-      if (!trialStatus.isActive) {
-        return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to generate content." });
-      }
-    }
+    // No trial restrictions in new pricing model
     
     const sendProgress = (stage: string, progress: number, message: string) => {
       if (useSSE) {
@@ -1806,14 +1628,7 @@ export async function registerRoutes(
     const journeyId = req.params.id;
     
     try {
-      // Check trial status
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const trialStatus = await storage.getUserTrialStatus(userId);
-        if (!trialStatus.isActive) {
-          return res.status(402).json({ error: "trial_expired", message: "Your trial has expired. Please subscribe to generate content." });
-        }
-      }
+      // No trial restrictions in new pricing model
       
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
@@ -2625,17 +2440,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "flow_not_found", message: "Flow not found" });
       }
 
-      // Check participant limit for mentor before creating new participant
-      if (journey.creatorId) {
-        const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
-        if (mentorParticipants.length >= TRIAL_LIMITS.maxParticipants) {
-          return res.status(403).json({ 
-            error: "participant_limit_exceeded", 
-            message: "הפלואו הזה הגיע למגבלת המשתתפים. אנא צור קשר עם המנטור.",
-            messageEn: "This flow has reached its participant limit. Please contact the mentor."
-          });
-        }
-      }
+      // No participant limits in new pricing model - unlimited participants for all plans
 
       const participant = await storage.createExternalParticipant(
         session.journeyId,
@@ -2704,14 +2509,6 @@ export async function registerRoutes(
             console.error('Failed to send mentor notification:', emailError);
           }
           
-          // Check if we should notify mentor about reaching participant thresholds
-          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
-          checkParticipantThresholdNotification(
-            journey.creatorId, 
-            mentorParticipants.length, 
-            TRIAL_LIMITS.maxParticipants,
-            baseUrl
-          );
         }
       }
 
@@ -2983,14 +2780,16 @@ export async function registerRoutes(
 
   // ============== SUBSCRIPTION ROUTES ==============
   
-  // Create subscription checkout session
-  app.post("/api/subscription/checkout", isAuthenticated, async (req: any, res) => {
+  // Create subscription checkout session (GET for browser redirect, POST for API)
+  const handleSubscriptionCheckout = async (req: any, res: any) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      const { plan, returnToJourney } = req.body;
+      const plan = req.query?.plan || req.body?.plan;
+      const returnToJourney = req.query?.returnToJourney || req.body?.returnToJourney;
       
-      if (!plan || !['starter', 'pro', 'business'].includes(plan)) {
-        return res.status(400).json({ error: "Invalid plan" });
+      // New plan names: free (no checkout needed), pro, scale
+      if (!plan || !['pro', 'scale'].includes(plan)) {
+        return res.status(400).json({ error: "Invalid plan. Use 'pro' or 'scale'." });
       }
 
       const user = await storage.getUser(userId);
@@ -3002,7 +2801,6 @@ export async function registerRoutes(
       
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       
-      // If returnToJourney is provided, return to the journey editor after subscription
       const successUrl = returnToJourney 
         ? `${baseUrl}/journey/${returnToJourney}/edit?subscription=success`
         : `${baseUrl}/dashboard?subscription=success`;
@@ -3019,12 +2817,20 @@ export async function registerRoutes(
         customerId: user.stripeCustomerId || undefined,
       });
 
+      // For GET requests, redirect directly to Stripe
+      if (req.method === 'GET') {
+        return res.redirect(result.url);
+      }
+
       res.json({ url: result.url, sessionId: result.sessionId });
     } catch (error) {
       console.error("Error creating subscription checkout:", error);
       res.status(500).json({ error: "Failed to create checkout session" });
     }
-  });
+  };
+
+  app.get("/api/subscription/checkout", isAuthenticated, handleSubscriptionCheckout);
+  app.post("/api/subscription/checkout", isAuthenticated, handleSubscriptionCheckout);
 
   // Get customer portal URL for managing subscription
   app.get("/api/subscription/portal", isAuthenticated, async (req: any, res) => {
@@ -3060,10 +2866,15 @@ export async function registerRoutes(
         return res.status(404).json({ error: "User not found" });
       }
 
+      // Default to 'free' plan if no subscription
+      const currentPlan = user.subscriptionPlan || 'free';
+      const commissionRates: Record<string, number> = { free: 17, pro: 15, scale: 11 };
+      const commissionRate = commissionRates[currentPlan] || 17;
+
       res.json({
-        plan: user.subscriptionPlan || null,
-        status: user.subscriptionStatus || null,
-        trialEndsAt: user.trialEndsAt || null,
+        plan: currentPlan,
+        status: user.subscriptionStatus || (currentPlan === 'free' ? 'active' : null),
+        commissionRate,
         subscriptionEndsAt: user.subscriptionEndsAt || null,
         paymentFailedAt: user.paymentFailedAt || null,
       });
@@ -3120,6 +2931,74 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error reactivating subscription:", error);
       res.status(500).json({ error: "Failed to reactivate subscription" });
+    }
+  });
+
+  // Switch subscription plan (upgrade/downgrade)
+  app.post("/api/subscription/change-plan", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { newPlan } = req.body;
+      
+      if (!newPlan || !['free', 'pro', 'scale'].includes(newPlan)) {
+        return res.status(400).json({ error: "Invalid plan. Use 'free', 'pro', or 'scale'." });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const currentPlan = user.subscriptionPlan || 'free';
+      
+      // Same plan - no action needed
+      if (currentPlan === newPlan) {
+        return res.json({ success: true, message: "Already on this plan" });
+      }
+
+      const { subscriptionService } = await import('./subscriptionService');
+
+      // Downgrading to free - cancel existing subscription
+      if (newPlan === 'free') {
+        if (user.subscriptionId) {
+          await subscriptionService.cancelSubscription(user.subscriptionId);
+        }
+        await storage.upsertUser({
+          id: userId,
+          subscriptionPlan: 'free',
+          subscriptionStatus: 'active',
+        });
+        return res.json({ success: true, message: "Switched to Free plan" });
+      }
+
+      // Upgrading from free - need to create new subscription
+      if (currentPlan === 'free') {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const result = await subscriptionService.createSubscriptionCheckout({
+          userId,
+          email: user.email || '',
+          plan: newPlan as 'pro' | 'scale',
+          successUrl: `${baseUrl}/dashboard?subscription=success&plan=${newPlan}`,
+          cancelUrl: `${baseUrl}/dashboard?subscription=canceled`,
+          customerId: user.stripeCustomerId || undefined,
+        });
+        return res.json({ success: true, checkoutUrl: result.url });
+      }
+
+      // Switching between paid plans (pro <-> scale)
+      if (user.subscriptionId) {
+        await subscriptionService.changePlan(user.subscriptionId, newPlan as 'pro' | 'scale');
+        await storage.upsertUser({
+          id: userId,
+          subscriptionPlan: newPlan,
+        });
+        return res.json({ success: true, message: `Switched to ${newPlan} plan` });
+      }
+
+      res.status(400).json({ error: "Unable to change plan" });
+    } catch (error) {
+      console.error("Error changing plan:", error);
+      res.status(500).json({ error: "Failed to change plan" });
     }
   });
 

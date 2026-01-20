@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, PenTool, LogOut, Plus, User, Menu, X, MessageCircle, Crown, AlertCircle, BookOpen, Wallet, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useTrialStatus } from "@/hooks/useTrialStatus";
-import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,31 +23,9 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, variant = "light" }: DashboardLayoutProps) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showExpiredModal, setShowExpiredModal] = useState(false);
   const { t, i18n } = useTranslation(['dashboard', 'common', 'participant']);
-  const { isTrialExpired, isOnTrial, daysRemaining, isLoading: trialLoading } = useTrialStatus();
   const isHebrew = i18n.language === 'he';
   const isDark = variant === "dark";
-
-  useEffect(() => {
-    if (isTrialExpired) {
-      setShowExpiredModal(true);
-    }
-  }, [isTrialExpired]);
-
-  const getTrialBannerText = () => {
-    if (daysRemaining === 0) return t('dashboard:trialBanner.lastDay');
-    if (daysRemaining === 1) return t('dashboard:trialBanner.oneDayRemaining');
-    return t('dashboard:trialBanner.daysRemaining', { days: daysRemaining });
-  };
-
-  const handleSubscribe = () => {
-    const baseUrl = isHebrew 
-      ? 'https://pay.grow.link/345b96922ae5b62bf5b91c8a4828a3bc-MjkyNzAzNQ'
-      : 'https://flow83.lemonsqueezy.com/checkout/buy/93676b93-3c23-476a-87c0-a165d9faad36?media=0';
-    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscription=success`);
-    window.open(`${baseUrl}${baseUrl.includes('?') ? '&' : '?'}checkout[redirect_url]=${returnUrl}`, '_blank');
-  };
 
   const navItems = [
     { icon: LayoutGrid, label: t('dashboard:title'), href: "/dashboard" },
@@ -153,36 +129,6 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
       </nav>
 
       <div className="p-4 space-y-2">
-        {isOnTrial && !trialLoading && (
-          <div className={cn("px-4 py-3 rounded-xl mb-2", s.trialBanner)}>
-            <div className="flex items-center gap-2 text-sm">
-              <Crown size={16} className={isDark ? "text-violet-400" : "text-violet-500"} />
-              <span className={cn("font-medium", s.trialText)}>{getTrialBannerText()}</span>
-            </div>
-            <button
-              onClick={handleSubscribe}
-              className={cn("mt-2 text-xs underline underline-offset-2", s.trialLink)}
-              data-testid="link-subscribe-sidebar"
-            >
-              {t('dashboard:trialBanner.subscribeNow')}
-            </button>
-          </div>
-        )}
-        {isTrialExpired && !trialLoading && (
-          <div className={cn("px-4 py-3 rounded-xl mb-2", s.expiredBanner)}>
-            <div className="flex items-center gap-2 text-sm">
-              <AlertCircle size={16} className={isDark ? "text-orange-400" : "text-orange-500"} />
-              <span className={cn("font-medium", s.expiredText)}>{t('dashboard:trialExpired.title')}</span>
-            </div>
-            <button
-              onClick={handleSubscribe}
-              className={cn("mt-2 text-xs underline underline-offset-2", s.expiredLink)}
-              data-testid="link-subscribe-expired-sidebar"
-            >
-              {t('dashboard:trialExpired.subscribeNow')}
-            </button>
-          </div>
-        )}
         <Link 
           href="/journeys/new"
           onClick={() => setMobileMenuOpen(false)}
@@ -279,10 +225,6 @@ export function DashboardLayout({ children, variant = "light" }: DashboardLayout
         </main>
       </div>
 
-      <TrialExpiredModal 
-        isOpen={showExpiredModal} 
-        onClose={() => setShowExpiredModal(false)} 
-      />
     </div>
   );
 }

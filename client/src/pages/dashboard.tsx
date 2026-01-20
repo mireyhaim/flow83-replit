@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
-import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User } from "lucide-react";
+import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import type { ActivityEvent } from "@shared/schema";
@@ -17,8 +18,10 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading: authLoading, isProfileComplete } = useAuth();
   const onboarding = useOnboarding();
+  const { plan, planName, planNameHe, commissionRate, monthlyFee, isLoading: planLoading } = useSubscriptionStatus();
   const isMobile = useIsMobile();
   const [, navigate] = useLocation();
+  const isHebrew = i18n.language === 'he';
 
   // Check if user is super_admin and redirect to admin dashboard
   const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
@@ -253,61 +256,14 @@ export default function Dashboard() {
               <p className="text-xs md:text-sm text-slate-500">{t('myFlows')}</p>
             </div>
 
-            <div className={`bg-white border rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md transition-all ${
-              stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
-                ? "border-red-300 hover:border-red-400" 
-                : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
-                  ? "border-amber-300 hover:border-amber-400"
-                  : "border-slate-200 hover:border-sky-200"
-            }`} data-testid="card-total-participants">
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-sky-200 transition-all" data-testid="card-total-participants">
               <div className="flex items-center justify-between mb-2 md:mb-4">
-                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center ${
-                  stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
-                    ? "bg-red-50" 
-                    : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
-                      ? "bg-amber-50"
-                      : "bg-sky-50"
-                }`}>
-                  <Users className={`h-4 w-4 md:h-5 md:w-5 ${
-                    stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit 
-                      ? "text-red-600" 
-                      : stats?.totalParticipants && stats?.participantLimit && stats.totalParticipants >= stats.participantLimit * 0.9
-                        ? "text-amber-600"
-                        : "text-sky-600"
-                  }`} />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-sky-50 flex items-center justify-center">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-sky-600" />
                 </div>
-                {stats?.participantLimit && (
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    stats.totalParticipants >= stats.participantLimit 
-                      ? "bg-red-100 text-red-700" 
-                      : stats.totalParticipants >= stats.participantLimit * 0.9
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-sky-100 text-sky-700"
-                  }`}>
-                    {stats.totalParticipants}/{stats.participantLimit}
-                  </span>
-                )}
               </div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-0.5 md:mb-1" data-testid="text-total-participants">{stats?.totalParticipants ?? 0}</div>
               <p className="text-xs md:text-sm text-slate-500">{t('participants')}</p>
-              {stats?.participantLimit && (
-                <div className="mt-2">
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all ${
-                        stats.totalParticipants >= stats.participantLimit 
-                          ? "bg-red-500" 
-                          : stats.totalParticipants >= stats.participantLimit * 0.9
-                            ? "bg-amber-500"
-                            : stats.totalParticipants >= stats.participantLimit * 0.75
-                              ? "bg-sky-400"
-                              : "bg-sky-500"
-                      }`}
-                      style={{ width: `${Math.min(100, (stats.totalParticipants / stats.participantLimit) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-5 hover:shadow-md hover:border-emerald-200 transition-all" data-testid="card-active-participants">
@@ -347,12 +303,64 @@ export default function Dashboard() {
                   {(earnings?.paymentCount ?? 0) > 0 ? t('salesCount', { count: earnings?.paymentCount }) : t('noSalesYet')}
                 </span>
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1 md:mb-2" data-testid="text-earnings">
+              <div className="text-3xl md:text-4xl font-bold text-emerald-600 mb-3" data-testid="text-earnings">
                 {formatCurrency(earnings?.totalEarnings ?? 0)}
               </div>
-              <p className="text-xs md:text-sm text-slate-400">{t('totalEarningsFromFlows')}</p>
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">{isHebrew ? 'סה"כ גולמי' : 'Gross Revenue'}</span>
+                  <span className="text-slate-700">{formatCurrency(earnings?.grossEarnings ?? 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">{isHebrew ? `עמלה (${Math.round((earnings?.commissionRate ?? 0.17) * 100)}%)` : `Commission (${Math.round((earnings?.commissionRate ?? 0.17) * 100)}%)`}</span>
+                  <span className="text-rose-500">-{formatCurrency(earnings?.commissionFees ?? 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-medium pt-1 border-t border-slate-100">
+                  <span className="text-slate-700">{isHebrew ? 'נטו לתשלום' : 'Net Payout'}</span>
+                  <span className="text-emerald-600">{formatCurrency(earnings?.totalEarnings ?? 0)}</span>
+                </div>
+              </div>
             </div>
 
+            <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md hover:border-violet-200 transition-all" data-testid="card-subscription">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between mb-4 md:mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-violet-50 flex items-center justify-center">
+                    <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base md:text-lg font-semibold text-slate-900">{isHebrew ? 'המסלול שלי' : 'My Plan'}</h3>
+                    <p className="text-xs text-slate-400">{isHebrew ? 'תשלום ועמלות' : 'Billing & Fees'}</p>
+                  </div>
+                </div>
+                <Link href="/pricing" className="text-xs px-3 py-1.5 rounded-full bg-violet-50 text-violet-600 font-medium hover:bg-violet-100 transition-colors self-start sm:self-auto">
+                  {isHebrew ? 'שנה מסלול' : 'Change Plan'}
+                </Link>
+              </div>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-3xl md:text-4xl font-bold text-slate-900" data-testid="text-plan-name">
+                  {isHebrew ? planNameHe : planName}
+                </span>
+                {monthlyFee > 0 && (
+                  <span className="text-sm text-slate-500">
+                    ₪{monthlyFee}/{isHebrew ? 'חודש' : 'mo'}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                  {Math.round(commissionRate * 100)}% {isHebrew ? 'עמלה' : 'commission'}
+                </span>
+                {plan === 'free' && (
+                  <span className="text-xs text-slate-400">
+                    {isHebrew ? 'ללא תשלום חודשי' : 'No monthly fee'}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:gap-6 grid-cols-1 mt-4 md:mt-6">
             <div className="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-md transition-all" data-testid="card-recent-activity">
               <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-violet-50 flex items-center justify-center">

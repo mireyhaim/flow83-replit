@@ -10,8 +10,6 @@ export interface DashboardStats {
   activeParticipants: number;
   completedParticipants: number;
   completionRate: number;
-  participantLimit: number;
-  publishedFlowLimit: number;
 }
 
 export interface InactiveParticipant extends Participant {
@@ -291,12 +289,18 @@ export const participantsApi = {
 
 export interface EarningsData {
   totalEarnings: number;
+  grossEarnings: number;
+  commissionFees: number;
+  commissionRate: number;
+  plan: 'free' | 'pro' | 'scale';
   totalCents: number;
   currency: string;
   paymentCount: number;
   recentPayments: Array<{
     id: number;
     amount: number;
+    netAmount: number;
+    commissionFee: number;
     currency: string;
     customerEmail: string | null;
     customerName: string | null;
