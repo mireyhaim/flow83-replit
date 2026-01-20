@@ -124,26 +124,29 @@ export default function ParticipantsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6" dir={isHebrew ? "rtl" : "ltr"}>
-        <div className={isHebrew ? "text-right" : "text-left"}>
-          <h1 className="text-2xl font-bold text-slate-900" data-testid="text-page-title">
-            {isHebrew ? "משתתפים" : "Participants"}
-          </h1>
-          <p className="text-slate-500 mt-1">
-            {isHebrew ? "צפייה וניהול של כל המשתתפים בתהליכים שלך" : "View and manage all participants in your flows"}
-          </p>
-        </div>
+        {/* Header with title and search */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900" data-testid="text-page-title">
+              {isHebrew ? "משתתפים" : "Participants"}
+            </h1>
+            <p className="text-slate-500 mt-1">
+              {isHebrew ? "צפייה וניהול של כל המשתתפים בתהליכים שלך" : "View and manage all participants in your flows"}
+            </p>
+          </div>
 
-        {/* Search Bar */}
-        <div className="relative max-w-sm">
-          <Search className={`absolute ${isHebrew ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400`} />
-          <Input
-            type="text"
-            placeholder={isHebrew ? "חפש לפי שם, אימייל או ת.ז..." : "Search by name, email or ID..."}
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className={`${isHebrew ? 'pr-10 text-right' : 'pl-10'} h-10`}
-            data-testid="input-search-participants"
-          />
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-auto sm:min-w-[280px]">
+            <Search className={`absolute ${isHebrew ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400`} />
+            <Input
+              type="text"
+              placeholder={isHebrew ? "חפש לפי שם, אימייל או ת.ז..." : "Search by name, email or ID..."}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className={`${isHebrew ? 'pr-10 text-right' : 'pl-10'} h-10`}
+              data-testid="input-search-participants"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
