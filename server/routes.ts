@@ -316,9 +316,11 @@ export async function registerRoutes(
     try {
       const userId = (req.user as any)?.claims?.sub;
       const participantId = req.params.id;
+      console.log(`[ResendEmail] Request for participant ${participantId} by user ${userId}`);
       
       const participant = await storage.getParticipantById(participantId);
       if (!participant) {
+        console.log(`[ResendEmail] Participant ${participantId} not found`);
         return res.status(404).json({ error: "Participant not found" });
       }
       
@@ -337,6 +339,8 @@ export async function registerRoutes(
         : 'https://flow83.replit.app';
       const journeyLink = `${baseUrl}/p/${participant.accessToken}`;
       
+      console.log(`[ResendEmail] Sending email to ${participant.email} for journey ${journey.name}`);
+      
       const success = await sendJourneyAccessEmail({
         participantEmail: participant.email,
         participantName: participant.name || participant.email.split('@')[0],
@@ -348,12 +352,14 @@ export async function registerRoutes(
       });
       
       if (success) {
+        console.log(`[ResendEmail] Email sent successfully to ${participant.email}`);
         res.json({ success: true, message: "Email sent successfully" });
       } else {
+        console.log(`[ResendEmail] Failed to send email to ${participant.email}`);
         res.status(500).json({ error: "Failed to send email" });
       }
     } catch (error) {
-      console.error("Error resending email:", error);
+      console.error("[ResendEmail] Error:", error);
       res.status(500).json({ error: "Failed to resend email" });
     }
   });
