@@ -775,8 +775,8 @@ export default function ParticipantView() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-violet-600 via-violet-700 to-purple-800 flex flex-col transition-transform duration-300 lg:translate-x-0 shadow-xl lg:shadow-none",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed lg:relative inset-y-0 left-0 z-50 w-[280px] sm:w-72 bg-gradient-to-b from-violet-600 via-violet-700 to-purple-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-xl lg:shadow-none",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Sidebar header - Mentor info */}
@@ -801,9 +801,10 @@ export default function ParticipantView() {
             </div>
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-white/20 active:bg-white/30 rounded-full transition-colors bg-white/10"
+              data-testid="button-close-sidebar"
             >
-              <X className="w-5 h-5 text-white/70" />
+              <X className="w-5 h-5 text-white" />
             </button>
           </div>
         </div>
@@ -904,12 +905,13 @@ export default function ParticipantView() {
       </aside>
 
       {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div 
+        className={cn(
+          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300",
+          sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* Main content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
