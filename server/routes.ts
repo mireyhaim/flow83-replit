@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
+import { db, setServiceContext } from "./db";
+import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
@@ -29,6 +31,30 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  
+  // RLS Context Middleware - Set appropriate context for all API requests
+  // For authenticated requests: sets user context for true defense-in-depth
+  // For unauthenticated requests: sets service role for public endpoints
+  app.use('/api', async (req: any, res, next) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        // Authenticated request - set user context for RLS enforcement
+        await db.execute(sql`SELECT 
+          set_config('app.user_id', ${userId}, true),
+          set_config('app.participant_id', '', true),
+          set_config('app.role', 'service', true)
+        `);
+      } else {
+        // Unauthenticated request - use service role for public endpoints
+        await setServiceContext();
+      }
+      next();
+    } catch (error) {
+      console.error('Failed to set RLS context:', error);
+      next();
+    }
+  });
   
   // Setup Replit Auth (Google, GitHub, email, etc.)
   await setupAuth(app);
