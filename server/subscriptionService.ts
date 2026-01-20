@@ -6,11 +6,11 @@ export const SUBSCRIPTION_PLANS = {
     name: 'Starter',
     priceId: '', // Will be set dynamically or from env
     amount: 3800, // $38.00 in cents
-    trialDays: 7,
+    trialDays: 21,
     features: {
-      activeJourneys: 1,
-      includedUsers: 60,
-      overage: 0.60,
+      activeJourneys: 1, // Only 1 published flow allowed
+      includedUsers: 20, // Up to 20 participants total
+      overage: 0,
     }
   },
   pro: {
@@ -36,6 +36,12 @@ export const SUBSCRIPTION_PLANS = {
     }
   }
 } as const;
+
+// Trial plan limits (same as starter for now)
+export const TRIAL_LIMITS = {
+  maxPublishedFlows: 1,
+  maxParticipants: 20,
+};
 
 export type PlanType = keyof typeof SUBSCRIPTION_PLANS;
 

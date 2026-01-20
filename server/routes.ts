@@ -9,6 +9,7 @@ import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema,
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
+import { TRIAL_LIMITS } from "./subscriptionService";
 import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
 import { processEmailNotifications, sendWeeklyReports, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
@@ -699,6 +700,21 @@ export async function registerRoutes(
         }
       }
 
+      // Check publish limits when trying to publish
+      if (req.body.status === "published" && existingJourney.status !== "published") {
+        // Count how many flows this user has already published
+        const userJourneys = await storage.getJourneysByCreator(userId);
+        const publishedCount = userJourneys.filter(j => j.status === "published").length;
+        
+        if (publishedCount >= TRIAL_LIMITS.maxPublishedFlows) {
+          return res.status(403).json({ 
+            error: "limit_exceeded", 
+            message: `הגעת למגבלת הפלואים המפורסמים (${TRIAL_LIMITS.maxPublishedFlows}). שדרג את החבילה כדי לפרסם יותר פלואים.`,
+            messageEn: `You have reached the published flows limit (${TRIAL_LIMITS.maxPublishedFlows}). Upgrade your plan to publish more flows.`
+          });
+        }
+      }
+
       // Generate short code when publishing for the first time
       let updateData = { ...req.body };
       if (req.body.status === "published" && !existingJourney.shortCode) {
@@ -1125,6 +1141,16 @@ export async function registerRoutes(
             return res.status(402).json({ 
               error: "mentor_trial_expired", 
               message: "This flow is currently unavailable. Please try again later." 
+            });
+          }
+          
+          // Check participant limit for mentor
+          const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
+          if (mentorParticipants.length >= TRIAL_LIMITS.maxParticipants) {
+            return res.status(403).json({ 
+              error: "participant_limit_exceeded", 
+              message: "הפלואו הזה הגיע למגבלת המשתתפים. אנא צור קשר עם המנטור.",
+              messageEn: "This flow has reached its participant limit. Please contact the mentor."
             });
           }
         }
@@ -2538,6 +2564,18 @@ export async function registerRoutes(
       const journey = await storage.getJourney(session.journeyId);
       if (!journey) {
         return res.status(404).json({ error: "flow_not_found", message: "Flow not found" });
+      }
+
+      // Check participant limit for mentor before creating new participant
+      if (journey.creatorId) {
+        const mentorParticipants = await storage.getParticipantsByCreator(journey.creatorId);
+        if (mentorParticipants.length >= TRIAL_LIMITS.maxParticipants) {
+          return res.status(403).json({ 
+            error: "participant_limit_exceeded", 
+            message: "הפלואו הזה הגיע למגבלת המשתתפים. אנא צור קשר עם המנטור.",
+            messageEn: "This flow has reached its participant limit. Please contact the mentor."
+          });
+        }
       }
 
       const participant = await storage.createExternalParticipant(
