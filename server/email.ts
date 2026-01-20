@@ -87,9 +87,6 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px; direction: rtl; text-align: right;">
         <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; direction: rtl; text-align: right;">
-          <div style="background: #7c3aed; padding: 28px 32px; text-align: right;">
-            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600; text-align: right;">Flow 83</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600; text-align: right;">שלום ${participantName || 'לך'},</h2>
             <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px; text-align: right; direction: rtl;">
@@ -136,9 +133,6 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px;">
         <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-          <div style="background: #7c3aed; padding: 28px 32px;">
-            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Flow 83</h1>
-          </div>
           <div style="padding: 32px;">
             <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600;">Hello ${participantName || 'there'},</h2>
             <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px;">
@@ -240,9 +234,6 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">בוקר טוב!</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
@@ -274,9 +265,6 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">🌅 Good Morning!</h1>
-          </div>
           <div style="padding: 32px;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
@@ -348,9 +336,6 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">חסר לנו אותך</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
@@ -383,9 +368,6 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">💜 We Miss You</h1>
-          </div>
           <div style="padding: 32px;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
@@ -457,9 +439,6 @@ export async function sendNotStartedReminderEmail(params: NotStartedReminderEmai
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">יום 1 מחכה לך</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
@@ -492,9 +471,6 @@ export async function sendNotStartedReminderEmail(params: NotStartedReminderEmai
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">✨ Day 1 is Waiting</h1>
-          </div>
           <div style="padding: 32px;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
@@ -565,12 +541,8 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px; text-align: center;">
-            <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
-            <h1 style="color: white; margin: 0; font-size: 28px;">מזל טוב!</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName}, מזל טוב!</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
               עשית את זה!<br><br>
               סיימת בהצלחה את <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} - כל ${totalDays} הימים!<br><br>
@@ -601,12 +573,8 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px; text-align: center;">
-            <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
-            <h1 style="color: white; margin: 0; font-size: 28px;">Congratulations!</h1>
-          </div>
           <div style="padding: 32px;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName}, Congratulations!</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
               You did it! 🌟<br><br>
               You successfully completed <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` by ${mentorName}` : ''} - all ${totalDays} days!<br><br>
@@ -675,9 +643,6 @@ export async function sendNewParticipantNotification(params: NewParticipantNotif
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">משתתף חדש!</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${mentorName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
@@ -715,9 +680,6 @@ export async function sendNewParticipantNotification(params: NewParticipantNotif
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">🎊 New Participant!</h1>
-          </div>
           <div style="padding: 32px;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px;">Hey ${mentorName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
@@ -803,11 +765,8 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">הדוח השבועי שלך</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
-            <h2 style="color: #1e1b4b; margin: 0 0 24px; text-align: right;">שלום ${mentorName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 24px; text-align: right;">שלום ${mentorName}, הדוח השבועי שלך</h2>
             
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
               <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; text-align: center;">
@@ -861,11 +820,8 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">📊 Your Weekly Report</h1>
-          </div>
           <div style="padding: 32px;">
-            <h2 style="color: #1e1b4b; margin: 0 0 24px;">Hello ${mentorName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 24px;">Hello ${mentorName}, Your Weekly Report</h2>
             
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
               <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; text-align: center;">
@@ -955,12 +911,8 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-            <h1 style="color: white; margin: 0; font-size: 28px;">ברוכים הבאים ל-Flow 83!</h1>
-          </div>
           <div style="padding: 32px; text-align: right; direction: rtl;">
-            <h2 style="color: #1e1b4b; margin: 0 0 20px; text-align: right;">שלום ${mentorName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 20px; text-align: right;">שלום ${mentorName}, ברוכים הבאים ל-Flow 83!</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px; text-align: right; direction: rtl;">
               שמחים שהצטרפת!<br><br>
               Flow 83 היא הפלטפורמה שתעזור לך להפוך את הידע והמתודולוגיה שלך לתהליכי טרנספורמציה דיגיטליים - חוויות יומיות מותאמות אישית שמועברות בצ'אט AI חכם.
@@ -1015,12 +967,8 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Flow 83!</h1>
-          </div>
           <div style="padding: 32px;">
-            <h2 style="color: #1e1b4b; margin: 0 0 20px;">Hello ${mentorName},</h2>
+            <h2 style="color: #1e1b4b; margin: 0 0 20px;">Hello ${mentorName}, Welcome to Flow 83!</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
               We're thrilled you joined us! 💜<br><br>
               Flow 83 is the platform that helps you transform your knowledge and methodology into digital transformation journeys - personalized daily experiences delivered through smart AI chat.
