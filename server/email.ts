@@ -32,27 +32,30 @@ async function getCredentials() {
 }
 
 // Format the from address with display name
-function formatFromAddress(fromEmail: string | undefined): string {
-  const defaultFrom = 'Flow 83 <support@send.flow83.com>';
+// If senderName is provided (mentor name), use that instead of "Flow 83"
+function formatFromAddress(fromEmail: string | undefined, senderName?: string): string {
+  const displayName = senderName || 'Flow 83';
+  const defaultFrom = `${displayName} <support@send.flow83.com>`;
   if (!fromEmail) return defaultFrom;
   
-  // If already has display name format (contains <), use as-is but ensure Flow 83 name
+  // If already has display name format (contains <), use the custom sender name
   if (fromEmail.includes('<')) {
-    // Replace any existing name with Flow 83
-    return fromEmail.replace(/^[^<]*</, 'Flow 83 <');
+    // Replace any existing name with the sender name
+    return fromEmail.replace(/^[^<]*</, `${displayName} <`);
   }
   
-  // Just an email address, wrap with Flow 83 name
-  return `Flow 83 <${fromEmail}>`;
+  // Just an email address, wrap with sender name
+  return `${displayName} <${fromEmail}>`;
 }
 
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
-async function getUncachableResendClient() {
+// senderName is optional - if provided, it will be used as the display name instead of "Flow 83"
+async function getUncachableResendClient(senderName?: string) {
   const { apiKey, fromEmail } = await getCredentials();
   return {
     client: new Resend(apiKey),
-    fromEmail: formatFromAddress(fromEmail)
+    fromEmail: formatFromAddress(fromEmail, senderName)
   };
 }
 
@@ -70,7 +73,8 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
   const { participantEmail, participantName, participantIdNumber, journeyName, journeyLink, mentorName, language = 'he' } = params;
 
   try {
-    const { client, fromEmail } = await getUncachableResendClient();
+    // Use mentor name as sender if available
+    const { client, fromEmail } = await getUncachableResendClient(mentorName);
 
     const isHebrew = language === 'he';
 
@@ -203,7 +207,8 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
   const { participantEmail, participantName, journeyName, journeyLink, currentDay, totalDays, mentorName, language = 'he' } = params;
 
   try {
-    const { client, fromEmail } = await getUncachableResendClient();
+    // Use mentor name as sender if available
+    const { client, fromEmail } = await getUncachableResendClient(mentorName);
     const isHebrew = language === 'he';
 
     const encouragements = isHebrew ? [
@@ -320,7 +325,8 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
   const { participantEmail, participantName, journeyName, journeyLink, daysSinceActive, currentDay, mentorName, language = 'he' } = params;
 
   try {
-    const { client, fromEmail } = await getUncachableResendClient();
+    // Use mentor name as sender if available
+    const { client, fromEmail } = await getUncachableResendClient(mentorName);
     const isHebrew = language === 'he';
 
     const subject = isHebrew
@@ -423,7 +429,8 @@ export async function sendNotStartedReminderEmail(params: NotStartedReminderEmai
   const { participantEmail, participantName, journeyName, journeyLink, daysSinceRegistration, mentorName, language = 'he' } = params;
 
   try {
-    const { client, fromEmail } = await getUncachableResendClient();
+    // Use mentor name as sender if available
+    const { client, fromEmail } = await getUncachableResendClient(mentorName);
     const isHebrew = language === 'he';
 
     const subject = isHebrew
@@ -525,7 +532,8 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
   const { participantEmail, participantName, journeyName, totalDays, mentorName, language = 'he' } = params;
 
   try {
-    const { client, fromEmail } = await getUncachableResendClient();
+    // Use mentor name as sender if available
+    const { client, fromEmail } = await getUncachableResendClient(mentorName);
     const isHebrew = language === 'he';
 
     const subject = isHebrew
