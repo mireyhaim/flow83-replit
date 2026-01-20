@@ -85,32 +85,32 @@ export async function sendJourneyAccessEmail(params: JourneyAccessEmailParams): 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px;">
-        <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-          <div style="background: #7c3aed; padding: 28px 32px;">
-            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Flow 83</h1>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; margin: 0; padding: 40px 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; direction: rtl; text-align: right;">
+          <div style="background: #7c3aed; padding: 28px 32px; text-align: right;">
+            <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600; text-align: right;">Flow 83</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600;">שלום ${participantName || 'לך'},</h2>
-            <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px;">
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1f2937; margin: 0 0 20px; font-size: 18px; font-weight: 600; text-align: right;">שלום ${participantName || 'לך'},</h2>
+            <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 28px; text-align: right; direction: rtl;">
               התשלום שלך התקבל בהצלחה.<br><br>
               הגישה שלך ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} מוכנה.
             </p>
-            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px; font-weight: 500;">פרטי הכניסה שלך:</p>
-              <table style="width: 100%; font-size: 14px; color: #374151;">
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px; direction: rtl; text-align: right;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px; font-weight: 500; text-align: right;">פרטי הכניסה שלך:</p>
+              <table style="width: 100%; font-size: 14px; color: #374151; direction: rtl;">
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280;">שם:</td>
-                  <td style="padding: 6px 0;">${participantName}</td>
+                  <td style="padding: 6px 0; color: #6b7280; text-align: right;">שם:</td>
+                  <td style="padding: 6px 0; text-align: right;">${participantName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280;">אימייל:</td>
-                  <td style="padding: 6px 0; direction: ltr; text-align: right;">${participantEmail}</td>
+                  <td style="padding: 6px 0; color: #6b7280; text-align: right;">אימייל:</td>
+                  <td style="padding: 6px 0; direction: ltr; text-align: left;">${participantEmail}</td>
                 </tr>
                 ${participantIdNumber ? `
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280;">ת.ז.:</td>
-                  <td style="padding: 6px 0; direction: ltr; text-align: right;">${participantIdNumber}</td>
+                  <td style="padding: 6px 0; color: #6b7280; text-align: right;">ת.ז.:</td>
+                  <td style="padding: 6px 0; direction: ltr; text-align: left;">${participantIdNumber}</td>
                 </tr>
                 ` : ''}
               </table>
@@ -238,14 +238,14 @@ export async function sendDailyReminderEmail(params: DailyReminderEmailParams): 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">🌅 בוקר טוב!</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">בוקר טוב!</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
               ${encouragement}<br><br>
               היום <strong style="color: #7c3aed;">יום ${currentDay} מתוך ${totalDays}</strong> ב<strong>${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} מחכה לך.
             </p>
@@ -346,14 +346,14 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">💜 חסר לנו אותך</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">חסר לנו אותך</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${participantName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
               שמנו לב שלא נכנסת לתהליך כבר ${daysSinceActive} ימים.<br><br>
               זה בסדר גמור לקחת הפסקה, אבל רצינו להזכיר לך ש<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} עדיין מחכה לך.<br><br>
               אתה ביום ${currentDay} - והמשך המסע מחכה!
@@ -455,17 +455,17 @@ export async function sendNotStartedReminderEmail(params: NotStartedReminderEmai
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">✨ יום 1 מחכה לך</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">יום 1 מחכה לך</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${participantName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
               שמנו לב שנרשמת ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} אבל עדיין לא התחלת.<br><br>
               המסע שלך מחכה! יום 1 כבר מוכן עבורך, עם תוכן מותאם אישית שיעזור לך להתחיל את השינוי.<br><br>
-              זה הזמן להתחיל 💜
+              זה הזמן להתחיל
             </p>
             <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
               <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
@@ -563,16 +563,16 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px; text-align: center;">
             <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
             <h1 style="color: white; margin: 0; font-size: 28px;">מזל טוב!</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">${participantName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-              עשית את זה! 🌟<br><br>
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
+              עשית את זה!<br><br>
               סיימת בהצלחה את <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} - כל ${totalDays} הימים!<br><br>
               זה הישג משמעותי. השקעת בעצמך, התמדת, והגעת לסוף. זה לא מובן מאליו.
             </p>
@@ -580,8 +580,8 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
               <div style="font-size: 24px; color: #059669; font-weight: bold; margin-bottom: 8px;">${totalDays} ימים</div>
               <p style="color: #047857; font-size: 14px; margin: 0;">של צמיחה והתפתחות</p>
             </div>
-            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">
-              קח רגע לחגוג את עצמך. מגיע לך. 💜
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0; text-align: right;">
+              קח רגע לחגוג את עצמך. מגיע לך.
             </p>
           </div>
           <div style="background: #f8fafc; padding: 20px; text-align: center;">
@@ -673,27 +673,27 @@ export async function sendNewParticipantNotification(params: NewParticipantNotif
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">🎊 משתתף חדש!</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">משתתף חדש!</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 16px;">היי ${mentorName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-              יש לך משתתף חדש! 🎉<br><br>
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
+              יש לך משתתף חדש!<br><br>
               <strong style="color: #7c3aed;">${participantName}</strong> נרשם/ה לתהליך <strong>${journeyName}</strong>.
             </p>
-            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px;">פרטי המשתתף:</p>
-              <table style="width: 100%; font-size: 14px; color: #64748b;">
+            <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; margin-bottom: 24px; direction: rtl; text-align: right;">
+              <p style="color: #475569; font-size: 14px; font-weight: 600; margin: 0 0 12px; text-align: right;">פרטי המשתתף:</p>
+              <table style="width: 100%; font-size: 14px; color: #64748b; direction: rtl;">
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">שם:</td>
-                  <td style="padding: 4px 0;">${participantName}</td>
+                  <td style="padding: 4px 0; font-weight: 500; text-align: right;">שם:</td>
+                  <td style="padding: 4px 0; text-align: right;">${participantName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 4px 0; font-weight: 500;">אימייל:</td>
-                  <td style="padding: 4px 0; direction: ltr; text-align: right;">${participantEmail}</td>
+                  <td style="padding: 4px 0; font-weight: 500; text-align: right;">אימייל:</td>
+                  <td style="padding: 4px 0; direction: ltr; text-align: left;">${participantEmail}</td>
                 </tr>
               </table>
             </div>
@@ -801,13 +801,13 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">📊 הדוח השבועי שלך</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">הדוח השבועי שלך</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 24px;">שלום ${mentorName},</h2>
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 24px; text-align: right;">שלום ${mentorName},</h2>
             
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;">
               <div style="background: #f8f7ff; border-radius: 12px; padding: 20px; text-align: center;">
@@ -829,8 +829,8 @@ export async function sendWeeklyMentorReport(params: WeeklyReportParams): Promis
             </div>
 
             ${journeys.length > 0 ? `
-            <h3 style="color: #1e1b4b; margin: 0 0 16px;">פירוט לפי תהליכים:</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <h3 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">פירוט לפי תהליכים:</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; direction: rtl;">
               <thead>
                 <tr style="background: #f1f5f9;">
                   <th style="padding: 12px 8px; text-align: right;">תהליך</th>
@@ -953,22 +953,22 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); direction: rtl; text-align: right;">
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
             <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
             <h1 style="color: white; margin: 0; font-size: 28px;">ברוכים הבאים ל-Flow 83!</h1>
           </div>
-          <div style="padding: 32px; text-align: right;">
-            <h2 style="color: #1e1b4b; margin: 0 0 20px;">שלום ${mentorName},</h2>
-            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
-              שמחים שהצטרפת! 💜<br><br>
+          <div style="padding: 32px; text-align: right; direction: rtl;">
+            <h2 style="color: #1e1b4b; margin: 0 0 20px; text-align: right;">שלום ${mentorName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px; text-align: right; direction: rtl;">
+              שמחים שהצטרפת!<br><br>
               Flow 83 היא הפלטפורמה שתעזור לך להפוך את הידע והמתודולוגיה שלך לתהליכי טרנספורמציה דיגיטליים - חוויות יומיות מותאמות אישית שמועברות בצ'אט AI חכם.
             </p>
 
-            <div style="background: #f8f7ff; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
-              <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px;">🚀 מה תמצא בדשבורד שלך:</h3>
-              <ul style="color: #475569; font-size: 15px; line-height: 2; margin: 0; padding-right: 20px;">
+            <div style="background: #f8f7ff; border-radius: 16px; padding: 24px; margin-bottom: 24px; direction: rtl; text-align: right;">
+              <h3 style="color: #7c3aed; margin: 0 0 16px; font-size: 18px; text-align: right;">מה תמצא בדשבורד שלך:</h3>
+              <ul style="color: #475569; font-size: 15px; line-height: 2; margin: 0; padding-right: 20px; text-align: right;">
                 <li><strong>יצירת Flow חדש</strong> - בנה תהליכים של 3 או 7 ימים מהתוכן שלך</li>
                 <li><strong>ניהול משתתפים</strong> - עקוב אחרי ההתקדמות של כל משתתף</li>
                 <li><strong>עריכת תוכן</strong> - התאם את התוכן והמסרים בכל עת</li>
@@ -978,9 +978,9 @@ export async function sendMentorWelcomeEmail(params: MentorWelcomeEmailParams): 
               </ul>
             </div>
 
-            <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-              <h3 style="color: #059669; margin: 0 0 12px; font-size: 16px;">💡 טיפ להתחלה מהירה:</h3>
-              <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.6;">
+            <div style="background: #ecfdf5; border-radius: 12px; padding: 20px; margin-bottom: 24px; direction: rtl; text-align: right;">
+              <h3 style="color: #059669; margin: 0 0 12px; font-size: 16px; text-align: right;">טיפ להתחלה מהירה:</h3>
+              <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.6; text-align: right;">
                 לחץ על "צור Flow חדש" בדשבורד, העלה מסמך עם התוכן שלך, והמערכת תייצר עבורך תהליך שלם תוך דקות!
               </p>
             </div>
