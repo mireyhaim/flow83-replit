@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User, Mail, ArrowLeft, Loader2 } from "lucide-react";
 
 function isHebrewText(text: string): boolean {
@@ -38,7 +39,8 @@ export default function ParticipantJoinPage() {
   const [idNumber, setIdNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; idNumber?: string}>({});
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; idNumber?: string; terms?: string}>({});
 
   const { data: journey, isLoading } = useQuery<JourneyBasic>({
     queryKey: ["/api/journeys", journeyId, "basic"],
@@ -69,7 +71,7 @@ export default function ParticipantJoinPage() {
   }, [isHebrew]);
 
   const validateForm = () => {
-    const errors: {name?: string; email?: string; idNumber?: string} = {};
+    const errors: {name?: string; email?: string; idNumber?: string; terms?: string} = {};
     
     if (!name.trim()) {
       errors.name = isHebrew ? "שם הוא שדה חובה" : "Name is required";
@@ -85,6 +87,10 @@ export default function ParticipantJoinPage() {
       errors.idNumber = isHebrew ? "תעודת זהות היא שדה חובה" : "ID number is required";
     } else if (!/^\d{9}$/.test(idNumber.replace(/\D/g, ''))) {
       errors.idNumber = isHebrew ? "תעודת זהות חייבת להכיל 9 ספרות" : "ID must be 9 digits";
+    }
+
+    if (!termsAccepted) {
+      errors.terms = isHebrew ? "יש לאשר את תנאי השימוש" : "You must accept the terms";
     }
     
     return errors;
@@ -340,6 +346,52 @@ export default function ParticipantJoinPage() {
                   : "These details will be used to access your flow in the future"}
               </p>
 
+              {/* Terms Acceptance Checkbox */}
+              <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                <Checkbox
+                  id="terms-checkbox"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => {
+                    setTermsAccepted(checked === true);
+                    if (fieldErrors.terms) setFieldErrors(prev => ({...prev, terms: undefined}));
+                  }}
+                  data-testid="checkbox-accept-terms"
+                  className="mt-0.5"
+                />
+                <label 
+                  htmlFor="terms-checkbox" 
+                  className="text-sm leading-relaxed cursor-pointer"
+                  style={{ color: 'hsl(25 20% 35%)' }}
+                >
+                  {isHebrew ? (
+                    <>
+                      קראתי ואני מסכים/ה ל
+                      <Link href="/terms-of-service" className="text-violet-600 hover:underline mx-1" target="_blank">
+                        תנאי השימוש
+                      </Link>
+                      ול
+                      <Link href="/privacy-policy" className="text-violet-600 hover:underline mx-1" target="_blank">
+                        מדיניות הפרטיות
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      I have read and agree to the{" "}
+                      <Link href="/terms-of-service" className="text-violet-600 hover:underline" target="_blank">
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy-policy" className="text-violet-600 hover:underline" target="_blank">
+                        Privacy Policy
+                      </Link>
+                    </>
+                  )}
+                </label>
+              </div>
+              {fieldErrors.terms && (
+                <p className="text-red-500 text-xs text-center">{fieldErrors.terms}</p>
+              )}
+
               {error && (
                 <p className="text-red-500 text-sm text-center" data-testid="text-error">
                   {error}
@@ -349,7 +401,7 @@ export default function ParticipantJoinPage() {
               <Button 
                 className="w-full py-6 text-base gap-2"
                 onClick={handleEmailSignUp}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !termsAccepted}
                 data-testid="button-email-signup"
                 style={{ 
                   backgroundColor: 'hsl(145 30% 92%)', 

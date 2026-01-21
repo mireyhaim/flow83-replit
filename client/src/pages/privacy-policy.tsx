@@ -40,6 +40,11 @@ const privacyContent = [
   },
   {
     icon: RefreshCw,
+    title: "Communications",
+    content: "By using the platform, you consent to receive service-related emails, including purchase confirmations, journey updates, and platform notifications. We may also send you updates about new features or important changes. You can manage your email preferences in your account settings."
+  },
+  {
+    icon: RefreshCw,
     title: "Policy Changes",
     content: "This policy may be updated periodically. Continued platform use means acceptance of the revised version."
   }
