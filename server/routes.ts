@@ -11,7 +11,7 @@ import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
 import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
-import { processEmailNotifications, sendWeeklyReports, sendCompletionNotification } from "./emailCron";
+import { processEmailNotifications, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
 import { createRequire } from "module";
@@ -3535,21 +3535,6 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error triggering daily emails:", error);
       res.status(500).json({ error: "Failed to send daily emails" });
-    }
-  });
-
-  app.post("/api/admin/email/trigger-weekly-reports", isAuthenticated, isAdmin, async (req, res) => {
-    try {
-      console.log("[Admin] Manually triggering weekly mentor reports...");
-      const reportsSent = await sendWeeklyReports();
-      res.json({ 
-        success: true, 
-        message: `Weekly reports sent to ${reportsSent} mentors`,
-        reportsSent 
-      });
-    } catch (error) {
-      console.error("Error triggering weekly reports:", error);
-      res.status(500).json({ error: "Failed to send weekly reports" });
     }
   });
 
