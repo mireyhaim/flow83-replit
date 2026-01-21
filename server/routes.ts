@@ -3392,16 +3392,66 @@ export async function registerRoutes(
   });
 
   // ============ ADMIN ROUTES ============
-  // Admin middleware - only allow SUPER_ADMIN users
+  // Simple admin authentication with username/password from secrets
+  const adminSessions = new Set<string>();
+  
+  // Admin login route - separate from Replit Auth
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      const adminUsername = process.env.ADMIN_USERNAME;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      
+      if (!adminUsername || !adminPassword) {
+        console.error("Admin credentials not configured in secrets");
+        return res.status(500).json({ error: "Admin authentication not configured" });
+      }
+      
+      if (username === adminUsername && password === adminPassword) {
+        // Generate a session token
+        const token = crypto.randomUUID();
+        adminSessions.add(token);
+        
+        // Auto-expire after 24 hours
+        setTimeout(() => {
+          adminSessions.delete(token);
+        }, 24 * 60 * 60 * 1000);
+        
+        return res.json({ success: true, token });
+      }
+      
+      return res.status(401).json({ error: "Invalid credentials" });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      return res.status(500).json({ error: "Login failed" });
+    }
+  });
+  
+  // Admin logout route
+  app.post("/api/admin/logout", async (req, res) => {
+    const token = req.headers['x-admin-token'] as string;
+    if (token) {
+      adminSessions.delete(token);
+    }
+    res.json({ success: true });
+  });
+  
+  // Admin session verification
+  app.get("/api/admin/verify", async (req, res) => {
+    const token = req.headers['x-admin-token'] as string;
+    if (token && adminSessions.has(token)) {
+      return res.json({ valid: true });
+    }
+    return res.status(401).json({ valid: false });
+  });
+  
+  // Admin middleware - check for valid admin session token
   const isAdmin = async (req: any, res: any, next: any) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "super_admin") {
-        return res.status(403).json({ error: "Forbidden - Admin access required" });
+      const token = req.headers['x-admin-token'] as string;
+      if (!token || !adminSessions.has(token)) {
+        return res.status(401).json({ error: "Admin authentication required" });
       }
       next();
     } catch (error) {
@@ -3410,7 +3460,7 @@ export async function registerRoutes(
   };
 
   // Admin dashboard stats
-  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/stats", isAdmin, async (req, res) => {
     try {
       const stats = await storage.getAdminStats();
       res.json(stats);
@@ -3421,7 +3471,7 @@ export async function registerRoutes(
   });
 
   // Admin users list
-  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {
       const allUsers = await storage.getAllUsers();
       res.json(allUsers);
@@ -3432,7 +3482,7 @@ export async function registerRoutes(
   });
 
   // Admin participants list with details
-  app.get("/api/admin/participants", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/participants", isAdmin, async (req, res) => {
     try {
       const participants = await storage.getAllParticipantsWithDetails();
       res.json(participants);
@@ -3443,7 +3493,7 @@ export async function registerRoutes(
   });
 
   // Admin flows/journeys list with stats
-  app.get("/api/admin/flows", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/flows", isAdmin, async (req, res) => {
     try {
       const flows = await storage.getAllJourneysWithStats();
       res.json(flows);
@@ -3454,7 +3504,7 @@ export async function registerRoutes(
   });
 
   // Admin errors list
-  app.get("/api/admin/errors", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/errors", isAdmin, async (req, res) => {
     try {
       const errors = await storage.getSystemErrors(200);
       res.json(errors);
@@ -3523,7 +3573,7 @@ export async function registerRoutes(
   });
 
   // Email API endpoints (admin only)
-  app.post("/api/admin/email/trigger-daily", isAuthenticated, isAdmin, async (req, res) => {
+  app.post("/api/admin/email/trigger-daily", isAdmin, async (req, res) => {
     try {
       console.log("[Admin] Manually triggering daily email notifications...");
       const results = await processEmailNotifications();
@@ -3539,7 +3589,7 @@ export async function registerRoutes(
   });
 
   // Send completion email for a specific participant
-  app.post("/api/admin/email/send-completion/:participantId", isAuthenticated, isAdmin, async (req, res) => {
+  app.post("/api/admin/email/send-completion/:participantId", isAdmin, async (req, res) => {
     try {
       const { participantId } = req.params;
       const success = await sendCompletionNotification(participantId);

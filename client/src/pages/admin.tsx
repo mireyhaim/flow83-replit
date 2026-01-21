@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   LayoutDashboard, 
@@ -11,12 +11,42 @@ import {
   RefreshCw,
   ArrowUpDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Lock,
+  LogOut,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/use-auth";
+
+// Admin token storage
+const ADMIN_TOKEN_KEY = "flow83_admin_token";
+
+function getAdminToken(): string | null {
+  return localStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+function setAdminToken(token: string): void {
+  localStorage.setItem(ADMIN_TOKEN_KEY, token);
+}
+
+function clearAdminToken(): void {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+// Custom fetch function that adds admin token header
+async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getAdminToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      "x-admin-token": token || "",
+    },
+  });
+}
 
 type TabType = "dashboard" | "users" | "mentors" | "flows" | "errors";
 
@@ -72,63 +102,204 @@ interface SystemError {
 
 export default function AdminPage() {
   const [, navigate] = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<string>("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  
+  // Admin auth state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const { data: adminCheck, isLoading: checkLoading } = useQuery<{ isAdmin: boolean }>({
-    queryKey: ["/api/admin/check"],
-    enabled: !!user,
-  });
+  // Check if already authenticated on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = getAdminToken();
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+      
+      try {
+        const res = await adminFetch("/api/admin/verify");
+        if (res.ok) {
+          setIsAuthenticated(true);
+        } else {
+          clearAdminToken();
+          setIsAuthenticated(false);
+        }
+      } catch {
+        clearAdminToken();
+        setIsAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError(null);
+    
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginForm),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success && data.token) {
+        setAdminToken(data.token);
+        setIsAuthenticated(true);
+        queryClient.invalidateQueries();
+      } else {
+        setLoginError(data.error || "Login failed");
+      }
+    } catch (error) {
+      setLoginError("Connection error. Please try again.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await adminFetch("/api/admin/logout", { method: "POST" });
+    clearAdminToken();
+    setIsAuthenticated(false);
+    queryClient.clear();
+  };
 
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
-    enabled: adminCheck?.isAdmin === true,
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/stats");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true,
   });
 
   const { data: participants, refetch: refetchParticipants } = useQuery<Participant[]>({
     queryKey: ["/api/admin/participants"],
-    enabled: adminCheck?.isAdmin === true && activeTab === "users",
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/participants");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true && activeTab === "users",
   });
 
   const { data: allUsers, refetch: refetchMentors } = useQuery<Mentor[]>({
     queryKey: ["/api/admin/users"],
-    enabled: adminCheck?.isAdmin === true && activeTab === "mentors",
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/users");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true && activeTab === "mentors",
   });
 
   const { data: flows, refetch: refetchFlows } = useQuery<Flow[]>({
     queryKey: ["/api/admin/flows"],
-    enabled: adminCheck?.isAdmin === true && activeTab === "flows",
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/flows");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true && activeTab === "flows",
   });
 
   const { data: errors, refetch: refetchErrors } = useQuery<SystemError[]>({
     queryKey: ["/api/admin/errors"],
-    enabled: adminCheck?.isAdmin === true && activeTab === "errors",
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/errors");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true && activeTab === "errors",
   });
 
-  if (authLoading || checkLoading) {
+  // Loading state while checking auth
+  if (isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-slate-400">Loading...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
-  if (!user) {
-    navigate("/login?returnTo=/admin");
-    return null;
-  }
-
-  if (!adminCheck?.isAdmin) {
+  // Login form
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
-          <p className="text-slate-400 mb-4">You don't have permission to access this page.</p>
-          <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="bg-slate-800 rounded-xl p-8 shadow-xl border border-slate-700">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-violet-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-8 h-8 text-violet-400" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">Admin Login</h1>
+              <p className="text-slate-400 text-sm mt-1">Flow83 Administration</p>
+            </div>
+            
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-slate-300">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
+                  className="bg-slate-700 border-slate-600 text-white"
+                  placeholder="Enter username"
+                  data-testid="input-admin-username"
+                  autoComplete="username"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-300">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                  className="bg-slate-700 border-slate-600 text-white"
+                  placeholder="Enter password"
+                  data-testid="input-admin-password"
+                  autoComplete="current-password"
+                />
+              </div>
+              
+              {loginError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-red-400 text-sm text-center">{loginError}</p>
+                </div>
+              )}
+              
+              <Button
+                type="submit"
+                className="w-full bg-violet-600 hover:bg-violet-700"
+                disabled={isLoggingIn || !loginForm.username || !loginForm.password}
+                data-testid="button-admin-login"
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
     );
@@ -219,15 +390,27 @@ export default function AdminPage() {
             ))}
           </nav>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="text-slate-400 hover:text-white mt-4"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to App
-          </Button>
+          <div className="space-y-2 mt-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/dashboard")}
+              className="w-full text-slate-400 hover:text-white justify-start"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to App
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 justify-start"
+              data-testid="button-admin-logout"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              Logout
+            </Button>
+          </div>
         </aside>
 
         {/* Main content */}
