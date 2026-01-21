@@ -104,7 +104,7 @@ function Router() {
       <Route path="/flow-demo/:id" component={FlowDemoPage} />
       
       {/* Admin routes */}
-      <Route path="/admin" component={AdminPage} />
+      <Route path="/admin/ann83" component={AdminPage} />
       
       <Route component={NotFound} />
     </Switch>

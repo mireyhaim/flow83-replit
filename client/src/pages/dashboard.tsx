@@ -36,7 +36,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (adminCheck?.isAdmin) {
-      navigate("/admin");
+      navigate("/admin/ann83");
     }
   }, [adminCheck?.isAdmin, navigate]);
 
