@@ -19,7 +19,7 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading: authLoading, isProfileComplete } = useAuth();
   const onboarding = useOnboarding();
-  const { plan, planName, planNameHe, commissionRate, monthlyFee, isLoading: planLoading } = useSubscriptionStatus();
+  const { plan, planName, planNameHe, commissionRate, monthlyFee, planChangedAt, isLoading: planLoading } = useSubscriptionStatus();
   const isMobile = useIsMobile();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();

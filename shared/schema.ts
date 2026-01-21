@@ -42,6 +42,7 @@ export const users = pgTable("users", {
   subscriptionPlan: varchar("subscription_plan"), // 'starter' | 'pro' | 'business'
   subscriptionStatus: varchar("subscription_status"), // 'on_trial' | 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused' | 'trial_expired'
   subscriptionProvider: varchar("subscription_provider"), // 'lemonsqueezy' | 'grow' - which payment provider user is using
+  planChangedAt: timestamp("plan_changed_at"), // When the subscription plan was last changed (for commission rate tracking)
   trialStartedAt: timestamp("trial_started_at"), // When internal 21-day trial started
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
@@ -257,9 +258,13 @@ export const payments = pgTable("payments", {
   mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   stripePaymentIntentId: varchar("stripe_payment_intent_id").unique(),
   stripeCheckoutSessionId: varchar("stripe_checkout_session_id"),
-  amount: integer("amount").notNull(), // Amount in cents
-  currency: text("currency").default("USD"),
+  amount: integer("amount").notNull(), // Amount in agorot (for ILS) or cents (for USD)
+  currency: text("currency").default("ILS"),
   status: text("status").default("completed"), // 'pending' | 'completed' | 'failed' | 'refunded'
+  // Commission tracking - calculated based on mentor's plan at time of payment
+  commissionRate: integer("commission_rate"), // Commission percentage (e.g., 17 for 17%)
+  commissionAmount: integer("commission_amount"), // Commission amount in agorot/cents
+  netAmount: integer("net_amount"), // Amount after commission deduction
   customerEmail: varchar("customer_email"),
   customerName: varchar("customer_name"),
   createdAt: timestamp("created_at").defaultNow(),

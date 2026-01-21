@@ -225,6 +225,7 @@ export async function registerRoutes(
         commissionRate: planDetails.commissionRate,
         monthlyFee: planDetails.amount / 100, // Convert from agorot to ILS
         isActive: true, // All plans are active in new model
+        planChangedAt: user.planChangedAt?.toISOString() || null, // When plan was last changed
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
@@ -2477,21 +2478,30 @@ export async function registerRoutes(
           eventData: { participantName: session.name || session.email },
         });
 
-        // Record payment (external payment)
+        // Get mentor's current plan for commission calculation
+        const mentor = await storage.getUser(journey.creatorId);
+        const mentorPlan = (mentor?.subscriptionPlan as PlanType) || 'free';
+        const { calculateCommission } = await import('./subscriptionService');
+        const amountInAgorot = (journey.price || 0) * 100; // Amount in agorot
+        const commission = calculateCommission(amountInAgorot, mentorPlan);
+
+        // Record payment with commission (external payment via Grow)
         await storage.createPayment({
           participantId: participant.id,
           journeyId: session.journeyId,
           mentorId: journey.creatorId,
-          amount: (journey.price || 0) * 100, // Amount in cents
-          currency: journey.currency || "USD",
+          amount: amountInAgorot,
+          currency: journey.currency || "ILS",
           status: "completed",
           stripeCheckoutSessionId: `external_${token}`, // Mark as external
           customerEmail: session.email,
           customerName: session.name,
+          commissionRate: Math.round(commission.commissionRate * 100), // Store as percentage (17, 15, 11)
+          commissionAmount: Math.round(commission.commissionAmount),
+          netAmount: Math.round(commission.netAmount),
         });
 
-        // Send welcome email with journey access link
-        const mentor = await storage.getUser(journey.creatorId);
+        // Send welcome email with journey access link (mentor already fetched above)
         const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
           ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
           : 'https://flow83.replit.app';
@@ -2626,10 +2636,16 @@ export async function registerRoutes(
           eventData: { participantName: name || email, paymentVerified: true },
         });
 
-        // Record payment for mentor earnings tracking
+        // Record payment for mentor earnings tracking with commission
         const amountPaid = session.amount_total || 0;
         if (amountPaid > 0) {
           try {
+            // Get mentor's plan for commission calculation
+            const mentor = await storage.getUser(journey.creatorId);
+            const mentorPlan = (mentor?.subscriptionPlan as PlanType) || 'free';
+            const { calculateCommission } = await import('./subscriptionService');
+            const commission = calculateCommission(amountPaid, mentorPlan);
+
             await storage.createPayment({
               journeyId,
               participantId: participant.id,
@@ -2637,12 +2653,15 @@ export async function registerRoutes(
               stripeCheckoutSessionId: sessionId,
               stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
               amount: amountPaid,
-              currency: session.currency?.toUpperCase() || "USD",
+              currency: session.currency?.toUpperCase() || "ILS",
               status: "completed",
               customerEmail: email,
               customerName: name || undefined,
+              commissionRate: Math.round(commission.commissionRate * 100),
+              commissionAmount: Math.round(commission.commissionAmount),
+              netAmount: Math.round(commission.netAmount),
             });
-            console.log(`Payment recorded: $${amountPaid / 100} for journey ${journeyId}`);
+            console.log(`Payment recorded: ₪${amountPaid / 100} for journey ${journeyId} (${mentorPlan} plan, ${Math.round(commission.commissionRate * 100)}% commission)`);
           } catch (paymentErr) {
             console.error("Error recording payment (non-blocking):", paymentErr);
           }
@@ -2986,6 +3005,7 @@ export async function registerRoutes(
           id: userId,
           subscriptionPlan: 'free',
           subscriptionStatus: 'active',
+          planChangedAt: new Date(),
         });
         return res.json({ success: true, message: "Switched to Free plan" });
       }
@@ -3010,6 +3030,7 @@ export async function registerRoutes(
         await storage.upsertUser({
           id: userId,
           subscriptionPlan: newPlan,
+          planChangedAt: new Date(),
         });
         return res.json({ success: true, message: `Switched to ${newPlan} plan` });
       }
@@ -3109,6 +3130,7 @@ export async function registerRoutes(
             subscriptionStatus: subscriptionStatus,
             trialEndsAt: attributes.trial_ends_at ? new Date(attributes.trial_ends_at) : null,
             subscriptionEndsAt: attributes.renews_at ? new Date(attributes.renews_at) : null,
+            planChangedAt: new Date(),
           });
           
           console.log(`Updated subscription for user ${user.id}: ${plan} (${subscriptionStatus})`);

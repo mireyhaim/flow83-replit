@@ -7,6 +7,7 @@ export interface SubscriptionStatus {
   commissionRate: number;
   monthlyFee: number;
   isActive: boolean;
+  planChangedAt: string | null;
 }
 
 async function fetchSubscriptionStatus(): Promise<SubscriptionStatus | null> {
@@ -39,6 +40,7 @@ export function useSubscriptionStatus() {
   const commissionRate = subscriptionStatus?.commissionRate ?? 0.17;
   const monthlyFee = subscriptionStatus?.monthlyFee ?? 0;
   const isActive = subscriptionStatus?.isActive ?? true;
+  const planChangedAt = subscriptionStatus?.planChangedAt ?? null;
 
   return {
     subscriptionStatus,
@@ -49,6 +51,7 @@ export function useSubscriptionStatus() {
     commissionRate,
     monthlyFee,
     isActive,
+    planChangedAt,
     refetch,
   };
 }
