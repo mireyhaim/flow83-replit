@@ -528,5 +528,10 @@
     "otherPaymentOption": "Other payment method",
     "otherPaymentDescription": "Use an existing payment link from PayPal, Stripe, bit, PayBox or any other provider",
     "otherPaymentPlaceholder": "https://paypal.me/... or bit link"
+  },
+  "termsModal": {
+    "title": "Welcome to Flow 83",
+    "description": "Before we begin, please read and accept our Terms of Service and Privacy Policy.",
+    "confirmButton": "I Accept & Continue"
   }
 }

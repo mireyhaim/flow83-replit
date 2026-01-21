@@ -6,7 +6,8 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
-import { useQuery } from "@tanstack/react-query";
+import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { statsApi, activityApi, earningsApi, type DashboardStats, type EarningsData } from "@/lib/api";
 import { Users, CheckCircle, BookOpen, Loader2, TrendingUp, HelpCircle, DollarSign, Clock, UserPlus, Trophy, MessageCircle, Sparkles, ExternalLink, AlertTriangle, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,11 @@ export default function Dashboard() {
   const { plan, planName, planNameHe, commissionRate, monthlyFee, isLoading: planLoading } = useSubscriptionStatus();
   const isMobile = useIsMobile();
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const isHebrew = i18n.language === 'he';
+  
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const showTermsModal = isAuthenticated && user && !user.termsAcceptedAt && !termsAccepted;
 
   // Check if user is super_admin and redirect to admin dashboard
   const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
@@ -126,6 +131,11 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
+      <TermsAcceptanceModal 
+        open={!!showTermsModal} 
+        onAccepted={() => setTermsAccepted(true)} 
+      />
+      
       <OnboardingOverlay
         isActive={onboarding.isActive}
         currentStep={onboarding.currentStep}

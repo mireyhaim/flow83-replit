@@ -531,5 +531,10 @@
     "backToFlows": "חזרה ל-Flows",
     "free": "חינם",
     "paymentLink": "קישור לתשלום"
+  },
+  "termsModal": {
+    "title": "ברוכים הבאים ל-Flow 83",
+    "description": "לפני שנתחיל, אנא קראו ואשרו את תנאי השימוש ומדיניות הפרטיות שלנו.",
+    "confirmButton": "אני מאשר/ת והמשך"
   }
 }
