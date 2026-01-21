@@ -56,6 +56,7 @@ import AdminPage from "@/pages/admin";
 import PaymentsPage from "@/pages/payments";
 import SelfBillingTermsPage from "@/pages/self-billing-terms";
 import ParticipantsPage from "@/pages/participants";
+import MentorTermsPage from "@/pages/mentor-terms";
 
 function Router() {
   return (
@@ -99,6 +100,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/cookie-policy" component={CookiePolicy} />
+      <Route path="/mentor-terms" component={MentorTermsPage} />
       <Route path="/flow-demo/:id" component={FlowDemoPage} />
       
       {/* Admin routes */}

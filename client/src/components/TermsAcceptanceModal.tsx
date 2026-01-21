@@ -80,23 +80,15 @@ export function TermsAcceptanceModal({ open, onAccepted }: TermsAcceptanceModalP
               {isHebrew ? (
                 <>
                   קראתי ואני מסכים/ה ל
-                  <Link href="/terms" className="text-violet-600 hover:underline mx-1" target="_blank">
-                    תנאי השימוש
-                  </Link>
-                  ול
-                  <Link href="/privacy" className="text-violet-600 hover:underline mx-1" target="_blank">
-                    מדיניות הפרטיות
+                  <Link href="/mentor-terms" className="text-violet-600 hover:underline mx-1" target="_blank">
+                    הסכם ההתקשרות למנטור
                   </Link>
                 </>
               ) : (
                 <>
                   I have read and agree to the{" "}
-                  <Link href="/terms" className="text-violet-600 hover:underline" target="_blank">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-violet-600 hover:underline" target="_blank">
-                    Privacy Policy
+                  <Link href="/mentor-terms" className="text-violet-600 hover:underline" target="_blank">
+                    Mentor Agreement
                   </Link>
                 </>
               )}
