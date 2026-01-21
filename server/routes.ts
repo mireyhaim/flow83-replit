@@ -116,6 +116,25 @@ export async function registerRoutes(
     }
   });
 
+  // Accept Terms of Service and Privacy Policy
+  app.post('/api/user/accept-terms', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      await storage.updateUser(userId, {
+        termsAcceptedAt: new Date(),
+      });
+      
+      res.json({ success: true, termsAcceptedAt: new Date() });
+    } catch (error) {
+      console.error("Error accepting terms:", error);
+      res.status(500).json({ error: "Failed to accept terms" });
+    }
+  });
+
   // Upload profile image
   app.post('/api/profile/image', isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
