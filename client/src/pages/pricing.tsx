@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Check, Sparkles, TrendingUp, Rocket, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import Header from "@/components/landing/Header";
+import Footer from "@/components/landing/Footer";
 
 export default function PricingPage() {
   const { i18n } = useTranslation();
@@ -27,7 +29,6 @@ export default function PricingPage() {
       icon: Sparkles,
       price: 0,
       commission: 17,
-      color: "emerald",
       description: isHebrew ? "התחלה חופשית, בלי תשלום חודשי" : "Free start, no monthly payment",
       idealFor: isHebrew
         ? ["להתנסות בפלטפורמה", "לבנות Flow ראשון", "לבדוק איך הקהל מגיב לתהליך"]
@@ -59,7 +60,6 @@ export default function PricingPage() {
       icon: TrendingUp,
       price: 55,
       commission: 15,
-      color: "blue",
       description: isHebrew ? "לצמיחה יציבה ומכירות ראשונות" : "For stable growth and first sales",
       idealFor: isHebrew
         ? ["שכבר התחיל למכור", "רוצה להגדיל נפח", "מחפש איזון בין עלות להכנסה"]
@@ -90,7 +90,6 @@ export default function PricingPage() {
       icon: Rocket,
       price: 83,
       commission: 11,
-      color: "violet",
       description: isHebrew
         ? "למנטורים שבונים עסק דיגיטלי אמיתי"
         : "For mentors building a real digital business",
@@ -153,213 +152,174 @@ export default function PricingPage() {
         },
       ];
 
-  const colorClasses = {
-    emerald: {
-      bg: "bg-emerald-50",
-      border: "border-emerald-200",
-      icon: "text-emerald-600",
-      iconBg: "bg-emerald-100",
-      badge: "bg-emerald-500",
-      button: "bg-emerald-600 hover:bg-emerald-700",
-    },
-    blue: {
-      bg: "bg-blue-50",
-      border: "border-blue-200",
-      icon: "text-blue-600",
-      iconBg: "bg-blue-100",
-      badge: "bg-blue-500",
-      button: "bg-blue-600 hover:bg-blue-700",
-    },
-    violet: {
-      bg: "bg-violet-50",
-      border: "border-violet-200",
-      icon: "text-violet-600",
-      iconBg: "bg-violet-100",
-      badge: "bg-violet-500",
-      button: "bg-violet-600 hover:bg-violet-700",
-    },
-  };
-
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50"
-      dir={isHebrew ? "rtl" : "ltr"}
-    >
-      <header className="py-6 px-4 border-b border-slate-100 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-violet-600" data-testid="link-logo">
-            FLOW83
-          </Link>
-          <Button variant="outline" asChild data-testid="button-login">
-            <a href="/api/login">{isHebrew ? "התחברות" : "Login"}</a>
-          </Button>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-12 md:py-20">
-        <div className="text-center mb-12 md:mb-16">
-          <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4">
-            {isHebrew
-              ? "בחרו את הקצב שמתאים לכם – ואנחנו נצמח איתכם"
-              : "Choose your pace – and we'll grow with you"}
-          </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            {isHebrew
-              ? "FLOW83 נבנתה כדי לאפשר למנטורים, מורים ויוצרי שיטות להפוך ידע עמוק לתהליך דיגיטלי חי – בלי לוותר על האותנטיות."
-              : "FLOW83 was built to enable mentors, teachers, and method creators to transform deep knowledge into a living digital process – without losing authenticity."}
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-slate-500">
-            <span className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500" />
-              {isHebrew ? "אין התחייבות" : "No commitment"}
-            </span>
-            <span className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500" />
-              {isHebrew ? "אין אותיות קטנות" : "No fine print"}
-            </span>
-            <span className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500" />
-              {isHebrew ? "שינוי מסלול בכל רגע" : "Change plans anytime"}
-            </span>
+    <div className="min-h-screen bg-[#f8f7ff] font-sans selection:bg-violet-500/20 selection:text-violet-300">
+      <Header />
+      
+      <main className="pt-24 pb-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              {isHebrew
+                ? "בחרו את הקצב שמתאים לכם"
+                : "Choose your pace"}
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              {isHebrew
+                ? "FLOW83 נבנתה כדי לאפשר למנטורים, מורים ויוצרי שיטות להפוך ידע עמוק לתהליך דיגיטלי חי – בלי לוותר על האותנטיות."
+                : "FLOW83 was built to enable mentors, teachers, and method creators to transform deep knowledge into a living digital process – without losing authenticity."}
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-violet-500" />
+                {isHebrew ? "אין התחייבות" : "No commitment"}
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-violet-500" />
+                {isHebrew ? "אין אותיות קטנות" : "No fine print"}
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-violet-500" />
+                {isHebrew ? "שינוי מסלול בכל רגע" : "Change plans anytime"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          {plans.map((plan) => {
-            const colors = colorClasses[plan.color as keyof typeof colorClasses];
-            const Icon = plan.icon;
+          <div className="grid md:grid-cols-3 gap-6 mb-20">
+            {plans.map((plan) => {
+              const Icon = plan.icon;
 
-            return (
-              <div
-                key={plan.id}
-                className={cn(
-                  "relative rounded-2xl border-2 p-6 transition-all hover:shadow-lg",
-                  colors.bg,
-                  colors.border,
-                  plan.popular && "ring-2 ring-blue-400 ring-offset-2"
-                )}
-                data-testid={`card-plan-${plan.id}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full">
-                      {isHebrew ? "פופולרי" : "Popular"}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", colors.iconBg)}>
-                    <Icon className={cn("w-5 h-5", colors.icon)} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900">{isHebrew ? plan.nameHe : plan.name}</h3>
-                    <p className="text-sm text-slate-500">{plan.description}</p>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-slate-900">₪{plan.price}</span>
-                    <span className="text-slate-500">/{isHebrew ? "חודש" : "month"}</span>
-                  </div>
-                  <div className={cn("inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium text-white", colors.badge)}>
-                    {plan.commission}% {isHebrew ? "עמלה לכל משתתף" : "commission per participant"}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-slate-700 mb-2">
-                    {isHebrew ? "מתאים למי:" : "Ideal for:"}
-                  </p>
-                  <ul className="space-y-1 text-sm text-slate-600">
-                    {plan.idealFor.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-slate-400">•</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-slate-700 mb-2">
-                    {isHebrew ? "מה כלול:" : "What's included:"}
-                  </p>
-                  <ul className="space-y-2">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                        <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <p className="text-sm text-slate-500 italic mb-6">{plan.tagline}</p>
-
-                <Button
-                  className={cn("w-full text-white", colors.button)}
-                  onClick={() => handleSelectPlan(plan.id)}
-                  data-testid={`button-select-${plan.id}`}
+              return (
+                <div
+                  key={plan.id}
+                  className={cn(
+                    "relative bg-white rounded-2xl border border-gray-200 p-6 transition-all hover:shadow-xl hover:shadow-violet-500/10 hover:border-violet-200",
+                    plan.popular && "ring-2 ring-violet-500 ring-offset-2 ring-offset-[#f8f7ff]"
+                  )}
+                  data-testid={`card-plan-${plan.id}`}
                 >
-                  👉 {plan.cta}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-violet-600 text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-lg shadow-violet-500/30">
+                        {isHebrew ? "פופולרי" : "Popular"}
+                      </span>
+                    </div>
+                  )}
 
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">
-            {isHebrew ? "שאלות נפוצות" : "FAQ"}
-          </h2>
-          <div className="space-y-3">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="border border-slate-200 rounded-xl overflow-hidden bg-white"
-                data-testid={`faq-item-${index}`}
-              >
-                <button
-                  className="w-full px-5 py-4 flex items-center justify-between text-start hover:bg-slate-50 transition-colors"
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                >
-                  <span className="font-medium text-slate-900">{faq.q}</span>
-                  <ChevronDown
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-violet-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">{isHebrew ? plan.nameHe : plan.name}</h3>
+                      <p className="text-sm text-gray-500">{plan.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-gray-900">₪{plan.price}</span>
+                      <span className="text-gray-500">/{isHebrew ? "חודש" : "month"}</span>
+                    </div>
+                    <div className="inline-block mt-3 px-3 py-1.5 rounded-full text-sm font-medium bg-violet-100 text-violet-700">
+                      {plan.commission}% {isHebrew ? "עמלה לכל משתתף" : "commission per participant"}
+                    </div>
+                  </div>
+
+                  <div className="mb-5">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      {isHebrew ? "מתאים למי:" : "Ideal for:"}
+                    </p>
+                    <ul className="space-y-1.5 text-sm text-gray-600">
+                      {plan.idealFor.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-violet-400 mt-0.5">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mb-5">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      {isHebrew ? "מה כלול:" : "What's included:"}
+                    </p>
+                    <ul className="space-y-2">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                          <Check className="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <p className="text-sm text-gray-500 italic mb-6">{plan.tagline}</p>
+
+                  <Button
                     className={cn(
-                      "w-5 h-5 text-slate-400 transition-transform",
-                      openFaq === index && "rotate-180"
+                      "w-full rounded-full text-white shadow-lg transition-all",
+                      plan.popular 
+                        ? "bg-violet-600 hover:bg-violet-700 shadow-violet-500/30" 
+                        : "bg-gray-800 hover:bg-gray-900 shadow-gray-500/20"
                     )}
-                  />
-                </button>
-                {openFaq === index && (
-                  <div className="px-5 pb-4 text-slate-600">{faq.a}</div>
-                )}
-              </div>
-            ))}
+                    onClick={() => handleSelectPlan(plan.id)}
+                    data-testid={`button-select-${plan.id}`}
+                  >
+                    {plan.cta}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
-        </div>
 
-        <div className="mt-16 text-center">
-          <p className="text-lg text-slate-700 mb-4">
-            {isHebrew
-              ? "FLOW83 לא נבנתה כדי להחליף אתכם. היא נבנתה כדי לאפשר לשיטה שלכם לעבוד גם כשאתם לא שם."
-              : "FLOW83 wasn't built to replace you. It was built to let your method work even when you're not there."}
-          </p>
-          <p className="text-violet-600 font-medium">
-            {isHebrew
-              ? "בחרו מסלול, בנו Flow, ותנו לתהליך להוביל."
-              : "Choose a plan, build a Flow, and let the process lead."}
-          </p>
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              {isHebrew ? "שאלות נפוצות" : "FAQ"}
+            </h2>
+            <div className="space-y-3">
+              {faqs.map((faq, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white hover:border-violet-200 transition-colors"
+                  data-testid={`faq-item-${index}`}
+                >
+                  <button
+                    className="w-full px-5 py-4 flex items-center justify-between text-start hover:bg-gray-50 transition-colors"
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  >
+                    <span className="font-medium text-gray-900">{faq.q}</span>
+                    <ChevronDown
+                      className={cn(
+                        "w-5 h-5 text-gray-400 transition-transform",
+                        openFaq === index && "rotate-180"
+                      )}
+                    />
+                  </button>
+                  {openFaq === index && (
+                    <div className="px-5 pb-4 text-gray-600">{faq.a}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-20 text-center">
+            <p className="text-lg text-gray-700 mb-4 leading-relaxed">
+              {isHebrew
+                ? "FLOW83 לא נבנתה כדי להחליף אתכם. היא נבנתה כדי לאפשר לשיטה שלכם לעבוד גם כשאתם לא שם."
+                : "FLOW83 wasn't built to replace you. It was built to let your method work even when you're not there."}
+            </p>
+            <p className="text-violet-600 font-semibold text-lg">
+              {isHebrew
+                ? "בחרו מסלול, בנו Flow, ותנו לתהליך להוביל."
+                : "Choose a plan, build a Flow, and let the process lead."}
+            </p>
+          </div>
         </div>
       </main>
 
-      <footer className="py-8 border-t border-slate-100 bg-white/50">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
-          © 2024 FLOW83. {isHebrew ? "כל הזכויות שמורות." : "All rights reserved."}
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
