@@ -54,19 +54,26 @@ function updateUserSession(
 async function upsertUser(claims: any) {
   const userId = claims["sub"];
   const email = claims["email"];
-  const firstName = claims["first_name"];
-  const lastName = claims["last_name"];
+  const claimsFirstName = claims["first_name"];
+  const claimsLastName = claims["last_name"];
+  const claimsProfileImage = claims["profile_image_url"];
   
   // Check if user already exists (to detect first-time signup)
   const existingUser = await storage.getUser(userId);
   const isNewUser = !existingUser;
   
+  // For existing users, preserve their custom profile data
+  // Only use claims data if the user hasn't set their own values
+  const firstName = existingUser?.firstName || claimsFirstName;
+  const lastName = existingUser?.lastName || claimsLastName;
+  const profileImageUrl = existingUser?.profileImageUrl || claimsProfileImage;
+  
   await storage.upsertUser({
     id: userId,
-    email,
+    email, // Always update email from auth
     firstName,
     lastName,
-    profileImageUrl: claims["profile_image_url"],
+    profileImageUrl,
   });
   
   // Send welcome email to new mentors
