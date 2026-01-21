@@ -31,12 +31,12 @@ const termsContent = [
   {
     icon: Briefcase,
     title: "End-User Relationship",
-    content: "All financial transactions from end-users purchasing mentor journeys are processed directly through the mentor's own payment link (PayPal, Stripe, or other payment provider of their choice). Flow83 does not handle or transfer end-user revenue. The mentor is the sole provider of the service purchased by the end-user."
+    content: "Flow83 collects payments from participants (end-users) on behalf of mentors and issues invoices for their purchases. Flow83 then transfers the payment to the mentor after deducting the applicable commission. The mentor is the sole provider of the service purchased by the end-user."
   },
   {
     icon: CreditCard,
     title: "Payments to Flow83",
-    content: "Mentors pay Flow83 a recurring subscription fee for platform access. Plans may vary by features, usage limits, and available tools. Fees are non-refundable unless otherwise stated."
+    content: "Flow83 operates on a commission-based model. Mentors may choose from different subscription plans (Free, Pro, Scale), each with a corresponding commission rate (17%, 15%, or 11% respectively) deducted from participant payments. Subscription fees are non-refundable unless otherwise stated."
   },
   {
     icon: CheckCircle,

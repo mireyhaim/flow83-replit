@@ -21,7 +21,7 @@ const privacyContent = [
   {
     icon: CreditCard,
     title: "Payments",
-    content: "Mentor subscriptions are processed through our payment provider. End-user payments are processed through the mentor's own payment link (PayPal, Stripe, or other payment provider of their choice) directly into their account. Flow83 does not store credit card data or banking information."
+    content: "Flow83 collects payments from participants on behalf of mentors, deducts the applicable commission, and transfers the remaining balance to the mentor. Flow83 issues invoices to participants for their purchases. Mentor subscriptions are processed through our payment provider. Flow83 does not store credit card data or banking information."
   },
   {
     icon: Shield,
