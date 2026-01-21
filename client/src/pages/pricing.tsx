@@ -25,92 +25,91 @@ export default function PricingPage() {
     {
       id: "free" as const,
       name: "Free",
-      nameHe: "חינם",
+      nameHe: "התחלה",
       icon: Sparkles,
       price: 0,
-      commission: 17,
-      description: isHebrew ? "התחלה חופשית, בלי תשלום חודשי" : "Free start, no monthly payment",
+      description: isHebrew ? "בלי תשלום חודשי" : "No monthly fee",
       idealFor: isHebrew
-        ? ["להתנסות בפלטפורמה", "לבנות Flow ראשון", "לבדוק איך הקהל מגיב לתהליך"]
-        : ["Try the platform", "Build your first Flow", "Test audience response"],
+        ? ["מי שרוצה לנסות את הפלטפורמה", "בניית ה-Flow הראשון", "בדיקת התאמה לקהל"]
+        : ["Try the platform", "Build your first Flow", "Test audience fit"],
       features: isHebrew
         ? [
-            "יצירת Flows והפעלתם",
-            "צ'אט AI מלווה תהליך",
-            "גבייה אוטומטית דרך המערכת",
-            "הפקת חשבוניות (Self-Billing)",
-            "ללא התחייבות חודשית",
+            "Flows ללא הגבלה",
+            "משתתפים ללא הגבלה",
+            "צ'אט AI אישי למשתתפים",
+            "גבייה אוטומטית",
+            "חשבוניות עצמיות",
+            "עמלה למשתתף: 17%",
           ]
         : [
-            "Create and run Flows",
-            "AI-powered chat experience",
-            "Automatic payment collection",
-            "Self-Billing invoices",
-            "No monthly commitment",
+            "Unlimited Flows",
+            "Unlimited participants",
+            "AI chat for participants",
+            "Automatic payments",
+            "Self-billing invoices",
+            "Commission per participant: 17%",
           ],
       tagline: isHebrew
-        ? "מושלם להתחלה. משלמים רק כשיש משתתפים."
-        : "Perfect to start. Pay only when you have participants.",
-      cta: isHebrew ? "התחילו ללא התחייבות" : "Start Free",
+        ? "מתחילים בחינם, משלמים רק כשמרוויחים."
+        : "Start free, pay only when you earn.",
+      cta: isHebrew ? "להתחיל בחינם" : "Start Free",
     },
     {
       id: "pro" as const,
       name: "Pro",
-      nameHe: "Pro",
+      nameHe: "מקצועי",
       icon: TrendingUp,
       price: 55,
-      commission: 15,
-      description: isHebrew ? "לצמיחה יציבה ומכירות ראשונות" : "For stable growth and first sales",
+      description: isHebrew ? "לצמיחה עסקית" : "For business growth",
       idealFor: isHebrew
-        ? ["שכבר התחיל למכור", "רוצה להגדיל נפח", "מחפש איזון בין עלות להכנסה"]
-        : ["Already started selling", "Want to increase volume", "Looking for cost-revenue balance"],
+        ? ["מי שכבר מוכר", "רוצה להגדיל הכנסות", "מחפש עמלה נמוכה יותר"]
+        : ["Already selling", "Want to grow revenue", "Looking for lower fees"],
       features: isHebrew
         ? [
-            "כל מה שבמסלול Free",
-            "עמלה נמוכה יותר",
+            "כל מה שב-התחלה",
+            "דוחות על משתתפים והכנסות",
             "ניהול מתקדם של Flows",
-            "דוחות בסיסיים על משתתפים והכנסות",
+            "עמלה למשתתף: 15%",
           ]
         : [
             "Everything in Free",
-            "Lower commission rate",
+            "Participant & revenue reports",
             "Advanced Flow management",
-            "Basic reports on participants and revenue",
+            "Commission per participant: 15%",
           ],
       tagline: isHebrew
-        ? "ברגע שמתחילים למכור – זה משתלם."
-        : "Once you start selling – it pays off.",
-      cta: isHebrew ? "עברו ל-Pro" : "Go Pro",
+        ? "עמלה נמוכה יותר = יותר כסף בכיס."
+        : "Lower commission = more money in your pocket.",
+      cta: isHebrew ? "לשדרג ל-Pro" : "Upgrade to Pro",
       popular: true,
     },
     {
       id: "scale" as const,
       name: "Scale",
-      nameHe: "Scale",
+      nameHe: "עסק",
       icon: Rocket,
       price: 83,
-      commission: 11,
-      description: isHebrew
-        ? "למנטורים שבונים עסק דיגיטלי אמיתי"
-        : "For mentors building a real digital business",
+      description: isHebrew ? "להיקפים גדולים" : "For high volume",
       idealFor: isHebrew
-        ? ["עובד עם קהל קבוע", "רוצה להרחיב תהליכים", "חושב לטווח ארוך"]
-        : ["Working with regular audience", "Want to expand processes", "Thinking long-term"],
+        ? ["עסק עם קהל קבוע", "הרבה משתתפים בחודש", "רוצה את העמלה הכי נמוכה"]
+        : ["Established business", "High monthly volume", "Want the lowest fees"],
       features: isHebrew
         ? [
             "כל מה שב-Pro",
             "העמלה הנמוכה ביותר",
-            "מתאים להיקפי פעילות גדולים",
+            "מותאם לפעילות בהיקף גבוה",
+            "עמלה למשתתף: 11%",
           ]
         : [
             "Everything in Pro",
             "Lowest commission rate",
-            "Suitable for large-scale operations",
+            "Built for high volume",
+            "Commission per participant: 11%",
           ],
       tagline: isHebrew
-        ? "כשזה כבר עובד – כדאי לשלם פחות על כל משתתף."
-        : "When it's working – better to pay less per participant.",
-      cta: isHebrew ? "בחרו ב-Scale" : "Choose Scale",
+        ? "ככל שגדלים – משלמים פחות על כל משתתף."
+        : "The more you grow – the less you pay per participant.",
+      cta: isHebrew ? "לבחור Scale" : "Choose Scale",
     },
   ];
 
@@ -220,9 +219,6 @@ export default function PricingPage() {
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold text-gray-900">₪{plan.price}</span>
                       <span className="text-gray-500">/{isHebrew ? "חודש" : "month"}</span>
-                    </div>
-                    <div className="inline-block mt-3 px-3 py-1.5 rounded-full text-sm font-medium bg-violet-100 text-violet-700">
-                      {plan.commission}% {isHebrew ? "עמלה לכל משתתף" : "commission per participant"}
                     </div>
                   </div>
 
