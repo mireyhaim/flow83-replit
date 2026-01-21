@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
+import { Upload, Wand2, Share2, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
@@ -95,16 +95,8 @@ const HowItWorksPage = () => {
       imageAlt: "Marketing landing page"
     },
     {
-      icon: CreditCard,
-      number: "04",
-      title: t('howItWorksPage.step4Title'),
-      description: t('howItWorksPage.step4Desc'),
-      image: screenshotParticipant,
-      imageAlt: "Direct payment flow"
-    },
-    {
       icon: Share2,
-      number: "05",
+      number: "04",
       title: t('howItWorksPage.step5Title'),
       description: t('howItWorksPage.step5Desc'),
       image: screenshotParticipantChat,
