@@ -158,10 +158,6 @@ export default function PaymentsPage() {
     queryKey: ["/api/mentor/wallet/transactions"],
   });
 
-  const { data: invoices, isLoading: invoicesLoading } = useQuery<Invoice[]>({
-    queryKey: ["/api/mentor/invoices"],
-  });
-
   const { data: monthlyReport, isLoading: reportLoading } = useQuery<MonthlyReport>({
     queryKey: ["/api/mentor/monthly-report", reportMonth.year, reportMonth.month],
     queryFn: async () => {
@@ -295,7 +291,7 @@ export default function PaymentsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
             <TabsTrigger value="wallet" className="gap-2" data-testid="tab-wallet">
               <Wallet className="h-4 w-4" />
               {isHebrew ? "ארנק" : "Wallet"}
@@ -303,10 +299,6 @@ export default function PaymentsPage() {
             <TabsTrigger value="business" className="gap-2" data-testid="tab-business">
               <Building2 className="h-4 w-4" />
               {isHebrew ? "פרופיל עסקי" : "Business Profile"}
-            </TabsTrigger>
-            <TabsTrigger value="invoices" className="gap-2" data-testid="tab-invoices">
-              <Receipt className="h-4 w-4" />
-              {isHebrew ? "חשבוניות" : "Invoices"}
             </TabsTrigger>
           </TabsList>
 
@@ -806,85 +798,6 @@ export default function PaymentsPage() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="invoices" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{isHebrew ? "חשבוניות" : "Invoices"}</CardTitle>
-                <CardDescription>
-                  {isHebrew 
-                    ? "כל החשבוניות שהופקו - למשתתפים ולמשיכות" 
-                    : "All invoices generated - for participants and withdrawals"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {invoicesLoading ? (
-                  <div className="text-center py-8 text-slate-500">
-                    {isHebrew ? "טוען..." : "Loading..."}
-                  </div>
-                ) : !invoices?.length ? (
-                  <div className="text-center py-12 text-slate-500">
-                    <Receipt className="h-12 w-12 mx-auto mb-3 text-slate-300" />
-                    <p>{isHebrew ? "אין חשבוניות עדיין" : "No invoices yet"}</p>
-                    <p className="text-sm mt-1">
-                      {isHebrew 
-                        ? "חשבוניות יופקו אוטומטית כאשר תהיה פעילות" 
-                        : "Invoices will be generated automatically when there's activity"}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {invoices.map((invoice) => (
-                      <div 
-                        key={invoice.id}
-                        className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
-                        data-testid={`invoice-${invoice.id}`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`p-2 rounded-full ${
-                            invoice.type === 'self_billing' ? 'bg-violet-100' : 'bg-green-100'
-                          }`}>
-                            <FileText className={`h-4 w-4 ${
-                              invoice.type === 'self_billing' ? 'text-violet-600' : 'text-green-600'
-                            }`} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-slate-900">{invoice.invoiceNumber}</p>
-                              <Badge variant={invoice.type === 'self_billing' ? 'secondary' : 'default'}>
-                                {invoice.type === 'self_billing' 
-                                  ? (isHebrew ? 'Self-Billing' : 'Self-Billing')
-                                  : (isHebrew ? 'משתתף' : 'Participant')}
-                              </Badge>
-                              <Badge variant={
-                                invoice.status === 'paid' ? 'default' :
-                                invoice.status === 'issued' ? 'secondary' : 'outline'
-                              }>
-                                {invoice.status === 'paid' 
-                                  ? (isHebrew ? 'שולם' : 'Paid')
-                                  : invoice.status === 'issued'
-                                  ? (isHebrew ? 'הופק' : 'Issued')
-                                  : (isHebrew ? 'טיוטה' : 'Draft')}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-slate-500">
-                              {invoice.recipientName || invoice.issuerName || '-'} • {' '}
-                              {new Date(invoice.issuedAt || invoice.createdAt).toLocaleDateString(isHebrew ? 'he-IL' : 'en-US')}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="font-semibold text-slate-900">
-                            {formatCurrency(invoice.total)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
