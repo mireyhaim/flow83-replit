@@ -18,7 +18,7 @@ const Header = () => {
           Flow 83
         </Link>
         
-        <nav className="hidden md:flex items-center gap-8 rtl:flex-row-reverse">
+        <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
             {t('common:home')}
           </Link>
@@ -36,7 +36,7 @@ const Header = () => {
           </Link>
         </nav>
         
-        <div className="hidden md:flex items-center gap-4 rtl:flex-row-reverse">
+        <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
             <>
               <a href="/api/logout">
