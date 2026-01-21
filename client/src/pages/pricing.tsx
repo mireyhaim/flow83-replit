@@ -116,6 +116,10 @@ export default function PricingPage() {
   const faqs = isHebrew
     ? [
         {
+          q: "מה זה עמלת משתתף?",
+          a: "FLOW83 גובה עמלה מכל תשלום שמשתתף מבצע עבור התהליך. גובה העמלה תלוי במסלול שלכם: 17% במסלול התחלה, 15% במסלול מקצועי, ו-11% במסלול עסק.",
+        },
+        {
           q: "האם אפשר לשנות מסלול?",
           a: "כן. אפשר לשדרג או להוריד מסלול בכל רגע, בלי קנסות.",
         },
@@ -129,10 +133,14 @@ export default function PricingPage() {
         },
         {
           q: "FLOW83 לוקחת כסף גם אם אין משתתפים?",
-          a: "רק במסלולים Pro ו-Scale יש תשלום חודשי. במסלול Free – אין תשלום אם אין מכירות.",
+          a: "רק במסלולים מקצועי ועסק יש תשלום חודשי. במסלול התחלה – אין תשלום אם אין מכירות.",
         },
       ]
     : [
+        {
+          q: "What is the participant commission?",
+          a: "FLOW83 charges a commission on every payment a participant makes for your Flow. The rate depends on your plan: 17% on Free, 15% on Pro, and 11% on Scale.",
+        },
         {
           q: "Can I change my plan?",
           a: "Yes. You can upgrade or downgrade at any time, without penalties.",
