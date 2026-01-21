@@ -166,10 +166,12 @@ export default function PricingPage() {
       <main className="pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              {isHebrew
-                ? "בחרו את הקצב שמתאים לכם"
-                : "Choose your pace"}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight">
+              <span className="text-gray-900">{isHebrew ? "בחרו את " : "Choose your "}</span>
+              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
+                {isHebrew ? "הקצב" : "pace"}
+              </span>
+              <span className="text-gray-900">{isHebrew ? " שמתאים לכם" : ""}</span>
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               {isHebrew
