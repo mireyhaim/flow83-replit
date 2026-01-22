@@ -3,6 +3,55 @@ import { Resend } from 'resend';
 
 let connectionSettings: any;
 
+// Gender-aware Hebrew text helper
+type AddressingStyle = 'female' | 'male' | 'neutral';
+
+interface GenderedText {
+  youAre: string;        // אתה/את/אתם
+  youEntered: string;    // נכנסת (same for both in past tense)
+  youRegistered: string; // נרשמת (same for both in past tense)
+  youCompleted: string;  // סיימת (same for both in past tense)
+  forYou: string;        // עבורך/עבורכם
+  toYou: string;         // לך/לכם
+  waitingForYou: string; // מחכה לך
+}
+
+function getGenderedText(style: AddressingStyle): GenderedText {
+  switch (style) {
+    case 'female':
+      return {
+        youAre: 'את',
+        youEntered: 'נכנסת',
+        youRegistered: 'נרשמת',
+        youCompleted: 'סיימת',
+        forYou: 'עבורך',
+        toYou: 'לך',
+        waitingForYou: 'מחכה לך'
+      };
+    case 'male':
+      return {
+        youAre: 'אתה',
+        youEntered: 'נכנסת',
+        youRegistered: 'נרשמת',
+        youCompleted: 'סיימת',
+        forYou: 'עבורך',
+        toYou: 'לך',
+        waitingForYou: 'מחכה לך'
+      };
+    case 'neutral':
+    default:
+      return {
+        youAre: 'את/ה',
+        youEntered: 'נכנסת',
+        youRegistered: 'נרשמת',
+        youCompleted: 'סיימת',
+        forYou: 'עבורך',
+        toYou: 'לך',
+        waitingForYou: 'מחכה לך'
+      };
+  }
+}
+
 async function getCredentials() {
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
@@ -201,10 +250,12 @@ interface InactivityReminderEmailParams {
   currentDay: number;
   mentorName?: string;
   language?: 'he' | 'en';
+  addressingStyle?: AddressingStyle;
 }
 
 export async function sendInactivityReminderEmail(params: InactivityReminderEmailParams): Promise<boolean> {
-  const { participantEmail, participantName, journeyName, journeyLink, daysSinceActive, currentDay, mentorName, language = 'he' } = params;
+  const { participantEmail, participantName, journeyName, journeyLink, daysSinceActive, currentDay, mentorName, language = 'he', addressingStyle = 'neutral' } = params;
+  const g = getGenderedText(addressingStyle);
 
   try {
     // Use mentor name as sender if available
@@ -227,9 +278,9 @@ export async function sendInactivityReminderEmail(params: InactivityReminderEmai
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
-              שמנו לב שלא נכנסת לתהליך כבר ${daysSinceActive} ימים.<br><br>
-              זה בסדר גמור לקחת הפסקה, אבל רצינו להזכיר לך ש<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} עדיין מחכה לך.<br><br>
-              אתה ביום ${currentDay} - והמשך המסע מחכה!
+              שמנו לב שלא ${g.youEntered} לתהליך כבר ${daysSinceActive} ימים.<br><br>
+              זה בסדר גמור לקחת הפסקה, אבל רצינו להזכיר ${g.toYou} ש<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} עדיין ${g.waitingForYou}.<br><br>
+              ${g.youAre} ביום ${currentDay} - והמשך המסע מחכה!
             </p>
             <div style="background: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
               <div style="font-size: 32px; margin-bottom: 8px;">🌟</div>
@@ -305,10 +356,12 @@ interface NotStartedReminderEmailParams {
   daysSinceRegistration: number;
   mentorName?: string;
   language?: 'he' | 'en';
+  addressingStyle?: AddressingStyle;
 }
 
 export async function sendNotStartedReminderEmail(params: NotStartedReminderEmailParams): Promise<boolean> {
-  const { participantEmail, participantName, journeyName, journeyLink, daysSinceRegistration, mentorName, language = 'he' } = params;
+  const { participantEmail, participantName, journeyName, journeyLink, daysSinceRegistration, mentorName, language = 'he', addressingStyle = 'neutral' } = params;
+  const g = getGenderedText(addressingStyle);
 
   try {
     // Use mentor name as sender if available
@@ -331,8 +384,8 @@ export async function sendNotStartedReminderEmail(params: NotStartedReminderEmai
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">היי ${participantName},</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
-              שמנו לב שנרשמת ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} אבל עדיין לא התחלת.<br><br>
-              המסע שלך מחכה! יום 1 כבר מוכן עבורך, עם תוכן מותאם אישית שיעזור לך להתחיל את השינוי.<br><br>
+              שמנו לב ש${g.youRegistered} ל<strong style="color: #7c3aed;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} אבל עדיין לא התחלת.<br><br>
+              המסע שלך מחכה! יום 1 כבר מוכן ${g.forYou}, עם תוכן מותאם אישית שיעזור ${g.toYou} להתחיל את השינוי.<br><br>
               זה הזמן להתחיל
             </p>
             <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
@@ -408,10 +461,12 @@ interface CompletionEmailParams {
   totalDays: number;
   mentorName?: string;
   language?: 'he' | 'en';
+  addressingStyle?: AddressingStyle;
 }
 
 export async function sendCompletionEmail(params: CompletionEmailParams): Promise<boolean> {
-  const { participantEmail, participantName, journeyName, totalDays, mentorName, language = 'he' } = params;
+  const { participantEmail, participantName, journeyName, totalDays, mentorName, language = 'he', addressingStyle = 'neutral' } = params;
+  const g = getGenderedText(addressingStyle);
 
   try {
     // Use mentor name as sender if available
@@ -434,8 +489,8 @@ export async function sendCompletionEmail(params: CompletionEmailParams): Promis
           <div style="padding: 32px; text-align: right; direction: rtl;">
             <h2 style="color: #1e1b4b; margin: 0 0 16px; text-align: right;">${participantName}, מזל טוב!</h2>
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 24px; text-align: right; direction: rtl;">
-              עשית את זה!<br><br>
-              סיימת בהצלחה את <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} - כל ${totalDays} הימים!<br><br>
+              ${g.youCompleted} את זה!<br><br>
+              ${g.youCompleted} בהצלחה את <strong style="color: #059669;">${journeyName}</strong>${mentorName ? ` של ${mentorName}` : ''} - כל ${totalDays} הימים!<br><br>
               זה הישג משמעותי. השקעת בעצמך, התמדת, והגעת לסוף. זה לא מובן מאליו.
             </p>
             <div style="background: #ecfdf5; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">

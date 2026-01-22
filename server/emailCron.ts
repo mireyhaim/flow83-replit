@@ -55,6 +55,9 @@ export async function processEmailNotifications(): Promise<{
         // Check if participant never actually started the flow (conversationState is still START)
         const hasNeverStarted = participant.conversationState === 'START';
         
+        // Get addressing style from participant onboarding config
+        const addressingStyle = (participant.userOnboardingConfig as { addressing_style?: 'female' | 'male' | 'neutral' })?.addressing_style || 'neutral';
+
         if (hasNeverStarted && daysSinceRegistration >= 2) {
           // Send "not started" reminder for participants who registered 2+ days ago but never entered
           try {
@@ -65,7 +68,8 @@ export async function processEmailNotifications(): Promise<{
               journeyLink,
               daysSinceRegistration,
               mentorName: mentorUser?.firstName || undefined,
-              language: (journey.language as 'he' | 'en') || 'he'
+              language: (journey.language as 'he' | 'en') || 'he',
+              addressingStyle
             });
             results.notStartedReminders++;
             console.log(`[EmailCron] Sent not-started reminder to ${participant.email}`);
@@ -83,7 +87,8 @@ export async function processEmailNotifications(): Promise<{
               daysSinceActive,
               currentDay,
               mentorName: mentorUser?.firstName || undefined,
-              language: (journey.language as 'he' | 'en') || 'he'
+              language: (journey.language as 'he' | 'en') || 'he',
+              addressingStyle
             });
             results.inactivityReminders++;
             console.log(`[EmailCron] Sent inactivity reminder to ${participant.email}`);
@@ -113,13 +118,17 @@ export async function sendCompletionNotification(participantId: string): Promise
     const steps = await storage.getJourneySteps(journey.id);
     const mentorUser = journey.creatorId ? await storage.getUser(journey.creatorId) : null;
 
+    // Get addressing style from participant onboarding config
+    const addressingStyle = (participant.userOnboardingConfig as { addressing_style?: 'female' | 'male' | 'neutral' })?.addressing_style || 'neutral';
+
     await sendCompletionEmail({
       participantEmail: participant.email,
       participantName: participant.name || 'משתתף/ת',
       journeyName: journey.name,
       totalDays: steps.length,
       mentorName: mentorUser?.firstName || undefined,
-      language: (journey.language as 'he' | 'en') || 'he'
+      language: (journey.language as 'he' | 'en') || 'he',
+      addressingStyle
     });
 
     console.log(`[EmailCron] Sent completion email to ${participant.email}`);
