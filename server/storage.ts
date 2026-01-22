@@ -1282,7 +1282,7 @@ export class DatabaseStorage implements IStorage {
     const [participantCounts] = await db
       .select({
         total: count(),
-        active: sql<number>`count(*) filter (where ${participants.isActive} = true)`,
+        active: sql<number>`count(*) filter (where ${participants.completedAt} is null)`,
       })
       .from(participants);
     
@@ -1329,7 +1329,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(payments)
       .leftJoin(journeys, eq(payments.journeyId, journeys.id))
-      .leftJoin(users, eq(journeys.userId, users.id))
+      .leftJoin(users, eq(journeys.creatorId, users.id))
       .orderBy(desc(payments.createdAt));
     
     return results.map(r => ({
