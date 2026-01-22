@@ -170,6 +170,7 @@ export interface IStorage {
   getAdminPlatformStats(): Promise<{
     totalMentors: number;
     activeMentors: number;
+    newMentorsToday: number;
     totalParticipants: number;
     activeParticipants: number;
     totalRevenue: number;
@@ -1258,6 +1259,7 @@ export class DatabaseStorage implements IStorage {
   async getAdminPlatformStats(): Promise<{
     totalMentors: number;
     activeMentors: number;
+    newMentorsToday: number;
     totalParticipants: number;
     activeParticipants: number;
     totalRevenue: number;
@@ -1266,10 +1268,12 @@ export class DatabaseStorage implements IStorage {
     pendingRefunds: number;
   }> {
     // Count mentors
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const [mentorCounts] = await db
       .select({
         total: count(),
         active: sql<number>`count(*) filter (where ${users.subscriptionPlan} is not null)`,
+        newToday: sql<number>`count(*) filter (where ${users.createdAt} >= ${oneDayAgo})`,
       })
       .from(users)
       .where(eq(users.role, "mentor"));
@@ -1306,6 +1310,7 @@ export class DatabaseStorage implements IStorage {
     return {
       totalMentors: Number(mentorCounts?.total || 0),
       activeMentors: Number(mentorCounts?.active || 0),
+      newMentorsToday: Number(mentorCounts?.newToday || 0),
       totalParticipants: Number(participantCounts?.total || 0),
       activeParticipants: Number(participantCounts?.active || 0),
       totalRevenue: Number(revenueSums?.totalRevenue || 0),

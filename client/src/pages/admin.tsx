@@ -86,6 +86,7 @@ interface AdminStats {
 interface PlatformStats {
   totalMentors: number;
   activeMentors: number;
+  newMentorsToday: number;
   totalParticipants: number;
   activeParticipants: number;
   totalRevenue: number;
@@ -477,12 +478,13 @@ export default function AdminPage() {
 
   const pendingWithdrawals = withdrawals?.filter(w => w.status === "pending") || [];
   const pendingRefunds = refunds?.filter(r => r.status === "pending") || [];
-  const totalPendingNotifications = pendingWithdrawals.length + pendingRefunds.length;
+  const newMentorsToday = platformStats?.newMentorsToday || 0;
+  const totalPendingNotifications = pendingWithdrawals.length + pendingRefunds.length + newMentorsToday;
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
-    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" /> },
+    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, badge: newMentorsToday },
     { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" /> },
     { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, badge: pendingWithdrawals.length },
     { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, badge: pendingRefunds.length },
@@ -679,9 +681,21 @@ export default function AdminPage() {
                 <StatCard label="Active Users (7d)" value={stats?.activeUsers ?? 0} loading={statsLoading} />
                 <StatCard label="Total Mentors" value={platformStats?.totalMentors ?? 0} loading={!platformStats} />
                 <StatCard label="Active Mentors" value={platformStats?.activeMentors ?? 0} loading={!platformStats} />
+                <StatCard label="New Mentors (24h)" value={platformStats?.newMentorsToday ?? 0} loading={!platformStats} highlight={!!(platformStats?.newMentorsToday && platformStats.newMentorsToday > 0)} />
                 <StatCard label="Total Participants" value={platformStats?.totalParticipants ?? 0} loading={!platformStats} />
                 <StatCard label="Active Participants" value={platformStats?.activeParticipants ?? 0} loading={!platformStats} />
               </div>
+
+              {newMentorsToday > 0 && (
+                <div className="bg-slate-800 rounded-lg border border-green-500/30 p-4">
+                  <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                    <UserCog className="w-4 h-4 text-green-400" />
+                    New Mentors Today ({newMentorsToday})
+                  </h3>
+                  <p className="text-slate-400 text-sm mb-2">New mentors joined in the last 24 hours</p>
+                  <Button size="sm" onClick={() => setActiveTab("mentors")}>View Mentors</Button>
+                </div>
+              )}
 
               {pendingWithdrawals.length > 0 && (
                 <div className="bg-slate-800 rounded-lg border border-amber-500/30 p-4">
