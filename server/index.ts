@@ -153,6 +153,21 @@ async function initStripe() {
   }
 
   const port = parseInt(process.env.PORT || "5000", 10);
+  
+  // Handle server errors gracefully
+  httpServer.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EADDRINUSE') {
+      log(`Port ${port} is busy, retrying in 1 second...`, 'express');
+      setTimeout(() => {
+        httpServer.close();
+        httpServer.listen({ port, host: "0.0.0.0", reusePort: true });
+      }, 1000);
+    } else {
+      log(`Server error: ${error.message}`, 'express');
+      throw error;
+    }
+  });
+
   httpServer.listen(
     {
       port,
