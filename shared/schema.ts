@@ -499,6 +499,34 @@ export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalReques
 export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSchema>;
 export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
 
+// Refund requests from mentors for participants
+export const refundRequests = pgTable("refund_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mentorId: varchar("mentor_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  participantId: varchar("participant_id").references(() => participants.id, { onDelete: "set null" }),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "set null" }),
+  paymentId: varchar("payment_id").references(() => payments.id, { onDelete: "set null" }),
+  type: varchar("type").notNull(), // 'refund' | 'cancellation'
+  amount: integer("amount").notNull(), // Amount to refund in agorot
+  currency: varchar("currency").default("ILS"),
+  reason: text("reason"), // Reason for refund/cancellation
+  participantEmail: varchar("participant_email"),
+  participantName: varchar("participant_name"),
+  status: varchar("status").default("pending"), // 'pending' | 'approved' | 'rejected' | 'completed'
+  adminNotes: text("admin_notes"),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertRefundRequestSchema = createInsertSchema(refundRequests).omit({
+  id: true,
+  requestedAt: true,
+});
+
+export type InsertRefundRequest = z.infer<typeof insertRefundRequestSchema>;
+export type RefundRequest = typeof refundRequests.$inferSelect;
+
 // System errors for admin monitoring
 export const systemErrors = pgTable("system_errors", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

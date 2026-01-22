@@ -3626,5 +3626,203 @@ export async function registerRoutes(
     }
   });
 
+  // Admin platform stats (extended)
+  app.get("/api/admin/platform-stats", isAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getAdminPlatformStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting platform stats:", error);
+      res.status(500).json({ error: "Failed to get platform stats" });
+    }
+  });
+
+  // Admin withdrawal requests management
+  app.get("/api/admin/withdrawal-requests", isAdmin, async (req, res) => {
+    try {
+      const requests = await storage.getAllWithdrawalRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error getting withdrawal requests:", error);
+      res.status(500).json({ error: "Failed to get withdrawal requests" });
+    }
+  });
+
+  app.patch("/api/admin/withdrawal-requests/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, rejectionReason, transactionReference } = req.body;
+      
+      const updates: any = { status };
+      if (status === "rejected" && rejectionReason) {
+        updates.rejectionReason = rejectionReason;
+      }
+      if (status === "approved") {
+        updates.approvedAt = new Date();
+      }
+      if (status === "completed") {
+        updates.completedAt = new Date();
+        if (transactionReference) {
+          updates.transactionReference = transactionReference;
+        }
+      }
+      
+      const updated = await storage.updateWithdrawalRequest(id, updates);
+      if (!updated) {
+        return res.status(404).json({ error: "Withdrawal request not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating withdrawal request:", error);
+      res.status(500).json({ error: "Failed to update withdrawal request" });
+    }
+  });
+
+  // Admin refund requests management
+  app.get("/api/admin/refund-requests", isAdmin, async (req, res) => {
+    try {
+      const requests = await storage.getAllRefundRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error getting refund requests:", error);
+      res.status(500).json({ error: "Failed to get refund requests" });
+    }
+  });
+
+  app.patch("/api/admin/refund-requests/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, adminNotes } = req.body;
+      
+      const updates: any = { status };
+      if (adminNotes) {
+        updates.adminNotes = adminNotes;
+      }
+      if (status === "approved" || status === "rejected") {
+        updates.reviewedAt = new Date();
+      }
+      if (status === "completed") {
+        updates.completedAt = new Date();
+      }
+      
+      const updated = await storage.updateRefundRequest(id, updates);
+      if (!updated) {
+        return res.status(404).json({ error: "Refund request not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating refund request:", error);
+      res.status(500).json({ error: "Failed to update refund request" });
+    }
+  });
+
+  // Admin payments history
+  app.get("/api/admin/payments", isAdmin, async (req, res) => {
+    try {
+      const payments = await storage.getAllPaymentsWithDetails();
+      res.json(payments);
+    } catch (error) {
+      console.error("Error getting payments:", error);
+      res.status(500).json({ error: "Failed to get payments" });
+    }
+  });
+
+  // Update user subscription plan (for admin)
+  app.patch("/api/admin/users/:id/plan", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { subscriptionPlan } = req.body;
+      
+      const updated = await storage.updateUser(id, { subscriptionPlan });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating user plan:", error);
+      res.status(500).json({ error: "Failed to update user plan" });
+    }
+  });
+
+  // Mentor withdrawal request endpoint
+  app.post("/api/mentor/withdrawal-request", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Get mentor profile and wallet
+      const profile = await storage.getMentorBusinessProfile(userId);
+      if (!profile?.bankAccountNumber) {
+        return res.status(400).json({ error: "נא למלא פרטי בנק לפני בקשת משיכה" });
+      }
+      
+      const wallet = await storage.getMentorWallet(userId);
+      if (!wallet || (wallet.balance ?? 0) < 1000) { // Minimum 10 ILS
+        return res.status(400).json({ error: "יתרה לא מספיקה למשיכה (מינימום ₪10)" });
+      }
+      
+      // Process the withdrawal
+      const result = await storage.processWithdrawal({
+        userId,
+        wallet,
+        profile,
+      });
+      
+      res.json({
+        success: true,
+        withdrawal: result.withdrawal,
+        invoice: result.invoice,
+      });
+    } catch (error) {
+      console.error("Error creating withdrawal request:", error);
+      res.status(500).json({ error: "Failed to create withdrawal request" });
+    }
+  });
+
+  // Mentor refund request endpoint
+  app.post("/api/mentor/refund-request", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { participantId, journeyId, paymentId, type, amount, reason, participantEmail, participantName } = req.body;
+      
+      const refund = await storage.createRefundRequest({
+        mentorId: userId,
+        participantId,
+        journeyId,
+        paymentId,
+        type: type || "refund",
+        amount,
+        reason,
+        participantEmail,
+        participantName,
+        status: "pending",
+      });
+      
+      res.json(refund);
+    } catch (error) {
+      console.error("Error creating refund request:", error);
+      res.status(500).json({ error: "Failed to create refund request" });
+    }
+  });
+
+  // Get mentor's refund requests
+  app.get("/api/mentor/refund-requests", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const requests = await storage.getRefundRequestsByMentor(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error getting refund requests:", error);
+      res.status(500).json({ error: "Failed to get refund requests" });
+    }
+  });
+
   return httpServer;
 }

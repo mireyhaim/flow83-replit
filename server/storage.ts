@@ -17,7 +17,8 @@ import {
   type WalletTransaction, type InsertWalletTransaction,
   type Invoice, type InsertInvoice,
   type WithdrawalRequest, type InsertWithdrawalRequest,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors, mentorBusinessProfiles, mentorWallets, walletTransactions, invoices, withdrawalRequests
+  type RefundRequest, type InsertRefundRequest,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors, mentorBusinessProfiles, mentorWallets, walletTransactions, invoices, withdrawalRequests, refundRequests
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or, sum, gte, count, sql } from "drizzle-orm";
@@ -157,6 +158,26 @@ export interface IStorage {
   createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
   getWithdrawalRequestsByMentor(mentorId: string): Promise<WithdrawalRequest[]>;
   updateWithdrawalRequest(id: string, updates: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest | undefined>;
+  getAllWithdrawalRequests(): Promise<(WithdrawalRequest & { mentor: User | null })[]>;
+  
+  // Refund requests
+  createRefundRequest(request: InsertRefundRequest): Promise<RefundRequest>;
+  getRefundRequestsByMentor(mentorId: string): Promise<RefundRequest[]>;
+  getAllRefundRequests(): Promise<(RefundRequest & { mentor: User | null })[]>;
+  updateRefundRequest(id: string, updates: Partial<InsertRefundRequest>): Promise<RefundRequest | undefined>;
+  
+  // Admin platform stats
+  getAdminPlatformStats(): Promise<{
+    totalMentors: number;
+    activeMentors: number;
+    totalParticipants: number;
+    activeParticipants: number;
+    totalRevenue: number;
+    totalCommissions: number;
+    pendingWithdrawals: number;
+    pendingRefunds: number;
+  }>;
+  getAllPaymentsWithDetails(): Promise<(Payment & { mentor: User | null; journey: Journey | null })[]>;
   
   // Transactional withdrawal (atomic operation)
   processWithdrawal(params: {
@@ -1175,6 +1196,142 @@ export class DatabaseStorage implements IStorage {
         transaction: walletTransaction,
       };
     });
+  }
+
+  // Get all withdrawal requests for admin
+  async getAllWithdrawalRequests(): Promise<(WithdrawalRequest & { mentor: User | null })[]> {
+    const results = await db
+      .select({
+        request: withdrawalRequests,
+        mentor: users,
+      })
+      .from(withdrawalRequests)
+      .leftJoin(users, eq(withdrawalRequests.mentorId, users.id))
+      .orderBy(desc(withdrawalRequests.requestedAt));
+    
+    return results.map(r => ({
+      ...r.request,
+      mentor: r.mentor,
+    }));
+  }
+
+  // Refund requests
+  async createRefundRequest(request: InsertRefundRequest): Promise<RefundRequest> {
+    const [created] = await db.insert(refundRequests).values(request).returning();
+    return created;
+  }
+
+  async getRefundRequestsByMentor(mentorId: string): Promise<RefundRequest[]> {
+    return await db
+      .select()
+      .from(refundRequests)
+      .where(eq(refundRequests.mentorId, mentorId))
+      .orderBy(desc(refundRequests.requestedAt));
+  }
+
+  async getAllRefundRequests(): Promise<(RefundRequest & { mentor: User | null })[]> {
+    const results = await db
+      .select({
+        request: refundRequests,
+        mentor: users,
+      })
+      .from(refundRequests)
+      .leftJoin(users, eq(refundRequests.mentorId, users.id))
+      .orderBy(desc(refundRequests.requestedAt));
+    
+    return results.map(r => ({
+      ...r.request,
+      mentor: r.mentor,
+    }));
+  }
+
+  async updateRefundRequest(id: string, updates: Partial<InsertRefundRequest>): Promise<RefundRequest | undefined> {
+    const [updated] = await db
+      .update(refundRequests)
+      .set(updates)
+      .where(eq(refundRequests.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Admin platform stats
+  async getAdminPlatformStats(): Promise<{
+    totalMentors: number;
+    activeMentors: number;
+    totalParticipants: number;
+    activeParticipants: number;
+    totalRevenue: number;
+    totalCommissions: number;
+    pendingWithdrawals: number;
+    pendingRefunds: number;
+  }> {
+    // Count mentors
+    const [mentorCounts] = await db
+      .select({
+        total: count(),
+        active: sql<number>`count(*) filter (where ${users.subscriptionPlan} is not null)`,
+      })
+      .from(users)
+      .where(eq(users.role, "mentor"));
+    
+    // Count participants
+    const [participantCounts] = await db
+      .select({
+        total: count(),
+        active: sql<number>`count(*) filter (where ${participants.isActive} = true)`,
+      })
+      .from(participants);
+    
+    // Calculate revenue and commissions
+    const [revenueSums] = await db
+      .select({
+        totalRevenue: sql<number>`coalesce(sum(${payments.amount}), 0)`,
+        totalCommissions: sql<number>`coalesce(sum(${payments.commissionAmount}), 0)`,
+      })
+      .from(payments)
+      .where(eq(payments.status, "completed"));
+    
+    // Count pending withdrawals
+    const [pendingWithdrawalCount] = await db
+      .select({ count: count() })
+      .from(withdrawalRequests)
+      .where(eq(withdrawalRequests.status, "pending"));
+    
+    // Count pending refunds
+    const [pendingRefundCount] = await db
+      .select({ count: count() })
+      .from(refundRequests)
+      .where(eq(refundRequests.status, "pending"));
+    
+    return {
+      totalMentors: Number(mentorCounts?.total || 0),
+      activeMentors: Number(mentorCounts?.active || 0),
+      totalParticipants: Number(participantCounts?.total || 0),
+      activeParticipants: Number(participantCounts?.active || 0),
+      totalRevenue: Number(revenueSums?.totalRevenue || 0),
+      totalCommissions: Number(revenueSums?.totalCommissions || 0),
+      pendingWithdrawals: Number(pendingWithdrawalCount?.count || 0),
+      pendingRefunds: Number(pendingRefundCount?.count || 0),
+    };
+  }
+
+  async getAllPaymentsWithDetails(): Promise<(Payment & { mentor: User | null; journey: Journey | null })[]> {
+    const results = await db
+      .select({
+        payment: payments,
+        mentor: users,
+        journey: journeys,
+      })
+      .from(payments)
+      .leftJoin(journeys, eq(payments.journeyId, journeys.id))
+      .leftJoin(users, eq(journeys.userId, users.id))
+      .orderBy(desc(payments.createdAt));
+    
+    return results.map(r => ({
+      ...r.payment,
+      mentor: r.mentor,
+      journey: r.journey,
+    }));
   }
 }
 
