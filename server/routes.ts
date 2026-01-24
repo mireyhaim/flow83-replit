@@ -1627,10 +1627,29 @@ export async function registerRoutes(
       console.log("[generate-content] Content length:", content.length);
       
       let generatedDays;
+      
+      // Start heartbeat to keep SSE connection alive during long AI generation
+      let heartbeatProgress = 30;
+      const heartbeatMessages = [
+        "ה-AI עובד על התוכן... (עוד רגע)",
+        "יוצר ימים מותאמים אישית...",
+        "מעבד את הסגנון שלך...",
+        "בונה את המסע...",
+        "כמעט שם..."
+      ];
+      let heartbeatIndex = 0;
+      const heartbeatInterval = useSSE ? setInterval(() => {
+        heartbeatProgress = Math.min(heartbeatProgress + 5, 55);
+        const message = heartbeatMessages[heartbeatIndex % heartbeatMessages.length];
+        sendProgress("ai", heartbeatProgress, message);
+        heartbeatIndex++;
+      }, 10000) : null; // Send heartbeat every 10 seconds
+      
       try {
         generatedDays = await generateJourneyContent(intent, content);
         console.log("[generate-content] Generated days count:", generatedDays.length);
       } catch (genError: any) {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
         console.error("[generate-content] Error generating journey content:", genError.message);
         if (useSSE) {
           res.write(`data: ${JSON.stringify({ error: "Failed to generate content: " + genError.message })}\n\n`);
@@ -1638,6 +1657,9 @@ export async function registerRoutes(
         }
         return res.status(500).json({ error: "Failed to generate content" });
       }
+      
+      // Stop heartbeat after generation completes
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
       
       // Log sample day to verify AI response
       if (generatedDays.length > 0) {
