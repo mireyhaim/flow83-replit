@@ -296,7 +296,11 @@ Respond in JSON:
 }
 
 // Analyze full mentor content and create a comprehensive methodology map
-export async function analyzeMentorContent(content: string, language?: string): Promise<MentorStyleProfile> {
+export async function analyzeMentorContent(
+  content: string, 
+  language?: string,
+  onProgress?: (progress: number, message: string) => void
+): Promise<MentorStyleProfile> {
   if (!content || content.trim().length < 100) {
     return {
       toneOfVoice: "",
@@ -310,6 +314,7 @@ export async function analyzeMentorContent(content: string, language?: string): 
 
   const detectedLanguage = language || (isHebrewText(content) ? "he" : "en");
   const languageName = detectedLanguage === "he" ? "Hebrew" : "English";
+  const isHebrew = detectedLanguage === "he";
 
   // Split content into larger chunks for deeper analysis
   const chunkSize = 12000;
@@ -328,10 +333,21 @@ export async function analyzeMentorContent(content: string, language?: string): 
 
   // Analyze chunks in parallel batches with timeout and error handling
   const CHUNK_TIMEOUT = 60000; // 60 seconds per chunk
+  const totalBatches = Math.ceil(chunks.length / 3);
   
   for (let i = 0; i < chunks.length; i += 3) {
+    const batchNum = Math.floor(i / 3) + 1;
     const batch = chunks.slice(i, i + 3);
-    console.log(`[AI] Processing batch ${Math.floor(i/3) + 1}/${Math.ceil(chunks.length/3)} (chunks ${i + 1}-${Math.min(i + 3, chunks.length)} of ${chunks.length})`);
+    console.log(`[AI] Processing batch ${batchNum}/${totalBatches} (chunks ${i + 1}-${Math.min(i + 3, chunks.length)} of ${chunks.length})`);
+    
+    // Report progress with batch info
+    if (onProgress) {
+      const progressPercent = Math.round((batchNum / totalBatches) * 100);
+      const message = isHebrew 
+        ? `מנתח תוכן... (חלק ${batchNum}/${totalBatches})`
+        : `Analyzing content... (part ${batchNum}/${totalBatches})`;
+      onProgress(progressPercent, message);
+    }
     
     try {
       const results = await Promise.all(
@@ -357,7 +373,7 @@ export async function analyzeMentorContent(content: string, language?: string): 
         allBeliefs.push(...result.beliefs);
       }
     } catch (batchError: any) {
-      console.error(`[AI] Batch ${Math.floor(i/3) + 1} failed:`, batchError.message);
+      console.error(`[AI] Batch ${batchNum} failed:`, batchError.message);
       // Continue with next batch instead of failing entirely
     }
   }

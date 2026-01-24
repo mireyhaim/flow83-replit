@@ -1573,13 +1573,21 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      sendProgress("ai", 10, "מנתח את סגנון ההוראה שלך...");
+      sendProgress("ai", 10, "מנתח את סגנון ההוראה שלך... (שלב 1/3 - כדקה)");
 
       // Analyze ALL uploaded content to extract mentor's unique style
       console.log("[generate-content] Analyzing mentor content, length:", content.length);
       let mentorStyle;
+      
+      // Progress callback for intermediate updates during analysis
+      const onAnalysisProgress = (progress: number, message: string) => {
+        // Map analysis progress (0-100) to our range (10-28)
+        const mappedProgress = 10 + Math.round(progress * 0.18);
+        sendProgress("ai", mappedProgress, message);
+      };
+      
       try {
-        mentorStyle = await analyzeMentorContent(content);
+        mentorStyle = await analyzeMentorContent(content, journey.language || undefined, onAnalysisProgress);
         console.log("[generate-content] Mentor style extracted:", {
           tone: mentorStyle.toneOfVoice?.substring(0, 100),
           phrases: mentorStyle.keyPhrases?.length,
@@ -1598,7 +1606,7 @@ export async function registerRoutes(
         };
       }
 
-      sendProgress("ai", 30, "יוצר תוכן בסגנון שלך...");
+      sendProgress("ai", 30, "יוצר תוכן בסגנון שלך... (שלב 2/3 - 1-2 דקות)");
 
       const intent = {
         journeyName: journey.name,
@@ -1644,17 +1652,17 @@ export async function registerRoutes(
         });
       }
 
-      sendProgress("cleanup", 60, "מנקה תוכן ישן...");
+      sendProgress("cleanup", 60, "מנקה תוכן ישן... (שלב 3/3 - כחצי דקה)");
 
       await storage.deleteJourneyStepsByJourneyId(journeyId);
 
-      sendProgress("saving", 70, "שומר את הימים שנוצרו...");
+      sendProgress("saving", 70, "שומר את הימים שנוצרו... (עוד רגע מסיימים!)");
 
       const totalDays = generatedDays.length;
       for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
         const day = generatedDays[dayIndex];
         const dayProgress = 70 + Math.round((dayIndex / totalDays) * 25);
-        sendProgress("saving", dayProgress, `שומר יום ${day.dayNumber} מתוך ${totalDays}...`);
+        sendProgress("saving", dayProgress, `שומר יום ${day.dayNumber} מתוך ${totalDays}... (עוד רגע מסיימים!)`);
 
         console.log(`[generate-content] Saving day ${day.dayNumber}: goal=${day.goal?.length || 0} chars, explanation=${day.explanation?.length || 0} chars, task=${day.task?.length || 0} chars`);
         const step = await storage.createJourneyStep({
