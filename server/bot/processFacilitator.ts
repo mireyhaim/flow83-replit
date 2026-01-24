@@ -934,7 +934,7 @@ ${isHebrew ?
 4) NO REPETITION
 The system tracks what already happened. If the user already answered something, acknowledge and move forward - don't re-explain.
 
-5) MAX 60 WORDS per message. ONE question, then WAIT.
+5) MAX 200 WORDS per message. ONE question, then WAIT.
 
 === BANNED PHRASES ===
 - "אני X הדיגיטלי" / "I am the digital X"
@@ -1065,7 +1065,7 @@ So let's begin gently: ${dayPlan.core_question.question}${coreChoicesText}"
 
 RULES:
 - Be warm and present, like a real mentor
-- MAX 60 words
+- MAX 200 words
 - Share something meaningful before asking
 - End with an invitation, not a demand
 
@@ -1102,7 +1102,7 @@ So let's start: ${dayPlan.core_question.question}${coreChoicesText}"
 RULES:
 - Weave day info into natural speech, don't list it
 - End with the core question
-- MAX 50 words
+- MAX 200 words
 - Wait for response
 
 ${addressingNote}
@@ -1175,7 +1175,7 @@ If you had to pick one small thing that's been bothering you - what would it be?
 
 RULES:
 - Be warm and patient, like a real mentor
-- MAX 60 words
+- MAX 200 words
 - Normalize their experience
 - End with a soft invitation
 
@@ -1219,7 +1219,7 @@ Let's take this to our first step together."
 RULES:
 - Use the user's EXACT words (mirror)
 - Acknowledge the weight/difficulty if present
-- MAX 50 words
+- MAX 200 words
 - NO day info, NO repeating explanations
 - Bridge to task naturally
 
@@ -1227,7 +1227,7 @@ ${addressingNote}
 ${toneNote}`;
 
     case "TASK":
-      return `Generate a TASK message (MAX 80 WORDS).
+      return `Generate a TASK message (MAX 200 WORDS).
 
 Structure:
 "${dayPlan.language === 'hebrew' ? 'משימה:' : 'Task:'}
@@ -1307,7 +1307,7 @@ RULES:
 - Start with excitement (מעולה/Great)
 - Mirror user's ACTUAL words from their response
 - Acknowledge the emotional effort they made
-- MAX 120 words
+- MAX 200 words
 - End with invitation to add more
 - NO fake praise, NO "great job" at the end
 
@@ -1337,7 +1337,7 @@ CONTENT:
 - Tomorrow's preview: ${dayPlan.closure.preview}
 
 RULES:
-- MAX 40 words
+- MAX 100 words
 - Warm, brief, forward-looking
 - End with 💜 or similar warmth
 
