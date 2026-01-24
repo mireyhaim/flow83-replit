@@ -291,6 +291,10 @@ const ConversationalJourneyWizard = () => {
   };
 
   const handleGenerate = async () => {
+    console.log("[Wizard] handleGenerate called");
+    console.log("[Wizard] uploadedFiles:", uploadedFiles.length);
+    console.log("[Wizard] textContent length:", textContent.trim().length);
+    
     if (uploadedFiles.length === 0 && !textContent.trim()) {
       toast({
         title: isHebrew ? 'נדרש תוכן' : 'Content required',
@@ -309,11 +313,14 @@ const ConversationalJourneyWizard = () => {
       let content = textContent;
       
       if (uploadedFiles.length > 0) {
+        console.log("[Wizard] Parsing files...");
         setProgressMessage(isHebrew ? 'קורא את הקבצים...' : 'Reading files...');
         const parsed = await fileApi.parseFiles(uploadedFiles, signal);
+        console.log("[Wizard] Files parsed, text length:", parsed.text?.length);
         content = content + "\n\n" + parsed.text;
       }
 
+      console.log("[Wizard] Creating journey...");
       setProgressMessage(isHebrew ? 'יוצר את ה-Flow...' : 'Creating Flow...');
       setProgress(5);
 
@@ -331,13 +338,18 @@ const ConversationalJourneyWizard = () => {
         mentorStyle: journeyData.mentorStyle || "",
       }, signal);
 
+      console.log("[Wizard] Journey created:", journey.id);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
+      console.log("[Wizard] Starting generateContentWithProgress...");
+      console.log("[Wizard] Content length for generation:", content.trim().length);
       await journeyApi.generateContentWithProgress(journey.id, content.trim(), (prog, msg) => {
+        console.log("[Wizard] Progress:", prog, msg);
         setProgress(prog);
         setProgressMessage(msg);
       }, signal);
 
+      console.log("[Wizard] Generation complete, redirecting...");
       setLocation(`/journey/${journey.id}/edit`);
     } catch (error: any) {
       if (error?.name === 'AbortError') return;
