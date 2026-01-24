@@ -1267,16 +1267,36 @@ export class DatabaseStorage implements IStorage {
     pendingWithdrawals: number;
     pendingRefunds: number;
   }> {
-    // Count mentors
+    // Count mentors (users who have created at least one journey)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const [mentorCounts] = await db
-      .select({
-        total: count(),
-        active: sql<number>`count(*) filter (where ${users.subscriptionPlan} is not null)`,
-        newToday: sql<number>`count(*) filter (where ${users.createdAt} >= ${oneDayAgo})`,
-      })
-      .from(users)
-      .where(eq(users.role, "mentor"));
+    
+    // Get unique mentor IDs (users who created journeys)
+    const mentorIds = await db
+      .selectDistinct({ creatorId: journeys.creatorId })
+      .from(journeys)
+      .where(sql`${journeys.creatorId} IS NOT NULL`);
+    
+    const mentorIdList = mentorIds.map(m => m.creatorId).filter(Boolean) as string[];
+    
+    // Count mentors with various statuses
+    let mentorCounts = { total: 0, active: 0, newToday: 0 };
+    
+    if (mentorIdList.length > 0) {
+      const [counts] = await db
+        .select({
+          total: count(),
+          active: sql<number>`count(*) filter (where ${users.subscriptionStatus} in ('active', 'on_trial'))`,
+          newToday: sql<number>`count(*) filter (where ${users.createdAt} >= ${oneDayAgo})`,
+        })
+        .from(users)
+        .where(sql`${users.id} IN (${sql.join(mentorIdList.map(id => sql`${id}`), sql`, `)})`);
+      
+      mentorCounts = {
+        total: Number(counts?.total || 0),
+        active: Number(counts?.active || 0),
+        newToday: Number(counts?.newToday || 0),
+      };
+    }
     
     // Count participants
     const [participantCounts] = await db
@@ -1308,9 +1328,9 @@ export class DatabaseStorage implements IStorage {
       .where(eq(refundRequests.status, "pending"));
     
     return {
-      totalMentors: Number(mentorCounts?.total || 0),
-      activeMentors: Number(mentorCounts?.active || 0),
-      newMentorsToday: Number(mentorCounts?.newToday || 0),
+      totalMentors: mentorCounts.total,
+      activeMentors: mentorCounts.active,
+      newMentorsToday: mentorCounts.newToday,
       totalParticipants: Number(participantCounts?.total || 0),
       activeParticipants: Number(participantCounts?.active || 0),
       totalRevenue: Number(revenueSums?.totalRevenue || 0),
