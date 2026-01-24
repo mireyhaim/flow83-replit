@@ -14,7 +14,7 @@ import {
 
 const JourneyCreatePage = () => {
   const { t, i18n } = useTranslation('dashboard');
-  const { isProfileComplete } = useAuth();
+  const { isProfileComplete, isLoading, isFetching } = useAuth();
   const [, navigate] = useLocation();
 
   const toggleLanguage = () => {
@@ -24,9 +24,12 @@ const JourneyCreatePage = () => {
     document.documentElement.dir = newLang === 'he' ? 'rtl' : 'ltr';
   };
 
+  // Don't show gate while data is loading/fetching
+  const showProfileGate = !isLoading && !isFetching && !isProfileComplete;
+
   return (
     <div className="min-h-screen bg-[#0f0a1f]">
-      <Dialog open={!isProfileComplete}>
+      <Dialog open={showProfileGate}>
         <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center">
