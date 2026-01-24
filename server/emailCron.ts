@@ -5,11 +5,20 @@ import {
   sendCompletionEmail
 } from './email';
 
-const BASE_URL = process.env.REPLIT_DEV_DOMAIN 
-  ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-  : process.env.REPLIT_DOMAINS?.split(',')[0] 
-    ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
-    : 'https://flow83.com';
+// Use production domain first, then fall back to dev domain
+const getProductionDomain = () => {
+  // REPLIT_DOMAINS contains the deployed app domain
+  const domains = process.env.REPLIT_DOMAINS?.split(',') || [];
+  // Find a domain that doesn't contain 'dev' (production domain)
+  const productionDomain = domains.find(d => !d.includes('.dev') && !d.includes('janeway'));
+  if (productionDomain) return `https://${productionDomain}`;
+  // Fall back to first available domain
+  if (domains[0]) return `https://${domains[0]}`;
+  // Fall back to custom domain
+  return 'https://flow83.com';
+};
+
+const BASE_URL = getProductionDomain();
 
 export async function processEmailNotifications(): Promise<{
   inactivityReminders: number;

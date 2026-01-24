@@ -23,6 +23,18 @@ function generateShortCode(): string {
   return Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2, 5);
 }
 
+// Get production URL for email links (prefer production domain over dev domain)
+function getProductionBaseUrl(): string {
+  const domains = process.env.REPLIT_DOMAINS?.split(',') || [];
+  // Find a domain that doesn't contain 'dev' or 'janeway' (production domain)
+  const productionDomain = domains.find(d => !d.includes('.dev') && !d.includes('janeway'));
+  if (productionDomain) return `https://${productionDomain}`;
+  // Fall back to first available domain
+  if (domains[0]) return `https://${domains[0]}`;
+  // Fall back to custom domain
+  return 'https://flow83.com';
+}
+
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }
@@ -352,9 +364,7 @@ export async function registerRoutes(
       }
       
       const mentor = await storage.getUser(userId);
-      const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
-        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
-        : 'https://flow83.replit.app';
+      const baseUrl = getProductionBaseUrl();
       const journeyLink = `${baseUrl}/p/${participant.accessToken}`;
       
       console.log(`[ResendEmail] Sending email to ${participant.email} for journey ${journey.name}`);
