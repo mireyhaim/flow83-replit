@@ -2550,7 +2550,7 @@ OUTPUT CONSTRAINTS:
     ],
     config: {
       systemInstruction: fullSystemPrompt,
-      maxOutputTokens: 600,
+      maxOutputTokens: 1000,
     }
   });
   
