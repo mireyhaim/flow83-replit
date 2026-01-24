@@ -36,7 +36,8 @@ export default function ParticipantView() {
   
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Start with sidebar closed on mobile (screen width < 768px)
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [showCelebration, setShowCelebration] = useState(false);
   const [dayReadyForCompletion, setDayReadyForCompletion] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
