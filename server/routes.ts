@@ -1504,6 +1504,11 @@ export async function registerRoutes(
 
   // AI-powered journey content generation with SSE progress
   app.post("/api/journeys/:id/generate-content", isAuthenticated, async (req: any, res) => {
+    console.log("[generate-content] === REQUEST RECEIVED ===");
+    console.log("[generate-content] Journey ID:", req.params.id);
+    console.log("[generate-content] User:", req.user?.id);
+    console.log("[generate-content] Content length:", req.body?.content?.length || 0);
+    
     const journeyId = req.params.id;
     const { content } = req.body;
     const useSSE = req.headers.accept === "text/event-stream";
