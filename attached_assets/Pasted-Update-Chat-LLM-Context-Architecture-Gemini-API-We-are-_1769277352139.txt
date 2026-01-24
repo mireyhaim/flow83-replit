@@ -1,0 +1,142 @@
+Update: Chat / LLM Context Architecture (Gemini API)
+
+We are currently integrated with the Gemini API.
+The current implementation sends:
+
+System prompt
+
+Full conversation history of the current day
+
+Current user message
+
+High max output tokens
+
+This is not sufficient to create a coherent, guided, human-like process experience.
+
+We need to change the architecture as follows:
+
+1. Add a Persistent “Journey State” Layer (Critical)
+
+In addition to the system prompt and recent messages, every LLM call must include a structured, summarized Journey State, stored and updated in the DB.
+
+This is NOT full conversation history.
+
+The Journey State represents the meaning of what has happened so far.
+
+Journey State must include:
+
+Process name
+
+Current day number
+
+Current day goal
+
+Current stage (OPENING / EXPLORE / TASK / WRAP)
+
+Key insights identified so far (short bullet points)
+
+Current dominant belief / pattern (if detected)
+
+Task completion status
+
+Goal of the next assistant response
+
+This Journey State must be sent on every call, regardless of the day.
+
+2. Conversation History: Use a Sliding Window Only
+
+Do NOT send the full conversation of the day.
+
+Instead:
+
+Send only the last 8–12 messages (or a token-limited window)
+
+Older messages should be summarized into the Journey State
+
+This prevents repetition, confusion, and generic responses.
+
+3. LLM Input Structure (Order Matters)
+
+Each Gemini request should be built in this order:
+
+System Prompt
+
+Mentor identity (name, tone, method)
+
+Conversation rules
+
+Output constraints (see below)
+
+Journey State
+
+Structured summary from DB (text or JSON)
+
+Recent Conversation Window
+
+Last 8–12 messages only
+
+Current User Message
+
+4. Output Constraints (Very Important)
+
+Current maxOutputTokens is too high and causes “lecture mode”.
+
+Update parameters:
+
+maxOutputTokens: 400–600
+
+temperature: ~0.7 (can remain)
+
+topP: ~0.9 (can remain)
+
+Add explicit system rules:
+
+Responses must be concise (max 6–10 lines)
+
+No long explanations
+
+No repeating the user’s words verbatim
+
+Ask one guiding question only
+
+Always move the process one step forward
+
+5. Conversation Behavior Rules (Human Mentor Style)
+
+Add to the System Prompt:
+
+The assistant is a human-like mentor guiding a process, not a chatbot.
+
+Do not stop at emotional labeling only.
+
+After acknowledging emotion, always:
+
+Give one clear direction or reflection
+
+Ask one concrete, process-advancing question
+
+Never ask multiple questions in one message.
+
+Do not re-explain concepts already covered in previous days.
+
+6. Memory Updates (Backend Responsibility)
+
+After meaningful user responses:
+
+Update Journey State fields (insights, belief, task status)
+
+Do NOT rely on the LLM to “remember” previous days
+
+The system owns memory; the LLM only consumes it
+
+7. Key Principle (Must Be Reflected in Implementation)
+
+The LLM does not manage memory.
+The system manages memory.
+The LLM receives a summarized state and generates the next step.
+
+If anything is unclear:
+
+This is not about sending more data
+
+This is about sending the right structured context every time
