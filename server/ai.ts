@@ -19,7 +19,7 @@ import {
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  timeout: 180000, // 3 minute timeout for long generation requests
+  timeout: 300000, // 5 minute timeout for long generation requests
 });
 
 const anthropic = new Anthropic({
@@ -424,7 +424,7 @@ Make this detailed and specific to THIS mentor's actual methodology, not generic
 Respond in JSON.`;
 
   console.log("[AI] Starting synthesis step...");
-  const SYNTHESIS_TIMEOUT = 120000; // 2 minutes for synthesis
+  const SYNTHESIS_TIMEOUT = 180000; // 3 minutes for synthesis
   
   let synthesisResult: string | null = null;
   try {
