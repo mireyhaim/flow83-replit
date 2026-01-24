@@ -6,7 +6,7 @@ import { db, setServiceContext } from "./db";
 import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
-import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, type ConversationPhase } from "./ai";
+import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, extractInsightFromMessage, extractCurrentBelief, generateDaySummaryForState, type ConversationPhase } from "./ai";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
@@ -2061,13 +2061,97 @@ export async function registerRoutes(
         botResponse = result.response;
         dayCompleted = result.dayCompleted;
         
-        // Persist conversation state to participant record
-        await storage.updateParticipant(participantId, { 
+        // Journey State Updates - Extract insights and save day summaries
+        const updatedParticipant: Partial<typeof participant> = { 
           conversationState: result.nextState,
           clarifyCount: result.clarifyCount,
           taskSupportCount: result.taskSupportCount,
           lastBotMessage: result.response
-        });
+        };
+        
+        // Get current state for transition detection (use persisted state, never fallback to START if state exists)
+        const currentState = participant.conversationState || "START";
+        const lang = (journey.language === "he" ? "hebrew" : "english") as "hebrew" | "english";
+        
+        // Extract insight from user message after meaningful state transitions
+        // Triggers: ORIENTATION→INTERPRET, CORE_QUESTION→INTERPRET, TASK→CLOSURE, TASK_SUPPORT→CLOSURE
+        try {
+          const insight = await extractInsightFromMessage(content.trim(), {
+            currentState: currentState as any,
+            nextState: result.nextState,
+            dayGoal: step.goal || step.title,
+            language: lang
+          });
+          
+          if (insight) {
+            const currentInsights = (participant.journeyInsights as string[]) || [];
+            (updatedParticipant as any).journeyInsights = [...currentInsights.slice(-9), insight];
+            console.log(`[JourneyState] Saved insight: ${insight}`);
+          }
+        } catch (e) {
+          console.error("[JourneyState] Failed to extract insight:", e);
+        }
+        
+        // Extract current belief/pattern when transitioning TO INTERPRET
+        // This captures the user's interpretive response (their answer to core question)
+        if (result.nextState === "INTERPRET" && currentState !== "INTERPRET") {
+          try {
+            const newBelief = await extractCurrentBelief(
+              content.trim(),
+              participant.currentBelief || null,
+              lang
+            );
+            
+            if (newBelief && newBelief !== participant.currentBelief) {
+              (updatedParticipant as any).currentBelief = newBelief;
+              console.log(`[JourneyState] Updated belief: ${newBelief}`);
+            }
+          } catch (e) {
+            console.error("[JourneyState] Failed to extract belief:", e);
+          }
+        }
+        
+        // Generate and save day summary when day completes
+        if (dayCompleted) {
+          try {
+            // Include the bot's final response in the summary
+            // Note: recentMessages may not include the current user message yet, so we append it
+            // Check if last message is already the current user message to avoid duplication
+            const lastMsg = recentMessages[recentMessages.length - 1];
+            const userMsgAlreadyIncluded = lastMsg?.role === "user" && lastMsg?.content === content.trim();
+            
+            const messagesForSummary = userMsgAlreadyIncluded
+              ? [...recentMessages, { role: "assistant", content: botResponse }]
+              : [...recentMessages, { role: "user", content: content.trim() }, { role: "assistant", content: botResponse }];
+            
+            const daySummary = await generateDaySummaryForState(
+              step.dayNumber,
+              step.goal || step.title,
+              messagesForSummary,
+              result.nextState === "DONE",
+              lang
+            );
+            
+            if (daySummary) {
+              const currentSummaries = (participant.daySummaries as any[]) || [];
+              (updatedParticipant as any).daySummaries = [
+                ...currentSummaries.filter((s: any) => s.day !== step.dayNumber),
+                {
+                  day: step.dayNumber,
+                  summary: daySummary.summary,
+                  keyInsight: daySummary.keyInsight,
+                  taskCompleted: result.nextState === "DONE"
+                }
+              ];
+              console.log(`[JourneyState] Saved day ${step.dayNumber} summary`);
+            }
+          } catch (e) {
+            console.error("[JourneyState] Failed to generate day summary:", e);
+          }
+        }
+        
+        // Persist conversation state and journey state to participant record
+        await storage.updateParticipant(participantId, updatedParticipant as any);
         
         console.log(`[Facilitator] Result: state=${result.nextState}, intent=${result.log.detected_intent}, dayCompleted=${dayCompleted}`);
       } else if (useDirector) {

@@ -157,6 +157,15 @@ export const participants = pgTable("participants", {
     tone_preference: "direct" | "balanced" | "soft";
   }>(),
   userIntentAnchor: text("user_intent_anchor"), // Micro onboarding answer - WHY user entered the process
+  // Journey State - persistent context for LLM (NOT full conversation history)
+  journeyInsights: jsonb("journey_insights").$type<string[]>().default(sql`'[]'::jsonb`), // Key insights identified so far (bullet points)
+  currentBelief: text("current_belief"), // Current dominant belief/pattern detected
+  daySummaries: jsonb("day_summaries").$type<{
+    day: number;
+    summary: string;
+    keyInsight: string;
+    taskCompleted: boolean;
+  }[]>().default(sql`'[]'::jsonb`), // Compressed summaries of completed days
 });
 
 export const activityEvents = pgTable("activity_events", {

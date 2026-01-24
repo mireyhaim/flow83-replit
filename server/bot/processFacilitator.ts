@@ -1425,3 +1425,171 @@ export function createDayPlanFromStep(
     }
   };
 }
+
+// ============================================================
+// JOURNEY STATE BUILDER - Structured context for LLM
+// ============================================================
+
+export interface JourneyState {
+  processName: string;
+  currentDay: number;
+  totalDays: number;
+  currentDayGoal: string;
+  currentStage: ConversationState;
+  keyInsights: string[];
+  currentBelief: string | null;
+  taskStatus: "not_started" | "in_progress" | "completed";
+  previousDays: {
+    day: number;
+    summary: string;
+    keyInsight: string;
+    taskCompleted: boolean;
+  }[];
+  userIntent: string | null;
+  nextResponseGoal: string;
+}
+
+export function buildJourneyState(
+  participant: Participant,
+  journey: Journey,
+  dayPlan: DayPlan,
+  nextState: ConversationState
+): JourneyState {
+  const daySummaries = (participant.daySummaries as JourneyState["previousDays"]) || [];
+  const journeyInsights = (participant.journeyInsights as string[]) || [];
+  
+  let taskStatus: JourneyState["taskStatus"] = "not_started";
+  if (nextState === "TASK" || nextState === "TASK_SUPPORT") {
+    taskStatus = "in_progress";
+  } else if (nextState === "CLOSURE" || nextState === "DONE") {
+    taskStatus = "completed";
+  }
+  
+  const nextResponseGoal = getNextResponseGoal(nextState, dayPlan);
+  
+  return {
+    processName: journey.name,
+    currentDay: participant.currentDay || 1,
+    totalDays: journey.duration || 7,
+    currentDayGoal: dayPlan.day_goal,
+    currentStage: nextState,
+    keyInsights: journeyInsights.slice(-5),
+    currentBelief: participant.currentBelief || null,
+    taskStatus,
+    previousDays: daySummaries.slice(-3),
+    userIntent: participant.userIntentAnchor || null,
+    nextResponseGoal
+  };
+}
+
+function getNextResponseGoal(state: ConversationState, dayPlan: DayPlan): string {
+  const isHebrew = dayPlan.language === "hebrew";
+  
+  switch (state) {
+    case "START":
+      return isHebrew 
+        ? "פתח את היום בשאלה קצרה על מה הביא את המשתתף לתהליך"
+        : "Open the day with a short question about what brought the participant to this process";
+    case "MICRO_ONBOARDING":
+      return isHebrew
+        ? "שאל שאלה קצרה על הכוונה והמוטיבציה של המשתתף"
+        : "Ask a short question about the participant's intention and motivation";
+    case "ORIENTATION":
+      return isHebrew
+        ? "הצג את נושא היום ושאל שאלה פתוחה אחת"
+        : "Present today's topic and ask one open question";
+    case "CORE_QUESTION":
+      return isHebrew
+        ? "שאל את שאלת הליבה של היום"
+        : "Ask the core question of the day";
+    case "CLARIFY":
+      return isHebrew
+        ? "הסבר את השאלה בצורה אחרת, פשוטה יותר"
+        : "Explain the question differently, more simply";
+    case "INTERPRET":
+      return isHebrew
+        ? "שקף בקצרה מה שהמשתתף שיתף וקשר למשימה"
+        : "Briefly reflect what participant shared and connect to task";
+    case "TASK":
+      return isHebrew
+        ? "תן את המשימה בצורה ברורה וקצרה"
+        : "Give the task clearly and briefly";
+    case "TASK_SUPPORT":
+      return isHebrew
+        ? "פשט את המשימה או תן דוגמה"
+        : "Simplify the task or give an example";
+    case "CLOSURE":
+      return isHebrew
+        ? "סכם את היום בקצרה ושאל אם יש עוד משהו"
+        : "Briefly summarize the day and ask if there's anything else";
+    case "DONE":
+      return isHebrew
+        ? "סגור את היום בחום ותן ציפייה למחר"
+        : "Close the day warmly and give expectation for tomorrow";
+    default:
+      return isHebrew
+        ? "המשך את השיחה בצורה טבעית"
+        : "Continue the conversation naturally";
+  }
+}
+
+export function formatJourneyStateForLLM(state: JourneyState, isHebrew: boolean): string {
+  const header = isHebrew 
+    ? "=== מצב התהליך (זיכרון מערכת) ===" 
+    : "=== JOURNEY STATE (System Memory) ===";
+  
+  const lines = [
+    header,
+    "",
+    isHebrew ? `תהליך: ${state.processName}` : `Process: ${state.processName}`,
+    isHebrew ? `יום: ${state.currentDay}/${state.totalDays}` : `Day: ${state.currentDay}/${state.totalDays}`,
+    isHebrew ? `מטרת היום: ${state.currentDayGoal}` : `Day Goal: ${state.currentDayGoal}`,
+    isHebrew ? `שלב נוכחי: ${state.currentStage}` : `Current Stage: ${state.currentStage}`,
+    isHebrew ? `סטטוס משימה: ${state.taskStatus}` : `Task Status: ${state.taskStatus}`,
+    ""
+  ];
+  
+  if (state.userIntent) {
+    lines.push(isHebrew 
+      ? `כוונת המשתתף (למה התחיל): ${state.userIntent}` 
+      : `Participant Intent (why started): ${state.userIntent}`);
+    lines.push("");
+  }
+  
+  if (state.keyInsights.length > 0) {
+    lines.push(isHebrew ? "תובנות מצטברות:" : "Accumulated Insights:");
+    state.keyInsights.forEach((insight, i) => {
+      lines.push(`  ${i + 1}. ${insight}`);
+    });
+    lines.push("");
+  }
+  
+  if (state.currentBelief) {
+    lines.push(isHebrew 
+      ? `אמונה/דפוס שזוהה: ${state.currentBelief}` 
+      : `Detected Belief/Pattern: ${state.currentBelief}`);
+    lines.push("");
+  }
+  
+  if (state.previousDays.length > 0) {
+    lines.push(isHebrew ? "סיכום ימים קודמים:" : "Previous Days Summary:");
+    state.previousDays.forEach(day => {
+      const status = day.taskCompleted 
+        ? (isHebrew ? "✓ הושלם" : "✓ completed") 
+        : (isHebrew ? "○ לא הושלם" : "○ not completed");
+      lines.push(isHebrew 
+        ? `  יום ${day.day}: ${day.summary} [${status}]` 
+        : `  Day ${day.day}: ${day.summary} [${status}]`);
+      if (day.keyInsight) {
+        lines.push(`    → ${day.keyInsight}`);
+      }
+    });
+    lines.push("");
+  }
+  
+  lines.push(isHebrew ? "=== מטרת התגובה הבאה ===" : "=== NEXT RESPONSE GOAL ===");
+  lines.push(state.nextResponseGoal);
+  lines.push("");
+  
+  return lines.join("\n");
+}

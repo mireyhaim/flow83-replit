@@ -2403,7 +2403,9 @@ import {
   validateMessage,
   buildSystemPrompt as buildFacilitatorSystemPrompt,
   buildStatePrompt,
-  createDayPlanFromStep
+  createDayPlanFromStep,
+  buildJourneyState,
+  formatJourneyStateForLLM
 } from "./bot/processFacilitator";
 import type { Journey, JourneyStep, Participant } from "@shared/schema";
 
@@ -2505,14 +2507,39 @@ This is mandatory for every single response.
 `;
   }
   
-  // Build messages array for Gemini
-  const conversationHistory = recentMessages.slice(-6).map(m => ({
+  // Build Journey State - persistent context for LLM
+  const journeyState = buildJourneyState(participant, journey, dayPlan, nextState);
+  const isHebrew = dayPlan.language === "hebrew";
+  const journeyStateText = formatJourneyStateForLLM(journeyState, isHebrew);
+  
+  // Build messages array for Gemini - SLIDING WINDOW (last 8-12 messages only)
+  const conversationHistory = recentMessages.slice(-10).map(m => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }]
   }));
   
-  // Combine system prompt with state prompt for Gemini
-  const fullSystemPrompt = `${addressingPrefix}${systemPrompt}\n\n---\n\nSTATE: ${nextState}\n\n${statePrompt}`;
+  // Combine system prompt with Journey State and state prompt for Gemini
+  // Order: System Prompt -> Journey State -> State-specific instructions
+  const fullSystemPrompt = `${addressingPrefix}${systemPrompt}
+
+---
+
+${journeyStateText}
+
+---
+
+STATE: ${nextState}
+
+${statePrompt}
+
+---
+
+OUTPUT CONSTRAINTS:
+- Response must be 3-8 lines maximum (NOT a long lecture)
+- Ask only ONE question per message
+- Never repeat user's words verbatim in quotes
+- Move the process forward with each response
+- Be warm but concise`;
   
   // Generate AI response using Gemini
   const response = await gemini.models.generateContent({
@@ -2523,7 +2550,7 @@ This is mandatory for every single response.
     ],
     config: {
       systemInstruction: fullSystemPrompt,
-      maxOutputTokens: 1500,
+      maxOutputTokens: 600,
     }
   });
   
@@ -2533,7 +2560,6 @@ This is mandatory for every single response.
   
   // Fallback messages
   if (!aiContent) {
-    const isHebrew = dayPlan.language === "hebrew";
     const fallbacks: Record<FacilitatorState, { he: string; en: string }> = {
       START: { he: "בואי נתחיל.", en: "Let's begin." },
       MICRO_ONBOARDING: { he: "מה הדבר שגרם לך להתחיל את התהליך הזה עכשיו?", en: "What made you choose to start this process now?" },
@@ -2581,4 +2607,197 @@ This is mandatory for every single response.
     clarifyCount: newClarifyCount,
     taskSupportCount: newTaskSupportCount
   };
+}
+
+/**
+ * Extract insights from user message after meaningful states
+ * Uses a lightweight AI call to summarize the key point from user's response
+ */
+export async function extractInsightFromMessage(
+  userMessage: string,
+  context: {
+    currentState: FacilitatorState;
+    nextState: FacilitatorState;
+    dayGoal: string;
+    language: "hebrew" | "english";
+  }
+): Promise<string | null> {
+  if (userMessage.length < 30) {
+    return null;
+  }
+  
+  // Only extract insights during meaningful state transitions
+  const meaningfulTransitions = [
+    { from: "ORIENTATION", to: "INTERPRET" },
+    { from: "CORE_QUESTION", to: "INTERPRET" },
+    { from: "TASK", to: "CLOSURE" },
+    { from: "TASK_SUPPORT", to: "CLOSURE" },
+  ];
+  
+  const isMeaningful = meaningfulTransitions.some(
+    t => t.from === context.currentState && t.to === context.nextState
+  );
+  
+  if (!isMeaningful) {
+    return null;
+  }
+  
+  const isHebrew = context.language === "hebrew";
+  const prompt = isHebrew
+    ? `סכם את הנקודה המרכזית מהתשובה הזו במשפט אחד קצר (עד 15 מילים).
+מטרת היום: ${context.dayGoal}
+תשובת המשתתף: "${userMessage}"
+הסיכום:`
+    : `Summarize the key point from this response in one short sentence (max 15 words).
+Day goal: ${context.dayGoal}
+Participant response: "${userMessage}"
+Summary:`;
+
+  try {
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        maxOutputTokens: 50,
+      }
+    });
+    
+    const candidate = response.candidates?.[0];
+    const textPart = candidate?.content?.parts?.find((part: any) => part.text);
+    const insight = textPart?.text?.trim();
+    
+    if (insight && insight.length > 5 && insight.length < 150) {
+      return insight;
+    }
+    return null;
+  } catch (error) {
+    console.error("[Insight Extraction] Error:", error);
+    return null;
+  }
+}
+
+/**
+ * Extract current belief/pattern from user's response (only during INTERPRET phase)
+ * Returns null if no clear pattern detected to avoid churn
+ */
+export async function extractCurrentBelief(
+  userMessage: string,
+  existingBelief: string | null,
+  language: "hebrew" | "english"
+): Promise<string | null> {
+  if (userMessage.length < 50) {
+    return existingBelief; // Keep existing
+  }
+  
+  const isHebrew = language === "hebrew";
+  const prompt = isHebrew
+    ? `זהה אמונה או דפוס מרכזי מהתשובה הזו (אם קיים).
+תשובת המשתתף: "${userMessage}"
+
+אם יש אמונה או דפוס ברור, החזר אותו במשפט קצר (עד 10 מילים).
+אם אין אמונה או דפוס ברור, החזר: NONE
+
+תשובה:`
+    : `Identify a core belief or pattern from this response (if present).
+Participant response: "${userMessage}"
+
+If there's a clear belief or pattern, return it in a short sentence (max 10 words).
+If no clear belief or pattern, return: NONE
+
+Answer:`;
+
+  try {
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        maxOutputTokens: 30,
+      }
+    });
+    
+    const candidate = response.candidates?.[0];
+    const textPart = candidate?.content?.parts?.find((part: any) => part.text);
+    const belief = textPart?.text?.trim();
+    
+    if (belief && belief !== "NONE" && belief.length > 3 && belief.length < 100) {
+      return belief;
+    }
+    return existingBelief; // Keep existing if no clear pattern
+  } catch (error) {
+    console.error("[Belief Extraction] Error:", error);
+    return existingBelief;
+  }
+}
+
+/**
+ * Generate day summary when day completes (DONE state)
+ */
+export async function generateDaySummaryForState(
+  dayNumber: number,
+  dayGoal: string,
+  recentMessages: { role: string; content: string }[],
+  taskCompleted: boolean,
+  language: "hebrew" | "english"
+): Promise<{ summary: string; keyInsight: string } | null> {
+  const isHebrew = language === "hebrew";
+  
+  const conversationText = recentMessages
+    .slice(-10)
+    .map(m => `${m.role}: ${m.content}`)
+    .join("\n");
+  
+  const prompt = isHebrew
+    ? `סכם את היום הזה בשני משפטים קצרים:
+1. סיכום (מה קרה היום בתהליך)
+2. תובנה מרכזית (מה למדנו על המשתתף)
+
+יום ${dayNumber}
+מטרת היום: ${dayGoal}
+סטטוס משימה: ${taskCompleted ? "הושלמה" : "לא הושלמה"}
+
+קטע מהשיחה:
+${conversationText}
+
+החזר בפורמט:
+סיכום: [משפט אחד]
+תובנה: [משפט אחד]`
+    : `Summarize this day in two short sentences:
+1. Summary (what happened in the process)
+2. Key insight (what we learned about the participant)
+
+Day ${dayNumber}
+Day goal: ${dayGoal}
+Task status: ${taskCompleted ? "completed" : "not completed"}
+
+Conversation excerpt:
+${conversationText}
+
+Return in format:
+Summary: [one sentence]
+Insight: [one sentence]`;
+
+  try {
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        maxOutputTokens: 100,
+      }
+    });
+    
+    const candidate = response.candidates?.[0];
+    const textPart = candidate?.content?.parts?.find((part: any) => part.text);
+    const text = textPart?.text?.trim() || "";
+    
+    const summaryMatch = text.match(isHebrew ? /סיכום:\s*(.+)/ : /Summary:\s*(.+)/i);
+    const insightMatch = text.match(isHebrew ? /תובנה:\s*(.+)/ : /Insight:\s*(.+)/i);
+    
+    const summary = summaryMatch?.[1]?.trim() || (isHebrew ? `יום ${dayNumber} הושלם` : `Day ${dayNumber} completed`);
+    const keyInsight = insightMatch?.[1]?.trim() || "";
+    
+    return { summary, keyInsight };
+  } catch (error) {
+    console.error("[Day Summary Generation] Error:", error);
+    return null;
+  }
 }
