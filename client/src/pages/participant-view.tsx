@@ -211,6 +211,11 @@ export default function ParticipantView() {
         setDayReadyForCompletion(true);
       }
     },
+    onError: (error: Error) => {
+      console.error("[Chat] Error sending message:", error);
+      // Refresh messages to restore correct state (remove optimistic update)
+      queryClient.invalidateQueries({ queryKey: ["messages", resolvedParticipant?.id, currentStep?.id] });
+    },
   });
 
   const completeDayMutation = useMutation({

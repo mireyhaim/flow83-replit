@@ -359,6 +359,7 @@ export const chatApi = {
     const res = await fetch(`${API_BASE}/participants/${participantId}/steps/${stepId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ content }),
     });
     return handleResponse(res);
