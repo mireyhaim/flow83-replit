@@ -19,6 +19,7 @@ import {
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  timeout: 180000, // 3 minute timeout for long generation requests
 });
 
 const anthropic = new Anthropic({
@@ -566,6 +567,8 @@ async function generateDaysBatch(
   endDay: number,
   totalDays: number
 ): Promise<GeneratedDay[]> {
+  console.log(`[AI] generateDaysBatch: Starting batch for days ${startDay}-${endDay} of ${totalDays}`);
+  const startTime = Date.now();
   const useHebrew = intent.language === 'he' || (!intent.language && isHebrewText(`${intent.journeyName} ${intent.mainGoal}`));
   const language = useHebrew ? "Hebrew" : "English";
   
@@ -766,15 +769,27 @@ Respond in JSON:
     ? `You embody this specific mentor's voice and methodology. Create transformational content using ONLY their pillars, practices, phrases, and philosophy. Every sentence should sound like it came from their actual teachings. Fill ALL fields with rich, meaningful content in ${language}. Each block MUST have a "type" field. Respond with valid JSON only.`
     : `Expert transformational course designer. Fill ALL fields with meaningful content in ${language}. Each block MUST have a "type" field. Respond with valid JSON only.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt }
-    ],
-    response_format: { type: "json_object" },
-    max_completion_tokens: 6000,
-  });
+  console.log(`[AI] generateDaysBatch: Sending request to OpenAI for days ${startDay}-${endDay}...`);
+  
+  let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 6000,
+    });
+  } catch (error: any) {
+    const elapsed = Date.now() - startTime;
+    console.error(`[AI] generateDaysBatch: OpenAI error after ${elapsed}ms:`, error?.message || error);
+    throw error;
+  }
+
+  const elapsed = Date.now() - startTime;
+  console.log(`[AI] generateDaysBatch: Received response in ${elapsed}ms for days ${startDay}-${endDay}`);
 
   const content = response.choices[0].message.content;
   if (!content) throw new Error("No content generated");
