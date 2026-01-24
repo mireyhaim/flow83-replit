@@ -782,12 +782,14 @@ export default function ParticipantView() {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar - RTL aware: in RTL mode left-0 becomes right-0 via CSS, so we need translateX(100%) to hide */}
       <aside 
-        style={{
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-        }}
-        className="fixed lg:relative lg:!translate-x-0 inset-y-0 left-0 z-50 w-[280px] sm:w-72 bg-gradient-to-b from-violet-600 via-violet-700 to-purple-800 flex flex-col transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none"
+        className={cn(
+          "fixed lg:relative inset-y-0 z-50 w-[280px] sm:w-72 bg-gradient-to-b from-violet-600 via-violet-700 to-purple-800 flex flex-col transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none",
+          "left-0",
+          "lg:!translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+        )}
       >
         {/* Sidebar header - Mentor info */}
         <div className="p-4 border-b border-white/10">
