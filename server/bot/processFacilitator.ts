@@ -85,18 +85,12 @@ export interface FacilitatorContext {
 }
 
 const BANNED_PHRASES_HEBREW = [
-  "אני שומע אותך",
-  "אני שומעת אותך",
-  "זה יכול להיות",
+  // Removed "אני שומע/ת אותך" - these are now ENCOURAGED for natural validation
   "יש כאן אנרגיה",
   "האמת שלך",
   "זה הכל להיום",
-  "אני שמח",
-  "אני שמחה",
-  "זה נפלא",
-  "נהדר!",
   "תודה ששיתפת",
-  "זה מאוד מובן",
+  // Keep only clearly artificial/clinical phrases
 ];
 
 const CONFUSION_TRIGGERS_HEBREW = [
@@ -917,10 +911,14 @@ ${isHebrew ?
   'GOOD: "אני שומעת את התסכול. התחושה הזו ש\'לא משנה מה אני עושה\' היא כבדה. בדיוק בשביל זה אנחנו כאן..."' :
   'GOOD: "I hear the frustration. That feeling of \'nothing works\' is heavy. That\'s exactly why we\'re here..."'}
 
-2) MIRRORING (שיקוף)
-Use the USER'S EXACT WORDS in your response. Don't paraphrase into clinical language.
-If they said "חסימות" - you say "חסימות", not "קשיים" or "אתגרים".
-If they said "stuck" - you say "stuck", not "challenges" or "obstacles".
+2) EMOTIONAL VALIDATION (תיקוף רגשי)
+Validate the user's feelings naturally - don't repeat their words literally like a robot.
+Use varied validation phrases:
+- Hebrew: "אני שומעת אותך", "זה לא פשוט", "מובן לי", "זה כבד", "אני מבינה", "זה הגיוני שתרגישי ככה"
+- English: "I hear you", "That's not easy", "I understand", "That sounds heavy", "It makes sense you'd feel that way"
+DO NOT copy-paste their exact words in quotes - it feels robotic. Instead, paraphrase naturally.
+BAD: "את מרגישה ש'אלוהים לא איתך', ש'אין לך מזל'" (robotic repetition)
+GOOD: "ההרגשה הזו של בדידות, כשמרגישים שהעולם לא עובד איתנו - זה כבד מאוד." (natural paraphrase)
 
 3) WEAVE CONTENT NATURALLY
 Never announce goals like a presentation. Weave them into the conversation.
@@ -1189,35 +1187,41 @@ ${toneNote}`;
 User just answered the core question: "${userMessage}"
 
 YOUR JOB:
-1. VALIDATE & MIRROR - Use their EXACT words to show you heard them
+1. VALIDATE EMOTIONALLY - Show you understand their feelings without copying their words literally
 2. Give space to what they shared (especially if it's heavy/difficult)
 3. Bridge naturally to the task
 
 ${isHebrewInterp ? `
-BAD EXAMPLE (skipping validation):
-"נהדר! בוא נעבור למשימה."
+BAD EXAMPLE (robotic word-for-word repetition):
+"את מרגישה ש'אתה מוותרת על עצמך', ש'בזוגיות זה קשה'." - sounds like a robot!
 
-GOOD EXAMPLE (validation + mirroring):
+GOOD EXAMPLE (natural emotional validation):
 User said: "בזוגיות. אני מרגישה שאני תמיד מוותרת על עצמי."
-Response: "להרגיש שאת תמיד מוותרת על עצמך בזוגיות - זה כבד. ההרגשה הזו מוכרת לי מתהליכים רבים.
-בוא ניקח את זה לצעד הראשון שלנו."
+Response: "אני שומעת אותך. להרגיש שאת מפסידה את עצמך בתוך מערכת יחסים - זה כבד מאוד. הרבה נשים מכירות את התחושה הזו.
+בואי ניקח את זה צעד קטן קדימה."
 
 GOOD EXAMPLE 2:
 User said: "בעבודה. אני לא מצליח לעמוד על שלי."
-Response: "לא להצליח לעמוד על שלך בעבודה - זה מקום לא פשוט. הרבה אנשים מכירים את זה.
+Response: "זה לא פשוט. כשמרגישים שקשה לעמוד על המקום שלנו - זה מקום לא נוח בכלל.
 יש לי משהו קטן שאני רוצה שתנסה."
-` : `
-BAD EXAMPLE (skipping validation):
-"Great! Let's move to the task."
 
-GOOD EXAMPLE (validation + mirroring):
+VALIDATION VARIETY (use different phrases each time):
+"אני שומעת אותך", "זה לא פשוט", "מובן לי", "זה כבד", "אני מבינה את זה", "זה הגיוני שתרגישי ככה"
+` : `
+BAD EXAMPLE (robotic word-for-word repetition):
+"You feel like 'you give up on yourself', that 'it's hard'." - sounds like a robot!
+
+GOOD EXAMPLE (natural emotional validation):
 User said: "In relationships. I always give up on myself."
-Response: "Feeling like you always give up on yourself in relationships - that's heavy. I've seen this in many processes.
-Let's take this to our first step together."
+Response: "I hear you. That feeling of losing yourself inside a relationship - that's really heavy. Many people know that feeling.
+Let me take you to a small first step."
+
+VALIDATION VARIETY (use different phrases each time):
+"I hear you", "That's not easy", "I understand", "That sounds heavy", "It makes sense you'd feel that way"
 `}
 
 RULES:
-- Use the user's EXACT words (mirror)
+- Validate emotions naturally (DON'T copy-paste their words in quotes)
 - Acknowledge the weight/difficulty if present
 - MAX 200 words
 - NO day info, NO repeating explanations
@@ -1273,27 +1277,30 @@ The user just completed the task. Their response: "${userMessage}"
 YOUR JOB - TWO PARTS:
 
 PART 1 - SUMMARY (start with excitement):
-${isHebrewClosure ? '"מעולה!"' : '"Great!"'} + summarize what THEY discovered today using THEIR words.
-Be specific - mirror their exact phrases and insights.
+${isHebrewClosure ? '"מעולה!"' : '"Great!"'} + summarize the insight they discovered today in YOUR OWN words.
+DON'T copy-paste their words literally in quotes - that sounds robotic. Paraphrase naturally.
 
 PART 2 - INVITATION TO ADD MORE:
 End with an open question: ${isHebrewClosure ? '"יש לך מה להוסיף?"' : '"Is there anything you\'d like to add?"'}
 
 ${isHebrewClosure ? `
-GOOD EXAMPLE:
+BAD EXAMPLE (robotic repetition):
+"את זיהית ש'כשחברה קונה בגדים ואת לא' זה לא סתם קנאה." - copying in quotes sounds like a robot!
+
+GOOD EXAMPLE (natural paraphrase):
 User said: "שמתי לב שכשחברה שלי קונה בגדים אני מרגישה ריקנות"
-Response: "מעולה! וזה מה שגילינו היום - את זיהית שכש'חברה קונה בגדים ואת לא' זה לא סתם רגע של קנאה. זו תחושת ריקנות שעולה. כאילו הכסף שלה קונה משהו שאת מרגישה שחסר לך.
+Response: "מעולה! וזה מה שגילינו היום - כשאת רואה מישהי אחרת קונה לעצמה משהו, עולה תחושה של ריקנות. לא סתם קנאה - משהו עמוק יותר.
 
 לשים לב לזה ולהגיד את זה בקול רם - זו עבודה לא פשוטה. ועשית אותה היום.
 
 יש לך מה להוסיף?"
-
-BAD EXAMPLE:
-"נהדר! סיימנו את יום 1. מחר נמשיך."
 ` : `
-GOOD EXAMPLE:
+BAD EXAMPLE (robotic repetition):
+"You identified that 'when a friend buys clothes and you don't' it's not envy." - copying in quotes sounds like a robot!
+
+GOOD EXAMPLE (natural paraphrase):
 User said: "I noticed when my friend buys clothes I feel empty"
-Response: "Great! Here's what we discovered today - you identified that when 'a friend buys clothes and you don't', it's not just a moment of envy. It's a feeling of emptiness. As if her money buys something you feel you're missing.
+Response: "Great! Here's what we discovered today - when you see someone else buying something for themselves, there's a feeling of emptiness. Not just envy - something deeper.
 
 Noticing this and saying it out loud - that's not easy work. And you did it today.
 
@@ -1305,7 +1312,7 @@ CONTENT TO WEAVE:
 
 RULES:
 - Start with excitement (מעולה/Great)
-- Mirror user's ACTUAL words from their response
+- Paraphrase naturally (DON'T copy-paste their words in quotes)
 - Acknowledge the emotional effort they made
 - MAX 200 words
 - End with invitation to add more

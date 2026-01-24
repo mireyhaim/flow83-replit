@@ -2523,7 +2523,7 @@ This is mandatory for every single response.
     ],
     config: {
       systemInstruction: fullSystemPrompt,
-      maxOutputTokens: 800,
+      maxOutputTokens: 1500,
     }
   });
   
