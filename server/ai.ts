@@ -326,18 +326,39 @@ export async function analyzeMentorContent(content: string, language?: string): 
   const allPhrases: string[] = [];
   const allBeliefs: string[] = [];
 
-  // Analyze chunks in parallel batches
+  // Analyze chunks in parallel batches with timeout and error handling
+  const CHUNK_TIMEOUT = 60000; // 60 seconds per chunk
+  
   for (let i = 0; i < chunks.length; i += 3) {
     const batch = chunks.slice(i, i + 3);
-    const results = await Promise.all(
-      batch.map((chunk, idx) => analyzeContentChunkDeep(chunk, i + idx + 1, chunks.length, languageName))
-    );
+    console.log(`[AI] Processing batch ${Math.floor(i/3) + 1}/${Math.ceil(chunks.length/3)} (chunks ${i + 1}-${Math.min(i + 3, chunks.length)} of ${chunks.length})`);
     
-    for (const result of results) {
-      allPillars.push(...result.pillars);
-      allPractices.push(...result.practices);
-      allPhrases.push(...result.phrases);
-      allBeliefs.push(...result.beliefs);
+    try {
+      const results = await Promise.all(
+        batch.map(async (chunk, idx) => {
+          try {
+            // Add timeout wrapper
+            const timeoutPromise = new Promise<{ pillars: any[]; practices: any[]; phrases: string[]; beliefs: string[] }>((_, reject) => 
+              setTimeout(() => reject(new Error(`Chunk ${i + idx + 1} timed out`)), CHUNK_TIMEOUT)
+            );
+            const analysisPromise = analyzeContentChunkDeep(chunk, i + idx + 1, chunks.length, languageName);
+            return await Promise.race([analysisPromise, timeoutPromise]);
+          } catch (chunkError: any) {
+            console.error(`[AI] Chunk ${i + idx + 1} failed:`, chunkError.message);
+            return { pillars: [], practices: [], phrases: [], beliefs: [] };
+          }
+        })
+      );
+      
+      for (const result of results) {
+        allPillars.push(...result.pillars);
+        allPractices.push(...result.practices);
+        allPhrases.push(...result.phrases);
+        allBeliefs.push(...result.beliefs);
+      }
+    } catch (batchError: any) {
+      console.error(`[AI] Batch ${Math.floor(i/3) + 1} failed:`, batchError.message);
+      // Continue with next batch instead of failing entirely
     }
   }
 
@@ -402,20 +423,35 @@ Make this detailed and specific to THIS mentor's actual methodology, not generic
 
 Respond in JSON.`;
 
-  const synthesisResponse = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    messages: [
-      { 
-        role: "system", 
-        content: `You are an expert at analyzing and synthesizing educational methodologies. You create detailed, specific profiles that capture a mentor's unique approach. Write all output in ${languageName}. Respond with valid JSON only.` 
-      },
-      { role: "user", content: synthesisPrompt }
-    ],
-    response_format: { type: "json_object" },
-    max_completion_tokens: 4000,
-  });
+  console.log("[AI] Starting synthesis step...");
+  const SYNTHESIS_TIMEOUT = 120000; // 2 minutes for synthesis
+  
+  let synthesisResult: string | null = null;
+  try {
+    const synthesisPromise = openai.chat.completions.create({
+      model: "gpt-5.2",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert at analyzing and synthesizing educational methodologies. You create detailed, specific profiles that capture a mentor's unique approach. Write all output in ${languageName}. Respond with valid JSON only.` 
+        },
+        { role: "user", content: synthesisPrompt }
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 4000,
+    });
+    
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error("Synthesis timed out")), SYNTHESIS_TIMEOUT)
+    );
+    
+    const synthesisResponse = await Promise.race([synthesisPromise, timeoutPromise]);
+    synthesisResult = synthesisResponse.choices[0].message.content;
+  } catch (synthesisError: any) {
+    console.error("[AI] Synthesis failed:", synthesisError.message);
+    return createFallbackProfile(content, detectedLanguage, uniquePhrases, uniqueBeliefs);
+  }
 
-  const synthesisResult = synthesisResponse.choices[0].message.content;
   if (!synthesisResult) {
     return createFallbackProfile(content, detectedLanguage, uniquePhrases, uniqueBeliefs);
   }

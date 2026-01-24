@@ -1551,12 +1551,26 @@ export async function registerRoutes(
 
       // Analyze ALL uploaded content to extract mentor's unique style
       console.log("[generate-content] Analyzing mentor content, length:", content.length);
-      const mentorStyle = await analyzeMentorContent(content);
-      console.log("[generate-content] Mentor style extracted:", {
-        tone: mentorStyle.toneOfVoice?.substring(0, 100),
-        phrases: mentorStyle.keyPhrases?.length,
-        summaryLength: mentorStyle.contentSummary?.length
-      });
+      let mentorStyle;
+      try {
+        mentorStyle = await analyzeMentorContent(content);
+        console.log("[generate-content] Mentor style extracted:", {
+          tone: mentorStyle.toneOfVoice?.substring(0, 100),
+          phrases: mentorStyle.keyPhrases?.length,
+          summaryLength: mentorStyle.contentSummary?.length
+        });
+      } catch (analyzeError: any) {
+        console.error("[generate-content] Error analyzing mentor content:", analyzeError.message);
+        // Use fallback empty style
+        mentorStyle = {
+          toneOfVoice: "",
+          keyPhrases: [],
+          teachingStyle: "",
+          corePhilosophy: "",
+          contentSummary: content.substring(0, 3000),
+          language: journey.language || "he"
+        };
+      }
 
       sendProgress("ai", 30, "Creating content in your voice...");
 
@@ -1578,8 +1592,18 @@ export async function registerRoutes(
       console.log("[generate-content] Intent:", JSON.stringify({ ...intent, mentorStyle: { ...mentorStyle, contentSummary: `${mentorStyle.contentSummary?.length || 0} chars` } }));
       console.log("[generate-content] Content length:", content.length);
       
-      const generatedDays = await generateJourneyContent(intent, content);
-      console.log("[generate-content] Generated days count:", generatedDays.length);
+      let generatedDays;
+      try {
+        generatedDays = await generateJourneyContent(intent, content);
+        console.log("[generate-content] Generated days count:", generatedDays.length);
+      } catch (genError: any) {
+        console.error("[generate-content] Error generating journey content:", genError.message);
+        if (useSSE) {
+          res.write(`data: ${JSON.stringify({ error: "Failed to generate content: " + genError.message })}\n\n`);
+          return res.end();
+        }
+        return res.status(500).json({ error: "Failed to generate content" });
+      }
       
       // Log sample day to verify AI response
       if (generatedDays.length > 0) {
