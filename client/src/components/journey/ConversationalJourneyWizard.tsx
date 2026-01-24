@@ -8,6 +8,14 @@ import { journeyApi, fileApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Upload, 
   FileText, 
@@ -23,7 +31,9 @@ import {
   Target,
   MessageCircle,
   FileUp,
-  Heart
+  Heart,
+  AlertCircle,
+  MessageSquare
 } from "lucide-react";
 
 interface JourneyData {
@@ -175,6 +185,11 @@ const ConversationalJourneyWizard = () => {
   const [inputValue, setInputValue] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [editingStep, setEditingStep] = useState<number | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [isReportingError, setIsReportingError] = useState(false);
+  const [lastJourneyId, setLastJourneyId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -339,6 +354,7 @@ const ConversationalJourneyWizard = () => {
       }, signal);
 
       console.log("[Wizard] Journey created:", journey.id);
+      setLastJourneyId(journey.id);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
       console.log("[Wizard] Starting generateContentWithProgress...");
@@ -354,14 +370,68 @@ const ConversationalJourneyWizard = () => {
     } catch (error: any) {
       if (error?.name === 'AbortError') return;
       console.error('Generation error:', error);
-      toast({
-        title: isHebrew ? 'שגיאה' : 'Error',
-        description: isHebrew ? 'אירעה שגיאה ביצירת ה-Flow' : 'An error occurred creating the Flow',
-        variant: 'destructive'
-      });
+      
+      const errorMessage = error?.message || 'Unknown error';
+      setLastError(errorMessage);
+      const newRetryCount = retryCount + 1;
+      setRetryCount(newRetryCount);
+      
+      if (newRetryCount >= 2) {
+        // Show dialog to contact admin after 2 failures
+        setShowErrorDialog(true);
+      } else {
+        // First failure - show toast with retry suggestion
+        toast({
+          title: isHebrew ? 'שגיאה ביצירת ה-Flow' : 'Error Creating Flow',
+          description: isHebrew 
+            ? 'אירעה שגיאה. לחצי על "יצירת Flow" כדי לנסות שוב.' 
+            : 'An error occurred. Click "Create Flow" to try again.',
+          variant: 'destructive'
+        });
+      }
     } finally {
       setIsGenerating(false);
       abortControllerRef.current = null;
+    }
+  };
+
+  const handleReportError = async () => {
+    setIsReportingError(true);
+    try {
+      await fetch('/api/report-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          errorType: 'flow_generation_failed',
+          errorMessage: `Flow generation failed after ${retryCount} attempts`,
+          context: {
+            journeyId: lastJourneyId,
+            journeyName: journeyData.journeyName,
+            error: lastError,
+            retryCount,
+          }
+        })
+      });
+      
+      toast({
+        title: isHebrew ? 'הדיווח נשלח' : 'Report Sent',
+        description: isHebrew 
+          ? 'קיבלנו את הדיווח ונחזור אליך בהקדם' 
+          : 'We received your report and will get back to you soon',
+      });
+      
+      setShowErrorDialog(false);
+      setRetryCount(0);
+    } catch (err) {
+      console.error('Failed to report error:', err);
+      toast({
+        title: isHebrew ? 'שגיאה' : 'Error',
+        description: isHebrew ? 'לא הצלחנו לשלוח את הדיווח' : 'Failed to send report',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsReportingError(false);
     }
   };
 
@@ -715,6 +785,47 @@ const ConversationalJourneyWizard = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="sm:max-w-[425px]" dir={isHebrew ? 'rtl' : 'ltr'}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-orange-500" />
+              {isHebrew ? 'בעיה ביצירת ה-Flow' : 'Problem Creating Flow'}
+            </DialogTitle>
+            <DialogDescription className="text-right">
+              {isHebrew 
+                ? 'ניסינו ליצור את ה-Flow אבל משהו לא עבד. זה יכול לקרות לפעמים עקב עומס במערכת. אם הבעיה חוזרת, נשמח לעזור לך באופן אישי.'
+                : 'We tried to create your Flow but something went wrong. This can sometimes happen due to system load. If the problem persists, we\'d be happy to help you personally.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowErrorDialog(false);
+                setRetryCount(0);
+              }}
+              data-testid="error-dialog-close"
+            >
+              {isHebrew ? 'לנסות שוב' : 'Try Again'}
+            </Button>
+            <Button
+              onClick={handleReportError}
+              disabled={isReportingError}
+              className="bg-violet-600 hover:bg-violet-700"
+              data-testid="error-dialog-report"
+            >
+              {isReportingError ? (
+                <Loader2 className="w-4 h-4 animate-spin ml-2" />
+              ) : (
+                <MessageSquare className="w-4 h-4 ml-2" />
+              )}
+              {isHebrew ? 'פנה אלינו' : 'Contact Us'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

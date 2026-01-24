@@ -537,6 +537,32 @@ export async function registerRoutes(
     }
   });
 
+  // Report error endpoint - for mentors to report issues that need admin attention
+  app.post("/api/report-error", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const user = await storage.getUser(userId);
+      const { errorType, errorMessage, context } = req.body;
+      
+      await storage.createSystemError({
+        errorType: errorType || 'mentor_report',
+        errorMessage: errorMessage || 'User reported an issue',
+        errorStack: JSON.stringify(context || {}),
+        userId: userId,
+        relatedEntityType: context?.journeyId ? 'journey' : null,
+        relatedEntityId: context?.journeyId || null,
+        resolved: false,
+      });
+      
+      console.log(`[Report Error] User ${user?.firstName || userId} reported: ${errorType} - ${errorMessage}`);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reporting issue:", error);
+      res.status(500).json({ error: "Failed to report issue" });
+    }
+  });
+
   // Mentor wallet endpoints
   app.get("/api/mentor/wallet", isAuthenticated, async (req: any, res) => {
     try {
