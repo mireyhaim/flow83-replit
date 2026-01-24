@@ -2516,7 +2516,7 @@ This is mandatory for every single response.
   
   // Generate AI response using Gemini
   const response = await gemini.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     contents: [
       ...conversationHistory,
       { role: "user", parts: [{ text: userMessage }] }

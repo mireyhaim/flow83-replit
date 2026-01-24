@@ -100,7 +100,7 @@ A Conversation Director controls the chat experience, where deterministic logic 
 -   **esbuild**: Server-side bundling.
 
 ### AI Integrations
--   **Conversation Management**: Google Gemini 1.5 Flash via Replit AI Integrations for participant chat experience.
+-   **Conversation Management**: Google Gemini 2.5 Flash via Replit AI Integrations for participant chat experience.
 -   **Journey Generation**: OpenAI GPT for journey content creation and wizard assistance.
 -   **Image Generation**: Gemini 2.5 Flash Image model for visual content.
 
