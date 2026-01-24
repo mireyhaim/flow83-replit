@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import {
   makeDecision,
   updateState,
@@ -23,6 +24,15 @@ const openai = new OpenAI({
 const anthropic = new Anthropic({
   apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
+});
+
+// Gemini client for conversation management
+const gemini = new GoogleGenAI({
+  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
+  httpOptions: {
+    apiVersion: "",
+    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+  },
 });
 
 interface JourneyIntent {
@@ -2428,28 +2438,31 @@ This is mandatory for every single response.
 `;
   }
   
-  // Build messages array for Claude
-  const claudeMessages: Anthropic.MessageParam[] = [
-    ...recentMessages.slice(-6).map(m => ({
-      role: m.role as "user" | "assistant",
-      content: m.content
-    })),
-    { role: "user", content: userMessage }
-  ];
+  // Build messages array for Gemini
+  const conversationHistory = recentMessages.slice(-6).map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }]
+  }));
   
-  // Combine system prompt with state prompt for Claude
+  // Combine system prompt with state prompt for Gemini
   const fullSystemPrompt = `${addressingPrefix}${systemPrompt}\n\n---\n\nSTATE: ${nextState}\n\n${statePrompt}`;
   
-  // Generate AI response using Claude
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-5",
-    system: fullSystemPrompt,
-    messages: claudeMessages,
-    max_tokens: 400, // Allow longer responses to avoid truncation
+  // Generate AI response using Gemini
+  const response = await gemini.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: [
+      ...conversationHistory,
+      { role: "user", parts: [{ text: userMessage }] }
+    ],
+    config: {
+      systemInstruction: fullSystemPrompt,
+      maxOutputTokens: 400,
+    }
   });
   
-  const firstBlock = response.content[0];
-  let aiContent = firstBlock.type === "text" ? firstBlock.text : "";
+  const candidate = response.candidates?.[0];
+  const textPart = candidate?.content?.parts?.find((part: any) => part.text);
+  let aiContent = textPart?.text || "";
   
   // Fallback messages
   if (!aiContent) {

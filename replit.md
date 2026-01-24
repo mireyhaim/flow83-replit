@@ -99,6 +99,11 @@ A Conversation Director controls the chat experience, where deterministic logic 
 -   **Drizzle Kit**: Database migration and schema management.
 -   **esbuild**: Server-side bundling.
 
+### AI Integrations
+-   **Conversation Management**: Google Gemini 1.5 Flash via Replit AI Integrations for participant chat experience.
+-   **Journey Generation**: OpenAI GPT for journey content creation and wizard assistance.
+-   **Image Generation**: Gemini 2.5 Flash Image model for visual content.
+
 ### Internationalization (i18n)
 -   **Library**: react-i18next with i18next for Hebrew and English support, including RTL layout.
 -   **Translation Files**: Located in `client/src/locales/` with namespaces for different application areas.
