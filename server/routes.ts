@@ -1536,7 +1536,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Content is required for AI generation" });
       }
 
-      sendProgress("init", 5, "Preparing data...");
+      sendProgress("init", 5, "מכין את הנתונים... (התהליך אורך 2-4 דקות)");
 
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
@@ -1547,7 +1547,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      sendProgress("ai", 10, "Analyzing your teaching style...");
+      sendProgress("ai", 10, "מנתח את סגנון ההוראה שלך...");
 
       // Analyze ALL uploaded content to extract mentor's unique style
       console.log("[generate-content] Analyzing mentor content, length:", content.length);
@@ -1572,7 +1572,7 @@ export async function registerRoutes(
         };
       }
 
-      sendProgress("ai", 30, "Creating content in your voice...");
+      sendProgress("ai", 30, "יוצר תוכן בסגנון שלך...");
 
       const intent = {
         journeyName: journey.name,
@@ -1618,17 +1618,17 @@ export async function registerRoutes(
         });
       }
 
-      sendProgress("cleanup", 60, "Cleaning up old content...");
+      sendProgress("cleanup", 60, "מנקה תוכן ישן...");
 
       await storage.deleteJourneyStepsByJourneyId(journeyId);
 
-      sendProgress("saving", 70, "Saving generated days...");
+      sendProgress("saving", 70, "שומר את הימים שנוצרו...");
 
       const totalDays = generatedDays.length;
       for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
         const day = generatedDays[dayIndex];
         const dayProgress = 70 + Math.round((dayIndex / totalDays) * 25);
-        sendProgress("saving", dayProgress, `Saving day ${day.dayNumber} of ${totalDays}...`);
+        sendProgress("saving", dayProgress, `שומר יום ${day.dayNumber} מתוך ${totalDays}...`);
 
         console.log(`[generate-content] Saving day ${day.dayNumber}: goal=${day.goal?.length || 0} chars, explanation=${day.explanation?.length || 0} chars, task=${day.task?.length || 0} chars`);
         const step = await storage.createJourneyStep({
@@ -1663,7 +1663,7 @@ export async function registerRoutes(
         await storage.createJourneyBlocks(blocksToInsert);
       }
 
-      sendProgress("done", 100, "Flow created successfully!");
+      sendProgress("done", 100, "התהליך נוצר בהצלחה!");
 
       if (useSSE) {
         res.write(`data: ${JSON.stringify({ success: true, daysGenerated: generatedDays.length })}\n\n`);
