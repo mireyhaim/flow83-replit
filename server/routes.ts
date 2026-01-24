@@ -2066,7 +2066,12 @@ export async function registerRoutes(
           conversationState: result.nextState,
           clarifyCount: result.clarifyCount,
           taskSupportCount: result.taskSupportCount,
-          lastBotMessage: result.response
+          lastBotMessage: result.response,
+          // Conversation dynamics tracking
+          totalMessagesInDay: result.totalMessagesInDay,
+          messageCountInPhase: result.messageCountInPhase,
+          lastEmpathyMessageIndex: result.lastEmpathyMessageIndex,
+          beliefIdentified: result.beliefIdentified
         };
         
         // Get current state for transition detection (use persisted state, never fallback to START if state exists)
@@ -2284,7 +2289,11 @@ export async function registerRoutes(
         await storage.updateParticipant(participantId, { 
           currentPhase: 'intro',
           messageCountInPhase: 0,
-          questionsAskedInPhase: 0
+          questionsAskedInPhase: 0,
+          // Reset conversation dynamics tracking for next day
+          totalMessagesInDay: 0,
+          lastEmpathyMessageIndex: 0,
+          beliefIdentified: false
         });
       }
 

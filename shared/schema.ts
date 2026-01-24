@@ -151,6 +151,9 @@ export const participants = pgTable("participants", {
   clarifyCount: integer("clarify_count").default(0), // Max 2 per day
   taskSupportCount: integer("task_support_count").default(0), // Max 1 per day
   lastBotMessage: text("last_bot_message"), // For no-repetition check
+  lastEmpathyMessageIndex: integer("last_empathy_message_index").default(0), // Track last message with empathy opener (don't repeat within 5)
+  totalMessagesInDay: integer("total_messages_in_day").default(0), // Track total messages for empathy spacing
+  beliefIdentified: boolean("belief_identified").default(false), // Track if central belief was found (Day 1 goal)
   // Two-Phase Onboarding (from BOT SPEC)
   userOnboardingConfig: jsonb("user_onboarding_config").$type<{
     addressing_style: "female" | "male" | "neutral";

@@ -2423,6 +2423,11 @@ export interface FacilitatorChatResult {
   log: FacilitatorOutput["log"];
   clarifyCount: number;
   taskSupportCount: number;
+  // New tracking fields for conversation dynamics
+  totalMessagesInDay: number;
+  messageCountInPhase: number;
+  lastEmpathyMessageIndex: number;
+  beliefIdentified: boolean;
 }
 
 /**
@@ -2483,6 +2488,13 @@ export async function generateChatResponseWithFacilitator(
     userOnboardingConfig: participant.userOnboardingConfig as any
   });
   
+  // Track conversation dynamics for empathy variation and insight timing
+  const totalMessagesInDay = (participant.totalMessagesInDay || 0) + 1;
+  const lastEmpathyMessageIndex = participant.lastEmpathyMessageIndex || 0;
+  const messagesSinceEmpathy = totalMessagesInDay - lastEmpathyMessageIndex;
+  const messageCountInPhase = (participant.messageCountInPhase || 0) + 1;
+  const beliefIdentified = participant.beliefIdentified || false;
+  
   // Build addressing style prefix for system prompt
   const config = participant.userOnboardingConfig as any;
   let addressingPrefix = '';
@@ -2518,6 +2530,40 @@ This is mandatory for every single response.
     parts: [{ text: m.content }]
   }));
   
+  // Build dynamic guidance based on conversation tracking
+  const isShortAnswer = userMessage.trim().length < 15 && 
+    ["בסדר", "כן", "אוקיי", "לא יודעת", "לא יודע", "ok", "yes", "okay", "sure"].some(
+      trigger => userMessage.toLowerCase().includes(trigger)
+    );
+  
+  // Dynamic empathy guidance
+  let empathyGuidance = '';
+  if (messagesSinceEmpathy < 5) {
+    empathyGuidance = `⚠️ EMPATHY COOLDOWN: You used empathy ${messagesSinceEmpathy} messages ago. Do NOT start with empathy. Start with insight, question, or direct statement.`;
+  } else {
+    empathyGuidance = `Empathy allowed but NOT required. Only use if natural.`;
+  }
+  
+  // Dynamic insight timing
+  let insightGuidance = '';
+  if (messageCountInPhase >= 3 && messageCountInPhase % 3 === 0) {
+    insightGuidance = `⚠️ INSIGHT TIME: You've exchanged ${messageCountInPhase} messages in this phase. This response MUST be a connecting insight (one sentence), NOT a question. Connect the dots from what you've heard.`;
+  }
+  
+  // Belief recognition for Day 1
+  let beliefGuidance = '';
+  if (dayPlan.day === 1 && !beliefIdentified) {
+    beliefGuidance = `⚠️ DAY 1 MISSION: You're looking for ONE central blocking belief. When the participant says something like "אני לא מספיק טובה" or "אני לא ראויה" - STOP and mark it with "זה משפט מפתח".`;
+  } else if (beliefIdentified) {
+    beliefGuidance = `✓ BELIEF FOUND: The central belief was identified. Don't keep digging. Start moving toward closure.`;
+  }
+  
+  // Short answer handling
+  let shortAnswerGuidance = '';
+  if (isShortAnswer) {
+    shortAnswerGuidance = `⚠️ SHORT ANSWER DETECTED: Participant gave a brief response. Do NOT ask a deeper question. Either: (1) Summarize what you've discovered, or (2) Give a brief transition statement, or (3) Move to next phase.`;
+  }
+  
   // Combine system prompt with Journey State and state prompt for Gemini
   // Order: System Prompt -> Journey State -> State-specific instructions
   const fullSystemPrompt = `${addressingPrefix}${systemPrompt}
@@ -2534,12 +2580,41 @@ ${statePrompt}
 
 ---
 
+DYNAMIC CONTEXT FOR THIS MESSAGE:
+${empathyGuidance}
+${insightGuidance}
+${beliefGuidance}
+${shortAnswerGuidance}
+
+---
+
 OUTPUT CONSTRAINTS:
-- Response must be 3-8 lines maximum (NOT a long lecture)
-- Ask only ONE question per message
+- Response must be 4-6 lines maximum (NOT a lecture, NOT an explanation)
+- Ask only ONE question per message (or give ONE insight - never both together)
 - Never repeat user's words verbatim in quotes
-- Move the process forward with each response
-- Be warm but concise`;
+- NO general statements like "הרבה נשים מרגישות כך" or "זה מאוד נפוץ"
+- NO emotional education or therapy explanations
+
+EMPATHY VARIATION (CRITICAL):
+- Do NOT start every response with empathy
+- Vary your openings: sometimes insight first, sometimes direct question, sometimes brief acknowledgment
+- Never say "אני שומעת אותך" more than once per 5 messages
+- Avoid fixed empathy patterns - be unpredictable like a real mentor
+
+INSIGHT SUMMARIES (CRITICAL):
+- Every 3-4 messages: give ONE sentence insight connecting the dots, NOT a question
+- Example: "אז בכל פעם שיש השקעה גדולה, עולה פחד שאת לא ראויה, ואז את עוזבת. זה נכון?"
+- This shows you're LEADING the process, not just asking
+
+BELIEF RECOGNITION (CRITICAL):
+- When a central belief surfaces (like "אני לא מספיק טובה"), STOP and mark it explicitly
+- Say something like: "זה משפט מפתח. נראה שהוא מנהל הרבה מההחלטות שלך."
+- Don't just acknowledge and move on - this is the core discovery
+
+SHORT ANSWER HANDLING:
+- If participant answers "בסדר", "כן", "לא יודעת" - SLOW DOWN
+- Don't immediately ask a deeper question
+- Either summarize what was found, or give a brief transition statement`;
   
   // Generate AI response using Gemini
   const response = await gemini.models.generateContent({
@@ -2587,11 +2662,51 @@ OUTPUT CONSTRAINTS:
   // CLOSURE is still a conversation state where we ask "יש לך מה להוסיף?"
   const dayCompleted = nextState === "DONE";
   
+  // Detect if this response uses empathy opener (for tracking)
+  const empathyPhrases = [
+    "אני שומעת אותך",
+    "אני שומע אותך",
+    "זה כבד",
+    "זה קשה",
+    "מובן לי",
+    "אני מבינה",
+    "אני מבין",
+    "i hear you",
+    "i understand",
+    "that's hard",
+    "that sounds difficult"
+  ];
+  const usedEmpathy = empathyPhrases.some(phrase => 
+    processedContent.toLowerCase().includes(phrase.toLowerCase())
+  );
+  const newLastEmpathyMessageIndex = usedEmpathy ? totalMessagesInDay : lastEmpathyMessageIndex;
+  
+  // Detect if a central belief was identified in this response
+  const beliefMarkers = [
+    "זה משפט מפתח",
+    "זו האמונה",
+    "זה הדפוס",
+    "this is a key",
+    "this is the belief",
+    "this is the pattern"
+  ];
+  const markedBelief = beliefMarkers.some(marker => 
+    processedContent.toLowerCase().includes(marker.toLowerCase())
+  );
+  const newBeliefIdentified = beliefIdentified || markedBelief;
+  
+  // Reset message count in phase on state transitions
+  const newMessageCountInPhase = currentState === nextState ? messageCountInPhase : 1;
+  
   console.log(`[Facilitator] Response generated:`, {
     state: nextState,
     responseLength: processedContent.length,
     dayCompleted,
-    intent
+    intent,
+    usedEmpathy,
+    markedBelief,
+    totalMessagesInDay,
+    messageCountInPhase: newMessageCountInPhase
   });
   
   return {
@@ -2605,7 +2720,12 @@ OUTPUT CONSTRAINTS:
       detected_intent: intent
     },
     clarifyCount: newClarifyCount,
-    taskSupportCount: newTaskSupportCount
+    taskSupportCount: newTaskSupportCount,
+    // New tracking fields
+    totalMessagesInDay,
+    messageCountInPhase: newMessageCountInPhase,
+    lastEmpathyMessageIndex: newLastEmpathyMessageIndex,
+    beliefIdentified: newBeliefIdentified
   };
 }
 
