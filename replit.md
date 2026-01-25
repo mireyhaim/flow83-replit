@@ -66,6 +66,14 @@ Participant onboarding personalizes the chat experience in two phases:
 -   **Style Adaptation**: Preferences influence Hebrew grammar and conversational tone.
 -   **Bot Conversation Guidelines**: The bot speaks as the mentor, limits message length, asks one question at a time, reflects user input, and provides short, focused, actionable instructions.
 
+### Progressive Web App (PWA) Features
+The participant experience supports PWA installation:
+-   **Dynamic Manifest**: `/api/manifest/:journeyId` endpoint generates journey-specific PWA manifests with journey name and icon.
+-   **Add to Home Screen**: Mobile users see a prompt to add the journey to their home screen after 2 seconds.
+-   **iOS/Android Instructions**: Platform-specific installation guides in Hebrew.
+-   **Access Token Integration**: For external participants, the manifest includes their access token in `start_url` for correct PWA launch.
+-   **One-Time Popup**: Dismissal is saved to localStorage per journey (`a2hs_dismissed_{journeyId}`).
+
 ### Conversation Director System
 A Conversation Director controls the chat experience, where deterministic logic manages conversation flow, and AI only phrases responses.
 -   **Pipeline**: Director analyzes messages, selects actions; PromptBuilder creates action-specific prompts; AI phrases responses; Sanitizer filters artificial phrases.
