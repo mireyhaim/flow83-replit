@@ -2428,6 +2428,9 @@ export interface FacilitatorChatResult {
   messageCountInPhase: number;
   lastEmpathyMessageIndex: number;
   beliefIdentified: boolean;
+  // Goal achievement tracking
+  goalAchieved: boolean;
+  goalSummary: string | null;
 }
 
 /**
@@ -2494,6 +2497,8 @@ export async function generateChatResponseWithFacilitator(
   const messagesSinceEmpathy = totalMessagesInDay - lastEmpathyMessageIndex;
   const messageCountInPhase = (participant.messageCountInPhase || 0) + 1;
   const beliefIdentified = participant.beliefIdentified || false;
+  const goalAchieved = participant.goalAchieved || false;
+  const existingGoalSummary = participant.goalSummary || null;
   
   // Build addressing style prefix for system prompt
   const config = participant.userOnboardingConfig as any;
@@ -2550,12 +2555,43 @@ This is mandatory for every single response.
     insightGuidance = `⚠️ INSIGHT TIME: You've exchanged ${messageCountInPhase} messages in this phase. This response MUST be a connecting insight (one sentence), NOT a question. Connect the dots from what you've heard.`;
   }
   
-  // Belief recognition for Day 1
-  let beliefGuidance = '';
-  if (dayPlan.day === 1 && !beliefIdentified) {
-    beliefGuidance = `⚠️ DAY 1 MISSION: You're looking for ONE central blocking belief. When the participant says something like "אני לא מספיק טובה" or "אני לא ראויה" - STOP and mark it with "זה משפט מפתח".`;
-  } else if (beliefIdentified) {
-    beliefGuidance = `✓ BELIEF FOUND: The central belief was identified. Don't keep digging. Start moving toward closure.`;
+  // Goal-oriented leadership guidance
+  let goalGuidance = '';
+  const todayGoal = dayPlan.day_goal || '';
+  
+  if (goalAchieved) {
+    // Goal was achieved - enter reflection and closure mode
+    const discoveryText = existingGoalSummary 
+      ? `DISCOVERED: ${existingGoalSummary}` 
+      : `(Summarize what you discovered in this conversation)`;
+    goalGuidance = `✓ TODAY'S GOAL ACHIEVED: "${todayGoal}"
+${discoveryText}
+
+⚠️ REFLECTION & CLOSURE MODE - MANDATORY:
+1. REFLECT: Summarize what we discovered today in 1-2 sentences (what the participant shared and realized)
+2. VALIDATE: Acknowledge their work with "הגענו למקום חשוב היום" or similar
+3. CLOSE: Say "זה מספיק להיום. מחר נמשיך" or preview tomorrow
+4. DO NOT ask new questions, explore further, or open new topics
+5. Your response should LEAD TO DAY END`;
+  } else if (dayPlan.day === 1 && beliefIdentified) {
+    // Day 1: Belief found = goal achieved
+    goalGuidance = `✓ DAY 1 GOAL ACHIEVED: Central belief was identified!
+⚠️ SWITCH TO REFLECTION MODE:
+- Summarize: "גילינו היום שיש משהו שאומר לך [האמונה שזוהתה]"
+- Validate: "זו תובנה חשובה"
+- Close: "זה מספיק להיום. מחר נבנה על זה."
+- DO NOT keep exploring - the goal is done`;
+  } else if (dayPlan.day === 1 && !beliefIdentified) {
+    goalGuidance = `⚠️ DAY 1 MISSION: "${todayGoal}"
+GOAL: Find ONE central blocking belief.
+When participant says something like "אני לא מספיק טובה" - STOP and mark with "זה משפט מפתח".
+Once found, switch to reflection mode.`;
+  } else if (!goalAchieved) {
+    // Other days - lead towards goal
+    goalGuidance = `⚠️ TODAY'S GOAL: "${todayGoal}"
+LEAD the conversation towards achieving this goal.
+When goal is achieved (participant has insight, breakthrough, or task completion), add marker: [GOAL_ACHIEVED]
+Then switch to reflection mode: summarize discovery, validate, close.`;
   }
   
   // Short answer handling
@@ -2583,7 +2619,7 @@ ${statePrompt}
 DYNAMIC CONTEXT FOR THIS MESSAGE:
 ${empathyGuidance}
 ${insightGuidance}
-${beliefGuidance}
+${goalGuidance}
 ${shortAnswerGuidance}
 
 ---
@@ -2695,22 +2731,62 @@ SHORT ANSWER HANDLING:
   );
   const newBeliefIdentified = beliefIdentified || markedBelief;
   
+  // Detect goal achievement - check for marker or belief identification on Day 1
+  const goalMarker = processedContent.includes("[GOAL_ACHIEVED]");
+  const day1GoalAchieved = dayPlan.day === 1 && newBeliefIdentified;
+  const newGoalAchieved = goalAchieved || goalMarker || day1GoalAchieved;
+  
+  // Extract goal summary when goal is achieved for the first time
+  let newGoalSummary = existingGoalSummary;
+  if (newGoalAchieved && !existingGoalSummary) {
+    // Priority 1: Check current response for belief markers
+    const currentHasBeliefMarker = beliefMarkers.some(marker => 
+      processedContent.toLowerCase().includes(marker.toLowerCase())
+    );
+    
+    if (currentHasBeliefMarker) {
+      // Use the current response as summary since it marks the discovery
+      newGoalSummary = processedContent.replace("[GOAL_ACHIEVED]", "").slice(0, 250);
+    } else {
+      // Priority 2: Look for belief markers in previous assistant responses
+      const assistantMessages = recentMessages.filter(m => m.role === 'assistant').slice(-3);
+      const beliefMessage = assistantMessages.find(m => 
+        m.content.includes('זה משפט מפתח') || 
+        m.content.includes('זו האמונה') ||
+        m.content.includes('זה הדפוס')
+      );
+      
+      if (beliefMessage) {
+        newGoalSummary = beliefMessage.content.slice(0, 250);
+      } else {
+        // Priority 3: Use the most meaningful recent user message
+        const lastUserMessages = recentMessages.filter(m => m.role === 'user').slice(-3);
+        const meaningfulMessage = lastUserMessages.find(m => m.content.length > 30) || lastUserMessages[lastUserMessages.length - 1];
+        newGoalSummary = meaningfulMessage?.content?.slice(0, 200) || 'Key insight discovered';
+      }
+    }
+  }
+  
+  // Clean response - remove goal marker if present
+  const cleanedResponse = processedContent.replace("[GOAL_ACHIEVED]", "").trim();
+  
   // Reset message count in phase on state transitions
   const newMessageCountInPhase = currentState === nextState ? messageCountInPhase : 1;
   
   console.log(`[Facilitator] Response generated:`, {
     state: nextState,
-    responseLength: processedContent.length,
+    responseLength: cleanedResponse.length,
     dayCompleted,
     intent,
     usedEmpathy,
     markedBelief,
+    goalAchieved: newGoalAchieved,
     totalMessagesInDay,
     messageCountInPhase: newMessageCountInPhase
   });
   
   return {
-    response: processedContent,
+    response: cleanedResponse,
     nextState,
     dayCompleted,
     log: {
@@ -2721,11 +2797,14 @@ SHORT ANSWER HANDLING:
     },
     clarifyCount: newClarifyCount,
     taskSupportCount: newTaskSupportCount,
-    // New tracking fields
+    // Conversation dynamics tracking
     totalMessagesInDay,
     messageCountInPhase: newMessageCountInPhase,
     lastEmpathyMessageIndex: newLastEmpathyMessageIndex,
-    beliefIdentified: newBeliefIdentified
+    beliefIdentified: newBeliefIdentified,
+    // Goal achievement tracking
+    goalAchieved: newGoalAchieved,
+    goalSummary: newGoalSummary
   };
 }
 

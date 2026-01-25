@@ -2071,7 +2071,10 @@ export async function registerRoutes(
           totalMessagesInDay: result.totalMessagesInDay,
           messageCountInPhase: result.messageCountInPhase,
           lastEmpathyMessageIndex: result.lastEmpathyMessageIndex,
-          beliefIdentified: result.beliefIdentified
+          beliefIdentified: result.beliefIdentified,
+          // Goal achievement tracking
+          goalAchieved: result.goalAchieved,
+          goalSummary: result.goalSummary
         };
         
         // Get current state for transition detection (use persisted state, never fallback to START if state exists)
@@ -2293,7 +2296,10 @@ export async function registerRoutes(
           // Reset conversation dynamics tracking for next day
           totalMessagesInDay: 0,
           lastEmpathyMessageIndex: 0,
-          beliefIdentified: false
+          beliefIdentified: false,
+          // Reset goal tracking for next day
+          goalAchieved: false,
+          goalSummary: null
         });
       }
 

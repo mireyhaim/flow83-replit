@@ -154,6 +154,8 @@ export const participants = pgTable("participants", {
   lastEmpathyMessageIndex: integer("last_empathy_message_index").default(0), // Track last message with empathy opener (don't repeat within 5)
   totalMessagesInDay: integer("total_messages_in_day").default(0), // Track total messages for empathy spacing
   beliefIdentified: boolean("belief_identified").default(false), // Track if central belief was found (Day 1 goal)
+  goalAchieved: boolean("goal_achieved").default(false), // Track if today's goal was achieved
+  goalSummary: text("goal_summary"), // Summary of what was discovered/achieved today (for reflection)
   // Two-Phase Onboarding (from BOT SPEC)
   userOnboardingConfig: jsonb("user_onboarding_config").$type<{
     addressing_style: "female" | "male" | "neutral";
