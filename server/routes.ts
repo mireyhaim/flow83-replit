@@ -2872,6 +2872,51 @@ export async function registerRoutes(
     }
   });
 
+  // Dynamic manifest for journey-specific PWA
+  // Accepts journeyId as path param and optional token as query param for external participants
+  app.get("/api/manifest/:journeyId", async (req, res) => {
+    try {
+      const { journeyId } = req.params;
+      const { token } = req.query; // Access token for external participants
+      const journey = await storage.getJourney(journeyId);
+      
+      // Use access token for start_url if provided (external participants)
+      // Otherwise use journey ID (for mentor preview)
+      const startUrl = token ? `/p/${token}` : (journeyId ? `/p/${journeyId}` : "/");
+      
+      const manifest = {
+        name: journey?.name || "Flow 83",
+        short_name: journey?.name?.slice(0, 12) || "Flow 83",
+        description: journey?.goal || "מסע טרנספורמציה דיגיטלי",
+        start_url: startUrl,
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#7c3aed",
+        orientation: "portrait",
+        icons: [
+          {
+            src: journey?.coverImage || "/favicon.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: journey?.coverImage || "/favicon.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+      
+      res.setHeader("Content-Type", "application/manifest+json");
+      res.json(manifest);
+    } catch (error) {
+      console.error("Error generating manifest:", error);
+      res.status(500).json({ error: "Failed to generate manifest" });
+    }
+  });
+
   app.get("/api/participant/token/:accessToken", async (req, res) => {
     try {
       const { accessToken } = req.params;

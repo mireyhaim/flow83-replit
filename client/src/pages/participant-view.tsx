@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { chatApi, type DaySummary } from "@/lib/api";
 import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage, User } from "@shared/schema";
 import { PreChatOnboarding, type OnboardingConfig } from "@/components/participant/PreChatOnboarding";
+import { AddToHomeScreenPopup } from "@/components/participant/AddToHomeScreenPopup";
 
 interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
@@ -349,6 +350,27 @@ export default function ParticipantView() {
     }
   }, [resolvedParticipant]);
 
+  // Update manifest dynamically for journey-specific PWA
+  useEffect(() => {
+    if (resolvedJourney?.id) {
+      const manifestLink = document.querySelector('link[rel="manifest"]');
+      if (manifestLink) {
+        // For external participants, include access token in manifest URL
+        // so the PWA start_url uses the correct token
+        const accessToken = isExternalAccess && resolvedParticipant?.accessToken 
+          ? resolvedParticipant.accessToken 
+          : tokenFromRoute;
+        const tokenParam = accessToken ? `?token=${accessToken}` : '';
+        manifestLink.setAttribute('href', `/api/manifest/${resolvedJourney.id}${tokenParam}`);
+      }
+      // Update apple-mobile-web-app-title
+      const appleTitleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appleTitleMeta) {
+        appleTitleMeta.setAttribute('content', resolvedJourney.name || 'Flow 83');
+      }
+    }
+  }, [resolvedJourney?.id, resolvedJourney?.name, resolvedParticipant?.accessToken, isExternalAccess, tokenFromRoute]);
+
   useLayoutEffect(() => {
     requestAnimationFrame(() => {
       if (scrollRef.current) {
@@ -624,6 +646,14 @@ export default function ParticipantView() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Add to Home Screen popup for mobile users */}
+      {resolvedJourney?.id && (
+        <AddToHomeScreenPopup 
+          journeyId={resolvedJourney.id} 
+          journeyName={resolvedJourney.name || 'התהליך שלך'} 
+        />
+      )}
+      
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (
