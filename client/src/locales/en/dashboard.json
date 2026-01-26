@@ -522,6 +522,8 @@
     "pendingApprovalDescription": "Your Flow is pending approval. You'll receive an email with your publishing link within 24 hours.",
     "approvedTitle": "Flow Approved!",
     "approvedDescription": "Your Flow is approved and ready for publishing.",
+    "pendingNextSteps": "We're reviewing to make sure everything is ready. Once done, you'll get an email with your publishing link to start sharing with clients.",
+    "approvedNextSteps": "Your publishing link is ready! Share it with your clients so they can join your Flow.",
     "linkCopied": "Copied!",
     "backToFlows": "Back to Flows",
     "free": "Free",

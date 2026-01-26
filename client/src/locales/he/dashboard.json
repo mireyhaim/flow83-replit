@@ -532,6 +532,8 @@
     "pendingApprovalDescription": "ה-Flow שלכם ממתין לאישור. תקבלו מייל עם הלינק לפרסום תוך 24 שעות.",
     "approvedTitle": "ה-Flow מאושר!",
     "approvedDescription": "ה-Flow שלכם מאושר ומוכן לפרסום.",
+    "pendingNextSteps": "אנחנו בודקים שהכל מוכן ותקין. ברגע שנסיים - תקבלו מייל עם קישור לפרסום ותוכלו להתחיל לשתף עם לקוחות.",
+    "approvedNextSteps": "הקישור לפרסום מוכן! שתפו אותו עם הלקוחות שלכם והם יוכלו להצטרף ל-Flow.",
     "linkCopied": "הועתק!",
     "backToFlows": "חזרה ל-Flows",
     "free": "חינם",

@@ -359,8 +359,8 @@ const JourneyPublishPage = () => {
                     <Mail className="w-5 h-5 text-violet-400" />
                     <p className="text-white/70">
                       {journeyData.approvalStatus === "approved" 
-                        ? t('publishModal.approvedDescription')
-                        : t('publishModal.successDescription')}
+                        ? t('publishModal.approvedNextSteps')
+                        : t('publishModal.pendingNextSteps')}
                     </p>
                   </div>
                 </div>
