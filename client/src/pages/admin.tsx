@@ -1469,13 +1469,25 @@ export default function AdminPage() {
                       method: "POST",
                       body: JSON.stringify({ adminPaymentUrl: paymentLinkInput }),
                     });
-                    if (!res.ok) throw new Error("Failed to activate");
+                    if (!res.ok) {
+                      const errorData = await res.json().catch(() => ({}));
+                      throw new Error(errorData.error || "Failed to activate");
+                    }
                     const data = await res.json();
                     setActivatedFlowLink(data.miniSiteUrl || "");
                     await refetchPendingFlows();
                     setFlowActivated(true);
-                  } catch (error) {
+                    toast({
+                      title: "✅ המיני-סייט הופעל!",
+                      description: "עכשיו אפשר לשלוח למנטור",
+                    });
+                  } catch (error: any) {
                     console.error("Failed to activate flow:", error);
+                    toast({
+                      title: "שגיאה בהפעלה",
+                      description: error?.message || "נסה שוב",
+                      variant: "destructive",
+                    });
                   } finally {
                     setIsActivating(false);
                   }
