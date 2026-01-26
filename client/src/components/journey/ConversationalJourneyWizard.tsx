@@ -376,7 +376,20 @@ const ConversationalJourneyWizard = () => {
       const newRetryCount = retryCount + 1;
       setRetryCount(newRetryCount);
       
-      if (newRetryCount >= 2) {
+      // If we have a saved journey, redirect to it so user doesn't lose their work
+      if (lastJourneyId) {
+        toast({
+          title: isHebrew ? 'שגיאה ביצירת התוכן' : 'Error Creating Content',
+          description: isHebrew 
+            ? 'הפלואו נשמר כטיוטה. מעבירה אותך לעריכה כדי לנסות שוב.' 
+            : 'Your Flow was saved as draft. Redirecting to edit page to try again.',
+          variant: 'destructive'
+        });
+        // Wait a moment for the toast to show, then redirect to saved draft
+        setTimeout(() => {
+          setLocation(`/journey/${lastJourneyId}/edit`);
+        }, 1500);
+      } else if (newRetryCount >= 2) {
         // Show dialog to contact admin after 2 failures
         setShowErrorDialog(true);
       } else {
