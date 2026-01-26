@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { 
   LayoutDashboard, 
   Users, 
@@ -198,6 +199,7 @@ interface SystemError {
 export default function AdminPage() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -1492,8 +1494,17 @@ export default function AdminPage() {
                     setSelectedPendingFlow(null);
                     setPaymentLinkInput("");
                     setFlowActivated(false);
+                    toast({
+                      title: "✅ נשלח בהצלחה!",
+                      description: "המייל נשלח למנטור והסטטוס עודכן לפורסם",
+                    });
                   } catch (error) {
                     console.error("Failed to send to mentor:", error);
+                    toast({
+                      title: "שגיאה",
+                      description: "השליחה נכשלה, נסה שוב",
+                      variant: "destructive",
+                    });
                   }
                 }}
                 className="bg-violet-600 hover:bg-violet-700"
