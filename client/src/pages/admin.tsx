@@ -1422,6 +1422,11 @@ export default function AdminPage() {
                 <p className="text-sm text-slate-400">
                   לחיצה על "הפעל מיני-סייט" תפרסם את ה-Flow ותאפשר לך לצפות בו לפני שליחת המייל למנטור.
                 </p>
+                {selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput && (
+                  <p className="text-sm text-amber-400 mt-2">
+                    ⚠️ חובה להזין לינק תשלום עבור פלואו בתשלום
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
