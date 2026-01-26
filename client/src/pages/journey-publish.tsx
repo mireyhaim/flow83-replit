@@ -75,6 +75,16 @@ const JourneyPublishPage = () => {
     
     const priceValue = parseFloat(publishPrice) || 0;
     
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setIsPublishing(false);
+      toast({
+        title: t('error'),
+        description: t('requestTimeout'),
+        variant: "destructive",
+      });
+    }, 30000); // 30 second timeout
+    
     try {
       // Submit for approval instead of publishing directly
       const updatedJourney = await journeyApi.update(journeyData.id, { 
@@ -82,9 +92,11 @@ const JourneyPublishPage = () => {
         currency: isHebrew ? "ILS" : "USD",
         approvalStatus: "pending_approval",
       });
+      clearTimeout(timeoutId);
       setJourneyData(prev => prev ? { ...prev, ...updatedJourney } : null);
       setCurrentStep(3);
     } catch (error: any) {
+      clearTimeout(timeoutId);
       const errorMsg = error?.message || "";
       if (errorMsg.includes("subscription_required") || errorMsg.startsWith("402:")) {
         setLocation(`/journey/${journeyData.id}/edit?showPaywall=true`);

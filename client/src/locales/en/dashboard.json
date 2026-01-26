@@ -99,6 +99,7 @@
   "flowNowDraft": "Your flow is now in draft mode.",
   "failedToUnpublishFlow": "Failed to unpublish flow",
   "failedToPublishFlow": "Failed to publish flow",
+  "requestTimeout": "The request took too long. Please try again.",
   "failedToCopyLink": "Failed to copy link",
   "loadingFlow": "Loading your flow...",
   "creatingYourFlow": "Creating Your Flow",

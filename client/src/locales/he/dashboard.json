@@ -99,6 +99,7 @@
   "flowNowDraft": "התהליך שלך כעת במצב טיוטה.",
   "failedToUnpublishFlow": "ביטול הפרסום נכשל",
   "failedToPublishFlow": "פרסום התהליך נכשל",
+  "requestTimeout": "הבקשה ארכה זמן רב מדי. נסי שוב.",
   "failedToCopyLink": "העתקת הקישור נכשלה",
   "loadingFlow": "טוען את הFLOW שלך",
   "creatingYourFlow": "יוצר את התהליך שלך",
