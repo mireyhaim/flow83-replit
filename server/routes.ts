@@ -1622,7 +1622,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Content is required for AI generation" });
       }
 
-      sendProgress("init", 5, "מכין את הנתונים... (התהליך אורך 2-4 דקות)");
+      sendProgress("init", 5, "מכין את הנתונים...");
 
       const journey = await storage.getJourney(journeyId);
       if (!journey) {
@@ -1633,7 +1633,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      sendProgress("ai", 10, "מנתח את סגנון ההוראה שלך... (שלב 1/3 - כדקה)");
+      sendProgress("ai", 10, "מנתח את סגנון ההוראה שלך... (שלב 1/3)");
 
       // Analyze ALL uploaded content to extract mentor's unique style
       console.log("[generate-content] Analyzing mentor content, length:", content.length);
@@ -1666,7 +1666,7 @@ export async function registerRoutes(
         };
       }
 
-      sendProgress("ai", 30, "יוצר תוכן בסגנון שלך... (שלב 2/3 - 1-2 דקות)");
+      sendProgress("ai", 30, "יוצר תוכן בסגנון שלך... (שלב 2/3)");
 
       const intent = {
         journeyName: journey.name,

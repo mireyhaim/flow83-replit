@@ -317,13 +317,31 @@ export async function analyzeMentorContent(
   const isHebrew = detectedLanguage === "he";
 
   // Split content into larger chunks for deeper analysis
+  // OPTIMIZATION: Sample from beginning, middle, and end instead of all chunks
+  // This ensures we capture methodology from throughout the content
   const chunkSize = 12000;
-  const chunks: string[] = [];
+  const allChunks: string[] = [];
   for (let i = 0; i < content.length; i += chunkSize) {
-    chunks.push(content.substring(i, i + chunkSize));
+    allChunks.push(content.substring(i, i + chunkSize));
+  }
+  
+  // Smart sampling: Take chunks from different parts of the content
+  // This preserves methodology coverage for long uploads
+  let chunks: string[];
+  if (allChunks.length <= 3) {
+    // Short content - analyze all chunks
+    chunks = allChunks;
+  } else {
+    // Long content - sample beginning, middle, and end (max 3 chunks)
+    const midIndex = Math.floor(allChunks.length / 2);
+    chunks = [
+      allChunks[0],             // Beginning - intro/overview
+      allChunks[midIndex],       // Middle - core content
+      allChunks[allChunks.length - 1]  // End - summary/practices
+    ];
   }
 
-  console.log(`[AI] Deep analyzing mentor content: ${content.length} chars in ${chunks.length} chunks`);
+  console.log(`[AI] Analyzing mentor content: ${content.length} chars, sampling ${chunks.length} of ${allChunks.length} chunks (beginning, middle, end)`);
 
   // Collect all extracted elements from chunks
   const allPillars: { name: string; keyTeachings: string[] }[] = [];
