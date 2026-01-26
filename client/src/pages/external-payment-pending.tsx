@@ -28,10 +28,15 @@ export default function ExternalPaymentPendingPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setToken(params.get("token"));
+    const tkn = params.get("token");
     const url = params.get("paymentUrl");
+    setToken(tkn);
     if (url) {
-      setPaymentUrl(decodeURIComponent(url));
+      const decodedUrl = decodeURIComponent(url);
+      setPaymentUrl(decodedUrl);
+      // Auto-open payment link when page loads
+      window.open(decodedUrl, "_blank");
+      setPaymentOpened(true);
     }
   }, []);
 
