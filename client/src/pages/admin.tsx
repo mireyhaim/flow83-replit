@@ -1396,11 +1396,21 @@ export default function AdminPage() {
                 <span className="text-slate-400">Price:</span>
                 <span>{selectedPendingFlow?.price && selectedPendingFlow.price > 0 ? `₪${selectedPendingFlow.price}` : "Free"}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-400">Mini-Site Link:</span>
-                <span className="text-violet-400 text-sm">
-                  {selectedPendingFlow?.shortCode ? `/f/${selectedPendingFlow.shortCode}` : `/j/${selectedPendingFlow?.id}`}
-                </span>
+                <a 
+                  href={selectedPendingFlow?.shortCode 
+                    ? `/f/${selectedPendingFlow.shortCode}` 
+                    : `/j/${selectedPendingFlow?.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-violet-400 text-sm hover:text-violet-300 underline"
+                  data-testid="link-mini-site-preview"
+                >
+                  {window.location.origin}{selectedPendingFlow?.shortCode 
+                    ? `/f/${selectedPendingFlow.shortCode}` 
+                    : `/j/${selectedPendingFlow?.id}`}
+                </a>
               </div>
             </div>
 
@@ -1441,7 +1451,7 @@ export default function AdminPage() {
                 }
               }}
               className="bg-violet-600 hover:bg-violet-700"
-              disabled={selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput}
+              disabled={!!(selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput)}
               data-testid="button-approve-and-send"
             >
               Approve & Send to Mentor
