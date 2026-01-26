@@ -1462,6 +1462,7 @@ export default function AdminPage() {
             {!flowActivated ? (
               <Button
                 onClick={async () => {
+                  alert("Button clicked! Flow: " + selectedPendingFlow?.id + ", Link: " + paymentLinkInput);
                   console.log("Button clicked! selectedPendingFlow:", selectedPendingFlow?.id, "paymentLinkInput:", paymentLinkInput);
                   if (!selectedPendingFlow) return;
                   setIsActivating(true);
