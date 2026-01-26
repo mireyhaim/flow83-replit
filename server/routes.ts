@@ -3853,11 +3853,13 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Payment link is required for paid flows" });
       }
 
-      // Update the journey - set payment URL AND publish immediately so mini-site works
+      // Update the journey - set payment URL, publish, and approve all in one step
       await storage.updateJourney(id, {
         adminPaymentUrl: adminPaymentUrl || null,
         adminApprovedAt: new Date(),
         status: "published",
+        approvalStatus: "approved",
+        sentToMentorAt: new Date(),
       });
 
       // Get the updated journey to return the correct link
@@ -3868,6 +3870,24 @@ export async function registerRoutes(
       const miniSiteUrl = updatedJourney?.shortCode 
         ? `${baseUrl}/f/${updatedJourney.shortCode}`
         : `${baseUrl}/j/${id}`;
+
+      // Send email to mentor
+      const mentor = await storage.getUser(journey.creatorId);
+      if (mentor?.email) {
+        try {
+          const { sendFlowApprovedEmail } = await import('./email');
+          await sendFlowApprovedEmail({
+            mentorEmail: mentor.email,
+            mentorName: mentor.firstName || 'מנטור',
+            flowName: journey.name,
+            miniSiteLink: miniSiteUrl
+          });
+          console.log(`Approval email sent to ${mentor.email}`);
+        } catch (emailError) {
+          console.error("Failed to send approval email:", emailError);
+          // Don't fail the request if email fails
+        }
+      }
 
       res.json({ success: true, miniSiteUrl, flowId: id });
     } catch (error) {
@@ -3882,7 +3902,7 @@ export async function registerRoutes(
       const { id } = req.params;
 
       // Get the flow details
-      const journey = await storage.getJourney(parseInt(id));
+      const journey = await storage.getJourney(id);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
@@ -3904,7 +3924,7 @@ export async function registerRoutes(
       }
 
       // Update the journey with final approval - now publish the flow
-      await storage.updateJourney(parseInt(id), {
+      await storage.updateJourney(id, {
         status: "published",
         approvalStatus: "approved",
         sentToMentorAt: new Date(),
