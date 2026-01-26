@@ -3836,8 +3836,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin approve flow
-  app.post("/api/admin/flows/:id/approve", isAdmin, async (req, res) => {
+  // Admin activate flow (publish and set payment URL, but don't send email yet)
+  app.post("/api/admin/flows/:id/activate", isAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const { adminPaymentUrl } = req.body;
@@ -3853,17 +3853,59 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Payment link is required for paid flows" });
       }
 
+      // Update the journey - publish it and set payment URL
+      await storage.updateJourney(parseInt(id), {
+        status: "published",
+        adminPaymentUrl: adminPaymentUrl || null,
+        adminApprovedAt: new Date(),
+      });
+
+      // Get the updated journey to return the correct link
+      const updatedJourney = await storage.getJourney(parseInt(id));
+      const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+        ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
+        : 'https://flow83.com';
+      const miniSiteUrl = updatedJourney?.shortCode 
+        ? `${baseUrl}/f/${updatedJourney.shortCode}`
+        : `${baseUrl}/j/${id}`;
+
+      res.json({ success: true, miniSiteUrl, flowId: id });
+    } catch (error) {
+      console.error("Error activating flow:", error);
+      res.status(500).json({ error: "Failed to activate flow" });
+    }
+  });
+
+  // Admin approve flow and send email to mentor
+  app.post("/api/admin/flows/:id/approve", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Get the flow details
+      const journey = await storage.getJourney(parseInt(id));
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      // Guard: Flow must be published (activated) before approval
+      if (journey.status !== "published") {
+        return res.status(400).json({ error: "Flow must be activated first" });
+      }
+
+      // Guard: Paid flows must have a payment URL set
+      if (journey.price && journey.price > 0 && !journey.adminPaymentUrl) {
+        return res.status(400).json({ error: "Payment link is required for paid flows" });
+      }
+
       // Get the mentor
       const mentor = await storage.getUser(journey.creatorId);
       if (!mentor) {
         return res.status(404).json({ error: "Mentor not found" });
       }
 
-      // Update the journey with approval
+      // Update the journey with final approval
       await storage.updateJourney(parseInt(id), {
         approvalStatus: "approved",
-        adminPaymentUrl: adminPaymentUrl || null,
-        adminApprovedAt: new Date(),
         sentToMentorAt: new Date(),
       });
 

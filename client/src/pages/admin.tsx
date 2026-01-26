@@ -212,6 +212,9 @@ export default function AdminPage() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [selectedPendingFlow, setSelectedPendingFlow] = useState<PendingFlow | null>(null);
   const [paymentLinkInput, setPaymentLinkInput] = useState("");
+  const [flowActivated, setFlowActivated] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [activatedFlowLink, setActivatedFlowLink] = useState<string>("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -958,6 +961,8 @@ export default function AdminPage() {
                           onClick={() => { 
                             setSelectedPendingFlow(pf); 
                             setPaymentLinkInput(pf.adminPaymentUrl || ""); 
+                            setFlowActivated(false);
+                            setActivatedFlowLink("");
                           }}
                           className="bg-violet-600 hover:bg-violet-700"
                           data-testid={`button-review-flow-${pf.id}`}
@@ -1373,10 +1378,10 @@ export default function AdminPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!selectedPendingFlow} onOpenChange={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); }}>
+      <Dialog open={!!selectedPendingFlow} onOpenChange={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); setFlowActivated(false); setActivatedFlowLink(""); }}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Review Flow Approval</DialogTitle>
+            <DialogTitle>{flowActivated ? "צפייה ואישור" : "הפעלת מיני-סייט"}</DialogTitle>
             <DialogDescription className="text-slate-400">
               {selectedPendingFlow?.name}
             </DialogDescription>
@@ -1396,66 +1401,105 @@ export default function AdminPage() {
                 <span className="text-slate-400">Price:</span>
                 <span>{selectedPendingFlow?.price && selectedPendingFlow.price > 0 ? `₪${selectedPendingFlow.price}` : "Free"}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Mini-Site Link:</span>
-                <a 
-                  href={selectedPendingFlow?.shortCode 
-                    ? `/f/${selectedPendingFlow.shortCode}` 
-                    : `/j/${selectedPendingFlow?.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-violet-400 text-sm hover:text-violet-300 underline"
-                  data-testid="link-mini-site-preview"
-                >
-                  {window.location.origin}{selectedPendingFlow?.shortCode 
-                    ? `/f/${selectedPendingFlow.shortCode}` 
-                    : `/j/${selectedPendingFlow?.id}`}
-                </a>
-              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-slate-300">Grow Payment Link (required for paid flows)</Label>
-              <Input
-                value={paymentLinkInput}
-                onChange={(e) => setPaymentLinkInput(e.target.value)}
-                placeholder="https://grow.link/... or https://meshulam.co.il/..."
-                className="bg-slate-700 border-slate-600"
-                data-testid="input-admin-payment-link"
-              />
-            </div>
+            {!flowActivated ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-300">לינק תשלום Grow (נדרש עבור פלואו בתשלום)</Label>
+                  <Input
+                    value={paymentLinkInput}
+                    onChange={(e) => setPaymentLinkInput(e.target.value)}
+                    placeholder="https://grow.link/... or https://meshulam.co.il/..."
+                    className="bg-slate-700 border-slate-600"
+                    data-testid="input-admin-payment-link"
+                  />
+                </div>
+                <p className="text-sm text-slate-400">
+                  לחיצה על "הפעל מיני-סייט" תפרסם את ה-Flow ותאפשר לך לצפות בו לפני שליחת המייל למנטור.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-900/30 border border-green-700 rounded-lg">
+                  <p className="text-green-400 font-medium mb-2">✅ המיני-סייט מוכן!</p>
+                  <p className="text-sm text-slate-300 mb-3">לחץ על הלינק כדי לצפות במיני-סייט לפני שליחת המייל למנטור:</p>
+                  {activatedFlowLink ? (
+                    <a 
+                      href={activatedFlowLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-400 hover:text-violet-300 underline break-all"
+                      data-testid="link-mini-site-preview"
+                    >
+                      {activatedFlowLink}
+                    </a>
+                  ) : (
+                    <span className="text-slate-400">לינק לא זמין - נסה לרענן את הדף</span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
-              onClick={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); }}
+              onClick={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); setFlowActivated(false); setActivatedFlowLink(""); }}
               className="border-slate-600"
             >
-              Cancel
+              סגור
             </Button>
-            <Button
-              onClick={async () => {
-                if (!selectedPendingFlow) return;
-                try {
-                  const res = await adminFetch(`/api/admin/flows/${selectedPendingFlow.id}/approve`, {
-                    method: "POST",
-                    body: JSON.stringify({ adminPaymentUrl: paymentLinkInput }),
-                  });
-                  if (!res.ok) throw new Error("Failed to approve");
-                  refetchPendingFlows();
-                  setSelectedPendingFlow(null);
-                  setPaymentLinkInput("");
-                } catch (error) {
-                  console.error("Failed to approve flow:", error);
-                }
-              }}
-              className="bg-violet-600 hover:bg-violet-700"
-              disabled={!!(selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput)}
-              data-testid="button-approve-and-send"
-            >
-              Approve & Send to Mentor
-            </Button>
+            {!flowActivated ? (
+              <Button
+                onClick={async () => {
+                  if (!selectedPendingFlow) return;
+                  setIsActivating(true);
+                  try {
+                    const res = await adminFetch(`/api/admin/flows/${selectedPendingFlow.id}/activate`, {
+                      method: "POST",
+                      body: JSON.stringify({ adminPaymentUrl: paymentLinkInput }),
+                    });
+                    if (!res.ok) throw new Error("Failed to activate");
+                    const data = await res.json();
+                    setActivatedFlowLink(data.miniSiteUrl || "");
+                    await refetchPendingFlows();
+                    setFlowActivated(true);
+                  } catch (error) {
+                    console.error("Failed to activate flow:", error);
+                  } finally {
+                    setIsActivating(false);
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700"
+                disabled={!!(selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput) || isActivating}
+                data-testid="button-activate-minisite"
+              >
+                {isActivating ? "מפעיל..." : "הפעל מיני-סייט"}
+              </Button>
+            ) : (
+              <Button
+                onClick={async () => {
+                  if (!selectedPendingFlow) return;
+                  try {
+                    const res = await adminFetch(`/api/admin/flows/${selectedPendingFlow.id}/approve`, {
+                      method: "POST",
+                    });
+                    if (!res.ok) throw new Error("Failed to send");
+                    refetchPendingFlows();
+                    setSelectedPendingFlow(null);
+                    setPaymentLinkInput("");
+                    setFlowActivated(false);
+                  } catch (error) {
+                    console.error("Failed to send to mentor:", error);
+                  }
+                }}
+                className="bg-violet-600 hover:bg-violet-700"
+                data-testid="button-send-to-mentor"
+              >
+                שלח למנטור
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
