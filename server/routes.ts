@@ -3571,142 +3571,107 @@ export async function registerRoutes(
     }
   });
 
-  // Grow (Israeli payment provider) webhook endpoint
+  // Grow (Israeli payment provider) webhook endpoint for participant payments
+  // Grow webhook format: { webhookKey, transactionCode, fullName, payerEmail, payerPhone, paymentDesc, paymentSum, ... }
   app.post("/api/webhooks/grow", async (req, res) => {
     try {
-      const crypto = await import('crypto');
-      const secret = process.env.GROW_WEBHOOK_SECRET;
-      
-      if (!secret) {
-        console.error("Missing GROW_WEBHOOK_SECRET");
-        return res.status(500).json({ error: "Webhook not configured" });
-      }
-
-      // Get signature from header (Grow may use different header name - adjust as needed)
-      const signatureHeader = req.headers['x-grow-signature'] || req.headers['x-signature'];
-      const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
-      
-      // Verify signature using raw body
-      const rawBody = (req as any).rawBody;
-      if (!rawBody || !Buffer.isBuffer(rawBody)) {
-        console.error("Missing raw body for Grow webhook verification");
-        return res.status(400).json({ error: "Missing raw body" });
-      }
-      
-      // Require signature header for security
-      if (!signature) {
-        console.error("Missing Grow webhook signature header");
-        return res.status(403).json({ error: "Missing signature" });
-      }
-      
-      // Verify HMAC signature (adjust algorithm if Grow uses different method)
-      const hmac = crypto.createHmac('sha256', secret);
-      const digest = hmac.update(rawBody).digest('hex');
-      
-      const digestBuffer = Buffer.from(digest.toLowerCase(), 'utf8');
-      const signatureBuffer = Buffer.from(signature.toLowerCase(), 'utf8');
-      
-      if (digestBuffer.length !== signatureBuffer.length || !crypto.timingSafeEqual(digestBuffer, signatureBuffer)) {
-        console.error("Invalid Grow webhook signature");
-        return res.status(403).json({ error: "Invalid signature" });
-      }
-
-      // Parse the webhook payload
       const payload = req.body;
       console.log("Grow webhook received:", JSON.stringify(payload, null, 2));
 
-      // Extract event info - adjust field names based on actual Grow webhook format
-      const eventType = payload.type || payload.event || payload.eventType;
-      const customerEmail = payload.customer?.email || payload.email || payload.buyer_email;
-      const productId = payload.product?.id || payload.productId;
-      const orderId = payload.order?.id || payload.orderId || payload.transaction_id;
-
-      // Determine plan from product ID or name
-      let plan = 'starter';
-      const productName = (payload.product?.name || payload.productName || '').toLowerCase();
-      if (productName.includes('pro') || productId?.includes('pro')) {
-        plan = 'pro';
-      } else if (productName.includes('business') || productId?.includes('business')) {
-        plan = 'business';
+      // Grow uses webhookKey for verification (set in Grow dashboard)
+      const webhookKey = payload.webhookKey;
+      const expectedKey = process.env.GROW_WEBHOOK_KEY;
+      
+      if (expectedKey && webhookKey !== expectedKey) {
+        console.error("Invalid Grow webhook key");
+        return res.status(403).json({ error: "Invalid webhook key" });
       }
 
-      // Handle different event types
-      switch (eventType) {
-        case 'payment.completed':
-        case 'order.completed':
-        case 'subscription.created':
-        case 'subscription.activated':
-        case 'charge.succeeded': {
-          // Find user by email
-          if (!customerEmail) {
-            console.log("No customer email in Grow webhook");
-            return res.json({ received: true, warning: "No customer email" });
-          }
+      // Extract participant info from Grow webhook
+      const payerEmail = payload.payerEmail || payload.email;
+      const fullName = payload.fullName || payload.payer_name || '';
+      const payerPhone = payload.payerPhone || payload.phone || '';
+      const paymentDesc = payload.paymentDesc || payload.description || '';
+      const transactionCode = payload.transactionCode || payload.transaction_id || '';
+      const paymentSum = payload.paymentSum || payload.sum || 0;
 
-          const user = await storage.getUserByEmail(customerEmail);
-          
-          if (!user) {
-            console.log(`User not found for Grow payment: ${customerEmail}`);
-            // Store event for later reconciliation
-            return res.json({ received: true, warning: "User not found" });
-          }
-
-          // Activate subscription
-          await storage.upsertUser({
-            id: user.id,
-            subscriptionPlan: plan,
-            subscriptionStatus: 'active',
-            subscriptionProvider: 'grow',
-            paymentFailedAt: null,
-            trialEndsAt: null, // Clear trial since they've paid
-          });
-          
-          console.log(`Grow payment successful for user ${user.id}: ${plan}`);
-          break;
-        }
-
-        case 'subscription.cancelled':
-        case 'subscription.expired':
-        case 'order.refunded': {
-          if (!customerEmail) {
-            return res.json({ received: true });
-          }
-
-          const user = await storage.getUserByEmail(customerEmail);
-          if (user) {
-            await storage.upsertUser({
-              id: user.id,
-              subscriptionStatus: eventType === 'order.refunded' ? 'cancelled' : 'expired',
-            });
-            console.log(`Grow subscription ${eventType} for user ${user.id}`);
-          }
-          break;
-        }
-
-        case 'payment.failed':
-        case 'subscription.payment_failed': {
-          if (!customerEmail) {
-            return res.json({ received: true });
-          }
-
-          const user = await storage.getUserByEmail(customerEmail);
-          if (user) {
-            const paymentFailedAt = user.paymentFailedAt || new Date();
-            await storage.upsertUser({
-              id: user.id,
-              subscriptionStatus: 'past_due',
-              paymentFailedAt: paymentFailedAt,
-            });
-            console.log(`Grow payment failed for user ${user.id}`);
-          }
-          break;
-        }
-
-        default:
-          console.log(`Unhandled Grow event: ${eventType}`);
+      // Extract flow ID from payment description
+      // Format expected: "flow_UUID" or just the UUID in the description
+      let journeyId: string | null = null;
+      
+      // Try to extract UUID from description
+      const uuidMatch = paymentDesc.match(/flow_([a-f0-9-]{36})/i) || 
+                        paymentDesc.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+      if (uuidMatch) {
+        journeyId = uuidMatch[1];
       }
 
-      res.json({ received: true });
+      if (!payerEmail) {
+        console.log("Grow webhook: No payer email provided");
+        return res.json({ received: true, warning: "No payer email" });
+      }
+
+      if (!journeyId) {
+        console.log("Grow webhook: No journey ID found in payment description:", paymentDesc);
+        return res.json({ received: true, warning: "No journey ID in payment description" });
+      }
+
+      // Verify the journey exists
+      const journey = await storage.getJourney(journeyId);
+      if (!journey) {
+        console.log(`Grow webhook: Journey not found: ${journeyId}`);
+        return res.json({ received: true, warning: "Journey not found" });
+      }
+
+      // Check if participant already exists
+      let participant = await storage.getParticipantByEmail(journeyId, payerEmail);
+      
+      if (participant) {
+        // Participant already registered - just log the payment
+        console.log(`Grow webhook: Participant ${participant.id} already exists for journey ${journeyId}`);
+      } else {
+        // Create new participant
+        const accessToken = crypto.randomUUID();
+
+        participant = await storage.createParticipant({
+          journeyId,
+          email: payerEmail,
+          name: fullName,
+          accessToken,
+          currentDay: 1,
+        });
+        console.log(`Grow webhook: Created new participant ${participant.id} for journey ${journeyId}`);
+      }
+
+      // Send welcome email to participant with access link
+      try {
+        const { sendJourneyAccessEmail } = await import('./email');
+        const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+          ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
+          : 'https://www.flow83.com';
+        const accessLink = `${baseUrl}/p/${participant.accessToken}`;
+        
+        // Get mentor info
+        let mentorName = '';
+        if (journey.creatorId) {
+          const mentor = await storage.getUser(journey.creatorId);
+          mentorName = mentor?.firstName || '';
+        }
+
+        await sendJourneyAccessEmail({
+          participantEmail: payerEmail,
+          participantName: fullName.split(' ')[0] || 'משתתף/ת',
+          journeyName: journey.name,
+          mentorName,
+          journeyLink: accessLink,
+        });
+        console.log(`Grow webhook: Welcome email sent to ${payerEmail}`);
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
+        // Don't fail the webhook if email fails
+      }
+
+      res.json({ received: true, success: true, participantId: participant.id });
     } catch (error) {
       console.error("Grow webhook error:", error);
       res.status(500).json({ error: "Webhook processing failed" });
@@ -3872,20 +3837,22 @@ export async function registerRoutes(
         : `${baseUrl}/j/${id}`;
 
       // Send email to mentor
-      const mentor = await storage.getUser(journey.creatorId);
-      if (mentor?.email) {
-        try {
-          const { sendFlowApprovedEmail } = await import('./email');
-          await sendFlowApprovedEmail({
-            mentorEmail: mentor.email,
-            mentorName: mentor.firstName || 'מנטור',
-            flowName: journey.name,
-            miniSiteLink: miniSiteUrl
-          });
-          console.log(`Approval email sent to ${mentor.email}`);
-        } catch (emailError) {
-          console.error("Failed to send approval email:", emailError);
-          // Don't fail the request if email fails
+      if (journey.creatorId) {
+        const mentor = await storage.getUser(journey.creatorId);
+        if (mentor?.email) {
+          try {
+            const { sendFlowApprovedEmail } = await import('./email');
+            await sendFlowApprovedEmail({
+              mentorEmail: mentor.email,
+              mentorName: mentor.firstName || 'מנטור',
+              flowName: journey.name,
+              miniSiteLink: miniSiteUrl
+            });
+            console.log(`Approval email sent to ${mentor.email}`);
+          } catch (emailError) {
+            console.error("Failed to send approval email:", emailError);
+            // Don't fail the request if email fails
+          }
         }
       }
 
@@ -3918,6 +3885,9 @@ export async function registerRoutes(
       }
 
       // Get the mentor
+      if (!journey.creatorId) {
+        return res.status(400).json({ error: "Flow has no mentor assigned" });
+      }
       const mentor = await storage.getUser(journey.creatorId);
       if (!mentor) {
         return res.status(404).json({ error: "Mentor not found" });
