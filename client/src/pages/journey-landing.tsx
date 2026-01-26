@@ -120,8 +120,21 @@ export default function JourneyLandingPage() {
           // Store token for later verification
           localStorage.setItem("external_payment_token", data.token);
           localStorage.setItem("external_payment_return_url", data.returnUrl);
-          // Navigate to a waiting page instead of immediately going to success page
-          navigate(`/payment/external-pending?token=${data.token}&paymentUrl=${encodeURIComponent(data.externalPaymentUrl)}`);
+          
+          // Check if this is a Grow link (supports iframe)
+          const paymentUrl = data.externalPaymentUrl.toLowerCase();
+          const isGrowLink = paymentUrl.includes('pay.grow.link') || 
+                             paymentUrl.includes('grow.website') ||
+                             paymentUrl.includes('meshulam.co.il') || 
+                             paymentUrl.includes('grow.business');
+          
+          if (isGrowLink) {
+            // Grow supports iframe - open in embedded payment page
+            navigate(`/payment/grow?token=${data.token}&paymentUrl=${encodeURIComponent(data.externalPaymentUrl)}&returnUrl=${encodeURIComponent(data.returnUrl)}`);
+          } else {
+            // Other providers - use pending confirmation page
+            navigate(`/payment/external-pending?token=${data.token}&paymentUrl=${encodeURIComponent(data.externalPaymentUrl)}`);
+          }
         } else if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         }
