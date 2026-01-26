@@ -524,13 +524,19 @@
     "copied": "הועתק!",
     "viewLandingPage": "צפו בדף הנחיתה",
     "done": "סיום",
-    "publishNow": "פרסם",
-    "successTitle": "מזל טוב!",
-    "successDescription": "ה-Flow שלכם פורסם בהצלחה",
+    "publishNow": "שלח לאישור",
+    "successTitle": "קיבלנו!",
+    "successDescription": "ה-Flow שלכם נשלח לבדיקה. תקבלו מייל עם הלינק לפרסום תוך 24 שעות.",
+    "pendingApprovalTitle": "ה-Flow בבדיקה",
+    "pendingApprovalDescription": "ה-Flow שלכם ממתין לאישור. תקבלו מייל עם הלינק לפרסום תוך 24 שעות.",
+    "approvedTitle": "ה-Flow מאושר!",
+    "approvedDescription": "ה-Flow שלכם מאושר ומוכן לפרסום.",
     "linkCopied": "הועתק!",
     "backToFlows": "חזרה ל-Flows",
     "free": "חינם",
-    "paymentLink": "קישור לתשלום"
+    "paymentLink": "קישור לתשלום",
+    "step2TitleReview": "שלב 2: אישור פרטים",
+    "step2DescriptionReview": "בדקו שהפרטים נכונים לפני שליחה לאישור"
   },
   "termsModal": {
     "title": "ברוכים הבאים ל-Flow 83",

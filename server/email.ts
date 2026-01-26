@@ -960,3 +960,163 @@ export async function sendParticipantLimitNotification(params: ParticipantLimitN
     return false;
   }
 }
+
+// Admin notification when mentor submits flow for approval
+interface FlowApprovalRequestParams {
+  adminEmail: string;
+  mentorName: string;
+  mentorEmail: string;
+  flowName: string;
+  flowPrice: number;
+  flowId: string;
+  adminDashboardLink: string;
+}
+
+export async function sendFlowApprovalRequestEmail(params: FlowApprovalRequestParams): Promise<boolean> {
+  const { adminEmail, mentorName, mentorEmail, flowName, flowPrice, flowId, adminDashboardLink } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    const subject = `🔔 Flow חדש ממתין לאישור: ${flowName}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="he" dir="rtl">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 24px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Flow חדש ממתין לאישור</h1>
+          </div>
+          <div style="padding: 32px;">
+            <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <h2 style="color: #92400e; margin: 0 0 12px;">${flowName}</h2>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="color: #78716c;">
+                  <strong>מנטור:</strong> ${mentorName}
+                </div>
+                <div style="color: #78716c;">
+                  <strong>מייל:</strong> ${mentorEmail}
+                </div>
+                <div style="color: #78716c;">
+                  <strong>מחיר:</strong> ${flowPrice > 0 ? `₪${flowPrice}` : 'חינם'}
+                </div>
+              </div>
+            </div>
+
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              המנטור הגיש את ה-Flow לאישור. צריך להוסיף לינק תשלום של Grow ולשלוח למנטור.
+            </p>
+
+            <a href="${adminDashboardLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px;">
+              צפה בדשבורד אדמין
+            </a>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - Admin Notification
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject,
+      html
+    });
+
+    console.log('Flow approval request email sent to admin:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send flow approval request email:', error);
+    return false;
+  }
+}
+
+// Email to mentor when flow is approved with mini-site link
+interface FlowApprovedParams {
+  mentorEmail: string;
+  mentorName: string;
+  flowName: string;
+  miniSiteLink: string;
+}
+
+export async function sendFlowApprovedEmail(params: FlowApprovedParams): Promise<boolean> {
+  const { mentorEmail, mentorName, flowName, miniSiteLink } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    const subject = `✅ ה-Flow שלך אושר! הנה הלינק לפרסום: ${flowName}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="he" dir="rtl">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 24px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🎉 מזל טוב! ה-Flow שלך אושר</h1>
+          </div>
+          <div style="padding: 32px;">
+            <p style="color: #1e1b4b; font-size: 18px; margin: 0 0 16px;">
+              היי ${mentorName}!
+            </p>
+            
+            <p style="color: #475569; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+              ה-Flow שלך <strong>"${flowName}"</strong> אושר ומוכן לפרסום!
+              הנה הלינק למיני-סייט שלך. שתפו אותו עם הלקוחות שלכם:
+            </p>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <p style="color: #475569; font-size: 14px; margin: 0 0 12px; font-weight: 600;">
+                הלינק לפרסום:
+              </p>
+              <a href="${miniSiteLink}" style="color: #7c3aed; font-size: 16px; word-break: break-all; text-decoration: none;">
+                ${miniSiteLink}
+              </a>
+            </div>
+
+            <a href="${miniSiteLink}" style="display: block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 50px; text-align: center; font-weight: 600; font-size: 18px; margin-bottom: 16px;">
+              צפה במיני-סייט
+            </a>
+
+            <p style="color: #64748b; font-size: 14px; text-align: center; margin: 0;">
+              שתפו את הלינק ברשתות החברתיות, בקבוצות וואטסאפ או בכל מקום שמתאים לכם!
+            </p>
+          </div>
+          <div style="background: #f8fafc; padding: 20px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: mentorEmail,
+      subject,
+      html
+    });
+
+    console.log('Flow approved email sent to mentor:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send flow approved email:', error);
+    return false;
+  }
+}

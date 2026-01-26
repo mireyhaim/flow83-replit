@@ -72,7 +72,7 @@ async function adminFetch(url: string, options: RequestInit = {}): Promise<Respo
   });
 }
 
-type TabType = "dashboard" | "users" | "mentors" | "flows" | "withdrawals" | "refunds" | "payments" | "errors";
+type TabType = "dashboard" | "users" | "mentors" | "flows" | "pending-flows" | "withdrawals" | "refunds" | "payments" | "errors";
 
 interface AdminStats {
   totalUsers: number;
@@ -124,6 +124,18 @@ interface Flow {
   mentor: { firstName: string | null; lastName: string | null; email: string | null } | null;
   participantCount: number;
   completedCount: number;
+}
+
+interface PendingFlow {
+  id: string;
+  name: string;
+  price: number | null;
+  currency: string | null;
+  approvalStatus: string | null;
+  adminPaymentUrl: string | null;
+  submittedForApprovalAt: string | null;
+  shortCode: string | null;
+  mentor: { id: string; firstName: string | null; lastName: string | null; email: string | null } | null;
 }
 
 interface WithdrawalRequest {
@@ -198,6 +210,8 @@ export default function AdminPage() {
   const [selectedRefund, setSelectedRefund] = useState<RefundRequest | null>(null);
   const [actionForm, setActionForm] = useState({ reason: "", reference: "", notes: "" });
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [selectedPendingFlow, setSelectedPendingFlow] = useState<PendingFlow | null>(null);
+  const [paymentLinkInput, setPaymentLinkInput] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -307,6 +321,16 @@ export default function AdminPage() {
       return res.json();
     },
     enabled: isAuthenticated === true && activeTab === "flows",
+  });
+
+  const { data: pendingFlows, refetch: refetchPendingFlows } = useQuery<PendingFlow[]>({
+    queryKey: ["/api/admin/pending-flows"],
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/pending-flows");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true && (activeTab === "pending-flows" || activeTab === "dashboard"),
   });
 
   const { data: withdrawals, refetch: refetchWithdrawals } = useQuery<WithdrawalRequest[]>({
@@ -478,14 +502,16 @@ export default function AdminPage() {
 
   const pendingWithdrawals = withdrawals?.filter(w => w.status === "pending") || [];
   const pendingRefunds = refunds?.filter(r => r.status === "pending") || [];
+  const awaitingApprovalFlows = pendingFlows?.filter(f => f.approvalStatus === "pending_approval") || [];
   const newMentorsToday = platformStats?.newMentorsToday || 0;
-  const totalPendingNotifications = pendingWithdrawals.length + pendingRefunds.length + newMentorsToday;
+  const totalPendingNotifications = pendingWithdrawals.length + pendingRefunds.length + newMentorsToday + awaitingApprovalFlows.length;
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
     { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, badge: newMentorsToday },
     { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" /> },
+    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, badge: awaitingApprovalFlows.length },
     { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, badge: pendingWithdrawals.length },
     { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, badge: pendingRefunds.length },
     { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" /> },
@@ -493,10 +519,11 @@ export default function AdminPage() {
   ];
 
   const handleRefresh = () => {
-    if (activeTab === "dashboard") { refetchStats(); refetchPlatformStats(); refetchWithdrawals(); refetchRefunds(); }
+    if (activeTab === "dashboard") { refetchStats(); refetchPlatformStats(); refetchWithdrawals(); refetchRefunds(); refetchPendingFlows(); }
     if (activeTab === "users") refetchParticipants();
     if (activeTab === "mentors") refetchMentors();
     if (activeTab === "flows") refetchFlows();
+    if (activeTab === "pending-flows") refetchPendingFlows();
     if (activeTab === "withdrawals") refetchWithdrawals();
     if (activeTab === "refunds") refetchRefunds();
     if (activeTab === "payments") refetchPayments();
@@ -879,6 +906,71 @@ export default function AdminPage() {
                     <tr>
                       <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                         No flows found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === "pending-flows" && (
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="border-b border-slate-700">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Flow Name</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Price</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Submitted</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {pendingFlows?.map(pf => (
+                    <tr key={pf.id} className="hover:bg-slate-700/50">
+                      <td className="px-4 py-3 font-medium text-slate-200">{pf.name}</td>
+                      <td className="px-4 py-3 text-slate-200">
+                        <div>
+                          <p className="font-medium">{pf.mentor?.firstName || ""} {pf.mentor?.lastName || ""}</p>
+                          <p className="text-slate-400 text-xs">{pf.mentor?.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-200">
+                        {pf.price && pf.price > 0 ? `₪${pf.price}` : "Free"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400">
+                        {pf.submittedForApprovalAt ? new Date(pf.submittedForApprovalAt).toLocaleDateString('he-IL') : "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded text-xs font-medium",
+                          pf.approvalStatus === "pending_approval" && "bg-amber-900/50 text-amber-400",
+                          pf.approvalStatus === "approved" && "bg-green-900/50 text-green-400"
+                        )}>
+                          {pf.approvalStatus === "pending_approval" ? "Pending" : pf.approvalStatus === "approved" ? "Approved" : pf.approvalStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button
+                          size="sm"
+                          onClick={() => { 
+                            setSelectedPendingFlow(pf); 
+                            setPaymentLinkInput(pf.adminPaymentUrl || ""); 
+                          }}
+                          className="bg-violet-600 hover:bg-violet-700"
+                          data-testid={`button-review-flow-${pf.id}`}
+                        >
+                          Review
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!pendingFlows || pendingFlows.length === 0) && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                        No pending flows
                       </td>
                     </tr>
                   )}
@@ -1276,6 +1368,83 @@ export default function AdminPage() {
               disabled={updateRefundMutation.isPending}
             >
               Approve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedPendingFlow} onOpenChange={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); }}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Review Flow Approval</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {selectedPendingFlow?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-700/50 rounded-lg space-y-2">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Mentor:</span>
+                <span>{selectedPendingFlow?.mentor?.firstName} {selectedPendingFlow?.mentor?.lastName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Email:</span>
+                <span>{selectedPendingFlow?.mentor?.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Price:</span>
+                <span>{selectedPendingFlow?.price && selectedPendingFlow.price > 0 ? `₪${selectedPendingFlow.price}` : "Free"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Mini-Site Link:</span>
+                <span className="text-violet-400 text-sm">
+                  {selectedPendingFlow?.shortCode ? `/f/${selectedPendingFlow.shortCode}` : `/j/${selectedPendingFlow?.id}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-300">Grow Payment Link (required for paid flows)</Label>
+              <Input
+                value={paymentLinkInput}
+                onChange={(e) => setPaymentLinkInput(e.target.value)}
+                placeholder="https://grow.link/... or https://meshulam.co.il/..."
+                className="bg-slate-700 border-slate-600"
+                data-testid="input-admin-payment-link"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => { setSelectedPendingFlow(null); setPaymentLinkInput(""); }}
+              className="border-slate-600"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!selectedPendingFlow) return;
+                try {
+                  const res = await adminFetch(`/api/admin/flows/${selectedPendingFlow.id}/approve`, {
+                    method: "POST",
+                    body: JSON.stringify({ adminPaymentUrl: paymentLinkInput }),
+                  });
+                  if (!res.ok) throw new Error("Failed to approve");
+                  refetchPendingFlows();
+                  setSelectedPendingFlow(null);
+                  setPaymentLinkInput("");
+                } catch (error) {
+                  console.error("Failed to approve flow:", error);
+                }
+              }}
+              className="bg-violet-600 hover:bg-violet-700"
+              disabled={selectedPendingFlow?.price && selectedPendingFlow.price > 0 && !paymentLinkInput}
+              data-testid="button-approve-and-send"
+            >
+              Approve & Send to Mentor
             </Button>
           </DialogFooter>
         </DialogContent>

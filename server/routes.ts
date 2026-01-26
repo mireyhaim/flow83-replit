@@ -10,7 +10,7 @@ import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
-import { sendJourneyAccessEmail, sendNewParticipantNotification } from "./email";
+import { sendJourneyAccessEmail, sendNewParticipantNotification, sendFlowApprovalRequestEmail, sendFlowApprovedEmail } from "./email";
 import { processEmailNotifications, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -746,6 +746,66 @@ export async function registerRoutes(
       let updateData = { ...req.body };
       if (req.body.status === "published" && !existingJourney.shortCode) {
         updateData.shortCode = generateShortCode();
+      }
+
+      // Handle approval status change to pending_approval
+      if (req.body.approvalStatus === "pending_approval" && existingJourney.approvalStatus !== "pending_approval") {
+        updateData.submittedForApprovalAt = new Date();
+        
+        // Generate short code if not already set
+        if (!existingJourney.shortCode && !updateData.shortCode) {
+          updateData.shortCode = generateShortCode();
+        }
+        
+        // Generate landing page content if not already set
+        if (!existingJourney.landingPageContent) {
+          try {
+            const steps = await storage.getJourneySteps(req.params.id);
+            let mentorName = "";
+            if (existingJourney.creatorId) {
+              const mentor = await storage.getUser(existingJourney.creatorId);
+              mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() : "";
+            }
+            
+            const landingContent = await generateLandingPageContent({
+              name: existingJourney.name,
+              goal: existingJourney.goal || "",
+              audience: existingJourney.audience || "",
+              duration: existingJourney.duration || 7,
+              description: existingJourney.description || "",
+              mentorName,
+              language: existingJourney.language || undefined,
+              steps: steps.map(s => ({
+                title: s.title,
+                goal: s.goal || "",
+                explanation: s.explanation || "",
+              })),
+            });
+            updateData.landingPageContent = landingContent;
+          } catch (landingError) {
+            console.error("Failed to generate landing page content:", landingError);
+          }
+        }
+        
+        // Send email notification to admin
+        const baseUrl = getProductionBaseUrl();
+        const mentor = existingJourney.creatorId ? await storage.getUser(existingJourney.creatorId) : null;
+        const mentorName = mentor ? `${mentor.firstName || ""} ${mentor.lastName || ""}`.trim() : "Unknown";
+        const mentorEmail = mentor?.email || "";
+        
+        // Send to admin (using the ADMIN_USERNAME secret which should be admin email)
+        const adminEmail = process.env.ADMIN_USERNAME;
+        if (adminEmail) {
+          sendFlowApprovalRequestEmail({
+            adminEmail,
+            mentorName,
+            mentorEmail,
+            flowName: existingJourney.name,
+            flowPrice: req.body.price || existingJourney.price || 0,
+            flowId: req.params.id,
+            adminDashboardLink: `${baseUrl}/admin/ann83`
+          }).catch(err => console.error("Failed to send admin notification:", err));
+        }
       }
 
       // Generate landing page content when publishing for the first time
@@ -2480,8 +2540,9 @@ export async function registerRoutes(
       if (price > 0) {
         const baseUrl = `https://${req.get("host")}`;
         
-        // Check if mentor has configured external payment URL (PayPal/Stripe Payment Link)
-        if (journey.externalPaymentUrl) {
+        // Check if admin has configured a payment URL (Grow/Meshulam via manual approval)
+        const paymentUrl = journey.adminPaymentUrl || journey.externalPaymentUrl;
+        if (paymentUrl) {
           // Generate a unique token for this payment session
           const token = crypto.randomUUID();
           const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour expiry
@@ -2502,7 +2563,7 @@ export async function registerRoutes(
           res.json({ 
             requiresPayment: true,
             paymentType: "external",
-            externalPaymentUrl: journey.externalPaymentUrl,
+            externalPaymentUrl: paymentUrl,
             returnUrl, // Tell participant where to return after payment
             token,
           });
@@ -3761,6 +3822,79 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching flows:", error);
       res.status(500).json({ error: "Failed to fetch flows" });
+    }
+  });
+
+  // Admin pending flows list (pending approval)
+  app.get("/api/admin/pending-flows", isAdmin, async (req, res) => {
+    try {
+      const pendingFlows = await storage.getPendingFlows();
+      res.json(pendingFlows);
+    } catch (error) {
+      console.error("Error fetching pending flows:", error);
+      res.status(500).json({ error: "Failed to fetch pending flows" });
+    }
+  });
+
+  // Admin approve flow
+  app.post("/api/admin/flows/:id/approve", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { adminPaymentUrl } = req.body;
+
+      // Get the flow details
+      const journey = await storage.getJourney(parseInt(id));
+      if (!journey) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+
+      // For paid flows, payment link is required
+      if (journey.price && journey.price > 0 && !adminPaymentUrl) {
+        return res.status(400).json({ error: "Payment link is required for paid flows" });
+      }
+
+      // Get the mentor
+      const mentor = await storage.getUser(journey.creatorId);
+      if (!mentor) {
+        return res.status(404).json({ error: "Mentor not found" });
+      }
+
+      // Update the journey with approval
+      await storage.updateJourney(parseInt(id), {
+        approvalStatus: "approved",
+        adminPaymentUrl: adminPaymentUrl || null,
+        adminApprovedAt: new Date(),
+        sentToMentorAt: new Date(),
+      });
+
+      // Send email to mentor with mini-site link
+      if (mentor.email) {
+        try {
+          const { sendFlowApprovedEmail } = await import('./email');
+          const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+            ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
+            : 'https://flow83.com';
+          const miniSiteUrl = journey.shortCode 
+            ? `${baseUrl}/f/${journey.shortCode}`
+            : `${baseUrl}/j/${journey.id}`;
+          
+          await sendFlowApprovedEmail({
+            mentorEmail: mentor.email,
+            mentorName: mentor.firstName || mentor.email || 'מנטור',
+            flowName: journey.name,
+            miniSiteLink: miniSiteUrl
+          });
+        } catch (emailError) {
+          console.error("Error sending approval email:", emailError);
+        }
+      } else {
+        console.warn(`Mentor ${mentor.id} has no email, skipping approval notification`);
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error approving flow:", error);
+      res.status(500).json({ error: "Failed to approve flow" });
     }
   });
 

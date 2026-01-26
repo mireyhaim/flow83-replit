@@ -514,9 +514,13 @@
     "copied": "Copied!",
     "viewLandingPage": "View Landing Page",
     "done": "Done",
-    "publishNow": "Publish",
-    "successTitle": "Congratulations!",
-    "successDescription": "Your Flow has been published successfully",
+    "publishNow": "Submit for Review",
+    "successTitle": "Received!",
+    "successDescription": "Your Flow has been submitted for review. You'll receive an email with your publishing link within 24 hours.",
+    "pendingApprovalTitle": "Under Review",
+    "pendingApprovalDescription": "Your Flow is pending approval. You'll receive an email with your publishing link within 24 hours.",
+    "approvedTitle": "Flow Approved!",
+    "approvedDescription": "Your Flow is approved and ready for publishing.",
     "linkCopied": "Copied!",
     "backToFlows": "Back to Flows",
     "free": "Free",
@@ -527,7 +531,9 @@
     "growLinkPlaceholder": "https://pay.grow.link/...",
     "otherPaymentOption": "Other payment method",
     "otherPaymentDescription": "Use an existing payment link from PayPal, Stripe, bit, PayBox or any other provider",
-    "otherPaymentPlaceholder": "https://paypal.me/... or bit link"
+    "otherPaymentPlaceholder": "https://paypal.me/... or bit link",
+    "step2TitleReview": "Step 2: Confirm Details",
+    "step2DescriptionReview": "Review the details before submitting for approval"
   },
   "termsModal": {
     "title": "Welcome to Flow 83",

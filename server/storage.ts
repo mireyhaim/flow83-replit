@@ -118,6 +118,7 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   getAllParticipantsWithDetails(): Promise<(Participant & { journey: Journey | null; user: User | null })[]>;
   getAllJourneysWithStats(): Promise<(Journey & { mentor: User | null; participantCount: number; completedCount: number })[]>;
+  getPendingFlows(): Promise<(Journey & { mentor: User | null })[]>;
   getAdminStats(): Promise<{
     totalUsers: number;
     activeUsers: number;
@@ -825,6 +826,25 @@ export class DatabaseStorage implements IStorage {
     }));
 
     return results;
+  }
+
+  async getPendingFlows(): Promise<(Journey & { mentor: User | null })[]> {
+    const pendingFlows = await db
+      .select({
+        journey: journeys,
+        mentor: users,
+      })
+      .from(journeys)
+      .leftJoin(users, eq(journeys.creatorId, users.id))
+      .where(
+        sql`${journeys.approvalStatus} IN ('pending_approval', 'approved')`
+      )
+      .orderBy(desc(journeys.submittedForApprovalAt));
+
+    return pendingFlows.map((r) => ({
+      ...r.journey,
+      mentor: r.mentor,
+    }));
   }
 
   async getAdminStats(): Promise<{

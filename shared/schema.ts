@@ -84,6 +84,13 @@ export const journeys = pgTable("journeys", {
   // Soft delete / archive functionality
   archivedAt: timestamp("archived_at"), // When the journey was archived (null = not archived)
   archivedBy: varchar("archived_by").references(() => users.id), // Who archived it
+  // Admin approval workflow for payment links
+  approvalStatus: text("approval_status").default("not_submitted"), // 'not_submitted' | 'pending_approval' | 'approved' | 'rejected'
+  adminPaymentUrl: text("admin_payment_url"), // Payment URL set by admin (Grow link)
+  submittedForApprovalAt: timestamp("submitted_for_approval_at"), // When mentor submitted for approval
+  adminApprovedAt: timestamp("admin_approved_at"), // When admin approved
+  adminApprovedBy: varchar("admin_approved_by").references(() => users.id), // Which admin approved
+  sentToMentorAt: timestamp("sent_to_mentor_at"), // When approval email was sent to mentor
 });
 
 export const insertJourneySchema = createInsertSchema(journeys).omit({
