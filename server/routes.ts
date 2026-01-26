@@ -3853,10 +3853,11 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Payment link is required for paid flows" });
       }
 
-      // Update the journey - set payment URL but don't publish yet (will be published when email is sent)
+      // Update the journey - set payment URL AND publish immediately so mini-site works
       await storage.updateJourney(id, {
         adminPaymentUrl: adminPaymentUrl || null,
         adminApprovedAt: new Date(),
+        status: "published",
       });
 
       // Get the updated journey to return the correct link
