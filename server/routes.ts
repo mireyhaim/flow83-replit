@@ -3853,9 +3853,8 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Payment link is required for paid flows" });
       }
 
-      // Update the journey - publish it and set payment URL
+      // Update the journey - set payment URL but don't publish yet (will be published when email is sent)
       await storage.updateJourney(parseInt(id), {
-        status: "published",
         adminPaymentUrl: adminPaymentUrl || null,
         adminApprovedAt: new Date(),
       });
@@ -3887,8 +3886,8 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Flow not found" });
       }
 
-      // Guard: Flow must be published (activated) before approval
-      if (journey.status !== "published") {
+      // Guard: Flow must be activated before approval (check if adminApprovedAt is set)
+      if (!journey.adminApprovedAt) {
         return res.status(400).json({ error: "Flow must be activated first" });
       }
 
@@ -3903,8 +3902,9 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Mentor not found" });
       }
 
-      // Update the journey with final approval
+      // Update the journey with final approval - now publish the flow
       await storage.updateJourney(parseInt(id), {
+        status: "published",
         approvalStatus: "approved",
         sentToMentorAt: new Date(),
       });
