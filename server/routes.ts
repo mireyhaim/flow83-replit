@@ -3843,7 +3843,7 @@ export async function registerRoutes(
       const { adminPaymentUrl } = req.body;
 
       // Get the flow details
-      const journey = await storage.getJourney(parseInt(id));
+      const journey = await storage.getJourney(id);
       if (!journey) {
         return res.status(404).json({ error: "Flow not found" });
       }
@@ -3854,13 +3854,13 @@ export async function registerRoutes(
       }
 
       // Update the journey - set payment URL but don't publish yet (will be published when email is sent)
-      await storage.updateJourney(parseInt(id), {
+      await storage.updateJourney(id, {
         adminPaymentUrl: adminPaymentUrl || null,
         adminApprovedAt: new Date(),
       });
 
       // Get the updated journey to return the correct link
-      const updatedJourney = await storage.getJourney(parseInt(id));
+      const updatedJourney = await storage.getJourney(id);
       const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
         ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
         : 'https://flow83.com';
