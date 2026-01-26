@@ -1462,13 +1462,16 @@ export default function AdminPage() {
             {!flowActivated ? (
               <Button
                 onClick={async () => {
+                  console.log("Button clicked! selectedPendingFlow:", selectedPendingFlow?.id, "paymentLinkInput:", paymentLinkInput);
                   if (!selectedPendingFlow) return;
                   setIsActivating(true);
+                  console.log("Starting activate request...");
                   try {
                     const res = await adminFetch(`/api/admin/flows/${selectedPendingFlow.id}/activate`, {
                       method: "POST",
                       body: JSON.stringify({ adminPaymentUrl: paymentLinkInput }),
                     });
+                    console.log("Activate response:", res.status, res.ok);
                     if (!res.ok) {
                       const errorData = await res.json().catch(() => ({}));
                       throw new Error(errorData.error || "Failed to activate");
