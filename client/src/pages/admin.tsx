@@ -1383,7 +1383,9 @@ export default function AdminPage() {
           <DialogHeader>
             <DialogTitle>{flowActivated ? "צפייה ואישור" : "הפעלת מיני-סייט"}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              {selectedPendingFlow?.name}
+              <span className="font-medium text-white">{selectedPendingFlow?.name}</span>
+              <span className="mx-2">•</span>
+              <span>{selectedPendingFlow?.mentor?.firstName} {selectedPendingFlow?.mentor?.lastName}</span>
             </DialogDescription>
           </DialogHeader>
           
