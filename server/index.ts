@@ -154,14 +154,41 @@ async function initStripe() {
 
   const port = parseInt(process.env.PORT || "5000", 10);
   
-  // Handle server errors gracefully
+  // Graceful shutdown handler
+  const gracefulShutdown = (signal: string) => {
+    log(`Received ${signal}, shutting down gracefully...`, 'express');
+    httpServer.close(() => {
+      log('Server closed', 'express');
+      process.exit(0);
+    });
+    
+    // Force close after 5 seconds
+    setTimeout(() => {
+      log('Forcing shutdown...', 'express');
+      process.exit(1);
+    }, 5000);
+  };
+  
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  
+  // Handle server errors gracefully with limited retries
+  let retryCount = 0;
+  const maxRetries = 5;
+  
   httpServer.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
-      log(`Port ${port} is busy, retrying in 1 second...`, 'express');
-      setTimeout(() => {
-        httpServer.close();
-        httpServer.listen({ port, host: "0.0.0.0", reusePort: true });
-      }, 1000);
+      retryCount++;
+      if (retryCount <= maxRetries) {
+        log(`Port ${port} is busy, attempt ${retryCount}/${maxRetries}. Retrying in 2 seconds...`, 'express');
+        setTimeout(() => {
+          httpServer.close();
+          httpServer.listen({ port, host: "0.0.0.0" });
+        }, 2000);
+      } else {
+        log(`Port ${port} still busy after ${maxRetries} attempts. Exiting...`, 'express');
+        process.exit(1);
+      }
     } else {
       log(`Server error: ${error.message}`, 'express');
       throw error;
@@ -172,7 +199,6 @@ async function initStripe() {
     {
       port,
       host: "0.0.0.0",
-      reusePort: true,
     },
     () => {
       log(`serving on port ${port}`);
