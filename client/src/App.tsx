@@ -57,6 +57,7 @@ import PaymentsPage from "@/pages/payments";
 import SelfBillingTermsPage from "@/pages/self-billing-terms";
 import ParticipantsPage from "@/pages/participants";
 import MentorTermsPage from "@/pages/mentor-terms";
+import SubscriptionActivatePage from "@/pages/subscription-activate";
 
 function Router() {
   return (
@@ -88,6 +89,7 @@ function Router() {
       <Route path="/payment/external-success" component={ExternalPaymentSuccessPage} />
       <Route path="/payment/grow" component={GrowPaymentIframePage} />
       <Route path="/subscription/success" component={SubscriptionSuccessPage} />
+      <Route path="/subscription/activate/:token" component={SubscriptionActivatePage} />
       <Route path="/start-flow" component={StartFlowPage} />
       
       {/* New routes */}

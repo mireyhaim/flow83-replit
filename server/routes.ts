@@ -3764,7 +3764,7 @@ export async function registerRoutes(
         const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
           ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
           : 'https://www.flow83.com';
-        const activationLink = `${baseUrl}/activate/${activationToken}`;
+        const activationLink = `${baseUrl}/subscription/activate/${activationToken}`;
 
         await sendSubscriptionActivationEmail({
           userEmail: payerEmail,
