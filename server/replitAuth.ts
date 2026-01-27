@@ -62,19 +62,22 @@ async function upsertUser(claims: any) {
   const existingUser = await storage.getUser(userId);
   const isNewUser = !existingUser;
   
-  // For existing users, preserve their custom profile data
-  // Only use claims data if the user hasn't set their own values
-  const firstName = existingUser?.firstName || claimsFirstName;
-  const lastName = existingUser?.lastName || claimsLastName;
-  const profileImageUrl = existingUser?.profileImageUrl || claimsProfileImage;
-  
-  await storage.upsertUser({
-    id: userId,
-    email, // Always update email from auth
-    firstName,
-    lastName,
-    profileImageUrl,
-  });
+  if (existingUser) {
+    // For existing users, ONLY update email (always from auth)
+    // Do NOT overwrite firstName, lastName, or profileImageUrl - preserve user's custom data
+    await storage.updateUser(userId, {
+      email,
+    });
+  } else {
+    // For new users, create with all claims data
+    await storage.upsertUser({
+      id: userId,
+      email,
+      firstName: claimsFirstName,
+      lastName: claimsLastName,
+      profileImageUrl: claimsProfileImage,
+    });
+  }
   
   // Send welcome email to new mentors
   if (isNewUser && email) {
@@ -84,7 +87,7 @@ async function upsertUser(claims: any) {
     
     sendMentorWelcomeEmail({
       mentorEmail: email,
-      mentorName: firstName || 'מנטור',
+      mentorName: claimsFirstName || 'מנטור',
       dashboardLink,
       language: 'he'
     }).catch(err => console.error('Failed to send mentor welcome email:', err));
