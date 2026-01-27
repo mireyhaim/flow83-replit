@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Mail, Globe, Save, CreditCard, XCircle, Camera, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Loader2, Mail, Globe, Save, CreditCard, XCircle, Camera, CheckCircle2, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -421,7 +421,13 @@ export default function ProfilePage() {
                     <CreditCard className="h-5 w-5 text-emerald-500" />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-900">{t('profilePage.freePlan')}</p>
+                    <p className="font-medium text-slate-900">
+                      {(user as any)?.subscriptionPlan === 'scale' 
+                        ? (i18n.language === 'he' ? 'מסלול עסק' : 'Scale Plan')
+                        : (user as any)?.subscriptionPlan === 'pro'
+                        ? (i18n.language === 'he' ? 'מסלול מקצועי' : 'Pro Plan')
+                        : (i18n.language === 'he' ? 'מסלול התחלה' : 'Free Plan')}
+                    </p>
                     <p className="text-xs text-slate-400">{t('profilePage.currentlyActive')}</p>
                   </div>
                   <span className="ms-auto text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium">
@@ -429,9 +435,15 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {t('profilePage.premiumPlansComingSoon')}
-                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between"
+                  onClick={() => setLocation('/pricing')}
+                  data-testid="button-change-plan"
+                >
+                  {i18n.language === 'he' ? 'שנה מסלול' : 'Change Plan'}
+                  <ArrowUpRight className="h-4 w-4" />
+                </Button>
 
                 <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                   <AlertDialogTrigger asChild>
