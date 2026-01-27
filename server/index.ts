@@ -154,19 +154,36 @@ async function initStripe() {
 
   const port = parseInt(process.env.PORT || "5000", 10);
   
+  // Track active connections for graceful shutdown
+  const activeConnections = new Map<any, boolean>();
+  httpServer.on('connection', (conn) => {
+    activeConnections.set(conn, true);
+    conn.on('close', () => activeConnections.delete(conn));
+  });
+  
   // Graceful shutdown handler
   const gracefulShutdown = (signal: string) => {
     log(`Received ${signal}, shutting down gracefully...`, 'express');
+    
+    // Stop accepting new connections
     httpServer.close(() => {
       log('Server closed', 'express');
       process.exit(0);
     });
     
-    // Force close after 5 seconds
+    // Close all active connections
+    activeConnections.forEach((_, conn) => {
+      conn.end();
+    });
+    
+    // Force close after 3 seconds
     setTimeout(() => {
-      log('Forcing shutdown...', 'express');
+      log('Forcing shutdown, closing all connections...', 'express');
+      activeConnections.forEach((_, conn) => {
+        conn.destroy();
+      });
       process.exit(1);
-    }, 5000);
+    }, 3000);
   };
   
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
