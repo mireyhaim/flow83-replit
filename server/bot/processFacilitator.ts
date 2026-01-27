@@ -1270,51 +1270,82 @@ Offer simpler steps OR example answer OR format template.`;
 
     case "CLOSURE":
       const isHebrewClosure = dayPlan.language === "hebrew";
-      return `Generate a warm CLOSURE message for Day ${dayPlan.day}.
+      return `Generate a warm, personal CLOSURE message for Day ${dayPlan.day}.
 
 The user just completed the task. Their response: "${userMessage}"
 
-YOUR JOB - TWO PARTS:
-
-PART 1 - SUMMARY (start with excitement):
-${isHebrewClosure ? '"מעולה!"' : '"Great!"'} + summarize the insight they discovered today in YOUR OWN words.
-DON'T copy-paste their words literally in quotes - that sounds robotic. Paraphrase naturally.
-
-PART 2 - INVITATION TO ADD MORE:
-End with an open question: ${isHebrewClosure ? '"יש לך מה להוסיף?"' : '"Is there anything you\'d like to add?"'}
+YOUR JOB - CREATE A MEANINGFUL DAY REFLECTION:
 
 ${isHebrewClosure ? `
-BAD EXAMPLE (robotic repetition):
-"את זיהית ש'כשחברה קונה בגדים ואת לא' זה לא סתם קנאה." - copying in quotes sounds like a robot!
+**מבנה הסיכום:**
 
-GOOD EXAMPLE (natural paraphrase):
-User said: "שמתי לב שכשחברה שלי קונה בגדים אני מרגישה ריקנות"
-Response: "מעולה! וזה מה שגילינו היום - כשאת רואה מישהי אחרת קונה לעצמה משהו, עולה תחושה של ריקנות. לא סתם קנאה - משהו עמוק יותר.
+1. **פתיחה עם התלהבות אמיתית** (משפט אחד)
+   "מעולה!" או "יפה!" - הכרה בעבודה שנעשתה
 
-לשים לב לזה ולהגיד את זה בקול רם - זו עבודה לא פשוטה. ועשית אותה היום.
+2. **שיקוף המסע של היום** (3-4 משפטים)
+   סכמי מה עברתם יחד:
+   - איפה התחלתם (מה היה הקושי/השאלה הראשונית)
+   - מה התגלה בדרך (התובנות שעלו)
+   - איפה הגעתם (ההבנה החדשה)
+   
+   דוגמה:
+   "התחלנו עם התחושה הזו של 'משהו לא עובד לי'. דרך הדוגמאות שנתת - על העבודה, על הזוגיות - התחיל להתבהר דפוס: כל פעם שמשהו חשוב מגיע, עולה קול שאומר 'את לא מספיק טובה'. היום שמת על זה אור."
+
+3. **הכרה במאמץ** (משפט אחד)
+   לשים מילים על דברים כאלה - זו אומץ.
+
+4. **שאלה פתוחה לסיום**
+   "יש לך מה להוסיף?"
+
+**דוגמה מלאה:**
+"יפה!
+
+התחלנו היום עם התחושה הזו שמשהו עוצר אותך. דרך מה ששיתפת על הבוס ועל הילדות, התחיל להתבהר דפוס - כל פעם שיש סיכוי להצליח, עולה קול פנימי שאומר 'את לא ראויה'. היום זיהינו אותו יחד ונתנו לו שם.
+
+להסתכל על זה בגובה העיניים - זה לא פשוט. ועשית את זה.
 
 יש לך מה להוסיף?"
 ` : `
-BAD EXAMPLE (robotic repetition):
-"You identified that 'when a friend buys clothes and you don't' it's not envy." - copying in quotes sounds like a robot!
+**SUMMARY STRUCTURE:**
 
-GOOD EXAMPLE (natural paraphrase):
-User said: "I noticed when my friend buys clothes I feel empty"
-Response: "Great! Here's what we discovered today - when you see someone else buying something for themselves, there's a feeling of emptiness. Not just envy - something deeper.
+1. **Opening with genuine excitement** (one sentence)
+   "Great!" or "Beautiful!" - recognition of the work done
 
-Noticing this and saying it out loud - that's not easy work. And you did it today.
+2. **Reflecting on today's journey** (3-4 sentences)
+   Summarize what you went through together:
+   - Where you started (the initial struggle/question)
+   - What emerged along the way (the insights that came up)
+   - Where you arrived (the new understanding)
+   
+   Example:
+   "We started with that feeling of 'something's not working for me'. Through the examples you shared - about work, about relationships - a pattern started to emerge: every time something important comes up, a voice says 'you're not good enough'. Today you shone a light on it."
+
+3. **Acknowledging the effort** (one sentence)
+   Putting words on things like this takes courage.
+
+4. **Open question to close**
+   "Is there anything you'd like to add?"
+
+**FULL EXAMPLE:**
+"Great!
+
+We started today with that feeling that something's holding you back. Through what you shared about your boss and about childhood, a pattern started to emerge - every time there's a chance to succeed, an inner voice says 'you're not worthy'. Today we identified it together and gave it a name.
+
+Looking at this head-on - that's not easy. And you did it.
 
 Is there anything you'd like to add?"
 `}
 
 CONTENT TO WEAVE:
 - Day goal: ${dayPlan.day_goal}
+- Day title: ${dayPlan.day_title}
 
 RULES:
-- Start with excitement (מעולה/Great)
 - Paraphrase naturally (DON'T copy-paste their words in quotes)
+- Reflect the JOURNEY - start, middle, end
+- Be specific to what THEY shared (not generic)
 - Acknowledge the emotional effort they made
-- MAX 200 words
+- MAX 250 words
 - End with invitation to add more
 - NO fake praise, NO "great job" at the end
 
