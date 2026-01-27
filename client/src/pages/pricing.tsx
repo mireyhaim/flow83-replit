@@ -19,8 +19,7 @@ export default function PricingPage() {
     } else if (plan === "pro") {
       window.open("https://pay.grow.link/54d615f118268848c0362dcce29d9342-MzAxMzg1NA", "_blank");
     } else if (plan === "scale") {
-      // Scale payment link - to be added
-      window.open("https://pay.grow.link/SCALE_LINK_HERE", "_blank");
+      window.open("https://pay.grow.link/0cd88fd0e903238964074836c355c761-MzAxNDM2OA", "_blank");
     }
   };
 

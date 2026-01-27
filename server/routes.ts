@@ -3678,6 +3678,102 @@ export async function registerRoutes(
     }
   });
 
+  // Grow webhook for mentor subscription payments (Pro/Scale plans)
+  // Expected payload: { webhookKey, payerEmail, fullName, paymentDesc, paymentSum, transactionCode, ... }
+  // paymentDesc should contain 'plan_pro' or 'plan_scale' to identify the plan
+  app.post("/api/webhooks/grow/subscription", async (req, res) => {
+    try {
+      const payload = req.body;
+      console.log("Grow subscription webhook received:", JSON.stringify(payload, null, 2));
+
+      // Verify webhook key
+      const webhookKey = payload.webhookKey;
+      const expectedKey = process.env.GROW_WEBHOOK_KEY;
+      
+      if (expectedKey && webhookKey !== expectedKey) {
+        console.error("Invalid Grow subscription webhook key");
+        return res.status(403).json({ error: "Invalid webhook key" });
+      }
+
+      // Extract payer info
+      const payerEmail = payload.payerEmail || payload.email;
+      const fullName = payload.fullName || payload.payer_name || '';
+      const paymentDesc = payload.paymentDesc || payload.description || '';
+      const transactionCode = payload.transactionCode || payload.transaction_id || '';
+
+      if (!payerEmail) {
+        console.error("Grow subscription webhook: No email provided");
+        return res.status(400).json({ error: "Payer email is required" });
+      }
+
+      // Determine which plan was purchased based on description
+      let planType: 'pro' | 'business' | null = null;
+      const descLower = paymentDesc.toLowerCase();
+      
+      if (descLower.includes('plan_scale') || descLower.includes('scale')) {
+        planType = 'business'; // Scale = business tier
+      } else if (descLower.includes('plan_pro') || descLower.includes('pro')) {
+        planType = 'pro';
+      }
+
+      if (!planType) {
+        console.error("Grow subscription webhook: Could not determine plan type from description:", paymentDesc);
+        return res.status(400).json({ error: "Could not determine subscription plan from payment description" });
+      }
+
+      console.log(`Grow subscription webhook: Activating ${planType} plan for ${payerEmail}`);
+
+      // Find user by email
+      let user = await storage.getUserByEmail(payerEmail);
+
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      if (!user) {
+        // Create new user with subscription using upsert
+        user = await storage.upsertUser({
+          id: crypto.randomUUID(),
+          email: payerEmail,
+          firstName,
+          lastName,
+          subscriptionPlan: planType,
+          subscriptionStatus: 'active',
+          subscriptionProvider: 'grow',
+          planChangedAt: new Date(),
+        });
+        console.log(`Grow subscription webhook: Created new user ${user.id} with ${planType} plan`);
+      } else {
+        // Update existing user's subscription
+        await storage.updateUser(user.id, {
+          subscriptionPlan: planType,
+          subscriptionStatus: 'active',
+          subscriptionProvider: 'grow',
+          planChangedAt: new Date(),
+        });
+        console.log(`Grow subscription webhook: Updated user ${user.id} to ${planType} plan`);
+      }
+
+      // Send confirmation email
+      try {
+        const { sendSubscriptionConfirmationEmail } = await import('./email');
+        await sendSubscriptionConfirmationEmail({
+          userEmail: payerEmail,
+          userName: firstName || 'מנטור',
+          planName: planType === 'business' ? 'Scale' : 'Pro',
+        });
+        console.log(`Grow subscription webhook: Confirmation email sent to ${payerEmail}`);
+      } catch (emailError) {
+        console.error("Failed to send subscription confirmation email:", emailError);
+      }
+
+      res.json({ received: true, success: true, plan: planType, userId: user?.id });
+    } catch (error) {
+      console.error("Grow subscription webhook error:", error);
+      res.status(500).json({ error: "Subscription webhook processing failed" });
+    }
+  });
+
   // ============ ADMIN ROUTES ============
   // Simple admin authentication with username/password from secrets
   const adminSessions = new Set<string>();
