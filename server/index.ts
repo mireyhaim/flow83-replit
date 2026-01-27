@@ -6,6 +6,8 @@ import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
 import { startEmailCron } from "./emailCron";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +27,37 @@ export function log(message: string, source = "express") {
   });
 
   console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+const RLS_TABLES = [
+  "users", "sessions", "journeys", "journey_steps", "journey_blocks",
+  "journey_messages", "journey_feedback", "participants", "payments",
+  "user_day_state", "activity_events", "notification_settings",
+  "external_payment_sessions", "system_errors", "invoices",
+  "mentor_business_profiles", "mentor_wallets", "wallet_transactions",
+  "withdrawal_requests", "refund_requests"
+];
+
+async function initRLS() {
+  log('Ensuring RLS is enabled on all tables...', 'rls');
+  
+  for (const table of RLS_TABLES) {
+    try {
+      await db.execute(sql.raw(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`));
+      
+      const policyName = `service_role_all_${table}`;
+      await db.execute(sql.raw(`DROP POLICY IF EXISTS ${policyName} ON public.${table}`));
+      await db.execute(sql.raw(
+        `CREATE POLICY ${policyName} ON public.${table} FOR ALL USING (current_setting('app.role', true) = 'service')`
+      ));
+    } catch (error: any) {
+      if (!error.message?.includes("does not exist")) {
+        log(`RLS warning for ${table}: ${error.message}`, 'rls');
+      }
+    }
+  }
+  
+  log('RLS enabled on all tables', 'rls');
 }
 
 async function initStripe() {
@@ -67,6 +100,7 @@ async function initStripe() {
 }
 
 (async () => {
+  await initRLS();
   await initStripe();
 
   app.post(
