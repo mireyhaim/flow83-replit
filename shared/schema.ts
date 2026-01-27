@@ -49,6 +49,9 @@ export const users = pgTable("users", {
   paymentFailedAt: timestamp("payment_failed_at"), // When payment failed - used for 5-day grace period
   lastParticipantThresholdNotified: integer("last_participant_threshold_notified"), // 15, 18, or 20 - last threshold we notified about
   termsAcceptedAt: timestamp("terms_accepted_at"), // When user accepted Terms of Service and Privacy Policy
+  subscriptionActivationToken: varchar("subscription_activation_token").unique(), // Magic link token for subscription activation
+  subscriptionActivationTokenExpiresAt: timestamp("subscription_activation_token_expires_at"),
+  pendingSubscriptionPlan: varchar("pending_subscription_plan"), // Plan waiting to be activated via magic link ('pro' | 'business')
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

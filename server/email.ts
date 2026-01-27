@@ -1203,3 +1203,95 @@ export async function sendSubscriptionConfirmationEmail(params: SubscriptionConf
     return false;
   }
 }
+
+interface SubscriptionActivationParams {
+  userEmail: string;
+  userName: string;
+  planName: string;
+  activationLink: string;
+}
+
+export async function sendSubscriptionActivationEmail(params: SubscriptionActivationParams): Promise<boolean> {
+  const { userEmail, userName, planName, activationLink } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    const subject = `הפעילו את מסלול ${planName} שלכם ב-Flow83`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="background: rgba(30, 27, 75, 0.8); border-radius: 24px; padding: 40px; border: 1px solid rgba(139, 92, 246, 0.3); backdrop-filter: blur(10px);">
+            
+            <div style="text-align: center; margin-bottom: 32px;">
+              <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+              <h1 style="color: #f8fafc; font-size: 28px; margin: 0 0 8px 0; font-weight: 700;">
+                התשלום התקבל בהצלחה!
+              </h1>
+              <p style="color: #a78bfa; font-size: 18px; margin: 0;">
+                ${userName}, רכשת את מסלול ${planName}
+              </p>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.15); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(139, 92, 246, 0.3); text-align: center;">
+              <p style="color: #e2e8f0; font-size: 16px; margin: 0 0 8px 0;">
+                לחצו על הכפתור כדי להפעיל את המנוי ולהיכנס לדשבורד
+              </p>
+              <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+                הקישור תקף ל-7 ימים
+              </p>
+            </div>
+
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${activationLink}" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); color: white; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);">
+                להפעיל את המנוי שלי →
+              </a>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.1); border-radius: 16px; padding: 20px; margin-top: 24px; border: 1px solid rgba(139, 92, 246, 0.2);">
+              <h3 style="color: #c4b5fd; font-size: 16px; margin: 0 0 12px 0;">מה כלול במסלול ${planName}:</h3>
+              <ul style="color: #e2e8f0; font-size: 14px; line-height: 1.8; margin: 0; padding-right: 20px;">
+                <li>Flows ללא הגבלה</li>
+                <li>משתתפים ללא הגבלה</li>
+                <li>צ'אט AI אישי למשתתפים</li>
+                <li>עמלה מופחתת על כל משתתף</li>
+              </ul>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 14px; text-align: center; margin: 24px 0 0 0;">
+              יש שאלות? אנחנו כאן בשבילך.<br>
+              <a href="mailto:support@flow83.com" style="color: #a78bfa;">support@flow83.com</a>
+            </p>
+          </div>
+
+          <div style="text-align: center; padding: 24px 0;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              © Flow 83 - פלטפורמה ליצירת תהליכי טרנספורמציה
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: userEmail,
+      subject,
+      html
+    });
+
+    console.log('Subscription activation email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send subscription activation email:', error);
+    return false;
+  }
+}

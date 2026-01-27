@@ -3721,9 +3721,13 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Could not determine subscription plan from payment description" });
       }
 
-      console.log(`Grow subscription webhook: Activating ${planType} plan for ${payerEmail}`);
+      console.log(`Grow subscription webhook: Creating activation token for ${planType} plan, email: ${payerEmail}`);
 
-      // Find user by email
+      // Generate activation token
+      const activationToken = crypto.randomUUID();
+      const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Find or create user by email
       let user = await storage.getUserByEmail(payerEmail);
 
       const nameParts = fullName.trim().split(' ');
@@ -3731,46 +3735,146 @@ export async function registerRoutes(
       const lastName = nameParts.slice(1).join(' ') || '';
 
       if (!user) {
-        // Create new user with subscription using upsert
+        // Create new user with pending subscription
         user = await storage.upsertUser({
           id: crypto.randomUUID(),
           email: payerEmail,
           firstName,
           lastName,
-          subscriptionPlan: planType,
-          subscriptionStatus: 'active',
+          subscriptionActivationToken: activationToken,
+          subscriptionActivationTokenExpiresAt: tokenExpiresAt,
+          pendingSubscriptionPlan: planType,
           subscriptionProvider: 'grow',
-          planChangedAt: new Date(),
         });
-        console.log(`Grow subscription webhook: Created new user ${user.id} with ${planType} plan`);
+        console.log(`Grow subscription webhook: Created new user ${user.id} with activation token`);
       } else {
-        // Update existing user's subscription
+        // Update existing user with activation token
         await storage.updateUser(user.id, {
-          subscriptionPlan: planType,
-          subscriptionStatus: 'active',
+          subscriptionActivationToken: activationToken,
+          subscriptionActivationTokenExpiresAt: tokenExpiresAt,
+          pendingSubscriptionPlan: planType,
           subscriptionProvider: 'grow',
-          planChangedAt: new Date(),
         });
-        console.log(`Grow subscription webhook: Updated user ${user.id} to ${planType} plan`);
+        console.log(`Grow subscription webhook: Updated user ${user.id} with activation token`);
       }
 
-      // Send confirmation email
+      // Send activation email with magic link
       try {
-        const { sendSubscriptionConfirmationEmail } = await import('./email');
-        await sendSubscriptionConfirmationEmail({
+        const { sendSubscriptionActivationEmail } = await import('./email');
+        const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] 
+          ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`
+          : 'https://www.flow83.com';
+        const activationLink = `${baseUrl}/activate/${activationToken}`;
+
+        await sendSubscriptionActivationEmail({
           userEmail: payerEmail,
           userName: firstName || 'מנטור',
           planName: planType === 'business' ? 'Scale' : 'Pro',
+          activationLink,
         });
-        console.log(`Grow subscription webhook: Confirmation email sent to ${payerEmail}`);
+        console.log(`Grow subscription webhook: Activation email sent to ${payerEmail}`);
       } catch (emailError) {
-        console.error("Failed to send subscription confirmation email:", emailError);
+        console.error("Failed to send subscription activation email:", emailError);
       }
 
       res.json({ received: true, success: true, plan: planType, userId: user?.id });
     } catch (error) {
       console.error("Grow subscription webhook error:", error);
       res.status(500).json({ error: "Subscription webhook processing failed" });
+    }
+  });
+
+  // Subscription activation endpoint - activates pending subscription via magic link
+  app.post("/api/subscription/activate/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({ error: "Activation token is required" });
+      }
+
+      // Find user by activation token
+      const user = await storage.getUserByActivationToken(token);
+
+      if (!user) {
+        return res.status(404).json({ error: "Invalid or expired activation token" });
+      }
+
+      // Check if token is expired
+      if (user.subscriptionActivationTokenExpiresAt && new Date() > user.subscriptionActivationTokenExpiresAt) {
+        return res.status(400).json({ error: "Activation token has expired" });
+      }
+
+      // Check if there's a pending plan
+      if (!user.pendingSubscriptionPlan) {
+        return res.status(400).json({ error: "No pending subscription to activate" });
+      }
+
+      // Activate the subscription
+      const updatedUser = await storage.updateUser(user.id, {
+        subscriptionPlan: user.pendingSubscriptionPlan,
+        subscriptionStatus: 'active',
+        planChangedAt: new Date(),
+        pendingSubscriptionPlan: null,
+        subscriptionActivationToken: null,
+        subscriptionActivationTokenExpiresAt: null,
+      });
+
+      console.log(`Subscription activated: User ${user.id} now has ${user.pendingSubscriptionPlan} plan`);
+
+      res.json({ 
+        success: true, 
+        plan: user.pendingSubscriptionPlan,
+        userId: user.id,
+        email: user.email,
+        firstName: user.firstName,
+      });
+    } catch (error) {
+      console.error("Subscription activation error:", error);
+      res.status(500).json({ error: "Failed to activate subscription" });
+    }
+  });
+
+  // Get activation token info (for the frontend to display plan details before activating)
+  app.get("/api/subscription/activate/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({ error: "Activation token is required" });
+      }
+
+      const user = await storage.getUserByActivationToken(token);
+
+      if (!user) {
+        return res.status(404).json({ error: "Invalid or expired activation token" });
+      }
+
+      // Check if token is expired
+      if (user.subscriptionActivationTokenExpiresAt && new Date() > user.subscriptionActivationTokenExpiresAt) {
+        return res.status(400).json({ error: "Activation token has expired", expired: true });
+      }
+
+      // Check if already activated (no pending plan)
+      if (!user.pendingSubscriptionPlan) {
+        return res.json({ 
+          alreadyActivated: true, 
+          plan: user.subscriptionPlan,
+          email: user.email,
+          firstName: user.firstName,
+        });
+      }
+
+      res.json({ 
+        valid: true,
+        pendingPlan: user.pendingSubscriptionPlan,
+        planName: user.pendingSubscriptionPlan === 'business' ? 'Scale' : 'Pro',
+        email: user.email,
+        firstName: user.firstName,
+      });
+    } catch (error) {
+      console.error("Get activation token error:", error);
+      res.status(500).json({ error: "Failed to get activation info" });
     }
   });
 
