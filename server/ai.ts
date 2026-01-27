@@ -2679,13 +2679,28 @@ SHORT ANSWER HANDLING:
     ],
     config: {
       systemInstruction: fullSystemPrompt,
-      maxOutputTokens: 1000,
+      maxOutputTokens: 1500, // Increased to prevent truncation
     }
   });
   
   const candidate = response.candidates?.[0];
+  const finishReason = candidate?.finishReason;
   const textPart = candidate?.content?.parts?.find((part: any) => part.text);
   let aiContent = textPart?.text || "";
+  
+  // Log if response was truncated
+  if (finishReason && finishReason !== "STOP") {
+    console.warn(`[Facilitator] Response may be truncated. finishReason: ${finishReason}, length: ${aiContent.length}`);
+  }
+  
+  // If response ends mid-sentence (no punctuation), try to complete it gracefully
+  const lastChar = aiContent.trim().slice(-1);
+  const endsWithPunctuation = /[.!?。]/.test(lastChar);
+  if (aiContent.length > 0 && !endsWithPunctuation) {
+    console.warn(`[Facilitator] Response appears cut off, adding graceful ending. Last char: "${lastChar}"`);
+    // Add an ellipsis or period to make it look intentional
+    aiContent = aiContent.trim() + "...";
+  }
   
   // Fallback messages
   if (!aiContent) {
