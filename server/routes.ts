@@ -7,8 +7,6 @@ import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, extractInsightFromMessage, extractCurrentBelief, generateDaySummaryForState, type ConversationPhase } from "./ai";
-import { stripeService } from "./stripeService";
-import { getStripePublishableKey } from "./stripeClient";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
 import { sendJourneyAccessEmail, sendNewParticipantNotification, sendFlowApprovalRequestEmail, sendFlowApprovedEmail } from "./email";
 import { processEmailNotifications, sendCompletionNotification } from "./emailCron";
@@ -2378,136 +2376,28 @@ export async function registerRoutes(
     }
   });
 
-  // Payment routes
+  // Payment routes - Stripe not implemented at this stage, using external payment links
   app.get("/api/stripe/publishable-key", async (req, res) => {
-    try {
-      const key = await getStripePublishableKey();
-      res.json({ publishableKey: key });
-    } catch (error) {
-      console.error("Error getting Stripe publishable key:", error);
-      res.status(500).json({ error: "Stripe not configured" });
-    }
+    res.status(501).json({ error: "Stripe payments not implemented. Use external payment links." });
   });
 
-  // Stripe Connect routes for mentors
+  // Stripe Connect routes - not implemented
   app.post("/api/stripe/connect", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      let accountId = user.stripeAccountId;
-      
-      if (!accountId) {
-        const account = await stripeService.createConnectAccount(
-          user.email || "",
-          userId
-        );
-        accountId = account.id;
-        
-        await storage.upsertUser({
-          id: userId,
-          stripeAccountId: accountId,
-          stripeAccountStatus: "pending",
-        });
-      }
-
-      const baseUrl = `https://${req.get("host")}`;
-      const accountLink = await stripeService.createConnectAccountLink(
-        accountId,
-        `${baseUrl}/api/stripe/connect/refresh`,
-        `${baseUrl}/api/stripe/connect/return`
-      );
-
-      res.json({ url: accountLink.url });
-    } catch (error) {
-      console.error("Error creating Stripe Connect account:", error);
-      res.status(500).json({ error: "Failed to connect Stripe account" });
-    }
+    res.status(501).json({ error: "Stripe Connect not implemented. Use external payment links." });
   });
 
   app.get("/api/stripe/connect/refresh", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.stripeAccountId) {
-        return res.redirect("/journeys");
-      }
-
-      const baseUrl = `https://${req.get("host")}`;
-      const accountLink = await stripeService.createConnectAccountLink(
-        user.stripeAccountId,
-        `${baseUrl}/api/stripe/connect/refresh`,
-        `${baseUrl}/api/stripe/connect/return`
-      );
-
-      res.redirect(accountLink.url);
-    } catch (error) {
-      console.error("Error refreshing Stripe Connect link:", error);
-      res.redirect("/journeys?error=stripe_connect_failed");
-    }
+    res.redirect("/journeys?error=stripe_not_implemented");
   });
 
   app.get("/api/stripe/connect/return", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const user = await storage.getUser(userId);
-      
-      if (user?.stripeAccountId) {
-        const account = await stripeService.getConnectAccount(user.stripeAccountId);
-        const status = account.charges_enabled ? "active" : "pending";
-        
-        await storage.upsertUser({
-          id: userId,
-          stripeAccountStatus: status,
-        });
-      }
-
-      res.redirect("/journeys?stripe_connected=true");
-    } catch (error) {
-      console.error("Error processing Stripe Connect return:", error);
-      res.redirect("/journeys?error=stripe_connect_failed");
-    }
+    res.redirect("/journeys?stripe_not_implemented=true");
   });
 
   app.get("/api/stripe/connect/status", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.stripeAccountId) {
-        return res.json({ connected: false });
-      }
-
-      try {
-        const account = await stripeService.getConnectAccount(user.stripeAccountId);
-        const status = account.charges_enabled ? "active" : "pending";
-        
-        if (user.stripeAccountStatus !== status) {
-          await storage.upsertUser({
-            id: userId,
-            stripeAccountStatus: status,
-          });
-        }
-
-        res.json({ 
-          connected: true, 
-          status,
-          chargesEnabled: account.charges_enabled,
-          payoutsEnabled: account.payouts_enabled,
-        });
-      } catch (error) {
-        res.json({ connected: false, error: "Account not found" });
-      }
-    } catch (error) {
-      console.error("Error checking Stripe Connect status:", error);
-      res.status(500).json({ error: "Failed to check Stripe status" });
-    }
+    res.json({ connected: false, message: "Stripe Connect not implemented. Use external payment links." });
   });
+
 
   app.post("/api/join/journey/:journeyId", async (req, res) => {
     try {
@@ -2570,56 +2460,10 @@ export async function registerRoutes(
           return;
         }
 
-        let mentor = null;
-        if (journey.creatorId) {
-          mentor = await storage.getUser(journey.creatorId);
-        }
-
-        if (mentor?.stripeAccountId && mentor.stripeAccountStatus === "active") {
-          const session = await stripeService.createConnectedCheckoutSession({
-            connectedAccountId: mentor.stripeAccountId,
-            customerEmail: email,
-            amount: price * 100,
-            currency: (journey.currency || "USD").toLowerCase(),
-            productName: journey.name,
-            successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&connected_account=${mentor.stripeAccountId}`,
-            cancelUrl: `${baseUrl}/j/${journeyId}`,
-            metadata: {
-              journeyId,
-              customerEmail: email,
-              customerName: name || "",
-              connectedAccountId: mentor.stripeAccountId,
-            },
-          });
-
-          res.json({ 
-            requiresPayment: true, 
-            paymentType: "stripe",
-            checkoutUrl: session.url, 
-            sessionId: session.id 
-          });
-        } else {
-          const session = await stripeService.createOneTimePaymentSession({
-            customerEmail: email,
-            amount: price * 100,
-            currency: (journey.currency || "USD").toLowerCase(),
-            productName: journey.name,
-            successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancelUrl: `${baseUrl}/j/${journeyId}`,
-            metadata: {
-              journeyId,
-              customerEmail: email,
-              customerName: name || "",
-            },
-          });
-
-          res.json({ 
-            requiresPayment: true, 
-            paymentType: "stripe",
-            checkoutUrl: session.url, 
-            sessionId: session.id 
-          });
-        }
+        // Stripe payments not implemented - only external payment links are supported
+        return res.status(400).json({ 
+          error: "No payment method configured. Please configure an external payment URL for this flow." 
+        });
       } else {
         const participant = await storage.createExternalParticipant(
           journeyId,
@@ -2841,12 +2685,13 @@ export async function registerRoutes(
     }
   });
 
+  // Stripe payment verification - not implemented, using external payment links
   app.get("/api/payment/verify/:sessionId", async (req, res) => {
     try {
       const { sessionId } = req.params;
-      const connectedAccount = req.query.connected_account as string | undefined;
       
-      let participant = await storage.getParticipantByStripeSession(sessionId);
+      // Check if participant already exists with this session ID
+      const participant = await storage.getParticipantByStripeSession(sessionId);
       
       if (participant) {
         return res.json({ 
@@ -2855,77 +2700,9 @@ export async function registerRoutes(
         });
       }
 
-      let session;
-      if (connectedAccount) {
-        session = await stripeService.getConnectedCheckoutSession(sessionId, connectedAccount);
-      } else {
-        session = await stripeService.getCheckoutSession(sessionId);
-      }
-      
-      if (session.payment_status !== "paid") {
-        return res.json({ success: false, status: session.payment_status });
-      }
-
-      const journeyId = session.metadata?.journeyId;
-      const email = session.customer_email || session.metadata?.customerEmail;
-      const name = session.metadata?.customerName;
-
-      if (!journeyId || !email) {
-        return res.status(400).json({ error: "Invalid session data" });
-      }
-
-      participant = await storage.createExternalParticipant(
-        journeyId,
-        email,
-        name || undefined,
-        sessionId
-      );
-
-      const journey = await storage.getJourney(journeyId);
-      if (journey?.creatorId) {
-        await storage.createActivityEvent({
-          creatorId: journey.creatorId,
-          participantId: participant.id,
-          journeyId,
-          eventType: 'joined',
-          eventData: { participantName: name || email, paymentVerified: true },
-        });
-
-        // Record payment for mentor earnings tracking with commission
-        const amountPaid = session.amount_total || 0;
-        if (amountPaid > 0) {
-          try {
-            // Get mentor's plan for commission calculation
-            const mentor = await storage.getUser(journey.creatorId);
-            const mentorPlan = (mentor?.subscriptionPlan as PlanType) || 'free';
-            const { calculateCommission } = await import('./subscriptionService');
-            const commission = calculateCommission(amountPaid, mentorPlan);
-
-            await storage.createPayment({
-              journeyId,
-              participantId: participant.id,
-              mentorId: journey.creatorId,
-              stripeCheckoutSessionId: sessionId,
-              stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
-              amount: amountPaid,
-              currency: session.currency?.toUpperCase() || "ILS",
-              status: "completed",
-              customerEmail: email,
-              customerName: name || undefined,
-              commissionRate: Math.round(commission.commissionRate * 100),
-              commissionAmount: Math.round(commission.commissionAmount),
-              netAmount: Math.round(commission.netAmount),
-            });
-            console.log(`Payment recorded: ₪${amountPaid / 100} for journey ${journeyId} (${mentorPlan} plan, ${Math.round(commission.commissionRate * 100)}% commission)`);
-          } catch (paymentErr) {
-            console.error("Error recording payment (non-blocking):", paymentErr);
-          }
-        }
-      }
-
-      res.json({ 
-        success: true, 
-        accessToken: participant.accessToken 
+      // Stripe verification not implemented - use external payment links
+      res.status(501).json({ 
+        error: "Stripe payment verification not implemented. Use external payment links." 
       });
     } catch (error) {
       console.error("Error verifying payment:", error);
@@ -4153,51 +3930,9 @@ export async function registerRoutes(
     }
   });
 
-  // Legacy Stripe subscription webhook handler (kept for backwards compatibility)
+  // Subscription webhook - Stripe not implemented, will use LemonSqueezy when ready
   app.post("/api/subscription/webhook", async (req, res) => {
-    try {
-      const sig = req.headers['stripe-signature'];
-      if (!sig) {
-        return res.status(400).json({ error: "Missing signature" });
-      }
-
-      const { subscriptionService } = await import('./subscriptionService');
-      const { getUncachableStripeClient } = await import('./stripeClient');
-      const stripe = await getUncachableStripeClient();
-      
-      const webhookSecret = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET;
-      if (!webhookSecret) {
-        console.error("Missing STRIPE_SUBSCRIPTION_WEBHOOK_SECRET");
-        return res.status(500).json({ error: "Webhook not configured" });
-      }
-
-      let event;
-      try {
-        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-      } catch (err: any) {
-        console.error("Webhook signature verification failed:", err.message);
-        return res.status(400).json({ error: "Invalid signature" });
-      }
-
-      const result = await subscriptionService.handleSubscriptionWebhook(event);
-      
-      if (result && result.userId) {
-        await storage.upsertUser({
-          id: result.userId,
-          stripeCustomerId: result.customerId,
-          subscriptionId: result.subscriptionId,
-          subscriptionPlan: result.plan,
-          subscriptionStatus: result.status,
-          trialEndsAt: result.trialEnd,
-          subscriptionEndsAt: result.currentPeriodEnd,
-        });
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Webhook error:", error);
-      res.status(500).json({ error: "Webhook processing failed" });
-    }
+    res.status(501).json({ error: "Subscription webhooks not implemented. Will use LemonSqueezy for platform subscriptions." });
   });
 
   // Email API endpoints (admin only)
