@@ -51,13 +51,28 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
-  await authStorage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-  });
+  // Check if user already exists - if so, don't overwrite their saved profile data
+  const existingUser = await authStorage.getUser(claims["sub"]);
+  
+  if (existingUser) {
+    // User exists - only update fields that should always come from auth provider
+    // DON'T overwrite firstName, lastName, profileImageUrl if user has saved custom values
+    await authStorage.upsertUser({
+      id: claims["sub"],
+      // Only update email from auth provider (in case they changed their email)
+      email: claims["email"],
+      // Keep their saved profile data - don't overwrite with auth provider data
+    });
+  } else {
+    // New user - use auth provider data as initial values
+    await authStorage.upsertUser({
+      id: claims["sub"],
+      email: claims["email"],
+      firstName: claims["first_name"],
+      lastName: claims["last_name"],
+      profileImageUrl: claims["profile_image_url"],
+    });
+  }
 }
 
 export async function setupAuth(app: Express) {
