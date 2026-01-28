@@ -122,6 +122,7 @@ interface Flow {
   name: string;
   status: string | null;
   duration: number | null;
+  createdAt: string | null;
   mentor: { firstName: string | null; lastName: string | null; email: string | null } | null;
   participantCount: number;
   completedCount: number;
@@ -878,6 +879,7 @@ export default function AdminPage() {
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Flow Name</th>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-400">Created</th>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Days</th>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Started</th>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Completed</th>
@@ -892,6 +894,9 @@ export default function AdminPage() {
                         {f.mentor?.firstName || f.mentor?.lastName 
                           ? `${f.mentor.firstName || ""} ${f.mentor.lastName || ""}`.trim()
                           : f.mentor?.email || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-200">
+                        {f.createdAt ? new Date(f.createdAt).toLocaleDateString('he-IL') : "-"}
                       </td>
                       <td className="px-4 py-3 text-slate-200">{f.duration || 7}</td>
                       <td className="px-4 py-3 text-slate-200">{f.participantCount}</td>
@@ -909,7 +914,7 @@ export default function AdminPage() {
                   ))}
                   {filteredFlows.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                      <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                         No flows found
                       </td>
                     </tr>
