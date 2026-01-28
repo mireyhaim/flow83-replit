@@ -152,7 +152,9 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl md:text-2xl font-semibold text-slate-900" data-testid="text-dashboard-title">
-              {t('welcomeBack', { name: user?.firstName || '', ns: 'auth' })}
+              {onboarding.hasSeenOnboarding 
+                ? t('welcomeBack', { name: user?.firstName || '', ns: 'auth' })
+                : t('welcomeFirst', { name: user?.firstName || '', ns: 'auth' })}
             </h1>
             <p className="text-slate-500 text-sm mt-1" data-testid="text-welcome-message">
               {t('hereIsWhatsHappening')}
