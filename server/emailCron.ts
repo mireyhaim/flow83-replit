@@ -61,11 +61,29 @@ export async function processEmailNotifications(): Promise<{
           continue;
         }
 
+        // Check if we already sent a reminder recently (within 3 days)
+        const lastReminderSent = participant.lastReminderSentAt;
+        if (lastReminderSent) {
+          const daysSinceLastReminder = Math.floor((now.getTime() - new Date(lastReminderSent).getTime()) / (24 * 60 * 60 * 1000));
+          if (daysSinceLastReminder < 3) {
+            // Already sent a reminder within the last 3 days, skip
+            continue;
+          }
+        }
+        
+        // Limit total reminders to 3 per participant
+        const reminderCount = participant.reminderCount || 0;
+        if (reminderCount >= 3) {
+          continue;
+        }
+
         // Check if participant never actually started the flow (conversationState is still START)
         const hasNeverStarted = participant.conversationState === 'START';
         
         // Get addressing style from participant onboarding config
         const addressingStyle = (participant.userOnboardingConfig as { addressing_style?: 'female' | 'male' | 'neutral' })?.addressing_style || 'neutral';
+
+        let emailSent = false;
 
         if (hasNeverStarted && daysSinceRegistration >= 2) {
           // Send "not started" reminder for participants who registered 2+ days ago but never entered
@@ -81,6 +99,7 @@ export async function processEmailNotifications(): Promise<{
               addressingStyle
             });
             results.notStartedReminders++;
+            emailSent = true;
             console.log(`[EmailCron] Sent not-started reminder to ${participant.email}`);
           } catch (error) {
             console.error(`[EmailCron] Failed to send not-started reminder to ${participant.email}:`, error);
@@ -100,9 +119,19 @@ export async function processEmailNotifications(): Promise<{
               addressingStyle
             });
             results.inactivityReminders++;
+            emailSent = true;
             console.log(`[EmailCron] Sent inactivity reminder to ${participant.email}`);
           } catch (error) {
             console.error(`[EmailCron] Failed to send inactivity reminder to ${participant.email}:`, error);
+          }
+        }
+        
+        // Update participant reminder tracking if email was sent
+        if (emailSent) {
+          try {
+            await storage.updateParticipantReminderSent(participant.id);
+          } catch (error) {
+            console.error(`[EmailCron] Failed to update reminder tracking for ${participant.email}:`, error);
           }
         }
       }

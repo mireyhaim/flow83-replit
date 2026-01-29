@@ -181,6 +181,9 @@ export const participants = pgTable("participants", {
     keyInsight: string;
     taskCompleted: boolean;
   }[]>().default(sql`'[]'::jsonb`), // Compressed summaries of completed days
+  // Email reminder tracking - prevent duplicate emails
+  lastReminderSentAt: timestamp("last_reminder_sent_at"), // When last reminder email was sent
+  reminderCount: integer("reminder_count").default(0), // How many reminders have been sent
 });
 
 export const activityEvents = pgTable("activity_events", {

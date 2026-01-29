@@ -73,6 +73,7 @@ export interface IStorage {
   createParticipant(participant: InsertParticipant): Promise<Participant>;
   createExternalParticipant(journeyId: string, email: string, name?: string, idNumber?: string, stripeSessionId?: string): Promise<Participant>;
   updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined>;
+  updateParticipantReminderSent(participantId: string): Promise<void>;
 
   getMessages(participantId: string, stepId: string): Promise<JourneyMessage[]>;
   createMessage(message: InsertJourneyMessage): Promise<JourneyMessage>;
@@ -492,6 +493,15 @@ export class DatabaseStorage implements IStorage {
   async updateParticipant(id: string, participant: Partial<InsertParticipant>): Promise<Participant | undefined> {
     const [updated] = await db.update(participants).set(participant).where(eq(participants.id, id)).returning();
     return updated;
+  }
+
+  async updateParticipantReminderSent(participantId: string): Promise<void> {
+    await db.update(participants)
+      .set({
+        lastReminderSentAt: new Date(),
+        reminderCount: sql`COALESCE(reminder_count, 0) + 1`,
+      })
+      .where(eq(participants.id, participantId));
   }
 
   async getParticipantById(id: string): Promise<Participant | undefined> {
