@@ -96,6 +96,22 @@ interface PlatformStats {
   pendingRefunds: number;
 }
 
+interface SidebarCounts {
+  totalParticipants: number;
+  totalMentors: number;
+  newMentorsToday: number;
+  totalFlows: number;
+  pendingFlowsCount: number;
+  awaitingApproval: number;
+  withdrawalsCount: number;
+  pendingWithdrawals: number;
+  refundsCount: number;
+  pendingRefunds: number;
+  paymentsCount: number;
+  errorsCount: number;
+  platformStats: PlatformStats;
+}
+
 interface Participant {
   id: string;
   email: string | null;
@@ -298,6 +314,18 @@ export default function AdminPage() {
     },
     enabled: isAuthenticated === true,
     retry: 2,
+    staleTime: 60000,
+  });
+
+  // Fast combined query for sidebar counts
+  const { data: sidebarCounts, refetch: refetchSidebarCounts } = useQuery<SidebarCounts>({
+    queryKey: ["/api/admin/sidebar-counts"],
+    queryFn: async () => {
+      const res = await adminFetch("/api/admin/sidebar-counts");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: isAuthenticated === true,
     staleTime: 30000,
   });
 
@@ -328,7 +356,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && activeTab === "flows",
+    staleTime: 60000,
   });
 
   const { data: pendingFlows, refetch: refetchPendingFlows } = useQuery<PendingFlow[]>({
@@ -338,7 +367,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && (activeTab === "pending-flows" || activeTab === "dashboard"),
+    staleTime: 60000,
   });
 
   const { data: withdrawals, refetch: refetchWithdrawals } = useQuery<WithdrawalRequest[]>({
@@ -348,7 +378,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && (activeTab === "withdrawals" || activeTab === "dashboard"),
+    staleTime: 60000,
   });
 
   const { data: refunds, refetch: refetchRefunds } = useQuery<RefundRequest[]>({
@@ -358,7 +389,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && (activeTab === "refunds" || activeTab === "dashboard"),
+    staleTime: 60000,
   });
 
   const { data: payments, refetch: refetchPayments } = useQuery<Payment[]>({
@@ -368,7 +400,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && activeTab === "payments",
+    staleTime: 60000,
   });
 
   const { data: errors, refetch: refetchErrors } = useQuery<SystemError[]>({
@@ -378,7 +411,8 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true,
+    enabled: isAuthenticated === true && activeTab === "errors",
+    staleTime: 60000,
   });
 
   const updateWithdrawalMutation = useMutation({
@@ -516,17 +550,18 @@ export default function AdminPage() {
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode; count?: number; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: "users", label: "Users", icon: <Users className="w-4 h-4" />, count: platformStats?.totalParticipants ?? 0 },
-    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, count: platformStats?.totalMentors ?? 0, badge: newMentorsToday },
-    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" />, count: flows?.length ?? 0 },
-    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, count: pendingFlows?.length ?? 0, badge: awaitingApprovalFlows.length },
-    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, count: withdrawals?.length ?? 0, badge: pendingWithdrawals.length },
-    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, count: refunds?.length ?? 0, badge: pendingRefunds.length },
-    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, count: payments?.length ?? 0 },
-    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" />, count: errors?.length ?? 0 },
+    { id: "users", label: "Users", icon: <Users className="w-4 h-4" />, count: sidebarCounts?.totalParticipants ?? 0 },
+    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, count: sidebarCounts?.totalMentors ?? 0, badge: sidebarCounts?.newMentorsToday },
+    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" />, count: sidebarCounts?.totalFlows ?? 0 },
+    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, count: sidebarCounts?.pendingFlowsCount ?? 0, badge: sidebarCounts?.awaitingApproval },
+    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, count: sidebarCounts?.withdrawalsCount ?? 0, badge: sidebarCounts?.pendingWithdrawals },
+    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, count: sidebarCounts?.refundsCount ?? 0, badge: sidebarCounts?.pendingRefunds },
+    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, count: sidebarCounts?.paymentsCount ?? 0 },
+    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" />, count: sidebarCounts?.errorsCount ?? 0 },
   ];
 
   const handleRefresh = () => {
+    refetchSidebarCounts();
     if (activeTab === "dashboard") { refetchStats(); refetchPlatformStats(); refetchWithdrawals(); refetchRefunds(); refetchPendingFlows(); }
     if (activeTab === "users") refetchParticipants();
     if (activeTab === "mentors") refetchMentors();

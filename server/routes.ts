@@ -3978,6 +3978,40 @@ export async function registerRoutes(
     }
   });
 
+  // Combined sidebar counts - single endpoint for all counts
+  app.get("/api/admin/sidebar-counts", isAdmin, async (req, res) => {
+    try {
+      const [platformStats, flows, pendingFlows, withdrawals, refunds, payments, errors] = await Promise.all([
+        storage.getAdminPlatformStats(),
+        storage.getAllJourneysWithStats(),
+        storage.getPendingFlows(),
+        storage.getAllWithdrawalRequests(),
+        storage.getAllRefundRequests(),
+        storage.getAllPaymentsWithDetails(),
+        storage.getSystemErrors(100),
+      ]);
+      
+      res.json({
+        totalParticipants: platformStats.totalParticipants,
+        totalMentors: platformStats.totalMentors,
+        newMentorsToday: platformStats.newMentorsToday,
+        totalFlows: flows.length,
+        pendingFlowsCount: pendingFlows.length,
+        awaitingApproval: pendingFlows.filter((f: any) => f.approvalStatus === "pending_approval").length,
+        withdrawalsCount: withdrawals.length,
+        pendingWithdrawals: withdrawals.filter((w: any) => w.status === "pending").length,
+        refundsCount: refunds.length,
+        pendingRefunds: refunds.filter((r: any) => r.status === "pending").length,
+        paymentsCount: payments.length,
+        errorsCount: errors.length,
+        platformStats,
+      });
+    } catch (error) {
+      console.error("Error getting sidebar counts:", error);
+      res.status(500).json({ error: "Failed to get sidebar counts" });
+    }
+  });
+
   // Admin withdrawal requests management
   app.get("/api/admin/withdrawal-requests", isAdmin, async (req, res) => {
     try {
