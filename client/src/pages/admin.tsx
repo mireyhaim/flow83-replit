@@ -297,6 +297,8 @@ export default function AdminPage() {
       return res.json();
     },
     enabled: isAuthenticated === true,
+    retry: 2,
+    staleTime: 30000,
   });
 
   const { data: participants, refetch: refetchParticipants } = useQuery<Participant[]>({
@@ -514,14 +516,14 @@ export default function AdminPage() {
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode; count?: number; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: "users", label: "Users", icon: <Users className="w-4 h-4" />, count: platformStats?.totalParticipants },
-    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, count: platformStats?.totalMentors, badge: newMentorsToday },
-    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" />, count: flows?.length },
-    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, count: pendingFlows?.length, badge: awaitingApprovalFlows.length },
-    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, count: withdrawals?.length, badge: pendingWithdrawals.length },
-    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, count: refunds?.length, badge: pendingRefunds.length },
-    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, count: payments?.length },
-    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" />, count: errors?.length },
+    { id: "users", label: "Users", icon: <Users className="w-4 h-4" />, count: platformStats?.totalParticipants ?? 0 },
+    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, count: platformStats?.totalMentors ?? 0, badge: newMentorsToday },
+    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" />, count: flows?.length ?? 0 },
+    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, count: pendingFlows?.length ?? 0, badge: awaitingApprovalFlows.length },
+    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, count: withdrawals?.length ?? 0, badge: pendingWithdrawals.length },
+    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, count: refunds?.length ?? 0, badge: pendingRefunds.length },
+    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, count: payments?.length ?? 0 },
+    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" />, count: errors?.length ?? 0 },
   ];
 
   const handleRefresh = () => {
