@@ -326,7 +326,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && activeTab === "flows",
+    enabled: isAuthenticated === true,
   });
 
   const { data: pendingFlows, refetch: refetchPendingFlows } = useQuery<PendingFlow[]>({
@@ -336,7 +336,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && (activeTab === "pending-flows" || activeTab === "dashboard"),
+    enabled: isAuthenticated === true,
   });
 
   const { data: withdrawals, refetch: refetchWithdrawals } = useQuery<WithdrawalRequest[]>({
@@ -346,7 +346,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && (activeTab === "withdrawals" || activeTab === "dashboard"),
+    enabled: isAuthenticated === true,
   });
 
   const { data: refunds, refetch: refetchRefunds } = useQuery<RefundRequest[]>({
@@ -356,7 +356,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && (activeTab === "refunds" || activeTab === "dashboard"),
+    enabled: isAuthenticated === true,
   });
 
   const { data: payments, refetch: refetchPayments } = useQuery<Payment[]>({
@@ -366,7 +366,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && activeTab === "payments",
+    enabled: isAuthenticated === true,
   });
 
   const { data: errors, refetch: refetchErrors } = useQuery<SystemError[]>({
@@ -376,7 +376,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
-    enabled: isAuthenticated === true && activeTab === "errors",
+    enabled: isAuthenticated === true,
   });
 
   const updateWithdrawalMutation = useMutation({
@@ -512,16 +512,16 @@ export default function AdminPage() {
   const newMentorsToday = platformStats?.newMentorsToday || 0;
   const totalPendingNotifications = pendingWithdrawals.length + pendingRefunds.length + newMentorsToday + awaitingApprovalFlows.length;
 
-  const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const tabs: { id: TabType; label: string; icon: React.ReactNode; count?: number; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
-    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, badge: newMentorsToday },
-    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" /> },
-    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, badge: awaitingApprovalFlows.length },
-    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, badge: pendingWithdrawals.length },
-    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, badge: pendingRefunds.length },
-    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" /> },
-    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" /> },
+    { id: "users", label: "Users", icon: <Users className="w-4 h-4" />, count: platformStats?.totalParticipants },
+    { id: "mentors", label: "Mentors", icon: <UserCog className="w-4 h-4" />, count: platformStats?.totalMentors, badge: newMentorsToday },
+    { id: "flows", label: "Flows", icon: <Layers className="w-4 h-4" />, count: flows?.length },
+    { id: "pending-flows", label: "Pending Flows", icon: <Clock className="w-4 h-4" />, count: pendingFlows?.length, badge: awaitingApprovalFlows.length },
+    { id: "withdrawals", label: "Withdrawals", icon: <ArrowDownToLine className="w-4 h-4" />, count: withdrawals?.length, badge: pendingWithdrawals.length },
+    { id: "refunds", label: "Refunds", icon: <RotateCcw className="w-4 h-4" />, count: refunds?.length, badge: pendingRefunds.length },
+    { id: "payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, count: payments?.length },
+    { id: "errors", label: "Errors", icon: <AlertTriangle className="w-4 h-4" />, count: errors?.length },
   ];
 
   const handleRefresh = () => {
@@ -640,6 +640,9 @@ export default function AdminPage() {
                 data-testid={`tab-${tab.id}`}
               >
                 <span className="flex items-center gap-3">
+                  {tab.count !== undefined && (
+                    <span className="text-slate-400 font-medium min-w-[24px] text-right">{tab.count}</span>
+                  )}
                   {tab.icon}
                   {tab.label}
                 </span>
