@@ -3420,6 +3420,56 @@ export async function registerRoutes(
         console.log(`Grow webhook: Created new participant ${participant.id} for journey ${journeyId}`);
       }
 
+      // Record payment and update mentor wallet
+      if (journey.creatorId && paymentSum > 0) {
+        try {
+          const mentor = await storage.getUser(journey.creatorId);
+          const amountInAgorot = Math.round(paymentSum * 100); // Convert to agorot
+          
+          // Calculate commission based on mentor's plan
+          const { calculateCommission } = await import('./subscriptionService');
+          const plan = (mentor?.subscriptionPlan || 'free') as 'free' | 'pro' | 'scale';
+          const { commissionRate, commissionAmount, netAmount } = calculateCommission(amountInAgorot, plan);
+          
+          // Create payment record
+          const payment = await storage.createPayment({
+            participantId: participant.id,
+            journeyId,
+            mentorId: journey.creatorId,
+            amount: amountInAgorot,
+            commissionRate,
+            commissionAmount,
+            netAmount,
+            status: 'completed',
+            customerEmail: payerEmail,
+            customerName: fullName,
+          });
+          
+          // Update mentor wallet
+          const wallet = await storage.getOrCreateMentorWallet(journey.creatorId);
+          const newBalance = (wallet.balance || 0) + netAmount;
+          await storage.updateMentorWalletBalance(wallet.id, netAmount);
+          
+          // Create wallet transaction
+          await storage.createWalletTransaction({
+            walletId: wallet.id,
+            mentorId: journey.creatorId,
+            type: 'deposit',
+            amount: netAmount,
+            balanceAfter: newBalance,
+            description: `תשלום עבור ${journey.name} - ${fullName || payerEmail}`,
+            paymentId: payment.id,
+            participantId: participant.id,
+            journeyId,
+          });
+          
+          console.log(`Grow webhook: Payment recorded - Amount: ${amountInAgorot}, Commission: ${commissionAmount}, Mentor gets: ${netAmount}`);
+        } catch (paymentError) {
+          console.error("Failed to record payment:", paymentError);
+          // Don't fail webhook if payment recording fails
+        }
+      }
+
       // Send welcome email to participant with access link
       try {
         const { sendJourneyAccessEmail } = await import('./email');
