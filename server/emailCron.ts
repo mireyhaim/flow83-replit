@@ -36,6 +36,9 @@ export async function processEmailNotifications(): Promise<{
   try {
     const allJourneys = await storage.getJourneys();
     const now = new Date();
+    
+    // Track emails we've already sent to in this batch to prevent duplicates
+    const emailsSentThisBatch = new Set<string>();
 
     for (const journey of allJourneys) {
       if (!journey.creatorId) continue;
@@ -48,6 +51,12 @@ export async function processEmailNotifications(): Promise<{
 
       for (const participant of participants) {
         if (!participant.email) continue;
+        
+        // Skip if we already sent an email to this address in this batch
+        const emailLower = participant.email.toLowerCase();
+        if (emailsSentThisBatch.has(emailLower)) {
+          continue;
+        }
 
         const journeyLink = `${BASE_URL}/p/${participant.accessToken}`;
         const registeredAt = participant.startedAt || new Date();
@@ -128,6 +137,9 @@ export async function processEmailNotifications(): Promise<{
         
         // Update participant reminder tracking if email was sent
         if (emailSent) {
+          // Mark this email as sent in the batch to prevent duplicates
+          emailsSentThisBatch.add(emailLower);
+          
           try {
             await storage.updateParticipantReminderSent(participant.id);
           } catch (error) {
