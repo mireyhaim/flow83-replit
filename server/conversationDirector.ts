@@ -193,6 +193,19 @@ const EMOTION_KEYWORDS_EN = ['feel', 'feeling', 'hard', 'hurts', 'happy', 'sad',
 const COMPLETION_KEYWORDS_HE = ['עשיתי', 'סיימתי', 'ניסיתי', 'הצלחתי', 'עבר', 'הבנתי', 'עובד'];
 const COMPLETION_KEYWORDS_EN = ['done', 'did', 'finished', 'tried', 'completed', 'worked', 'understand', 'got it'];
 
+// Keywords that signal user wants to move forward (stop asking questions)
+const MOVE_FORWARD_KEYWORDS_HE = ['לא יודעת', 'לא יודע', 'אולי', 'יכול להיות', 'נגיד', 'אממ', 'לא בטוח', 'לא בטוחה', 'בוא נמשיך', 'מה עכשיו', 'מה הלאה', 'תמשיך'];
+const MOVE_FORWARD_KEYWORDS_EN = ["don't know", 'maybe', 'perhaps', 'not sure', 'let\'s continue', 'move on', 'what now', 'what next'];
+
+/**
+ * Detect if user wants to move forward (stop reflection/questions)
+ */
+function detectMoveForwardSignal(message: string): boolean {
+  const lowerMessage = message.toLowerCase();
+  const keywords = isHebrew(message) ? MOVE_FORWARD_KEYWORDS_HE : MOVE_FORWARD_KEYWORDS_EN;
+  return keywords.some(keyword => lowerMessage.includes(keyword) || message.includes(keyword));
+}
+
 /**
  * Detect if message contains Hebrew text
  */
@@ -361,10 +374,41 @@ export function makeDecision(
   const emotionWord = extractEmotionWord(userMessage);
   const hasCompletion = detectCompletionIndicator(userMessage);
   const messageLength = userMessage.length;
+  const wantsToMoveForward = detectMoveForwardSignal(userMessage);
   
   // Check if we already reflected this emotion
   const alreadyReflectedThisEmotion = emotionWord && state.lastReflectedEmotion === emotionWord;
   const hasReflectedEnough = state.reflectionsDone >= 1;
+  
+  // CRITICAL: If user signals they want to move forward, skip to task immediately
+  // This prevents endless philosophical questioning
+  if (wantsToMoveForward && state.phase !== 'task' && state.phase !== 'integration') {
+    return {
+      action: 'give_task',
+      phase: state.phase,
+      nextPhase: 'task',
+      context: {
+        content: state.dayTask,
+        instruction: 'User wants to move forward. Briefly acknowledge their input, then present today\'s task clearly and practically. Be direct and action-oriented.'
+      },
+      reason: 'User signaled readiness to move forward - presenting task'
+    };
+  }
+  
+  // CRITICAL: After 3 total messages in intro/reflection, force move to task
+  // This prevents endless questioning loops
+  if ((state.phase === 'intro' || state.phase === 'reflection') && state.totalMessageCount >= 3) {
+    return {
+      action: 'give_task',
+      phase: state.phase,
+      nextPhase: 'task',
+      context: {
+        content: state.dayTask,
+        instruction: 'Enough reflection. Connect briefly to what they shared, then present today\'s task clearly. Be practical and action-oriented.'
+      },
+      reason: 'Reached message limit for reflection - time to present task'
+    };
+  }
 
   // PHASE: INTRO
   if (state.phase === 'intro') {
@@ -402,10 +446,11 @@ export function makeDecision(
 
   // PHASE: REFLECTION
   if (state.phase === 'reflection') {
-    // Check if ready to move to task phase
-    const readyForTask = state.messageCountInPhase >= 2 || 
-                         (hasEmotion && messageLength > 40) ||
-                         state.reflectionsDone >= 2;
+    // Check if ready to move to task phase - be more aggressive about moving forward
+    // Key: After 1 message exchange in reflection, we should present the task
+    const readyForTask = state.messageCountInPhase >= 1 || 
+                         messageLength > 30 ||
+                         state.reflectionsDone >= 1;
     
     if (readyForTask) {
       return {
