@@ -3,7 +3,7 @@ import { useRoute, useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { journeyApi } from "@/lib/api";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,7 @@ const JourneySettingsPage = () => {
     audience: "",
     duration: "7",
     description: "",
+    externalPaymentUrl: "",
   });
 
   useEffect(() => {
@@ -39,6 +40,7 @@ const JourneySettingsPage = () => {
           audience: data.audience || "",
           duration: data.duration?.toString() || "7",
           description: data.description || "",
+          externalPaymentUrl: data.externalPaymentUrl || "",
         });
       } catch (error) {
         toast({
