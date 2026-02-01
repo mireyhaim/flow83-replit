@@ -239,7 +239,7 @@ async function analyzeContentChunkDeep(content: string, chunkNumber: number, tot
   beliefs: string[];
 }> {
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
@@ -267,7 +267,7 @@ Respond in JSON:
       }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 1500,
+    max_tokens: 1500,
   });
 
   const result = response.choices[0].message.content;
@@ -463,7 +463,7 @@ Respond in JSON.`;
   let synthesisResult: string | null = null;
   try {
     const synthesisPromise = openai.chat.completions.create({
-      model: "gpt-5.2",
+      model: "gpt-4o",
       messages: [
         { 
           role: "system", 
@@ -472,7 +472,7 @@ Respond in JSON.`;
         { role: "user", content: synthesisPrompt }
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 4000,
+      max_tokens: 4000,
     });
     
     const timeoutPromise = new Promise<never>((_, reject) => 
@@ -844,13 +844,13 @@ Respond in JSON:
   let response;
   try {
     response = await openai.chat.completions.create({
-      model: "gpt-5.2",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 6000,
+      max_tokens: 6000,
     });
   } catch (error: any) {
     const elapsed = Date.now() - startTime;
@@ -1437,7 +1437,7 @@ What you know about this person:`;
   }));
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages,
     max_tokens: 400, // Allow longer responses to avoid truncation
   });
@@ -1711,13 +1711,13 @@ JSON: {"days": [{"dayNumber": ${startDay}, "title": "Full title here", "goal": "
     : `Expert course designer. You MUST fill in ALL fields with complete, meaningful content. Never leave any field empty or with placeholder text. Respond with valid JSON only.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 4000,
+    max_tokens: 4000,
   });
 
   const content = response.choices[0].message.content;
@@ -1834,7 +1834,7 @@ Write a warm, personal opening for today. The message should:
 - CRITICAL: Write the entire response in ${languageName}. This is a ${languageName}-language journey.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: "Open this day for me" },
@@ -1897,7 +1897,7 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
@@ -1906,7 +1906,7 @@ Based on the participant's responses AND how they engaged with ${input.mentorNam
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 300,
+    max_tokens: 300,
     temperature: 0.3,
   });
 
@@ -1976,7 +1976,7 @@ REQUIREMENTS:
 - End with an encouraging note about tomorrow`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
@@ -2038,7 +2038,7 @@ REQUIREMENTS:
 - Write in flowing paragraphs, not bullet points`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
@@ -2200,7 +2200,7 @@ IMPORTANT: Write ALL content in ${language}. The journey content is in ${languag
 Return valid JSON matching this structure exactly.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages: [
       { 
         role: "system", 
@@ -2209,7 +2209,7 @@ Return valid JSON matching this structure exactly.`;
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 3000,
+    max_tokens: 3000,
     temperature: 0.7,
   });
 
@@ -2309,7 +2309,7 @@ export async function generateChatResponseWithDirector(
   
   // Generate AI response with tight constraints
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: "gpt-4o",
     messages,
     max_tokens: 150, // ~80 words max
     temperature: 0.7, // Some creativity in phrasing
