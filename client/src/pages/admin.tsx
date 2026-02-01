@@ -615,7 +615,11 @@ export default function AdminPage() {
     !searchTerm || 
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     f.mentor?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  ).sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA;
+  }) || [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {

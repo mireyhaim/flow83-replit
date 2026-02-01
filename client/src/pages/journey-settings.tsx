@@ -65,6 +65,7 @@ const JourneySettingsPage = () => {
         audience: formData.audience,
         duration: parseInt(formData.duration),
         description: formData.description,
+        externalPaymentUrl: formData.externalPaymentUrl || null,
       });
       setLocation(`/journey/${journey.id}/edit`);
     } catch (error) {
@@ -204,6 +205,24 @@ const JourneySettingsPage = () => {
                 className="min-h-[80px] bg-white/5 border-white/10 focus:border-violet-500 text-white rounded-xl resize-none"
                 data-testid="textarea-journey-description"
               />
+            </div>
+
+            <div className="pt-4 border-t border-white/10">
+              <label className="block text-white/70 text-sm mb-2 flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                {t('journeySettings.paymentLink', 'לינק תשלום (Grow)')}
+              </label>
+              <Input 
+                value={formData.externalPaymentUrl}
+                onChange={(e) => setFormData({ ...formData, externalPaymentUrl: e.target.value })}
+                placeholder="https://grow.link/..."
+                className="bg-white/5 border-white/10 focus:border-violet-500 text-white h-12 rounded-xl ltr"
+                dir="ltr"
+                data-testid="input-payment-link"
+              />
+              <p className="text-white/30 text-xs mt-2">
+                {t('journeySettings.paymentLinkHelp', 'הכנס את לינק התשלום של Grow שמשתתפים ישתמשו בו לתשלום')}
+              </p>
             </div>
           </div>
 
