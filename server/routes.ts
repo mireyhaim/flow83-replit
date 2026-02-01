@@ -3364,13 +3364,17 @@ export async function registerRoutes(
         return res.status(403).json({ error: "Invalid webhook key" });
       }
 
-      // Extract participant info from Grow webhook
-      const payerEmail = payload.payerEmail || payload.email;
-      const fullName = payload.fullName || payload.payer_name || '';
-      const payerPhone = payload.payerPhone || payload.phone || '';
-      const paymentDesc = payload.paymentDesc || payload.description || '';
-      const transactionCode = payload.transactionCode || payload.transaction_id || '';
-      const paymentSum = payload.paymentSum || payload.sum || 0;
+      // Grow PaymentLinks format wraps data in a "data" object
+      // Support both old format (flat) and new format (nested in data)
+      const data = payload.data || payload;
+      
+      // Extract participant info from Grow webhook (support multiple field names)
+      const payerEmail = data.payerEmail || data.email || payload.payerEmail || payload.email || '';
+      const fullName = data.fullName || data.payer_name || payload.fullName || payload.payer_name || '';
+      const payerPhone = data.payerPhone || data.phone || payload.payerPhone || payload.phone || '';
+      const paymentDesc = data.description || data.paymentDesc || payload.paymentDesc || payload.description || '';
+      const transactionCode = data.transactionId || data.transactionCode || payload.transactionCode || payload.transaction_id || '';
+      const paymentSum = parseFloat(data.sum || data.paymentSum || payload.paymentSum || payload.sum || '0');
 
       // Extract flow ID from payment description
       // Format expected: "flow_UUID" or just the UUID in the description
@@ -3386,6 +3390,16 @@ export async function registerRoutes(
       if (!payerEmail) {
         console.log("Grow webhook: No payer email provided");
         return res.json({ received: true, warning: "No payer email" });
+      }
+
+      // If no journey ID in description, try to find pending payment session by email
+      if (!journeyId) {
+        console.log("Grow webhook: No journey ID in description, looking for pending session by email:", payerEmail);
+        const pendingSession = await storage.getPendingExternalPaymentSessionByEmail(payerEmail);
+        if (pendingSession) {
+          journeyId = pendingSession.journeyId;
+          console.log("Grow webhook: Found pending session for journey:", journeyId);
+        }
       }
 
       if (!journeyId) {

@@ -114,6 +114,7 @@ export interface IStorage {
   // External payment sessions (for mentor's own payment links)
   createExternalPaymentSession(session: InsertExternalPaymentSession): Promise<ExternalPaymentSession>;
   getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined>;
+  getPendingExternalPaymentSessionByEmail(email: string): Promise<ExternalPaymentSession | undefined>;
   completeExternalPaymentSession(token: string): Promise<ExternalPaymentSession | undefined>;
 
   // Admin functions
@@ -776,6 +777,17 @@ export class DatabaseStorage implements IStorage {
   async getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined> {
     const [session] = await db.select().from(externalPaymentSessions)
       .where(eq(externalPaymentSessions.token, token));
+    return session;
+  }
+
+  async getPendingExternalPaymentSessionByEmail(email: string): Promise<ExternalPaymentSession | undefined> {
+    const [session] = await db.select().from(externalPaymentSessions)
+      .where(and(
+        eq(externalPaymentSessions.email, email.toLowerCase()),
+        eq(externalPaymentSessions.status, "pending")
+      ))
+      .orderBy(desc(externalPaymentSessions.createdAt))
+      .limit(1);
     return session;
   }
 
