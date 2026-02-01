@@ -39,6 +39,13 @@ export default function GrowPaymentIframePage() {
     if (ret) setReturnUrl(decodeURIComponent(ret));
     
     setIsLoading(false);
+    
+    // Auto-open payment window when page loads
+    if (url) {
+      const decodedUrl = decodeURIComponent(url);
+      window.open(decodedUrl, '_blank');
+      setPaymentOpened(true);
+    }
   }, []);
 
   const openPaymentWindow = () => {
