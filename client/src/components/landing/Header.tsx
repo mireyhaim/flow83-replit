@@ -50,7 +50,7 @@ const Header = () => {
             </>
           ) : (
             <>
-              <a href="/api/login?returnTo=/dashboard">
+              <a href="/login?returnTo=/dashboard">
                 <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-testid="button-header-login">{t('common:login')}</Button>
               </a>
               <Link href={getStartLink()}>
@@ -90,7 +90,7 @@ const Header = () => {
               </>
             ) : (
               <>
-                <a href="/api/login?returnTo=/dashboard">
+                <a href="/login?returnTo=/dashboard">
                   <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-100">{t('common:login')}</Button>
                 </a>
                 <Link href={getStartLink()}>

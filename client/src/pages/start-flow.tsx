@@ -20,7 +20,7 @@ export default function StartFlowPage() {
   }, [authLoading, isAuthenticated, setLocation]);
 
   const handleLogin = () => {
-    window.location.href = "/api/login?returnTo=/dashboard";
+    window.location.href = "/login?returnTo=/dashboard";
   };
 
   if (authLoading) {

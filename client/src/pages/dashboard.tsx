@@ -120,7 +120,7 @@ export default function Dashboard() {
             Transform your knowledge into powerful 7-day flows that help others grow.
           </p>
           <Button size="lg" asChild data-testid="button-login" className="bg-violet-600 hover:bg-violet-700">
-            <a href="/api/login">Sign In to Get Started</a>
+            <a href="/login">Sign In to Get Started</a>
           </Button>
         </div>
       </div>

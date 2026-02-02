@@ -212,7 +212,7 @@ export default function ProfilePage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4 text-slate-900">{t('profilePage.pleaseSignIn')}</h1>
           <Button asChild className="bg-violet-600 hover:bg-violet-700">
-            <a href="/api/login">{t('profilePage.signIn')}</a>
+            <a href="/login">{t('profilePage.signIn')}</a>
           </Button>
         </div>
       </div>
