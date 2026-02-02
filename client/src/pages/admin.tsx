@@ -655,14 +655,14 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Mobile Header */}
-      <div className="lg:hidden sticky top-0 z-50 bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden sticky top-0 z-30 bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen(true)}
             className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
             data-testid="button-mobile-menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <Menu className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-white font-bold text-base">Flow83 Admin</h1>
@@ -686,7 +686,7 @@ export default function AdminPage() {
 
       {/* Mobile Slide-out Menu */}
       <div className={cn(
-        "lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-slate-950 transform transition-transform duration-300 ease-in-out",
+        "lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-slate-950 transform transition-transform duration-300 ease-in-out shadow-xl",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
