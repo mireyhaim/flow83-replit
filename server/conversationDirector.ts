@@ -380,9 +380,12 @@ export function makeDecision(
   const alreadyReflectedThisEmotion = emotionWord && state.lastReflectedEmotion === emotionWord;
   const hasReflectedEnough = state.reflectionsDone >= 1;
   
+  console.log(`[Director] makeDecision: phase=${state.phase}, totalMsgs=${state.totalMessageCount}, msgInPhase=${state.messageCountInPhase}, wantsForward=${wantsToMoveForward}`);
+  
   // CRITICAL: If user signals they want to move forward, skip to task immediately
   // This prevents endless philosophical questioning
   if (wantsToMoveForward && state.phase !== 'task' && state.phase !== 'integration') {
+    console.log(`[Director] User wants to move forward - giving task`);
     return {
       action: 'give_task',
       phase: state.phase,
@@ -395,9 +398,11 @@ export function makeDecision(
     };
   }
   
-  // CRITICAL: After 3 total messages in intro/reflection, force move to task
+  // CRITICAL: After 2 user messages in intro/reflection, force move to task
+  // (totalMessageCount includes bot messages, so 4 = 2 user + 2 bot)
   // This prevents endless questioning loops
-  if ((state.phase === 'intro' || state.phase === 'reflection') && state.totalMessageCount >= 3) {
+  if ((state.phase === 'intro' || state.phase === 'reflection') && state.totalMessageCount >= 4) {
+    console.log(`[Director] Message limit reached (${state.totalMessageCount}) - giving task`);
     return {
       action: 'give_task',
       phase: state.phase,
