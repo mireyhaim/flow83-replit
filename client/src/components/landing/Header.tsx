@@ -9,7 +9,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation(['landing', 'common', 'dashboard']);
-  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/login";
 
   return (
     <header className="w-full px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-200 fixed top-0 z-50">

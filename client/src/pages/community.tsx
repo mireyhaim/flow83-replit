@@ -12,7 +12,7 @@ import communityHero from "@/assets/community-hero.jpg";
 const Community = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('landing');
-  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/login";
 
   const stats = [
     { icon: Users, label: t('communityPage.activeCreators'), value: "2,500+" },

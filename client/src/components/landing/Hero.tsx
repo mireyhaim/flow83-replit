@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 const Hero = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('landing');
-  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/login";
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">

@@ -64,7 +64,7 @@ const ImageCarousel = ({ images }: { images: { src: string; alt: string }[] }) =
 const HowItWorksPage = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('landing');
-  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/login";
 
   const steps = [
     {

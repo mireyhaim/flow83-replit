@@ -51,7 +51,6 @@ import GrowPaymentIframePage from "@/pages/grow-payment-iframe";
 import SubscriptionSuccessPage from "@/pages/subscription-success";
 import FeedbackPage from "@/pages/feedback";
 import FlowDemoPage from "@/pages/flow-demo";
-import StartFlowPage from "@/pages/start-flow";
 import AdminPage from "@/pages/admin";
 import PaymentsPage from "@/pages/payments";
 import SelfBillingTermsPage from "@/pages/self-billing-terms";
@@ -90,8 +89,7 @@ function Router() {
       <Route path="/payment/grow" component={GrowPaymentIframePage} />
       <Route path="/subscription/success" component={SubscriptionSuccessPage} />
       <Route path="/subscription/activate/:token" component={SubscriptionActivatePage} />
-      <Route path="/start-flow" component={StartFlowPage} />
-      
+            
       {/* New routes */}
       <Route path="/how-it-works" component={HowItWorksPage} />
       <Route path="/pricing" component={Pricing} />

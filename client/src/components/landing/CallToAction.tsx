@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 const CallToAction = () => {
   const { t } = useTranslation('landing');
   const { isAuthenticated } = useAuth();
-  const getStartLink = () => isAuthenticated ? "/dashboard" : "/start-flow";
+  const getStartLink = () => isAuthenticated ? "/dashboard" : "/login";
 
   return (
     <section className="py-32 bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 relative overflow-hidden">

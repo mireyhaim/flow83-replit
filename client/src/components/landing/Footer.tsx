@@ -32,7 +32,7 @@ const Footer = () => {
           <div className="space-y-6">
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider">{t('platform')}</h3>
             <nav className="flex flex-col space-y-3">
-              <Link href="/start-flow" className="text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
+              <Link href="/login" className="text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
                 {t('createFlow')}
               </Link>
               <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
