@@ -6,7 +6,7 @@ import { Sparkles, Users, Shield, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { useToast } from "@/hooks/use-toast";
-import loginImage from "@assets/ChatGPT_Image_Dec_26,_2025,_06_36_20_PM_1766994935586.png";
+import loginImage from "@/assets/login-hero.png";
 
 export default function LoginPage() {
   const { t } = useTranslation('auth');
@@ -227,42 +227,12 @@ export default function LoginPage() {
       </div>
 
       {/* Left side - Image (RTL: appears second) */}
-      <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-violet-600 to-fuchsia-600">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        
-        <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
-          <div className="max-w-md text-center mb-8">
-            <h3 className="text-3xl font-bold mb-4">
-              {t('transformExpertise')}
-            </h3>
-            <p className="text-white/80 text-lg">
-              {t('transformExpertiseDesc')}
-            </p>
-          </div>
-          
-          <div className="relative">
-            <img
-              src={loginImage}
-              alt={t('loginImageAlt')}
-              className="relative w-96 h-auto drop-shadow-2xl"
-            />
-          </div>
-
-          <div className="mt-8 flex gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold">10k+</div>
-              <div className="text-white/70">{t('activeMentors')}</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">50k+</div>
-              <div className="text-white/70">{t('journeysCreated')}</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">98%</div>
-              <div className="text-white/70">{t('satisfaction')}</div>
-            </div>
-          </div>
-        </div>
+      <div className="hidden lg:flex flex-1 relative overflow-hidden">
+        <img
+          src={loginImage}
+          alt={t('loginImageAlt')}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </div>
     </div>
   );
