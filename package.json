@@ -65,6 +65,8 @@
     "glob": "^13.0.0",
     "i18next": "^25.7.3",
     "input-otp": "^1.4.2",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^3.2.2",
     "lucide-react": "^0.545.0",
     "mammoth": "^1.11.0",
     "memoizee": "^0.4.17",

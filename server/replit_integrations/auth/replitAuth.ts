@@ -170,6 +170,10 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return next();
   }
 
+  if (user.auth_type === "firebase") {
+    return res.status(401).json({ message: "Session expired" });
+  }
+
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
     res.status(401).json({ message: "Unauthorized" });

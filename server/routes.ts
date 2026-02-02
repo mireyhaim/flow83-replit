@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { db, setServiceContext } from "./db";
 import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { registerFirebaseAuthRoutes } from "./firebaseAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, extractInsightFromMessage, extractCurrentBelief, generateDaySummaryForState, type ConversationPhase } from "./ai";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
@@ -70,6 +71,9 @@ export async function registerRoutes(
   // Setup Replit Auth (Google, GitHub, email, etc.)
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  // Setup Firebase Auth (for Google sign-in without Replit branding)
+  registerFirebaseAuthRoutes(app);
 
   // Test email endpoint (for verifying Resend connection)
   app.post('/api/test-email', isAuthenticated, async (req: any, res) => {
