@@ -23,7 +23,9 @@ import {
   Clock,
   ArrowDownToLine,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -234,6 +236,7 @@ export default function AdminPage() {
   const [flowActivated, setFlowActivated] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [activatedFlowLink, setActivatedFlowLink] = useState<string>("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -651,8 +654,118 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-slate-900">
+      {/* Mobile Header */}
+      <div className="lg:hidden sticky top-0 z-50 bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
+            data-testid="button-mobile-menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+          <div>
+            <h1 className="text-white font-bold text-base">Flow83 Admin</h1>
+          </div>
+        </div>
+        {totalPendingNotifications > 0 && (
+          <div className="flex items-center gap-1 text-amber-400 text-sm">
+            <Bell className="w-4 h-4" />
+            <span>{totalPendingNotifications}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Slide-out Menu */}
+      <div className={cn(
+        "lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-slate-950 transform transition-transform duration-300 ease-in-out",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h1 className="text-white font-bold text-lg">Flow83 Admin</h1>
+            <p className="text-slate-400 text-xs">Internal Dashboard</p>
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2 text-slate-400 hover:text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {totalPendingNotifications > 0 && (
+          <div className="mx-4 mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <div className="flex items-center gap-2 text-amber-400 text-sm font-medium">
+              <Bell className="w-4 h-4" />
+              {totalPendingNotifications} pending
+            </div>
+          </div>
+        )}
+        
+        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-200px)]">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSearchTerm(""); setMobileMenuOpen(false); }}
+              className={cn(
+                "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded text-sm transition-colors",
+                activeTab === tab.id 
+                  ? "bg-slate-700 text-white" 
+                  : "text-slate-300 hover:bg-slate-700/50"
+              )}
+              data-testid={`mobile-tab-${tab.id}`}
+            >
+              <span className="flex items-center gap-3">
+                {tab.icon}
+                {tab.label}
+                {tab.count !== undefined && (
+                  <span className="text-slate-500 text-xs">({tab.count})</span>
+                )}
+              </span>
+              {tab.badge && tab.badge > 0 && (
+                <span className="bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800 space-y-2 bg-slate-950">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+            className="w-full text-slate-400 hover:text-white justify-start"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to App
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 justify-start"
+            data-testid="button-mobile-logout"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
       <div className="flex">
-        <aside className="w-56 bg-slate-950 min-h-screen p-4 flex flex-col border-r border-slate-800">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex w-56 bg-slate-950 min-h-screen p-4 flex-col border-r border-slate-800 sticky top-0">
           <div className="mb-8">
             <h1 className="text-white font-bold text-lg">Flow83 Admin</h1>
             <p className="text-slate-400 text-xs">Internal Dashboard</p>
@@ -719,12 +832,12 @@ export default function AdminPage() {
           </div>
         </aside>
 
-        <main className="flex-1 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">
+        <main className="flex-1 p-4 lg:p-6 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h2 className="text-lg lg:text-xl font-semibold text-white">
               {tabs.find(t => t.id === activeTab)?.label}
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               {activeTab !== "dashboard" && (
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -732,7 +845,7 @@ export default function AdminPage() {
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-64 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    className="pl-9 w-full sm:w-64 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
                     data-testid="input-search"
                   />
                 </div>
@@ -817,8 +930,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "users" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead className="bg-slate-850 border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Email</th>
@@ -866,8 +979,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "mentors" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Name</th>
@@ -917,8 +1030,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "flows" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[800px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Flow Name</th>
@@ -969,8 +1082,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "pending-flows" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Flow Name</th>
@@ -1036,8 +1149,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "withdrawals" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[750px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
@@ -1093,8 +1206,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "refunds" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[850px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
@@ -1151,8 +1264,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "payments" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[800px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Mentor</th>
@@ -1208,8 +1321,8 @@ export default function AdminPage() {
           )}
 
           {activeTab === "errors" && (
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead className="border-b border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-slate-400">Type</th>
