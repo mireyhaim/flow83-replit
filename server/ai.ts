@@ -2480,8 +2480,20 @@ export async function generateChatResponseWithFacilitator(
   // Detect user intent
   const intent = detectUserIntent(userMessage, currentState);
   
+  // Track interpret count (how many times we've been in INTERPRET state)
+  // Use messageCountInPhase as proxy when in INTERPRET state
+  const interpretCount = currentState === "INTERPRET" ? (participant.messageCountInPhase || 0) : 0;
+  
   // Determine next state based on current state and intent
-  let nextState = determineNextState(currentState, intent, clarifyCount, taskSupportCount);
+  // Pass interpretCount and message length to prevent endless reflection loops
+  let nextState = determineNextState(
+    currentState, 
+    intent, 
+    clarifyCount, 
+    taskSupportCount,
+    interpretCount,
+    userMessage.length
+  );
   
   // Update counters
   let newClarifyCount = clarifyCount;
@@ -2499,7 +2511,9 @@ export async function generateChatResponseWithFacilitator(
     to: nextState,
     intent,
     clarifyCount: newClarifyCount,
-    taskSupportCount: newTaskSupportCount
+    taskSupportCount: newTaskSupportCount,
+    interpretCount,
+    msgLength: userMessage.length
   });
   
   // Build prompts

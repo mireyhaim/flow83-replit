@@ -794,7 +794,9 @@ export function determineNextState(
   currentState: ConversationState,
   intent: FacilitatorOutput["log"]["detected_intent"],
   clarifyCount: number,
-  taskSupportCount: number
+  taskSupportCount: number,
+  interpretCount: number = 0,
+  userMessageLength: number = 0
 ): ConversationState {
   // CLARIFY only allowed from CORE_QUESTION or ORIENTATION states (not from TASK or later)
   if (intent === "confused" && clarifyCount < 2 && 
@@ -817,6 +819,11 @@ export function determineNextState(
     
     case "ORIENTATION":
       // ORIENTATION asks the opening question for the day
+      // CRITICAL: If user gives a substantial message (>80 chars), treat as answer and move forward
+      if (userMessageLength > 80) {
+        console.log(`[Facilitator] Substantial response in ORIENTATION (${userMessageLength} chars) - moving to INTERPRET`);
+        return "INTERPRET";
+      }
       // Only move forward if user gives a substantive answer (not just "ok" or "אוקיי")
       if (intent === "answer_core" || intent === "emotional") {
         return "INTERPRET";
@@ -839,7 +846,17 @@ export function determineNextState(
     
     case "INTERPRET":
       // After interpreting what the user shared, move to TASK
-      // But if user just gives minimal acknowledgment, stay and go deeper
+      // CRITICAL FIX: Limit how many times we can stay in INTERPRET
+      // Max 2 interpret rounds, OR if user gives substantial message (>80 chars), move to TASK
+      if (interpretCount >= 2) {
+        console.log(`[Facilitator] INTERPRET limit reached (${interpretCount}) - moving to TASK`);
+        return "TASK"; // Enough reflection, time for action
+      }
+      if (userMessageLength > 80) {
+        console.log(`[Facilitator] User gave substantial response (${userMessageLength} chars) - moving to TASK`);
+        return "TASK"; // Substantial response = ready for task
+      }
+      // Only stay in INTERPRET for minimal acknowledgments AND we haven't hit the limit
       if (intent === "checkin" || intent === "other") {
         return "INTERPRET"; // Stay and reflect more
       }
