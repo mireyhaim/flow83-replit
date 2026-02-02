@@ -95,7 +95,12 @@ A Conversation Director controls the chat experience, where deterministic logic 
 -   **PostgreSQL**: Primary data store.
 
 ### Authentication
--   **Replit Auth**: OpenID Connect-based authentication.
+-   **Primary Auth**: Firebase Authentication for Google sign-in and email/password login
+    -   Firebase Project: flow83-b6453
+    -   JWT verification using Google's public keys via jwks-rsa
+    -   Sessions stored in PostgreSQL with 7-day TTL
+-   **Fallback Auth**: Replit Auth (OpenID Connect) for existing users
+-   **Account Linking**: Users are linked by email across auth providers
 
 ### UI Libraries
 -   **Radix UI**: Headless component primitives.
