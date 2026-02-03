@@ -685,10 +685,8 @@ export default function AdminPage() {
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div className={cn(
-        "lg:hidden fixed top-0 left-0 z-50 h-full w-72 max-w-[80vw] bg-slate-950 border-r border-slate-700 transform transition-transform duration-300 ease-in-out shadow-2xl",
-        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      {mobileMenuOpen && (
+      <div className="lg:hidden fixed top-0 left-0 z-50 h-full w-72 max-w-[80vw] bg-slate-950 border-r border-slate-700 shadow-2xl animate-in slide-in-from-left duration-200">
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div>
             <h1 className="text-white font-bold text-lg">Flow83 Admin</h1>
@@ -762,10 +760,11 @@ export default function AdminPage() {
           </Button>
         </div>
       </div>
+      )}
 
       <div className="flex">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex w-56 bg-slate-950 min-h-screen p-4 flex-col border-r border-slate-800 sticky top-0">
+        {/* Desktop Sidebar - hidden on mobile */}
+        <aside className="hidden lg:flex w-56 bg-slate-950 min-h-screen p-4 flex-col border-r border-slate-800 sticky top-0 max-lg:!hidden">
           <div className="mb-8">
             <h1 className="text-white font-bold text-lg">Flow83 Admin</h1>
             <p className="text-slate-400 text-xs">Internal Dashboard</p>
