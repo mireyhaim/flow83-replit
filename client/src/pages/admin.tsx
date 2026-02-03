@@ -679,14 +679,14 @@ export default function AdminPage() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div 
-          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          className="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Slide-out Menu */}
       <div className={cn(
-        "lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-slate-950 transform transition-transform duration-300 ease-in-out shadow-xl",
+        "lg:hidden fixed top-0 left-0 z-50 h-full w-72 max-w-[80vw] bg-slate-950 border-r border-slate-700 transform transition-transform duration-300 ease-in-out shadow-2xl",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
