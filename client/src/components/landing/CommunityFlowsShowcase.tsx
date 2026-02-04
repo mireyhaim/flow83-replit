@@ -12,75 +12,75 @@ import burnoutToBalance from "@assets/generated_images/burnout_to_balance_healin
 const featuredFlows = [
   {
     id: 1,
-    title: "7-Day Anxiety Reset",
-    description: "A comprehensive journey to manage anxiety through mindfulness and breathing techniques",
-    creator: "Dr. Sarah Chen",
-    category: "Mental Health",
+    title: "איפוס חרדה ב-7 ימים",
+    description: "מסע מקיף לניהול חרדה באמצעות מיינדפולנס וטכניקות נשימה",
+    creator: "ד״ר שרה כהן",
+    category: "בריאות הנפש",
     participants: 12500,
     likes: 342,
-    duration: "7 days",
+    duration: "7 ימים",
     thumbnail: digitalMindfulness,
-    difficulty: "Beginner"
+    difficulty: "מתחילים"
   },
   {
     id: 2,
-    title: "Career Pivot Masterclass",
-    description: "Step-by-step guide to successfully transition to your dream career",
-    creator: "Marcus Rodriguez",
-    category: "Career Growth",
+    title: "שינוי קריירה מוצלח",
+    description: "מדריך צעד אחר צעד למעבר מוצלח לקריירה החדשה שלך",
+    creator: "מרקוס רודריגז",
+    category: "צמיחה מקצועית",
     participants: 8900,
     likes: 267,
-    duration: "7 days", 
+    duration: "7 ימים", 
     thumbnail: futureHealing,
-    difficulty: "Intermediate"
+    difficulty: "בינוני"
   },
   {
     id: 3,
-    title: "Grief Healing Journey",
-    description: "A compassionate path through loss with therapeutic techniques and community support",
-    creator: "Dr. Ahmed Hassan",
-    category: "Emotional Healing",
+    title: "מסע ריפוי מאבל",
+    description: "דרך מלאת חמלה דרך אובדן עם טכניקות טיפוליות ותמיכה קהילתית",
+    creator: "ד״ר אחמד חסן",
+    category: "ריפוי רגשי",
     participants: 4560,
     likes: 198,
-    duration: "7 days",
+    duration: "7 ימים",
     thumbnail: digitalTherapyScience,
-    difficulty: "All Levels"
+    difficulty: "לכל הרמות"
   },
   {
     id: 4,
-    title: "Leadership Presence Blueprint",
-    description: "Develop authentic leadership skills and executive presence",
-    creator: "Lisa Park",
-    category: "Leadership",
+    title: "נוכחות מנהיגותית",
+    description: "פיתוח כישורי מנהיגות אותנטיים ונוכחות ניהולית",
+    creator: "ליסה פארק",
+    category: "מנהיגות",
     participants: 23200,
     likes: 151,
-    duration: "7 days",
+    duration: "7 ימים",
     thumbnail: digitalResilience,
-    difficulty: "Advanced"
+    difficulty: "מתקדם"
   },
   {
     id: 5,
-    title: "Soul–Career Alignment",
-    description: "Aligning purpose, natural talents, and income for professionals feeling disconnected from their work",
-    creator: "Maya Goldstein",
-    category: "Purpose",
+    title: "התאמת נשמה-קריירה",
+    description: "חיבור בין ייעוד, כישרונות טבעיים והכנסה לאנשי מקצוע שמרגישים מנותקים מהעבודה",
+    creator: "מאיה גולדשטיין",
+    category: "ייעוד",
     participants: 7340,
     likes: 289,
-    duration: "7 days",
+    duration: "7 ימים",
     thumbnail: soulCareerAlignment,
-    difficulty: "All Levels"
+    difficulty: "לכל הרמות"
   },
   {
     id: 6,
-    title: "From Burnout to Balance",
-    description: "Restoring energy, boundaries, and clarity for professionals and entrepreneurs experiencing exhaustion",
-    creator: "Dr. Rachel Torres",
-    category: "Wellness",
+    title: "משחיקה לאיזון",
+    description: "שחזור אנרגיה, גבולות ובהירות לאנשי מקצוע ויזמים שחווים תשישות",
+    creator: "ד״ר רחל טורס",
+    category: "בריאות",
     participants: 15800,
     likes: 412,
-    duration: "7 days",
+    duration: "7 ימים",
     thumbnail: burnoutToBalance,
-    difficulty: "All Levels"
+    difficulty: "לכל הרמות"
   }
 ];
 
@@ -89,13 +89,13 @@ const CommunityFlowsShowcase = () => {
     <section id="community-flows" className="max-w-7xl mx-auto px-6 py-16">
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
-          <span className="text-gray-900">Examples of </span>
+          <span className="text-gray-900">דוגמאות ל</span>
           <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">
-            Community-Created Flows
+            פלואים שנוצרו בקהילה
           </span>
         </h2>
         <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          Discover transformative journeys created by our expert community members
+          גלו מסעות טרנספורמטיביים שנוצרו על ידי חברי הקהילה המומחים שלנו
         </p>
       </div>
 
@@ -113,7 +113,7 @@ const CommunityFlowsShowcase = () => {
                   />
                   <div>
                     <CardTitle className="text-lg text-gray-900">{flow.title}</CardTitle>
-                    <CardDescription className="text-gray-500">by {flow.creator}</CardDescription>
+                    <CardDescription className="text-gray-500">מאת {flow.creator}</CardDescription>
                   </div>
                 </div>
                 <Badge className="bg-violet-100 text-violet-700">{flow.category}</Badge>
