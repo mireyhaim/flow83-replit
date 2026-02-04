@@ -138,9 +138,6 @@ const CommunityFlowsShowcase = () => {
                     {flow.duration}
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs border-violet-200 text-violet-600">
-                  {flow.difficulty}
-                </Badge>
               </div>
             </CardContent>
             </Card>

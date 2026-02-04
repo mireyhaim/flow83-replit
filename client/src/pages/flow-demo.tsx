@@ -228,9 +228,6 @@ export default function FlowDemo() {
                 <Clock className="w-4 h-4 ml-2" />
                 {flow.duration}
               </div>
-              <Badge variant="outline" className="border-violet-200 text-violet-600">
-                {flow.difficulty}
-              </Badge>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
