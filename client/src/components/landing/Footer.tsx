@@ -73,7 +73,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-sm text-gray-500">
-            © 2024 Flow 83. {t('allRightsReserved')}
+            © 2025 Flow 83. {t('allRightsReserved')}
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-500">
             <Link href="/privacy-policy" className="hover:text-white transition-colors cursor-pointer">
