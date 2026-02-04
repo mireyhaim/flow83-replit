@@ -13,6 +13,13 @@ import { useTranslation } from "react-i18next";
 
 const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
   const { toast } = useToast();
   const { t } = useTranslation('landing');
 
@@ -20,13 +27,36 @@ const ContactUs = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    setTimeout(() => {
-      toast({
-        title: t('contactPage.successTitle'),
-        description: t('contactPage.successDescription'),
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       });
+
+      if (response.ok) {
+        toast({
+          title: t('contactPage.successTitle'),
+          description: t('contactPage.successDescription'),
+        });
+        setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+      } else {
+        const data = await response.json();
+        toast({
+          title: t('contactPage.errorTitle') || 'Error',
+          description: data.error || t('contactPage.errorDescription') || 'Failed to send message',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t('contactPage.errorTitle') || 'Error',
+        description: t('contactPage.errorDescription') || 'Failed to send message',
+        variant: 'destructive'
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -66,6 +96,8 @@ const ContactUs = () => {
                         <Input
                           id="firstName"
                           placeholder={t('contactPage.firstNamePlaceholder')}
+                          value={formData.firstName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                           required
                           data-testid="input-first-name"
                         />
@@ -75,6 +107,8 @@ const ContactUs = () => {
                         <Input
                           id="lastName"
                           placeholder={t('contactPage.lastNamePlaceholder')}
+                          value={formData.lastName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                           required
                           data-testid="input-last-name"
                         />
@@ -87,6 +121,8 @@ const ContactUs = () => {
                         id="email"
                         type="email"
                         placeholder={t('contactPage.emailPlaceholder')}
+                        value={formData.email}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         required
                         data-testid="input-email"
                       />
@@ -94,7 +130,7 @@ const ContactUs = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="subject">{t('contactPage.subject')}</Label>
-                      <Select required>
+                      <Select value={formData.subject} onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))} required>
                         <SelectTrigger data-testid="select-subject">
                           <SelectValue placeholder={t('contactPage.subjectPlaceholder')} />
                         </SelectTrigger>
@@ -115,6 +151,8 @@ const ContactUs = () => {
                         id="message"
                         placeholder={t('contactPage.messagePlaceholder')}
                         className="min-h-[120px]"
+                        value={formData.message}
+                        onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                         required
                         data-testid="input-message"
                       />

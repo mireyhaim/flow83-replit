@@ -1295,3 +1295,89 @@ export async function sendSubscriptionActivationEmail(params: SubscriptionActiva
     return false;
   }
 }
+
+// Contact form email
+interface ContactFormEmailParams {
+  firstName: string;
+  lastName: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export async function sendContactFormEmail(params: ContactFormEmailParams): Promise<boolean> {
+  const { firstName, lastName, email, subject, message } = params;
+
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    const subjectLabels: Record<string, string> = {
+      general: 'שאלה כללית',
+      technical: 'תמיכה טכנית',
+      billing: 'חיוב ותשלום',
+      partnership: 'שיתוף פעולה',
+      feedback: 'משוב',
+      bug: 'דיווח על באג'
+    };
+
+    const subjectLabel = subjectLabels[subject] || subject;
+
+    const html = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f7ff; margin: 0; padding: 20px; direction: rtl; text-align: right;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 24px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 20px;">הודעה חדשה מטופס יצירת קשר</h1>
+          </div>
+          <div style="padding: 32px;">
+            <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+              <table style="width: 100%; font-size: 14px; color: #374151;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 600; width: 100px;">שם:</td>
+                  <td style="padding: 8px 0;">${firstName} ${lastName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 600;">אימייל:</td>
+                  <td style="padding: 8px 0; direction: ltr; text-align: left;"><a href="mailto:${email}" style="color: #7c3aed;">${email}</a></td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 600;">נושא:</td>
+                  <td style="padding: 8px 0;">${subjectLabel}</td>
+                </tr>
+              </table>
+            </div>
+            <div style="background: #fafafa; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 12px; font-size: 14px;">תוכן ההודעה:</h3>
+              <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+              Flow 83 - טופס יצירת קשר
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: 'support@flow83.com',
+      replyTo: email,
+      subject: `[יצירת קשר] ${subjectLabel} - ${firstName} ${lastName}`,
+      html
+    });
+
+    console.log('Contact form email sent:', result);
+    return true;
+  } catch (error) {
+    console.error('Failed to send contact form email:', error);
+    return false;
+  }
+}

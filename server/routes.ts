@@ -9,7 +9,7 @@ import { registerFirebaseAuthRoutes } from "./firebaseAuth";
 import { insertJourneySchema, insertJourneyStepSchema, insertJourneyBlockSchema, insertParticipantSchema } from "@shared/schema";
 import { generateJourneyContent, generateChatResponse, generateDayOpeningMessage, generateFlowDays, generateDaySummary, generateParticipantSummary, generateJourneySummary, generateLandingPageContent, analyzeMentorContent, detectPhaseTransition, generateChatResponseWithDirector, initializeDirectorState, toDirectorPhase, generateChatResponseWithFacilitator, extractInsightFromMessage, extractCurrentBelief, generateDaySummaryForState, type ConversationPhase } from "./ai";
 import { SUBSCRIPTION_PLANS, calculateCommission, type PlanType } from "./subscriptionService";
-import { sendJourneyAccessEmail, sendNewParticipantNotification, sendFlowApprovalRequestEmail, sendFlowApprovedEmail } from "./email";
+import { sendJourneyAccessEmail, sendNewParticipantNotification, sendFlowApprovalRequestEmail, sendFlowApprovedEmail, sendContactFormEmail } from "./email";
 import { processEmailNotifications, sendCompletionNotification } from "./emailCron";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -179,6 +179,39 @@ export async function registerRoutes(
     }
   });
   
+  // Contact form - public endpoint
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { firstName, lastName, email, subject, message } = req.body;
+      
+      if (!firstName || !lastName || !email || !subject || !message) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+
+      const success = await sendContactFormEmail({
+        firstName,
+        lastName,
+        email,
+        subject,
+        message
+      });
+
+      if (success) {
+        res.json({ success: true, message: "Message sent successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to send message" });
+      }
+    } catch (error) {
+      console.error("Contact form error:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
   // Journey routes - public read returns only published flows from active mentors
   app.get("/api/journeys", async (req, res) => {
     try {
