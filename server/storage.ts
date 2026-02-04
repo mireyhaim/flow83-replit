@@ -18,7 +18,8 @@ import {
   type Invoice, type InsertInvoice,
   type WithdrawalRequest, type InsertWithdrawalRequest,
   type RefundRequest, type InsertRefundRequest,
-  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors, mentorBusinessProfiles, mentorWallets, walletTransactions, invoices, withdrawalRequests, refundRequests
+  type JourneyMediaAsset, type InsertJourneyMediaAsset,
+  users, journeys, journeySteps, journeyBlocks, participants, journeyMessages, activityEvents, notificationSettings, userDayState, payments, journeyFeedback, externalPaymentSessions, systemErrors, mentorBusinessProfiles, mentorWallets, walletTransactions, invoices, withdrawalRequests, refundRequests, journeyMediaAssets
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, asc, desc, inArray, lt, isNull, or, sum, gte, count, sql } from "drizzle-orm";
@@ -116,6 +117,13 @@ export interface IStorage {
   getExternalPaymentSessionByToken(token: string): Promise<ExternalPaymentSession | undefined>;
   getPendingExternalPaymentSessionByEmail(email: string): Promise<ExternalPaymentSession | undefined>;
   completeExternalPaymentSession(token: string): Promise<ExternalPaymentSession | undefined>;
+
+  // Journey media assets
+  getMediaAssets(journeyId: string): Promise<JourneyMediaAsset[]>;
+  getMediaAssetsByDay(journeyId: string, dayNumber: number): Promise<JourneyMediaAsset[]>;
+  getMediaAsset(id: string): Promise<JourneyMediaAsset | undefined>;
+  createMediaAsset(asset: InsertJourneyMediaAsset): Promise<JourneyMediaAsset>;
+  deleteMediaAsset(id: string): Promise<void>;
 
   // Admin functions
   getAllUsers(): Promise<User[]>;
@@ -1405,6 +1413,45 @@ export class DatabaseStorage implements IStorage {
       mentor: r.mentor,
       journey: r.journey,
     }));
+  }
+
+  // Journey media assets
+  async getMediaAssets(journeyId: string): Promise<JourneyMediaAsset[]> {
+    return await db
+      .select()
+      .from(journeyMediaAssets)
+      .where(eq(journeyMediaAssets.journeyId, journeyId))
+      .orderBy(asc(journeyMediaAssets.dayNumber), asc(journeyMediaAssets.createdAt));
+  }
+
+  async getMediaAssetsByDay(journeyId: string, dayNumber: number): Promise<JourneyMediaAsset[]> {
+    return await db
+      .select()
+      .from(journeyMediaAssets)
+      .where(
+        and(
+          eq(journeyMediaAssets.journeyId, journeyId),
+          eq(journeyMediaAssets.dayNumber, dayNumber)
+        )
+      )
+      .orderBy(asc(journeyMediaAssets.createdAt));
+  }
+
+  async getMediaAsset(id: string): Promise<JourneyMediaAsset | undefined> {
+    const [result] = await db
+      .select()
+      .from(journeyMediaAssets)
+      .where(eq(journeyMediaAssets.id, id));
+    return result;
+  }
+
+  async createMediaAsset(asset: InsertJourneyMediaAsset): Promise<JourneyMediaAsset> {
+    const [result] = await db.insert(journeyMediaAssets).values(asset).returning();
+    return result;
+  }
+
+  async deleteMediaAsset(id: string): Promise<void> {
+    await db.delete(journeyMediaAssets).where(eq(journeyMediaAssets.id, id));
   }
 }
 

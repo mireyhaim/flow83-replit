@@ -18,6 +18,7 @@ import { chatApi, type DaySummary } from "@/lib/api";
 import type { Journey, JourneyStep, JourneyBlock, Participant, JourneyMessage, User } from "@shared/schema";
 import { PreChatOnboarding, type OnboardingConfig } from "@/components/participant/PreChatOnboarding";
 import { AddToHomeScreenPopup } from "@/components/participant/AddToHomeScreenPopup";
+import { MediaEmbed, parseMediaFromMessage } from "@/components/ui/media-embed";
 
 interface JourneyWithSteps extends Journey {
   steps: (JourneyStep & { blocks: JourneyBlock[] })[];
@@ -1047,7 +1048,19 @@ export default function ParticipantView() {
                           : "bg-white text-gray-700 rounded-bl-sm shadow-sm border border-gray-100"
                       )}
                     >
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                      {(() => {
+                        const parsed = parseMediaFromMessage(msg.content);
+                        return (
+                          <>
+                            {parsed.text && <div className="whitespace-pre-wrap">{parsed.text}</div>}
+                            {parsed.mediaUrl && (
+                              <div className="mt-2">
+                                <MediaEmbed url={parsed.mediaUrl} />
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                   {msg.role === "user" && (

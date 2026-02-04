@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { 
   Edit2, 
   Check, 
@@ -15,54 +17,84 @@ import {
   HelpCircle,
   CheckSquare,
   Heart,
-  Video
+  Play,
+  ExternalLink
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MediaEmbed } from "@/components/ui/media-embed";
+
+interface MediaContent {
+  title?: string;
+  description?: string;
+  url: string;
+  mediaType?: string;
+}
 
 interface Block {
   id: string;
   type: string;
-  content: string;
+  content: string | MediaContent;
 }
 
 interface ContentBlockProps {
   block: Block;
-  onUpdate: (content: string) => void;
+  onUpdate: (content: string | MediaContent) => void;
   onDelete: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }
 
 const blockTypeConfig = {
-  text: { icon: FileText, label: "Text", color: "bg-blue-100 text-blue-800" },
-  question: { icon: HelpCircle, label: "Question", color: "bg-purple-100 text-purple-800" },
-  task: { icon: CheckSquare, label: "Task", color: "bg-green-100 text-green-800" },
-  meditation: { icon: Heart, label: "Meditation", color: "bg-pink-100 text-pink-800" },
-  video: { icon: Video, label: "Video", color: "bg-orange-100 text-orange-800" }
+  text: { icon: FileText, label: "טקסט", color: "bg-blue-100 text-blue-800" },
+  question: { icon: HelpCircle, label: "שאלה", color: "bg-purple-100 text-purple-800" },
+  task: { icon: CheckSquare, label: "משימה", color: "bg-green-100 text-green-800" },
+  meditation: { icon: Heart, label: "מדיטציה", color: "bg-pink-100 text-pink-800" },
+  video: { icon: Play, label: "וידאו", color: "bg-orange-100 text-orange-800" },
+  media: { icon: Play, label: "מדיה", color: "bg-cyan-100 text-cyan-800" }
 };
 
 const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: ContentBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(block.content);
   const { toast } = useToast();
+  
+  const isMediaBlock = block.type === 'media' || (block.type === 'video' && typeof block.content === 'object');
+  const mediaContent = isMediaBlock && typeof block.content === 'object' ? block.content as MediaContent : null;
+  const textContent = typeof block.content === 'string' ? block.content : '';
+  
+  const [editTextContent, setEditTextContent] = useState(textContent);
+  const [editMediaUrl, setEditMediaUrl] = useState(mediaContent?.url || '');
+  const [editMediaTitle, setEditMediaTitle] = useState(mediaContent?.title || '');
+  const [editMediaDescription, setEditMediaDescription] = useState(mediaContent?.description || '');
 
   const blockConfig = blockTypeConfig[block.type as keyof typeof blockTypeConfig] || blockTypeConfig.text;
   const Icon = blockConfig.icon;
 
   const handleSave = () => {
-    onUpdate(editContent);
+    if (isMediaBlock || block.type === 'media') {
+      onUpdate({
+        title: editMediaTitle.trim() || undefined,
+        description: editMediaDescription.trim() || undefined,
+        url: editMediaUrl.trim(),
+        mediaType: mediaContent?.mediaType
+      });
+    } else {
+      onUpdate(editTextContent);
+    }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditContent(block.content);
+    setEditTextContent(textContent);
+    setEditMediaUrl(mediaContent?.url || '');
+    setEditMediaTitle(mediaContent?.title || '');
+    setEditMediaDescription(mediaContent?.description || '');
     setIsEditing(false);
   };
 
   const handleRewriteWithAI = () => {
     toast({
-      title: "Rewrite with AI",
-      description: "Generating AI suggestions for this block.",
+      title: "כתוב מחדש עם AI",
+      description: "מייצר הצעות AI לבלוק הזה.",
     });
   };
 
@@ -88,9 +120,11 @@ const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: Conte
                 <ChevronDown className="w-4 h-4" />
               </Button>
             )}
-            <Button size="sm" variant="ghost" onClick={handleRewriteWithAI}>
-              <Wand2 className="w-4 h-4" />
-            </Button>
+            {!isMediaBlock && (
+              <Button size="sm" variant="ghost" onClick={handleRewriteWithAI}>
+                <Wand2 className="w-4 h-4" />
+              </Button>
+            )}
             <Button size="sm" variant="ghost" onClick={() => setIsEditing(!isEditing)}>
               <Edit2 className="w-4 h-4" />
             </Button>
@@ -102,39 +136,75 @@ const ContentBlock = ({ block, onUpdate, onDelete, onMoveUp, onMoveDown }: Conte
 
         {isEditing ? (
           <div className="space-y-3">
-            <Textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows={4}
-              className="w-full"
-            />
+            {isMediaBlock || block.type === 'media' ? (
+              <div className="space-y-3">
+                <div>
+                  <Label>לינק למדיה</Label>
+                  <Input
+                    value={editMediaUrl}
+                    onChange={(e) => setEditMediaUrl(e.target.value)}
+                    placeholder="https://..."
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <Label>כותרת (אופציונלי)</Label>
+                  <Input
+                    value={editMediaTitle}
+                    onChange={(e) => setEditMediaTitle(e.target.value)}
+                    placeholder="כותרת המדיה"
+                    dir="rtl"
+                  />
+                </div>
+                <div>
+                  <Label>תיאור (אופציונלי)</Label>
+                  <Textarea
+                    value={editMediaDescription}
+                    onChange={(e) => setEditMediaDescription(e.target.value)}
+                    placeholder="תיאור קצר..."
+                    rows={2}
+                    dir="rtl"
+                  />
+                </div>
+              </div>
+            ) : (
+              <Textarea
+                value={editTextContent}
+                onChange={(e) => setEditTextContent(e.target.value)}
+                rows={4}
+                className="w-full"
+                dir="rtl"
+              />
+            )}
             <div className="flex justify-start gap-2">
               <Button size="sm" variant="outline" onClick={handleCancel}>
-                <X className="w-4 h-4 mr-1" />
-                Cancel
+                <X className="w-4 h-4 ml-1" />
+                ביטול
               </Button>
               <Button size="sm" onClick={handleSave}>
-                <Check className="w-4 h-4 mr-1" />
-                Save
+                <Check className="w-4 h-4 ml-1" />
+                שמור
               </Button>
             </div>
           </div>
         ) : (
           <div className="prose prose-sm max-w-none">
-            {block.type === 'video' && block.content.includes('http') ? (
+            {(isMediaBlock || block.type === 'media') && mediaContent ? (
               <div className="space-y-2">
-                <video 
-                  controls 
-                  className="w-full rounded-lg"
-                  style={{ maxHeight: '400px' }}
-                >
-                  <source src={block.content} />
-                  Your browser does not support the video tag.
-                </video>
-                <p className="text-xs text-muted-foreground">Video: {block.content}</p>
+                {mediaContent.title && (
+                  <h4 className="font-medium text-foreground m-0">{mediaContent.title}</h4>
+                )}
+                {mediaContent.description && (
+                  <p className="text-sm text-muted-foreground m-0">{mediaContent.description}</p>
+                )}
+                <MediaEmbed url={mediaContent.url} />
+              </div>
+            ) : block.type === 'video' && typeof block.content === 'string' && block.content.includes('http') ? (
+              <div className="space-y-2">
+                <MediaEmbed url={block.content} />
               </div>
             ) : (
-              <p className="text-foreground leading-relaxed">{block.content}</p>
+              <p className="text-foreground leading-relaxed" dir="rtl">{textContent}</p>
             )}
           </div>
         )}

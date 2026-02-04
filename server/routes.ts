@@ -1181,6 +1181,68 @@ export async function registerRoutes(
     }
   });
 
+  // Journey media assets routes
+  app.get("/api/journeys/:journeyId/media", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const journey = await storage.getJourney(req.params.journeyId);
+      if (!journey || journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const assets = await storage.getMediaAssets(req.params.journeyId);
+      res.json(assets);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch media assets" });
+    }
+  });
+
+  app.post("/api/journeys/:journeyId/media", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const journey = await storage.getJourney(req.params.journeyId);
+      if (!journey || journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Validate required fields
+      const { dayNumber, url, mediaType, title, description } = req.body;
+      if (typeof dayNumber !== 'number' || !url || typeof url !== 'string') {
+        return res.status(400).json({ error: "dayNumber (number) and url (string) are required" });
+      }
+      
+      const asset = await storage.createMediaAsset({
+        journeyId: req.params.journeyId,
+        dayNumber,
+        url,
+        mediaType: mediaType || null,
+        title: title || null,
+        description: description || null,
+      });
+      res.status(201).json(asset);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create media asset" });
+    }
+  });
+
+  app.delete("/api/media/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      // Get the media asset first to check ownership via journey
+      const asset = await storage.getMediaAsset(req.params.id);
+      if (!asset) {
+        return res.status(404).json({ error: "Media asset not found" });
+      }
+      const journey = await storage.getJourney(asset.journeyId);
+      if (!journey || journey.creatorId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      await storage.deleteMediaAsset(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete media asset" });
+    }
+  });
+
   // Participant routes
   app.get("/api/participants/journey/:journeyId", isAuthenticated, async (req: any, res) => {
     try {
@@ -2155,6 +2217,34 @@ export async function registerRoutes(
         
         botResponse = result.response;
         dayCompleted = result.dayCompleted;
+        
+        // Check if we should include media assets for this day
+        // Send media when in TASK or CLOSURE state and media hasn't been sent yet
+        // Check all current day's messages for existing media URLs (platforms + direct files)
+        const mediaUrlPattern = /(youtube\.com|youtu\.be|vimeo\.com|spotify\.com|soundcloud\.com|\.(mp3|mp4|wav|ogg|m4a|webm|mov)($|\?))/i;
+        const botMessagesThisDay = recentMessages.filter(m => m.role === "assistant");
+        const mediaAlreadySentThisDay = botMessagesThisDay.some(m => mediaUrlPattern.test(m.content));
+        
+        // Send media if we're in a media-delivery state and haven't sent media yet this day
+        const isMediaDeliveryState = result.nextState === "TASK" || result.nextState === "CLOSURE";
+        const shouldSendMedia = isMediaDeliveryState && !mediaAlreadySentThisDay;
+        
+        if (shouldSendMedia) {
+          try {
+            const mediaAssets = await storage.getMediaAssetsByDay(journey.id, step.dayNumber);
+            if (mediaAssets.length > 0) {
+              // Append media links to the bot response
+              const mediaLinks = mediaAssets.map(asset => {
+                const title = asset.title || (journey.language === "he" ? "צפה בתוכן" : "View content");
+                return `\n\n${title}: ${asset.url}`;
+              }).join("");
+              botResponse += mediaLinks;
+              console.log(`[Media] Appended ${mediaAssets.length} media assets to response`);
+            }
+          } catch (e) {
+            console.error("[Media] Failed to fetch media assets:", e);
+          }
+        }
         
         // Journey State Updates - Extract insights and save day summaries
         const updatedParticipant: Partial<typeof participant> = { 
