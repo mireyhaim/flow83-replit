@@ -139,6 +139,30 @@ export const insertJourneyBlockSchema = createInsertSchema(journeyBlocks).omit({
 export type InsertJourneyBlock = z.infer<typeof insertJourneyBlockSchema>;
 export type JourneyBlock = typeof journeyBlocks.$inferSelect;
 
+// Media assets for journeys - reusable media that can be embedded in blocks or sent by bot
+export const journeyMediaAssets = pgTable("journey_media_assets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  journeyId: varchar("journey_id").references(() => journeys.id, { onDelete: "cascade" }).notNull(),
+  dayNumber: integer("day_number"), // Optional - null means available for whole journey
+  title: text("title").notNull(), // Display title (e.g., "מדיטציית בוקר")
+  description: text("description"), // Optional description
+  mediaType: text("media_type").notNull(), // 'youtube' | 'vimeo' | 'spotify' | 'soundcloud' | 'audio' | 'video' | 'link'
+  url: text("url").notNull(), // The actual media URL
+  thumbnailUrl: text("thumbnail_url"), // Optional thumbnail
+  duration: text("duration"), // Optional duration (e.g., "5:30")
+  botTrigger: text("bot_trigger"), // When bot should send this: 'after_intro' | 'after_task' | 'on_request' | null (manual only)
+  orderIndex: integer("order_index").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertJourneyMediaAssetSchema = createInsertSchema(journeyMediaAssets).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertJourneyMediaAsset = z.infer<typeof insertJourneyMediaAssetSchema>;
+export type JourneyMediaAsset = typeof journeyMediaAssets.$inferSelect;
+
 export const participants = pgTable("participants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
