@@ -39,9 +39,18 @@ Preferred communication style: Simple, everyday language.
 - `journeys`: Multi-day transformational journeys.
 - `journeySteps`: Individual steps within a journey.
 - `journeyBlocks`: Content blocks within steps.
+- `journeyMediaAssets`: Media assets (videos, audio, podcasts) linked to journey days for delivery during conversations.
 - `participants`: Users enrolled in journeys.
 - `sessions`: Authentication session storage.
 - `externalPaymentSessions`: Token-based payment tracking.
+
+### Media Embedding System
+Supports embedding rich media content in journeys:
+-   **Supported Platforms**: YouTube, Vimeo, Spotify, SoundCloud, direct audio/video files (mp3, mp4, wav, ogg, m4a, webm, mov).
+-   **MediaEmbed Component**: Centralized component for rendering embedded players or fallback link cards.
+-   **Mentor UI**: Add media blocks via AddBlockDialog with Hebrew translations.
+-   **Bot Integration**: Automatically sends media assets once per day when reaching TASK or CLOSURE conversation states.
+-   **Security**: All media CRUD routes verify journey ownership via creatorId.
 
 ### Payment System
 Flow 83 supports a dual payment structure:
